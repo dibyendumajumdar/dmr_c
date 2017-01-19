@@ -257,7 +257,7 @@ struct ctype_name {
 struct global_symbols_t {
 	struct dmr_C *C;
 	/* Current parsing/evaluation function */
-	struct symbol *current_fn;
+	//struct symbol *current_fn;
 
 	/* Abstract types */
 	struct symbol int_type, fp_type;
@@ -309,8 +309,7 @@ extern int expand_constant_p(struct dmr_C *C, struct expression *expr,
 			     int cost);
 
 extern struct symbol *lookup_symbol(struct ident *, enum namespace_type);
-extern struct symbol *create_symbol(struct global_symbols_t *S, int stream,
-				    const char *name, int type, int ns);
+extern struct symbol *create_symbol(struct global_symbols_t *S, int stream, const char *name, int type, int namespace);
 
 extern struct symbol *alloc_symbol(struct global_symbols_t *S,
 				   struct position pos, int type);

@@ -146,6 +146,7 @@ struct parse_state_t {
 };
 
 extern void init_parser(struct dmr_C *C, int stream);
+void destroy_parser(struct dmr_C *C);
 
 extern struct token *parse_expression(struct dmr_C *C, struct token *, struct expression **);
 extern struct symbol *label_symbol(struct dmr_C *C, struct token *token);

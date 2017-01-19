@@ -128,6 +128,8 @@ struct dmr_C {
 	/* TODO is this the right place? */
 	struct scope *block_scope, *function_scope, *file_scope, *global_scope;
 	struct scope *builtin_scope;
+
+	/* Current parsing/evaluation function */
 	struct symbol *current_fn;
 
 	char modifier_string_buffer[100];

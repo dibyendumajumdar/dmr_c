@@ -663,6 +663,11 @@ void init_parser(struct dmr_C *C, int stream)
 	C->P->types[6] = C->P->char_types + 2;
 }
 
+void destroy_parser(struct dmr_C *C) {
+	free(C->P);
+	C->P = NULL;
+}
+
 
 // Add a symbol to the list of function-local symbols
 static void fn_local_symbol(struct dmr_C *C, struct symbol *sym)
@@ -2057,14 +2062,14 @@ static struct statement *start_function(struct dmr_C *C, struct symbol *sym)
 	fn_local_symbol(C, ret);
 
 	// Currently parsed symbol for __func__/__FUNCTION__/__PRETTY_FUNCTION__
-	C->S->current_fn = sym;
+	C->current_fn = sym;
 
 	return stmt;
 }
 
 static void end_function(struct dmr_C *C, struct symbol *sym)
 {
-	C->S->current_fn = NULL;
+	C->current_fn = NULL;
 	end_function_scope(C);
 }
 

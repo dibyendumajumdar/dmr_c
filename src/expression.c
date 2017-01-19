@@ -97,7 +97,7 @@ static struct symbol *handle_func(struct dmr_C *C, struct token *token)
 	    ident != C->S->__PRETTY_FUNCTION___ident)
 		return NULL;
 
-	if (!C->S->current_fn || !C->S->current_fn->ident)
+	if (!C->current_fn || !C->current_fn->ident)
 		return NULL;
 
 	/* OK, it's one of ours */
@@ -115,9 +115,9 @@ static struct symbol *handle_func(struct dmr_C *C, struct token *token)
 	bind_symbol(C->S, decl, ident, NS_LABEL);
 	decl->ns = NS_SYMBOL;
 
-	len = C->S->current_fn->ident->len;
+	len = C->current_fn->ident->len;
 	string = allocator_allocate(&C->string_allocator, len + 1);
-	memcpy(string->data, C->S->current_fn->ident->name, len);
+	memcpy(string->data, C->current_fn->ident->name, len);
 	string->data[len] = 0;
 	string->length = len + 1;
 

@@ -821,6 +821,10 @@ void init_symbols(struct dmr_C *C)
 void destroy_symbols(struct dmr_C *C) {
 	/* tokenizer must be destroyed before this */
 	assert(C->T == NULL);
+
+	destroy_parser(C);
+	assert(C->P == NULL);
+
 	struct global_symbols_t *S = C->S;
 
 	allocator_destroy(&S->context_allocator);

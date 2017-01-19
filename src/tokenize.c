@@ -1134,6 +1134,7 @@ void init_tokenizer(struct dmr_C *C)
 
 void destroy_tokenizer(struct dmr_C *C)
 {
+	free(C->T->input_streams);
 	free(C->T->hash_table);
 	free(C->T);
 	C->T = NULL;

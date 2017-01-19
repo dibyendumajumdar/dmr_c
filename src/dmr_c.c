@@ -243,6 +243,7 @@ void destroy_dmr_C(struct dmr_C *C)
 	destroy_all_scopes(C);
 	destroy_tokenizer(C);
 	destroy_target(C);
+	destroy_symbols(C);
 	allocator_destroy(&C->token_allocator);
 	allocator_destroy(&C->string_allocator);
 	allocator_destroy(&C->ident_allocator);

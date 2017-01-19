@@ -1837,14 +1837,11 @@ static int handle_nondirective(struct dmr_C *C, struct stream *stream, struct to
 
 static void init_preprocessor(struct dmr_C *C)
 {
-	static int false_nesting = 0;
-
 	C->includepath[0] = "";
 	C->includepath[1] = "/usr/include";
 	C->includepath[2] = "/usr/local/include";
 	C->includepath[3] = NULL;
 	
-
 	C->quote_includepath = C->includepath;
 	C->angle_includepath = C->includepath + 1;
 	C->isys_includepath = C->includepath + 1;

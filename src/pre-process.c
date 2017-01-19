@@ -421,17 +421,17 @@ static void expand_arguments(struct dmr_C *C, int count, struct arg *args)
  *  - '.' + number -> number, if number used to start with a digit.
  *  - special + special -> either special or an error.
  */
-static enum token_type combine(struct dmr_C *C, struct token *left, struct token *right, char *p)
+static enum e_token_type combine(struct dmr_C *C, struct token *left, struct token *right, char *p)
 {
 	int len;
-	enum token_type t1 = (enum token_type) token_type(left), t2 = (enum token_type) token_type(right);
+	enum e_token_type t1 = (enum e_token_type) token_type(left), t2 = (enum e_token_type) token_type(right);
 
 	if (t1 != TOKEN_IDENT && t1 != TOKEN_NUMBER && t1 != TOKEN_SPECIAL)
 		return TOKEN_ERROR;
 
 	if (t1 == TOKEN_IDENT && left->ident == C->S->L_ident) {
 		if (t2 >= TOKEN_CHAR && t2 < TOKEN_WIDE_CHAR)
-			return (enum token_type) (t2 + TOKEN_WIDE_CHAR - TOKEN_CHAR);
+			return (enum e_token_type) (t2 + TOKEN_WIDE_CHAR - TOKEN_CHAR);
 		if (t2 == TOKEN_STRING)
 			return TOKEN_WIDE_STRING;
 	}
@@ -477,7 +477,7 @@ static enum token_type combine(struct dmr_C *C, struct token *left, struct token
 
 static int merge(struct dmr_C *C, struct token *left, struct token *right)
 {
-	enum token_type res = combine(C, left, right, C->preprocessor_mergebuffer);
+	enum e_token_type res = combine(C, left, right, C->preprocessor_mergebuffer);
 	int n;
 
 	switch (res) {
@@ -834,7 +834,7 @@ static int try_include(struct dmr_C *C, const char *path, const char *filename, 
 	int fd;
 	int plen = (int) strlen(path);
 #ifndef _WIN32
-  static char fullname[PATH_MAX];
+  static char fullname[1024];
 #else
 	static char fullname[1024];
 #endif
@@ -1127,7 +1127,7 @@ Eargs:
 	return NULL;
 }
 
-static int try_arg(struct dmr_C *C, struct token *token, enum token_type type, struct token *arglist)
+static int try_arg(struct dmr_C *C, struct token *token, enum e_token_type type, struct token *arglist)
 {
 	struct ident *ident = token->ident;
 	int nr;

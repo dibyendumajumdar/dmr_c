@@ -25,14 +25,14 @@
 
 #include <assert.h>
 
-#include "port.h"
-#include "lib.h"
-#include "linearize.h"
-#include "allocate.h"
-#include "flow.h"
+#include <port.h>
+#include <dmr_c.h>
+#include <linearize.h>
+#include <allocate.h>
+#include <flow.h>
 
 
-static void remove_phisrc_defines(struct instruction *phisrc)
+static void remove_phisrc_defines(struct dmr_C *C, struct instruction *phisrc)
 {
 	struct instruction *phi;
 	struct basic_block *bb = phisrc->bb;
@@ -42,11 +42,11 @@ static void remove_phisrc_defines(struct instruction *phisrc)
 	} END_FOR_EACH_PTR(phi);
 }
 
-static void replace_phi_node(struct instruction *phi)
+static void replace_phi_node(struct dmr_C *C, struct instruction *phi)
 {
 	pseudo_t tmp;
 
-	tmp = alloc_pseudo(NULL);
+	tmp = alloc_pseudo(C, NULL);
 	tmp->type = phi->target->type;
 	tmp->ident = phi->target->ident;
 	tmp->def = NULL;		// defined by all the phisrc
@@ -54,15 +54,15 @@ static void replace_phi_node(struct instruction *phi)
 	// update the current liveness
 	remove_pseudo(&phi->bb->needs, phi->target);
 	add_pseudo(&phi->bb->needs, tmp);
-	track_phi_uses(phi);
+	track_phi_uses(C, phi);
 
 	phi->opcode = OP_COPY;
-	use_pseudo(phi, tmp, &phi->src);
+	use_pseudo(C, phi, tmp, &phi->src);
 
 	// FIXME: free phi->phi_list;
 }
 
-static void rewrite_phi_bb(struct basic_block *bb)
+static void rewrite_phi_bb(struct dmr_C *C, struct basic_block *bb)
 {
 	struct instruction *insn;
 
@@ -74,11 +74,11 @@ static void rewrite_phi_bb(struct basic_block *bb)
 			continue;
 		if (insn->opcode != OP_PHI)
 			continue;
-		replace_phi_node(insn);
+		replace_phi_node(C, insn);
 	} END_FOR_EACH_PTR(insn);
 }
 
-static void rewrite_phisrc_bb(struct basic_block *bb)
+static void rewrite_phisrc_bb(struct dmr_C *C, struct basic_block *bb)
 {
 	struct instruction *insn;
 
@@ -103,7 +103,7 @@ static void rewrite_phisrc_bb(struct basic_block *bb)
 				insn->target = tmp;
 				insn->src = src;
 			} else {
-				struct instruction *copy = __alloc_instruction(0);
+				struct instruction *copy = allocator_allocate(&C->L->instruction_allocator, 0);
 
 				copy->bb = bb;
 				copy->opcode = OP_COPY;
@@ -115,7 +115,7 @@ static void rewrite_phisrc_bb(struct basic_block *bb)
 				INSERT_CURRENT(copy, insn);
 			}
 			// update the liveness info
-			remove_phisrc_defines(insn);
+			remove_phisrc_defines(C, insn);
 			// FIXME: should really something like add_pseudo_exclusive()
 			add_pseudo(&bb->defines, tmp);
 
@@ -125,16 +125,16 @@ static void rewrite_phisrc_bb(struct basic_block *bb)
 	} END_FOR_EACH_PTR_REVERSE(insn);
 }
 
-int unssa(struct entrypoint *ep)
+int unssa(struct dmr_C *C, struct entrypoint *ep)
 {
 	struct basic_block *bb;
 
 	FOR_EACH_PTR(ep->bbs, bb) {
-		rewrite_phi_bb(bb);
+		rewrite_phi_bb(C, bb);
 	} END_FOR_EACH_PTR(bb);
 
 	FOR_EACH_PTR(ep->bbs, bb) {
-		rewrite_phisrc_bb(bb);
+		rewrite_phisrc_bb(C, bb);
 	} END_FOR_EACH_PTR(bb);
 
 	return 0;

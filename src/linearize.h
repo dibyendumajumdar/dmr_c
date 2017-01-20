@@ -477,7 +477,7 @@ pseudo_t alloc_pseudo(struct dmr_C *C, struct instruction *def);
 pseudo_t value_pseudo(struct dmr_C *C, long long val);
 
 struct entrypoint *linearize_symbol(struct dmr_C *C, struct symbol *sym);
-int unssa(struct entrypoint *ep);
+int unssa(struct dmr_C *C, struct entrypoint *ep);
 void show_entry(struct dmr_C *C, struct entrypoint *ep);
 const char *show_pseudo(struct dmr_C *C, pseudo_t pseudo);
 void show_bb(struct dmr_C *C, struct basic_block *bb);

@@ -362,7 +362,7 @@ void cleanup_and_cse(struct dmr_C *C, struct entrypoint *ep)
 {
 	int i;
 
-	simplify_memops(ep);
+	simplify_memops(C, ep);
 repeat:
 	C->L->repeat_phase = 0;
 	clean_up_insns(C, ep);
@@ -390,7 +390,7 @@ repeat:
 	}
 
 	if (C->L->repeat_phase & REPEAT_SYMBOL_CLEANUP)
-		simplify_memops(ep);
+		simplify_memops(C, ep);
 
 	if (C->L->repeat_phase & REPEAT_CSE)
 		goto repeat;

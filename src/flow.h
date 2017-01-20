@@ -19,7 +19,7 @@ struct instruction;
 extern int simplify_flow(struct dmr_C *C, struct entrypoint *ep);
 
 extern void simplify_symbol_usage(struct dmr_C *C, struct entrypoint *ep);
-extern void simplify_memops(struct entrypoint *ep);
+extern void simplify_memops(struct dmr_C *C, struct entrypoint *ep);
 extern void pack_basic_blocks(struct dmr_C *C, struct entrypoint *ep);
 
 extern void convert_instruction_target(struct dmr_C *C, struct instruction *insn, pseudo_t src);
@@ -37,9 +37,9 @@ void rewrite_load_instruction(struct dmr_C *C, struct instruction *, struct ptr_
 int dominates(struct dmr_C *C, pseudo_t pseudo, struct instruction *insn, struct instruction *dom, int local);
 
 extern void clear_liveness(struct entrypoint *ep);
-extern void track_pseudo_liveness(struct entrypoint *ep);
-extern void track_pseudo_death(struct entrypoint *ep);
-extern void track_phi_uses(struct instruction *insn);
+extern void track_pseudo_liveness(struct dmr_C *C, struct entrypoint *ep);
+extern void track_pseudo_death(struct dmr_C *C, struct entrypoint *ep);
+extern void track_phi_uses(struct dmr_C *C, struct instruction *insn);
 
 extern void vrfy_flow(struct entrypoint *ep);
 extern int pseudo_in_list(struct ptr_list *list, pseudo_t pseudo);

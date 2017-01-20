@@ -991,6 +991,8 @@ void init_tokenizer(struct dmr_C *C)
 {
 	C->T = (struct tokenizer_state_t *)calloc(
 	    1, sizeof(struct tokenizer_state_t));
+	C->T->tabstop = 8;
+
 	C->T->special['\t'] = 1;
 	C->T->special['\r'] = 1;
 	C->T->special['\n'] = 1;

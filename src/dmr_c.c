@@ -237,6 +237,23 @@ struct dmr_C *new_dmr_C()
 	C->standard = STANDARD_GNU89;
 	C->arch_m64 = ARCH_M64_DEFAULT;
 	C->arch_msize_long = 0;
+
+	C->Waddress_space = 1;
+	C->Wcast_truncate = 1;
+	C->Wcontext = 1;
+	C->Wdecl = 1;
+	C->Wdeclarationafterstatement = -1;
+	C->Wdesignated_init = 1;
+	C->Wenum_mismatch = 1;
+	C->Wnon_pointer_null = 1;
+	C->Wold_initializer = 1;
+	C->Wone_bit_signed_bitfield = 1;
+	C->Wuninitialized = 1;
+	C->Wvla = 1;
+
+	C->max_warnings = 100;
+	C->show_info = 1;
+
 	allocator_init(&C->byte_allocator, "bytes", sizeof(char),
 		       __alignof__(char), CHUNK);
 	allocator_init(&C->ident_allocator, "identifiers", sizeof(struct ident),

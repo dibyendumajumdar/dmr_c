@@ -409,54 +409,54 @@ static inline void replace_bb_in_list(struct ptr_list **list,
 	ptrlist_replace(list, old, new, count);
 }
 
-static inline int instruction_list_size(struct ptr_list *list)
-{
-	return ptrlist_size(list);
-}
+//static inline int instruction_list_size(struct ptr_list *list)
+//{
+//	return ptrlist_size(list);
+//}
 
-static inline int pseudo_list_size(struct ptr_list *list)
-{
-	return ptrlist_size(list);
-}
+//static inline int pseudo_list_size(struct ptr_list *list)
+//{
+//	return ptrlist_size(list);
+//}
 
-static inline int bb_list_size(struct ptr_list *list)
-{
-	return ptrlist_size(list);
-}
+//static inline int bb_list_size(struct ptr_list *list)
+//{
+//	return ptrlist_size(list);
+//}
 
-static inline void free_instruction_list(struct ptr_list **head)
-{
-	ptrlist_remove_all(head);
-}
+//static inline void free_instruction_list(struct ptr_list **head)
+//{
+//	ptrlist_remove_all(head);
+//}
 
-static inline struct instruction * delete_last_instruction(struct ptr_list **head)
-{
-	return (struct instruction *) ptrlist_undo_last(head);
-}
+//static inline struct instruction * delete_last_instruction(struct ptr_list **head)
+//{
+//	return (struct instruction *) ptrlist_undo_last(head);
+//}
 
-static inline struct basic_block * delete_last_basic_block(struct ptr_list **head)
-{
-	return (struct basic_block *) ptrlist_delete_last(head);
-}
+//static inline struct basic_block * delete_last_basic_block(struct ptr_list **head)
+//{
+//	return (struct basic_block *) ptrlist_delete_last(head);
+//}
 
-static inline struct basic_block *first_basic_block(struct ptr_list *head)
-{
-	return (struct basic_block *) ptrlist_first(head);
-}
-static inline struct instruction *last_instruction(struct ptr_list *head)
-{
-	return (struct instruction *) ptrlist_last(head);
-}
+//static inline struct basic_block *first_basic_block(struct ptr_list *head)
+//{
+//	return (struct basic_block *) ptrlist_first(head);
+//}
+//static inline struct instruction *last_instruction(struct ptr_list *head)
+//{
+//	return (struct instruction *) ptrlist_last(head);
+//}
 
-static inline struct instruction *first_instruction(struct ptr_list *head)
-{
-	return (struct instruction *) ptrlist_first(head);
-}
+//static inline struct instruction *first_instruction(struct ptr_list *head)
+//{
+//	return (struct instruction *) ptrlist_first(head);
+//}
 
-static inline pseudo_t first_pseudo(struct ptr_list *head)
-{
-	return (pseudo_t) ptrlist_first(head);
-}
+//static inline pseudo_t first_pseudo(struct ptr_list *head)
+//{
+//	return (pseudo_t) ptrlist_first(head);
+//}
 
 
 

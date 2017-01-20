@@ -319,7 +319,7 @@ static int simplify_asr(struct instruction *insn, pseudo_t pseudo, long long val
 	unsigned int size = operand_size(insn, pseudo);
 
 	if (value >= size) {
-		warning(insn->pos, "right shift by bigger than source value");
+		warning(C, insn->pos, "right shift by bigger than source value");
 		return replace_with_pseudo(insn, value_pseudo(0));
 	}
 	if (!value)
@@ -608,7 +608,7 @@ static int simplify_unop(struct instruction *insn)
 	return 0;
 }
 
-static int simplify_one_memop(struct instruction *insn, pseudo_t orig)
+static int simplify_one_memop(struct dmr_C *C, struct instruction *insn, pseudo_t orig)
 {
 	pseudo_t addr = insn->src;
 	pseudo_t new, off;
@@ -637,10 +637,10 @@ static int simplify_one_memop(struct instruction *insn, pseudo_t orig)
 offset:
 	/* Invalid code */
 	if (new == orig) {
-		if (new == VOID)
+		if (new == VOID(C))
 			return 0;
-		new = VOID;
-		warning(insn->pos, "crazy programmer");
+		new = VOID(C);
+		warning(C, insn->pos, "crazy programmer");
 	}
 	insn->offset += (unsigned int) off->value;
 	use_pseudo(insn, new, &insn->src);

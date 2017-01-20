@@ -73,9 +73,7 @@ extern void ptrlist_iter_set(struct ptr_list_iter *self, void *ptr);
 extern void ptrlist_destroy_all_allocated_nodes();
 
 static inline void **ptrlist_iter_this_address(struct ptr_list_iter *self) {
-	void **p = &self->__list->list_[self->__nr];
-	assert(p == (self->__list->list_ + self->__nr));
-	return p;
+	return &self->__list->list_[self->__nr];
 }
 
 #define FOR_EACH_PTR(list, var) \

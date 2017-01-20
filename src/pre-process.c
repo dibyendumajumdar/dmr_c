@@ -78,7 +78,7 @@
 
 static struct token *alloc_token(struct dmr_C *C, struct position *pos)
 {
-	struct token *token = allocator_allocate(&C->token_allocator, 0);
+	struct token *token = (struct token *)allocator_allocate(&C->token_allocator, 0);
 
 	token->pos.stream = pos->stream;
 	token->pos.line = pos->line;
@@ -93,7 +93,7 @@ static int expand(struct dmr_C *C, struct token **, struct symbol *);
 static void replace_with_string(struct dmr_C *C, struct token *token, const char *str)
 {
 	int size = (int) strlen(str) + 1;
-	struct string *s = allocator_allocate(&C->string_allocator, size);
+	struct string *s = (struct string *)allocator_allocate(&C->string_allocator, size);
 
 	s->length = size;
 	memcpy(s->data, str, size);
@@ -145,7 +145,6 @@ static int expand_one_symbol(struct dmr_C *C, struct token **list)
 {
 	struct token *token = *list;
 	struct symbol *sym;
-	static time_t t = 0;
 
 	if (token->pos.noexpand)
 		return 1;
@@ -160,14 +159,14 @@ static int expand_one_symbol(struct dmr_C *C, struct token **list)
 	} else if (token->ident == C->S->__FILE___ident) {
 		replace_with_string(C, token, stream_name(C, token->pos.stream));
 	} else if (token->ident == C->S->__DATE___ident) {
-		if (!t)
-			time(&t);
-		strftime(C->date_buffer, 12, "%b %e %Y", localtime(&t));
+		if (!C->t)
+			time(&C->t);
+		strftime(C->date_buffer, 12, "%b %e %Y", localtime(&C->t));
 		replace_with_string(C, token, C->date_buffer);
 	} else if (token->ident == C->S->__TIME___ident) {
-		if (!t)
-			time(&t);
-		strftime(C->date_buffer, 9, "%T", localtime(&t));
+		if (!C->t)
+			time(&C->t);
+		strftime(C->date_buffer, 9, "%T", localtime(&C->t));
 		replace_with_string(C, token, C->date_buffer);
 	}
 	return 1;
@@ -333,7 +332,7 @@ static struct token *dup_list(struct dmr_C *C, struct token *list)
 	struct token **p = &res;
 
 	while (!eof_token(list)) {
-		struct token *newtok = allocator_allocate(&C->token_allocator, 0);
+		struct token *newtok = (struct token *)allocator_allocate(&C->token_allocator, 0);
 		*newtok = *list;
 		*p = newtok;
 		p = &newtok->next;
@@ -373,8 +372,8 @@ static struct token *stringify(struct dmr_C *C, struct token *arg)
 {
 	const char *s = show_token_sequence(C, arg, 1);
 	int size = (int) strlen(s)+1;
-	struct token *token = allocator_allocate(&C->token_allocator, 0);
-	struct string *string = allocator_allocate(&C->string_allocator, size);
+	struct token *token = (struct token *)allocator_allocate(&C->token_allocator, 0);
+	struct string *string = (struct string *)allocator_allocate(&C->string_allocator, size);
 
 	memcpy(string->data, s, size);
 	string->length = size;
@@ -692,7 +691,7 @@ static int expand(struct dmr_C *C, struct token **list, struct symbol *sym)
 #ifndef _MSC_VER
 	struct arg args[nargs];
 #else
-  struct arg *args = alloca(sizeof(struct arg)*nargs);
+	struct arg *args = (struct arg *)alloca(sizeof(struct arg)*nargs);
 #endif
 
 	if (expanding->tainted) {
@@ -833,24 +832,19 @@ static int try_include(struct dmr_C *C, const char *path, const char *filename, 
 {
 	int fd;
 	int plen = (int) strlen(path);
-#ifndef _WIN32
-  static char fullname[1024];
-#else
-	static char fullname[1024];
-#endif
 
-	memcpy(fullname, path, plen);
+	memcpy(C->fullname, path, plen);
 	if (plen && path[plen-1] != '/') {
-		fullname[plen] = '/';
+		C->fullname[plen] = '/';
 		plen++;
 	}
-	memcpy(fullname+plen, filename, flen);
-	if (already_tokenized(C, fullname))
+	memcpy(C->fullname+plen, filename, flen);
+	if (already_tokenized(C, C->fullname))
 		return 1;
-	fd = open(fullname, O_RDONLY);
+	fd = open(C->fullname, O_RDONLY);
 	if (fd >= 0) {
 		char * streamname = (char *)allocator_allocate(&C->byte_allocator, plen + flen);
-		memcpy(streamname, fullname, plen + flen);
+		memcpy(streamname, C->fullname, plen + flen);
 		*where = tokenize(C, streamname, fd, *where, next_path);
 		close(fd);
 		return 1;

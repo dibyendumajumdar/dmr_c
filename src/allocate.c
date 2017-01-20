@@ -173,7 +173,7 @@ int test_allocator() {
   struct allocator alloc;
   allocator_init(&alloc, "foo", sizeof(struct foo), __alignof__(struct foo),
                  sizeof(struct allocation_blob) + sizeof(struct foo) * 2);
-  struct foo *t1 = allocator_allocate(&alloc, 0);
+  struct foo *t1 = (struct foo *)allocator_allocate(&alloc, 0);
   if (t1 == NULL)
     return 1;
   if (alloc.alignment_ != __alignof__(struct foo))
@@ -182,19 +182,19 @@ int test_allocator() {
     return 1;
   if (alloc.freelist_ != NULL)
     return 1;
-  struct foo *t2 = allocator_allocate(&alloc, 0);
+  struct foo *t2 = (struct foo *)allocator_allocate(&alloc, 0);
   if (t2 != t1 + 1)
     return 1;
   //allocator_show_allocations(&alloc);
   allocator_free(&alloc, t1);
   allocator_free(&alloc, t2);
-  struct foo *t3 = allocator_allocate(&alloc, 0);
+  struct foo *t3 = (struct foo *)allocator_allocate(&alloc, 0);
   if (t3 != t2)
     return 1;
-  struct foo *t4 = allocator_allocate(&alloc, 0);
+  struct foo *t4 = (struct foo *)allocator_allocate(&alloc, 0);
   if (t4 != t1)
     return 1;
-  struct foo *t5 = allocator_allocate(&alloc, 0);
+  struct foo *t5 = (struct foo *)allocator_allocate(&alloc, 0);
   (void)t5;
   if (alloc.total_bytes !=
       (sizeof(struct allocation_blob) + sizeof(struct foo) * 2) * 2)

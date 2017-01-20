@@ -5,6 +5,7 @@
 
 #include <stddef.h>
 #include <stdlib.h>
+#include <time.h>
 
 /*
 * Basic helper routine descriptions for 'sparse'.
@@ -151,6 +152,8 @@ struct dmr_C {
 	char preprocessor_mergebuffer[512];
 	char preprocessor_tokenseqbuffer[256];
 	int preprocessing;
+	time_t t;
+	char fullname[1024];
 };
 
 extern struct dmr_C *new_dmr_C();

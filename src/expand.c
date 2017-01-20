@@ -539,27 +539,27 @@ static int expand_compare(struct dmr_C *C, struct expression *expr)
 static int expand_conditional(struct dmr_C *C, struct expression *expr)
 {
 	struct expression *cond = expr->conditional;
-	struct expression *true = expr->cond_true;
-	struct expression *false = expr->cond_false;
+	struct expression *truee = expr->cond_true;
+	struct expression *falsee = expr->cond_false;
 	int cost, cond_cost;
 
 	cond_cost = expand_expression(C, cond);
 	if (cond->type == EXPR_VALUE) {
 		unsigned flags = expr->flags;
 		if (!cond->value)
-			true = false;
-		if (!true)
-			true = cond;
-		cost = expand_expression(C, true);
-		*expr = *true;
+			truee = falsee;
+		if (!truee)
+			truee = cond;
+		cost = expand_expression(C, truee);
+		*expr = *truee;
 		expr->flags = flags;
 		if (expr->type == EXPR_VALUE)
 			expr->taint |= cond->taint;
 		return cost;
 	}
 
-	cost = expand_expression(C, true);
-	cost += expand_expression(C, false);
+	cost = expand_expression(C, truee);
+	cost += expand_expression(C, falsee);
 
 	if (cost < SELECT_COST) {
 		expr->type = EXPR_SELECT;
@@ -926,8 +926,8 @@ static unsigned long bit_offset(struct dmr_C *C, const struct expression *expr)
 static int compare_expressions(void *userdata, const void *_a, const void *_b)
 {
 	struct dmr_C *C = (struct dmr_C *) userdata;
-	const struct expression *a = _a;
-	const struct expression *b = _b;
+	const struct expression *a = (const struct expression *)_a;
+	const struct expression *b = (const struct expression *)_b;
 	unsigned long a_pos = bit_offset(C, a);
 	unsigned long b_pos = bit_offset(C, b);
 

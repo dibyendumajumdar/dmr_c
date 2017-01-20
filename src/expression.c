@@ -116,7 +116,7 @@ static struct symbol *handle_func(struct dmr_C *C, struct token *token)
 	decl->ns = NS_SYMBOL;
 
 	len = C->current_fn->ident->len;
-	string = allocator_allocate(&C->string_allocator, len + 1);
+	string = (struct string *)allocator_allocate(&C->string_allocator, len + 1);
 	memcpy(string->data, C->current_fn->ident->name, len);
 	string->data[len] = 0;
 	string->length = len + 1;

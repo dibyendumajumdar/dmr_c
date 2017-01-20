@@ -202,7 +202,7 @@ extern int expand_symbol(struct dmr_C *C, struct symbol *);
 
 static inline struct expression *alloc_expression(struct dmr_C *C, struct position pos, int type)
 {
-	struct expression *expr = allocator_allocate(&C->expression_allocator, 0);
+	struct expression *expr = (struct expression *)allocator_allocate(&C->expression_allocator, 0);
 	expr->type = (enum expression_type)type;
 	expr->pos = pos;
 	return expr;
@@ -211,7 +211,7 @@ static inline struct expression *alloc_expression(struct dmr_C *C, struct positi
 static inline struct expression *alloc_const_expression(struct dmr_C *C, struct position pos,
 							int value)
 {
-	struct expression *expr = allocator_allocate(&C->expression_allocator, 0);
+	struct expression *expr = (struct expression *)allocator_allocate(&C->expression_allocator, 0);
 	expr->type = EXPR_VALUE;
 	expr->pos = pos;
 	expr->value = value;

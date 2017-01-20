@@ -352,7 +352,7 @@ int init_stream(struct dmr_C *C, const char *name, int fd,
 
 static struct token *alloc_token(struct dmr_C *C, struct stream_t *stream)
 {
-	struct token *token = allocator_allocate(&C->token_allocator, 0);
+	struct token *token = (struct token *)allocator_allocate(&C->token_allocator, 0);
 	token->pos = stream_pos(stream);
 	return token;
 }
@@ -558,7 +558,7 @@ static int get_one_number(struct dmr_C *C, int c, int next,
 
 	*p++ = 0;
 	len = p - buffer;
-	buf = allocator_allocate(&C->byte_allocator, len);
+	buf = (char *)allocator_allocate(&C->byte_allocator, len);
 	memcpy(buf, buffer, len);
 
 	token = stream->token;
@@ -630,7 +630,7 @@ static int eat_string(struct dmr_C *C, int next, struct stream_t *stream,
 		memcpy(token->embedded, buffer, 4);
 	} else {
 		token_type(token) = type;
-		string = allocator_allocate(&C->string_allocator, len + 1);
+		string = (struct string *)allocator_allocate(&C->string_allocator, len + 1);
 		memcpy(string->data, buffer, len);
 		string->data[len] = '\0';
 		string->length = len + 1;
@@ -781,7 +781,7 @@ void show_identifier_stats(struct dmr_C *C)
 
 static struct ident *alloc_ident(struct dmr_C *C, const char *name, size_t len)
 {
-	struct ident *ident = allocator_allocate(&C->ident_allocator, len);
+	struct ident *ident = (struct ident *)allocator_allocate(&C->ident_allocator, len);
 	ident->symbols = NULL;
 	assert(len <= 256);
 	ident->len = (unsigned char)len;
@@ -854,7 +854,7 @@ struct token *built_in_token(struct dmr_C *C, int stream, const char *name)
 {
 	struct token *token;
 
-	token = allocator_allocate(&C->token_allocator, 0);
+	token = (struct token *)allocator_allocate(&C->token_allocator, 0);
 	token->pos.stream = stream;
 	token_type(token) = TOKEN_IDENT;
 	token->ident = built_in_ident(C, name);

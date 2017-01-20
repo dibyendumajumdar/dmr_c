@@ -160,7 +160,7 @@ struct token *get_string_constant(struct dmr_C *C, struct token *token, struct e
 	}
 
 	if (len >= (int)string->length)	/* can't cannibalize */
-		string = allocator_allocate(&C->string_allocator, len+1);
+		string = (struct string *)allocator_allocate(&C->string_allocator, len+1);
 	string->length = len+1;
 	memcpy(string->data, buffer, len);
 	string->data[len] = '\0';

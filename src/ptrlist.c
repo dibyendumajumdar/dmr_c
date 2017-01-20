@@ -44,7 +44,7 @@ void ptrlist_destroy_all_allocated_nodes() {
 void ptrlist_split_node(struct ptr_list *head)
 {
 	int old = head->nr_, nr = old / 2;
-	struct ptr_list *newlist = allocator_allocate(&ptrlist_node_allocator, 0);
+	struct ptr_list *newlist = (struct ptr_list *)allocator_allocate(&ptrlist_node_allocator, 0);
 	struct ptr_list *next = head->next_;
 
 	old -= nr;
@@ -169,7 +169,7 @@ void **ptrlist_add(struct ptr_list **listp, void *ptr) {
   int nr;
 
   if (!list || (nr = (last = list->prev_)->nr_) >= N_) {
-    struct ptr_list *newlist = allocator_allocate(&ptrlist_node_allocator, 0);
+    struct ptr_list *newlist = (struct ptr_list *)allocator_allocate(&ptrlist_node_allocator, 0);
     if (!list) {
       newlist->next_ = newlist;
       newlist->prev_ = newlist;
@@ -612,8 +612,8 @@ void ptrlist_sort(struct ptr_list **plist, void *userdata,
 }
 
 static int int_cmp(void *ud, const void *_a, const void *_b) {
-  const int *a = _a;
-  const int *b = _b;
+  const int *a = (const int *)_a;
+  const int *b = (const int *)_b;
   return *a - *b;
 }
 
@@ -632,7 +632,7 @@ static int test_sort() {
   struct ptr_list *int_list = NULL;
 
   for (i = 0; i < N; i++) {
-    e = allocator_allocate(&int_allocator, 0);
+    e = (int*)allocator_allocate(&int_allocator, 0);
     *e = rand();
     ptrlist_add(&int_list, e);
   }
@@ -645,8 +645,8 @@ static int test_sort() {
   int *p = NULL;
   struct ptr_list_iter iter = ptrlist_iterator_forward(int_list);
   int count = 0;
-  for (int *k = ptrlist_iter_next(&iter); k != NULL;
-       k = ptrlist_iter_next(&iter)) {
+  for (int *k = (int*)ptrlist_iter_next(&iter); k != NULL;
+       k = (int*)ptrlist_iter_next(&iter)) {
     if (p != NULL) {
       if (*k < *p)
         return 1;
@@ -673,8 +673,8 @@ static int test_sort() {
   p = NULL;
   iter = ptrlist_iterator_forward(int_list);
   count = 0;
-  for (int *k = ptrlist_iter_next(&iter); k != NULL;
-       k = ptrlist_iter_next(&iter)) {
+  for (int *k = (int*)ptrlist_iter_next(&iter); k != NULL;
+       k = (int*)ptrlist_iter_next(&iter)) {
     if (p != NULL) {
       if (*k < *p)
         return 1;
@@ -704,7 +704,7 @@ static int test_ptrlist_basics() {
 	struct ptr_list *token_list = NULL;
 	if (ptrlist_size(token_list) != 0)
 		return 1;
-	struct mytoken *tok1 = allocator_allocate(&token_allocator, 0);
+	struct mytoken *tok1 = (struct mytoken *)allocator_allocate(&token_allocator, 0);
 	struct mytoken **tok1p = (struct mytoken **)ptrlist_add(&token_list, tok1);
 	if (ptrlist_size(token_list) != 1)
 		return 1;
@@ -714,19 +714,19 @@ static int test_ptrlist_basics() {
 		return 1;
 	if (ptrlist_last(token_list) != tok1)
 		return 1;
-	struct mytoken *tok2 = allocator_allocate(&token_allocator, 0);
+	struct mytoken *tok2 = (struct mytoken *)allocator_allocate(&token_allocator, 0);
 	struct mytoken **tok2p = (struct mytoken **)ptrlist_add(&token_list, tok2);
 	if (ptrlist_size(token_list) != 2)
 		return 1;
-	struct mytoken *tok3 = allocator_allocate(&token_allocator, 0);
+	struct mytoken *tok3 = (struct mytoken *)allocator_allocate(&token_allocator, 0);
 	ptrlist_add(&token_list, tok3);
 	if (ptrlist_size(token_list) != 3)
 		return 1;
-	struct mytoken *tok4 = allocator_allocate(&token_allocator, 0);
+	struct mytoken *tok4 = (struct mytoken *)allocator_allocate(&token_allocator, 0);
 	ptrlist_add(&token_list, tok4);
 	if (ptrlist_size(token_list) != 4)
 		return 1;
-	struct mytoken *tok5 = allocator_allocate(&token_allocator, 0);
+	struct mytoken *tok5 = (struct mytoken *)allocator_allocate(&token_allocator, 0);
 	struct mytoken **tok5p = (struct mytoken **)ptrlist_add(&token_list, tok5);
 	if (ptrlist_size(token_list) != 5)
 		return 1;
@@ -769,7 +769,7 @@ static int test_ptrlist_basics() {
 	const int Z = Y - 1;
 	struct ptr_list_iter iter1 = ptrlist_iterator_forward(token_list);
 	for (int i = 0; i < X; i++) {
-		struct mytoken *tk = ptrlist_iter_next(&iter1);
+		struct mytoken *tk = (struct mytoken *)ptrlist_iter_next(&iter1);
 		if (tk == NULL) {
 			if (i == Y)
 				break;
@@ -780,7 +780,7 @@ static int test_ptrlist_basics() {
 	}
 	struct ptr_list_iter iter2 = ptrlist_iterator_reverse(token_list);
 	for (int i = 0; i < X; i++) {
-		struct mytoken *tk = ptrlist_iter_prev(&iter2);
+		struct mytoken *tk = (struct mytoken *)ptrlist_iter_prev(&iter2);
 		if (tk == NULL) {
 			if (i == Y)
 				break;
@@ -789,7 +789,7 @@ static int test_ptrlist_basics() {
 		if (tk != toks[Z - i])
 			return 1;
 	}
-	struct mytoken *tok0 = allocator_allocate(&token_allocator, 0);
+	struct mytoken *tok0 = (struct mytoken *)allocator_allocate(&token_allocator, 0);
 	struct ptr_list_iter iter3 = ptrlist_iterator_forward(token_list);
 	if (!ptrlist_iter_next(&iter3))
 		return 1;
@@ -806,17 +806,17 @@ static int test_ptrlist_basics() {
 		__alignof__(struct mystruct), CHUNK);
 	struct ptr_list *mystruct_list = NULL;
 
-	struct mystruct *s1 = allocator_allocate(&mystruct_allocator, 0);
+	struct mystruct *s1 = (struct mystruct *)allocator_allocate(&mystruct_allocator, 0);
 	s1->i = 1;
-	struct mystruct *s2 = allocator_allocate(&mystruct_allocator, 0);
+	struct mystruct *s2 = (struct mystruct *)allocator_allocate(&mystruct_allocator, 0);
 	s2->i = 2;
-	struct mystruct *s3 = allocator_allocate(&mystruct_allocator, 0);
+	struct mystruct *s3 = (struct mystruct *)allocator_allocate(&mystruct_allocator, 0);
 	s3->i = 3;
-	struct mystruct *s4 = allocator_allocate(&mystruct_allocator, 0);
+	struct mystruct *s4 = (struct mystruct *)allocator_allocate(&mystruct_allocator, 0);
 	s4->i = 4;
-	struct mystruct *s5 = allocator_allocate(&mystruct_allocator, 0);
+	struct mystruct *s5 = (struct mystruct *)allocator_allocate(&mystruct_allocator, 0);
 	s5->i = 5;
-	struct mystruct *s6 = allocator_allocate(&mystruct_allocator, 0);
+	struct mystruct *s6 = (struct mystruct *)allocator_allocate(&mystruct_allocator, 0);
 	s6->i = 6;
 
 	ptrlist_add(&mystruct_list, s1);
@@ -837,8 +837,8 @@ static int test_ptrlist_basics() {
 	if (ptrlist_remove(&mystruct_list, s3, 1) != 0)
 		return 1;
 	struct ptr_list_iter iter4 = ptrlist_iterator_forward(mystruct_list);
-	for (struct mystruct *p = ptrlist_iter_next(&iter4); p != NULL;
-		p = ptrlist_iter_next(&iter4)) {
+	for (struct mystruct *p = (struct mystruct *)ptrlist_iter_next(&iter4); p != NULL;
+		p = (struct mystruct *)ptrlist_iter_next(&iter4)) {
 		if (p->i == 4)
 			ptrlist_iter_remove(&iter4);
 	}
@@ -850,8 +850,8 @@ static int test_ptrlist_basics() {
 
 	int i = 0;
 	struct ptr_list_iter iter5 = ptrlist_iterator_forward(mystruct_list);
-	for (struct mystruct *p = ptrlist_iter_next(&iter5); p != NULL;
-		p = ptrlist_iter_next(&iter5)) {
+	for (struct mystruct *p = (struct mystruct *)ptrlist_iter_next(&iter5); p != NULL;
+		p = (struct mystruct *)ptrlist_iter_next(&iter5)) {
 		if (i == 4)
 			return 1;
 		serial3_got[i++] = p;

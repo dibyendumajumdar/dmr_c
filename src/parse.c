@@ -696,7 +696,7 @@ static int SENTINEL_ATTR match_idents(struct dmr_C *C, struct token *token, ...)
 
 struct statement *alloc_statement(struct dmr_C *C, struct position pos, int type)
 {
-	struct statement *stmt = allocator_allocate(&C->statement_allocator, 0);
+	struct statement *stmt = (struct statement *)allocator_allocate(&C->statement_allocator, 0);
 	stmt->type = type;
 	stmt->pos = pos;
 	return stmt;
@@ -1197,7 +1197,7 @@ static struct token *attribute_mode(struct dmr_C *C, struct token *token, struct
 
 static struct token *attribute_context(struct dmr_C *C, struct token *token, struct symbol *attr, struct decl_state *ctx)
 {
-	struct context *context = allocator_allocate(&C->S->context_allocator, 0);  // FIXME alloc_context()?
+	struct context *context = (struct context *)allocator_allocate(&C->S->context_allocator, 0);  // FIXME alloc_context()?
 	struct expression *args[3];
 	int argc = 0;
 
@@ -1321,21 +1321,21 @@ static unsigned long storage_modifiers(struct dmr_C *C, struct decl_state *ctx)
 		| (ctx->is_tls ? MOD_TLS : 0);
 }
 
-static void set_storage_class(struct dmr_C *C, struct position *pos, struct decl_state *ctx, int class)
+static void set_storage_class(struct dmr_C *C, struct position *pos, struct decl_state *ctx, int klass)
 {
 	/* __thread can be used alone, or with extern or static */
-	if (ctx->is_tls && (class != SStatic && class != SExtern)) {
+	if (ctx->is_tls && (klass != SStatic && klass != SExtern)) {
 		sparse_error(C, *pos, "__thread can only be used alone, or with "
 				"extern or static");
 		return;
 	}
 
 	if (!ctx->storage_class) {
-		ctx->storage_class = class;
+		ctx->storage_class = klass;
 		return;
 	}
-	if (ctx->storage_class == class)
-		sparse_error(C, *pos, "duplicate %s", storage_class[class]);
+	if (ctx->storage_class == klass)
+		sparse_error(C, *pos, "duplicate %s", storage_class[klass]);
 	else
 		sparse_error(C, *pos, "multiple storage classes");
 }
@@ -1886,7 +1886,7 @@ static struct token *parameter_declaration(struct dmr_C *C, struct token *token,
 struct token *typname(struct dmr_C *C, struct token *token, struct symbol **p, int *forced)
 {
 	struct decl_state ctx = {.prefer_abstract = 1};
-	int class;
+	int klass;
 	struct symbol *sym = alloc_symbol(C->S, token->pos, SYM_NODE);
 	*p = sym;
 	token = declaration_specifiers(C, token, &ctx);
@@ -1894,17 +1894,17 @@ struct token *typname(struct dmr_C *C, struct token *token, struct symbol **p, i
 	apply_modifiers(C, token->pos, &ctx);
 	sym->ctype = ctx.ctype;
 	sym->endpos = token->pos;
-	class = ctx.storage_class;
+	klass = ctx.storage_class;
 	if (forced) {
 		*forced = 0;
-		if (class == SForced) {
+		if (klass == SForced) {
 			*forced = 1;
-			class = 0;
+			klass = 0;
 		}
 	}
-	if (class)
+	if (klass)
 		warning(C, sym->pos, "storage class in typename (%s %s)",
-			storage_class[class], show_typename(C, sym));
+			storage_class[klass], show_typename(C, sym));
 	return token;
 }
 

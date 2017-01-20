@@ -6,7 +6,7 @@ enable_testing()
 
 if (MSVC)
     message( STATUS "MSVC selected" )
-    set(CMAKE_C_FLAGS_DEBUG "/Od /D_DEBUG /MDd /Zi /RTC1 /EHsc")
+    set(CMAKE_C_FLAGS_DEBUG "/TP /Od /D_DEBUG /MDd /Zi /RTC1 /EHsc")
     set(CMAKE_C_FLAGS_RELEASE "/DNDEBUG /O2 /MD /EHsc")
     set(CMAKE_C_FLAGS_RELWITHDEBINFO "/DNDEBUG /O2 /MDd /Zi /EHsc")
     set(CMAKE_C_FLAGS_MINSIZEREL "/DNDEBUG /O2 /MD /EHsc")

@@ -183,14 +183,14 @@ static struct expression * copy_expression(struct dmr_C *C, struct expression *e
 	case EXPR_SELECT:
 	case EXPR_CONDITIONAL: {
 		struct expression *cond = copy_expression(C, expr->conditional);
-		struct expression *true = copy_expression(C, expr->cond_true);
-		struct expression *false = copy_expression(C, expr->cond_false);
-		if (cond == expr->conditional && true == expr->cond_true && false == expr->cond_false)
+		struct expression *truee = copy_expression(C, expr->cond_true);
+		struct expression *falsee = copy_expression(C, expr->cond_false);
+		if (cond == expr->conditional && truee == expr->cond_true && falsee == expr->cond_false)
 			break;
 		expr = dup_expression(C, expr);
 		expr->conditional = cond;
-		expr->cond_true = true;
-		expr->cond_false = false;
+		expr->cond_true = truee;
+		expr->cond_false = falsee;
 		break;
 	}
 
@@ -304,10 +304,10 @@ static struct ptr_list *copy_asm_constraints(struct dmr_C *C, struct ptr_list *i
 	return out;
 }
 
-static void set_replace(struct dmr_C *C, struct symbol *old, struct symbol *new)
+static void set_replace(struct dmr_C *C, struct symbol *old, struct symbol *news)
 {
-	new->replace = old;
-	old->replace = new;
+	news->replace = old;
+	old->replace = news;
 }
 
 static void unset_replace(struct dmr_C *C, struct symbol *sym)
@@ -374,20 +374,20 @@ static struct statement *copy_one_statement(struct dmr_C *C, struct statement *s
 	}
 	case STMT_IF: {
 		struct expression *cond = stmt->if_conditional;
-		struct statement *true = stmt->if_true;
-		struct statement *false = stmt->if_false;
+		struct statement *trues = stmt->if_true;
+		struct statement *falses = stmt->if_false;
 
 		cond = copy_expression(C, cond);
-		true = copy_one_statement(C, true);
-		false = copy_one_statement(C, false);
+		trues = copy_one_statement(C, trues);
+		falses = copy_one_statement(C, falses);
 		if (stmt->if_conditional == cond &&
-		    stmt->if_true == true &&
-		    stmt->if_false == false)
+		    stmt->if_true == trues &&
+		    stmt->if_false == falses)
 			break;
 		stmt = dup_statement(C, stmt);
 		stmt->if_conditional = cond;
-		stmt->if_true = true;
-		stmt->if_false = false;
+		stmt->if_true = trues;
+		stmt->if_false = falses;
 		break;
 	}
 	case STMT_RETURN: {

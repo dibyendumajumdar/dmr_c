@@ -40,7 +40,7 @@
 #include <scope.h>
 
 void init_scope(struct dmr_C *C) {
-	struct scope *scope = allocator_allocate(&C->scope_allocator, 0);
+	struct scope *scope = (struct scope *)allocator_allocate(&C->scope_allocator, 0);
 	memset(scope, 0, sizeof(*scope));
 	scope->next = scope;
 	C->builtin_scope = scope;
@@ -61,7 +61,7 @@ void bind_scope(struct dmr_C *C, struct symbol *sym, struct scope *scope)
 
 static void start_scope(struct dmr_C *C, struct scope **s)
 {
-	struct scope *scope = allocator_allocate(&C->scope_allocator, 0);
+	struct scope *scope = (struct scope *)allocator_allocate(&C->scope_allocator, 0);
 	memset(scope, 0, sizeof(*scope));
 	scope->next = *s;
 	*s = scope;
@@ -69,7 +69,7 @@ static void start_scope(struct dmr_C *C, struct scope **s)
 
 void start_file_scope(struct dmr_C *C)
 {
-	struct scope *scope = allocator_allocate(&C->scope_allocator, 0);
+	struct scope *scope = (struct scope *)allocator_allocate(&C->scope_allocator, 0);
 
 	memset(scope, 0, sizeof(*scope));
 	scope->next = C->builtin_scope;
@@ -109,7 +109,6 @@ static void end_scope(struct dmr_C *C, struct scope **s)
 	*s = scope->next;
 	scope->symbols = NULL;
 	FOR_EACH_PTR(symbols, sym) {
-
 		remove_symbol_scope(C, sym);
 	} END_FOR_EACH_PTR(sym);
 }

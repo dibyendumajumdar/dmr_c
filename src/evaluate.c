@@ -49,6 +49,7 @@
 
 static struct symbol *degenerate(struct dmr_C *C, struct expression *expr);
 static struct symbol *evaluate_symbol(struct dmr_C *C, struct symbol *sym);
+static void examine_fn_arguments(struct dmr_C *C, struct symbol *fn);
 
 static struct symbol *evaluate_symbol_expression(struct dmr_C *C, struct expression *expr)
 {
@@ -192,10 +193,10 @@ left:
 	return left;
 }
 
-static int same_cast_type(struct dmr_C *C, struct symbol *orig, struct symbol *new)
+static int same_cast_type(struct dmr_C *C, struct symbol *orig, struct symbol *news)
 {
-	return orig->bit_size == new->bit_size &&
-	       orig->bit_offset == new->bit_offset;
+	return orig->bit_size == news->bit_size &&
+	       orig->bit_offset == news->bit_offset;
 }
 
 static struct symbol *base_type(struct dmr_C *C, struct symbol *node, unsigned long *modp, unsigned long *asp)
@@ -217,16 +218,16 @@ static struct symbol *base_type(struct dmr_C *C, struct symbol *node, unsigned l
 	return node;
 }
 
-static int is_same_type(struct dmr_C *C, struct expression *expr, struct symbol *new)
+static int is_same_type(struct dmr_C *C, struct expression *expr, struct symbol *news)
 {
 	struct symbol *old = expr->ctype;
 	unsigned long oldmod, newmod, oldas, newas;
 
 	old = base_type(C, old, &oldmod, &oldas);
-	new = base_type(C, new, &newmod, &newas);
+	news = base_type(C, news, &newmod, &newas);
 
 	/* Same base type, same address space? */
-	if (old == new && oldas == newas) {
+	if (old == news && oldas == newas) {
 		unsigned long difmod;
 
 		/* Check the modifier bits. */
@@ -377,7 +378,7 @@ static inline int classify_type(struct dmr_C *C, struct symbol *type, struct sym
 	return type_class[type->type];
 }
 
-#define is_int(class) ((class & (TYPE_NUM | TYPE_FLOAT)) == TYPE_NUM)
+#define is_int(klass) ((klass & (TYPE_NUM | TYPE_FLOAT)) == TYPE_NUM)
 
 static inline int is_string_type(struct dmr_C *C, struct symbol *type)
 {
@@ -500,10 +501,10 @@ static struct symbol *restricted_binop_type(struct dmr_C *C, int op,
 }
 
 static inline void unrestrict(struct dmr_C *C, struct expression *expr,
-			      int class, struct symbol **ctype)
+			      int klass, struct symbol **ctype)
 {
-	if (class & TYPE_RESTRICT) {
-		if (class & TYPE_FOULED)
+	if (klass & TYPE_RESTRICT) {
+		if (klass & TYPE_FOULED)
 			*ctype = unfoul(C, *ctype);
 		warning(C, expr->pos, "%s degrades to integer",
 			show_typename(C, *ctype));
@@ -623,8 +624,6 @@ static struct symbol *evaluate_ptr_add(struct dmr_C *C, struct expression *expr,
 	expr->right = index;
 	return ctype;
 }
-
-static void examine_fn_arguments(struct dmr_C *C, struct symbol *fn);
 
 #define MOD_IGN (MOD_VOLATILE | MOD_CONST)
 
@@ -1100,7 +1099,7 @@ OK:
  */
 static struct symbol *evaluate_conditional_expression(struct dmr_C *C, struct expression *expr)
 {
-	struct expression **true;
+	struct expression **truee;
 	struct symbol *ctype, *ltype, *rtype, *lbase, *rbase;
 	int lclass, rclass;
 	const char * typediff;
@@ -1114,18 +1113,18 @@ static struct symbol *evaluate_conditional_expression(struct dmr_C *C, struct ex
 	ctype = degenerate(C, expr->conditional);
 	rtype = degenerate(C, expr->cond_false);
 
-	true = &expr->conditional;
+	truee = &expr->conditional;
 	ltype = ctype;
 	if (expr->cond_true) {
 		if (!evaluate_expression(C, expr->cond_true))
 			return NULL;
 		ltype = degenerate(C, expr->cond_true);
-		true = &expr->cond_true;
+		truee = &expr->cond_true;
 	}
 
 	if (expr->flags) {
 		int flags = expr->conditional->flags & Int_const_expr;
-		flags &= (*true)->flags & expr->cond_false->flags;
+		flags &= (*truee)->flags & expr->cond_false->flags;
 		if (!flags)
 			expr->flags = 0;
 	}
@@ -1133,27 +1132,27 @@ static struct symbol *evaluate_conditional_expression(struct dmr_C *C, struct ex
 	lclass = classify_type(C, ltype, &ltype);
 	rclass = classify_type(C, rtype, &rtype);
 	if (lclass & rclass & TYPE_NUM) {
-		ctype = usual_conversions(C, '?', *true, expr->cond_false,
+		ctype = usual_conversions(C, '?', *truee, expr->cond_false,
 					  lclass, rclass, ltype, rtype);
-		*true = cast_to(C, *true, ctype);
+		*truee = cast_to(C, *truee, ctype);
 		expr->cond_false = cast_to(C, expr->cond_false, ctype);
 		goto out;
 	}
 
 	if ((lclass | rclass) & TYPE_PTR) {
-		int is_null1 = is_null_pointer_constant(C, *true);
+		int is_null1 = is_null_pointer_constant(C, *truee);
 		int is_null2 = is_null_pointer_constant(C, expr->cond_false);
 
 		if (is_null1 && is_null2) {
-			*true = cast_to(C, *true, &C->S->ptr_ctype);
+			*truee = cast_to(C, *truee, &C->S->ptr_ctype);
 			expr->cond_false = cast_to(C, expr->cond_false, &C->S->ptr_ctype);
 			ctype = &C->S->ptr_ctype;
 			goto out;
 		}
 		if (is_null1 && (rclass & TYPE_PTR)) {
 			if (is_null1 == 2)
-				bad_null(C, *true);
-			*true = cast_to(C, *true, rtype);
+				bad_null(C, *truee);
+			*truee = cast_to(C, *truee, rtype);
 			ctype = rtype;
 			goto out;
 		}
@@ -1221,7 +1220,7 @@ Qual:
 		sym->ctype.modifiers |= qual;
 		ctype = sym;
 	}
-	*true = cast_to(C, *true, ctype);
+	*truee = cast_to(C, *truee, ctype);
 	expr->cond_false = cast_to(C, expr->cond_false, ctype);
 	goto out;
 }
@@ -1719,10 +1718,10 @@ static struct symbol *evaluate_postop(struct dmr_C *C, struct expression *expr)
 {
 	struct expression *op = expr->unop;
 	struct symbol *ctype = op->ctype;
-	int class = classify_type(C, ctype, &ctype);
+	int klass = classify_type(C, ctype, &ctype);
 	int multiply = 0;
 
-	if (!class || class & TYPE_COMPOUND) {
+	if (!klass || klass & TYPE_COMPOUND) {
 		expression_error(C, expr, "need scalar for ++/--");
 		return NULL;
 	}
@@ -1731,12 +1730,12 @@ static struct symbol *evaluate_postop(struct dmr_C *C, struct expression *expr)
 		return NULL;
 	}
 
-	if ((class & TYPE_RESTRICT) && restricted_unop(C, expr->op, &ctype))
-		unrestrict(C, expr, class, &ctype);
+	if ((klass & TYPE_RESTRICT) && restricted_unop(C, expr->op, &ctype))
+		unrestrict(C, expr, klass, &ctype);
 
-	if (class & TYPE_NUM) {
+	if (klass & TYPE_NUM) {
 		multiply = 1;
-	} else if (class == TYPE_PTR) {
+	} else if (klass == TYPE_PTR) {
 		struct symbol *target = examine_pointer_target(C->S, ctype);
 		if (!is_function(target))
 			multiply = bits_to_bytes(C->target, target->bit_size);
@@ -1756,16 +1755,16 @@ static struct symbol *evaluate_postop(struct dmr_C *C, struct expression *expr)
 static struct symbol *evaluate_sign(struct dmr_C *C, struct expression *expr)
 {
 	struct symbol *ctype = expr->unop->ctype;
-	int class = classify_type(C, ctype, &ctype);
+	int klass = classify_type(C, ctype, &ctype);
 	if (expr->flags && !(expr->unop->flags & Int_const_expr))
 		expr->flags = 0;
 	/* should be an arithmetic type */
-	if (!(class & TYPE_NUM))
+	if (!(klass & TYPE_NUM))
 		return bad_expr_type(C, expr);
-	if (class & TYPE_RESTRICT)
+	if (klass & TYPE_RESTRICT)
 		goto Restr;
 Normal:
-	if (!(class & TYPE_FLOAT)) {
+	if (!(klass & TYPE_FLOAT)) {
 		ctype = integer_promotion(C, ctype);
 		expr->unop = cast_to(C, expr->unop, ctype);
 	} else if (expr->op != '~') {
@@ -1779,7 +1778,7 @@ Normal:
 	return ctype;
 Restr:
 	if (restricted_unop(C, expr->op, &ctype))
-		unrestrict(C, expr, class, &ctype);
+		unrestrict(C, expr, klass, &ctype);
 	goto Normal;
 }
 
@@ -2148,14 +2147,14 @@ static int evaluate_arguments(struct dmr_C *C, struct symbol *f, struct symbol *
 		target = argtype;
 		if (!target) {
 			struct symbol *type;
-			int class = classify_type(C, ctype, &type);
-			if (is_int(class)) {
+			int klass = classify_type(C, ctype, &type);
+			if (is_int(klass)) {
 				*p = cast_to(C, expr, integer_promotion(C, type));
-			} else if (class & TYPE_FLOAT) {
+			} else if (klass & TYPE_FLOAT) {
 				unsigned long mod = type->ctype.modifiers;
 				if (!(mod & (MOD_LONG_ALL)))
 					*p = cast_to(C, expr, &C->S->double_ctype);
-			} else if (class & TYPE_PTR) {
+			} else if (klass & TYPE_PTR) {
 				if (expr->ctype == &C->S->null_ctype)
 					*p = cast_to(C, expr, &C->S->ptr_ctype);
 				else
@@ -2229,20 +2228,20 @@ static void excess(struct dmr_C *C, struct expression *e, const char *s)
 /*
  * implicit designator for the first element
  */
-static struct expression *first_subobject(struct dmr_C *C, struct symbol *ctype, int class,
+static struct expression *first_subobject(struct dmr_C *C, struct symbol *ctype, int klass,
 					  struct expression **v)
 {
-	struct expression *e = *v, *new;
+	struct expression *e = *v, *newe;
 
 	if (ctype->type == SYM_NODE)
 		ctype = ctype->ctype.base_type;
 
-	if (class & TYPE_PTR) { /* array */
+	if (klass & TYPE_PTR) { /* array */
 		if (!ctype->bit_size)
 			return NULL;
-		new = alloc_expression(C, e->pos, EXPR_INDEX);
-		new->idx_expression = e;
-		new->ctype = ctype->ctype.base_type;
+		newe = alloc_expression(C, e->pos, EXPR_INDEX);
+		newe->idx_expression = e;
+		newe->ctype = ctype->ctype.base_type;
 	} else  {
 		struct symbol *field, *p;
 		PREPARE_PTR_LIST(ctype->symbol_list, p);
@@ -2252,12 +2251,12 @@ static struct expression *first_subobject(struct dmr_C *C, struct symbol *ctype,
 		FINISH_PTR_LIST(p);
 		if (!field)
 			return NULL;
-		new = alloc_expression(C, e->pos, EXPR_IDENTIFIER);
-		new->ident_expression = e;
-		new->field = new->ctype = field;
+		newe = alloc_expression(C, e->pos, EXPR_IDENTIFIER);
+		newe->ident_expression = e;
+		newe->field = newe->ctype = field;
 	}
-	*v = new;
-	return new;
+	*v = newe;
+	return newe;
 }
 
 /*
@@ -2333,7 +2332,7 @@ static struct expression *next_designators(struct dmr_C *C, struct expression *o
 			     struct symbol *ctype,
 			     struct expression *e, struct expression **v)
 {
-	struct expression *new = NULL;
+	struct expression *newe = NULL;
 
 	if (!old)
 		return NULL;
@@ -2350,15 +2349,15 @@ static struct expression *next_designators(struct dmr_C *C, struct expression *o
 				return NULL;
 			}
 			copy = e;
-			*v = new = alloc_expression(C, e->pos, EXPR_INDEX);
+			*v = newe = alloc_expression(C, e->pos, EXPR_INDEX);
 		} else {
 			n = old->idx_to;
-			new = alloc_expression(C, e->pos, EXPR_INDEX);
+			newe = alloc_expression(C, e->pos, EXPR_INDEX);
 		}
 
-		new->idx_from = new->idx_to = n;
-		new->idx_expression = copy;
-		new->ctype = old->ctype;
+		newe->idx_from = newe->idx_to = n;
+		newe->idx_expression = copy;
+		newe->ctype = old->ctype;
 		convert_index(C, old);
 	} else if (old->type == EXPR_IDENTIFIER) {
 		struct expression *copy;
@@ -2373,29 +2372,29 @@ static struct expression *next_designators(struct dmr_C *C, struct expression *o
 				return NULL;
 			}
 			copy = e;
-			*v = new = alloc_expression(C, e->pos, EXPR_IDENTIFIER);
+			*v = newe = alloc_expression(C, e->pos, EXPR_IDENTIFIER);
 		} else {
 			field = old->field;
-			new = alloc_expression(C, e->pos, EXPR_IDENTIFIER);
+			newe = alloc_expression(C, e->pos, EXPR_IDENTIFIER);
 		}
 
-		new->field = field;
-		new->expr_ident = field->ident;
-		new->ident_expression = copy;
-		new->ctype = field;
+		newe->field = field;
+		newe->expr_ident = field->ident;
+		newe->ident_expression = copy;
+		newe->ctype = field;
 		convert_ident(C, old);
 	}
-	return new;
+	return newe;
 }
 
 static int handle_simple_initializer(struct dmr_C *C, struct expression **ep, int nested,
-				     int class, struct symbol *ctype);
+				     int klass, struct symbol *ctype);
 
 /*
  * deal with traversing subobjects [6.7.8(17,18,20)]
  */
 static void handle_list_initializer(struct dmr_C *C, struct expression *expr,
-				    int class, struct symbol *ctype)
+				    int klass, struct symbol *ctype)
 {
 	struct expression *e, *last = NULL, *top = NULL, *next;
 	int jumped = 0;
@@ -2409,12 +2408,12 @@ static void handle_list_initializer(struct dmr_C *C, struct expression *expr,
 			struct symbol *struct_sym;
 			if (!top) {
 				top = e;
-				last = first_subobject(C, ctype, class, &top);
+				last = first_subobject(C, ctype, klass, &top);
 			} else {
 				last = next_designators(C, last, ctype, e, &top);
 			}
 			if (!last) {
-				excess(C, e, class & TYPE_PTR ? "array" :
+				excess(C, e, klass & TYPE_PTR ? "array" :
 							"struct or union");
 				DELETE_CURRENT_PTR(e);
 				continue;
@@ -2546,7 +2545,7 @@ static struct expression *handle_scalar(struct dmr_C *C, struct expression *e, i
  * until we dig into the inner struct.
  */
 static int handle_simple_initializer(struct dmr_C *C, struct expression **ep, int nested,
-				     int class, struct symbol *ctype)
+				     int klass, struct symbol *ctype)
 {
 	int is_string = is_string_type(C, ctype);
 	struct expression *e = *ep, *p;
@@ -2556,7 +2555,7 @@ static int handle_simple_initializer(struct dmr_C *C, struct expression **ep, in
 		return 0;
 
 	/* scalar */
-	if (!(class & TYPE_COMPOUND)) {
+	if (!(klass & TYPE_COMPOUND)) {
 		e = handle_scalar(C, e, nested);
 		if (!e)
 			return 0;
@@ -2586,7 +2585,7 @@ static int handle_simple_initializer(struct dmr_C *C, struct expression **ep, in
 				goto String;
 			}
 		}
-		handle_list_initializer(C, e, class, ctype);
+		handle_list_initializer(C, e, klass, ctype);
 		return 1;
 	}
 
@@ -2600,7 +2599,7 @@ static int handle_simple_initializer(struct dmr_C *C, struct expression **ep, in
 		return 0;
 	}
 	/* struct or union can be initialized by compatible */
-	if (class != TYPE_COMPOUND)
+	if (klass != TYPE_COMPOUND)
 		return 0;
 	type = evaluate_expression(C, e);
 	if (!type)
@@ -2633,8 +2632,8 @@ String:
 static void evaluate_initializer(struct dmr_C *C, struct symbol *ctype, struct expression **ep)
 {
 	struct symbol *type;
-	int class = classify_type(C, ctype, &type);
-	if (!handle_simple_initializer(C, ep, 0, class, ctype))
+	int klass = classify_type(C, ctype, &type);
+	if (!handle_simple_initializer(C, ep, 0, klass, ctype))
 		expression_error(C, *ep, "invalid initializer");
 }
 
@@ -2862,7 +2861,7 @@ static struct symbol *evaluate_offsetof(struct dmr_C *C, struct expression *expr
 {
 	struct expression *e = expr->down;
 	struct symbol *ctype = expr->in;
-	int class;
+	int klass;
 
 	if (expr->op == '.') {
 		struct symbol *field;
@@ -2872,8 +2871,8 @@ static struct symbol *evaluate_offsetof(struct dmr_C *C, struct expression *expr
 			return NULL;
 		}
 		examine_symbol_type(C->S, ctype);
-		class = classify_type(C, ctype, &ctype);
-		if (class != TYPE_COMPOUND) {
+		klass = classify_type(C, ctype, &ctype);
+		if (klass != TYPE_COMPOUND) {
 			expression_error(C, expr, "expected structure or union");
 			return NULL;
 		}
@@ -2895,8 +2894,8 @@ static struct symbol *evaluate_offsetof(struct dmr_C *C, struct expression *expr
 			return NULL;
 		}
 		examine_symbol_type(C->S, ctype);
-		class = classify_type(C, ctype, &ctype);
-		if (class != (TYPE_COMPOUND | TYPE_PTR)) {
+		klass = classify_type(C, ctype, &ctype);
+		if (klass != (TYPE_COMPOUND | TYPE_PTR)) {
 			expression_error(C, expr, "expected array");
 			return NULL;
 		}
@@ -2930,7 +2929,7 @@ static struct symbol *evaluate_offsetof(struct dmr_C *C, struct expression *expr
 		}
 	}
 	if (e) {
-		struct expression *copy = allocator_allocate(&C->expression_allocator, 0);
+		struct expression *copy = (struct expression *)allocator_allocate(&C->expression_allocator, 0);
 		*copy = *expr;
 		if (e->type == EXPR_OFFSETOF)
 			e->in = ctype;

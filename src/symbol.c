@@ -71,7 +71,7 @@ struct symbol *lookup_symbol(struct ident *ident, enum namespace_type ns)
 
 struct context *alloc_context(struct global_symbols_t *S)
 {
-	return allocator_allocate(&S->context_allocator, 0);
+	return (struct context *)allocator_allocate(&S->context_allocator, 0);
 }
 
 struct symbol *alloc_symbol(struct global_symbols_t *S, struct position pos, int type)
@@ -519,13 +519,13 @@ struct symbol *examine_pointer_target(struct global_symbols_t *S, struct symbol 
 void create_fouled(struct global_symbols_t *S, struct symbol *type)
 {
 	if (type->bit_size < S->C->target->bits_in_int) {
-		struct symbol *new = alloc_symbol(S, type->pos, type->type);
-		*new = *type;
-		new->bit_size = S->C->target->bits_in_int;
-		new->type = SYM_FOULED;
-		new->ctype.base_type = type;
+		struct symbol *news = alloc_symbol(S, type->pos, type->type);
+		*news = *type;
+		news->bit_size = S->C->target->bits_in_int;
+		news->type = SYM_FOULED;
+		news->ctype.base_type = type;
 		ptrlist_add(&S->restr, type);
-		ptrlist_add(&S->fouled, new);
+		ptrlist_add(&S->fouled, news);
 	}
 }
 
@@ -616,12 +616,12 @@ void bind_symbol(struct global_symbols_t *S, struct symbol *sym, struct ident *i
 	bind_scope(S->C, sym, scope);
 }
 
-struct symbol *create_symbol(struct global_symbols_t *S, int stream, const char *name, int type, int namespace)
+struct symbol *create_symbol(struct global_symbols_t *S, int stream, const char *name, int type, int ns)
 {
 	struct token *token = built_in_token(S->C, stream, name);
 	struct symbol *sym = alloc_symbol(S, token->pos, type);
 
-	bind_symbol(S, sym, token->ident, namespace);
+	bind_symbol(S, sym, token->ident, ns);
 	return sym;
 }
 
@@ -798,9 +798,7 @@ void init_symbols(struct dmr_C *C)
 #define __INIT_IDENT(n, str, res) (struct ident *) allocator_allocate(&S->global_ident_allocator, sizeof(str)); S->n->len = sizeof(str)-1; memcpy(S->n->name, str, sizeof(str)); S->n->reserved = res;
 #define __IDENT(n,str,res) \
 	{S->n  = __INIT_IDENT(n, str, res)}
-
 #include "ident-list.h"
-
 
 #define __IDENT(n,str,res) \
 	hash_ident(C, S->n)
@@ -946,6 +944,5 @@ void init_ctype(struct dmr_C *C)
 	S->typenames[27].sym = &S->label_ctype; S->typenames[27].name = "label type";
 	S->typenames[28].sym = &S->bad_ctype; S->typenames[28].name = "bad type";
 	S->typenames[29].sym = NULL, S->typenames[29].name = NULL;
-
 }
 

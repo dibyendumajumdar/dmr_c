@@ -688,9 +688,9 @@ static int show_call_expression(struct dmr_C *C, struct expression *expr)
 
 	framesize = 0;
 	FOR_EACH_PTR_REVERSE(expr->args, arg) {
-		int new = show_expression(C, arg);
+		int news = show_expression(C, arg);
 		int size = arg->ctype->bit_size;
-		printf("\tpush.%d\t\tv%d\n", size, new);
+		printf("\tpush.%d\t\tv%d\n", size, news);
 		framesize += bits_to_bytes(C->target, size);
 	} END_FOR_EACH_PTR_REVERSE(arg);
 
@@ -729,7 +729,7 @@ static int show_binop(struct dmr_C *C, struct expression *expr)
 {
 	int left = show_expression(C, expr->left);
 	int right = show_expression(C, expr->right);
-	int new = new_pseudo();
+	int news = new_pseudo();
 	const char *opname;
 	static const char *name[] = {
 		['+'] = "add", ['-'] = "sub",
@@ -744,22 +744,22 @@ static int show_binop(struct dmr_C *C, struct expression *expr)
 		opname = name[op];
 	printf("\t%s.%d\t\tv%d,v%d,v%d\n", opname,
 		expr->ctype->bit_size,
-		new, left, right);
-	return new;
+		news, left, right);
+	return news;
 }
 
 static int show_slice(struct dmr_C *C, struct expression *expr)
 {
 	int target = show_expression(C, expr->base);
-	int new = new_pseudo();
-	printf("\tslice.%d\t\tv%d,v%d,%d\n", expr->r_nrbits, target, new, expr->r_bitpos);
-	return new;
+	int news = new_pseudo();
+	printf("\tslice.%d\t\tv%d,v%d,%d\n", expr->r_nrbits, target, news, expr->r_bitpos);
+	return news;
 }
 
 static int show_regular_preop(struct dmr_C *C, struct expression *expr)
 {
 	int target = show_expression(C, expr->unop);
-	int new = new_pseudo();
+	int news = new_pseudo();
 	static const char *name[] = {
 		['!'] = "nonzero", ['-'] = "neg",
 		['~'] = "not",
@@ -770,8 +770,8 @@ static int show_regular_preop(struct dmr_C *C, struct expression *expr)
 	opname = show_special(C, op);
 	if (op < ARRAY_SIZE(name))
 		opname = name[op];
-	printf("\t%s.%d\t\tv%d,v%d\n", opname, expr->ctype->bit_size, new, target);
-	return new;
+	printf("\t%s.%d\t\tv%d,v%d\n", opname, expr->ctype->bit_size, news, target);
+	return news;
 }
 
 /*
@@ -785,10 +785,10 @@ static int show_address_gen(struct dmr_C *C, struct expression *expr)
 
 static int show_load_gen(int bits, struct expression *expr, int addr)
 {
-	int new = new_pseudo();
+	int news = new_pseudo();
 
-	printf("\tld.%d\t\tv%d,[v%d]\n", bits, new, addr);
-	return new;
+	printf("\tld.%d\t\tv%d,[v%d]\n", bits, news, addr);
+	return news;
 }
 
 static void show_store_gen(int bits, int value, struct expression *expr, int addr)
@@ -852,16 +852,16 @@ static int show_access(struct dmr_C *C, struct expression *expr)
 static int show_inc_dec(struct dmr_C *C, struct expression *expr, int postop)
 {
 	int addr = show_address_gen(C, expr->unop);
-	int retval, new;
+	int retval, news;
 	const char *opname = expr->op == SPECIAL_INCREMENT ? "add" : "sub";
 	int bits = expr->ctype->bit_size;
 
 	retval = show_load_gen(bits, expr->unop, addr);
-	new = retval;
+	news = retval;
 	if (postop)
-		new = new_pseudo();
-	printf("\t%s.%d\t\tv%d,v%d,$1\n", opname, bits, new, retval);
-	show_store_gen(bits, new, expr->unop, addr);
+		news = new_pseudo();
+	printf("\t%s.%d\t\tv%d,v%d,$1\n", opname, bits, news, retval);
+	show_store_gen(bits, news, expr->unop, addr);
 	return retval;
 }	
 
@@ -886,21 +886,21 @@ static int show_postop(struct dmr_C *C, struct expression *expr)
 
 static int show_symbol_expr(struct dmr_C *C, struct symbol *sym)
 {
-	int new = new_pseudo();
+	int news = new_pseudo();
 
 	if (sym->initializer && sym->initializer->type == EXPR_STRING)
 		return show_string_expr(C, sym->initializer);
 
 	if (sym->ctype.modifiers & (MOD_TOPLEVEL | MOD_EXTERN | MOD_STATIC)) {
-		printf("\tmovi.%d\t\tv%d,$%s\n", C->target->bits_in_pointer, new, show_ident(C, sym->ident));
-		return new;
+		printf("\tmovi.%d\t\tv%d,$%s\n", C->target->bits_in_pointer, news, show_ident(C, sym->ident));
+		return news;
 	}
 	if (sym->ctype.modifiers & MOD_ADDRESSABLE) {
-		printf("\taddi.%d\t\tv%d,vFP,$%lld\n", C->target->bits_in_pointer, new, sym->value);
-		return new;
+		printf("\taddi.%d\t\tv%d,vFP,$%lld\n", C->target->bits_in_pointer, news, sym->value);
+		return news;
 	}
-	printf("\taddi.%d\t\tv%d,vFP,$offsetof(%s:%p)\n", C->target->bits_in_pointer, new, show_ident(C, sym->ident), sym);
-	return new;
+	printf("\taddi.%d\t\tv%d,vFP,$offsetof(%s:%p)\n", C->target->bits_in_pointer, news, show_ident(C, sym->ident), sym);
+	return news;
 }
 
 static int show_symbol_init(struct dmr_C *C, struct symbol *sym)
@@ -932,7 +932,7 @@ static int show_cast_expr(struct dmr_C *C, struct expression *expr)
 	struct symbol *old_type, *new_type;
 	int op = show_expression(C, expr->cast_expression);
 	int oldbits, newbits;
-	int new, is_signed;
+	int news, is_signed;
 
 	old_type = expr->cast_expression->ctype;
 	new_type = expr->cast_type;
@@ -941,58 +941,58 @@ static int show_cast_expr(struct dmr_C *C, struct expression *expr)
 	newbits = new_type->bit_size;
 	if (oldbits >= newbits)
 		return op;
-	new = new_pseudo();
+	news = new_pseudo();
 	is_signed = type_is_signed(C, old_type);
 	if (is_signed) {
-		printf("\tsext%d.%d\tv%d,v%d\n", oldbits, newbits, new, op);
+		printf("\tsext%d.%d\tv%d,v%d\n", oldbits, newbits, news, op);
 	} else {
-		printf("\tandl.%d\t\tv%d,v%d,$%lu\n", newbits, new, op, (1UL << oldbits)-1);
+		printf("\tandl.%d\t\tv%d,v%d,$%lu\n", newbits, news, op, (1UL << oldbits)-1);
 	}
-	return new;
+	return news;
 }
 
 static int show_value(struct dmr_C *C, struct expression *expr)
 {
-	int new = new_pseudo();
+	int news = new_pseudo();
 	unsigned long long value = expr->value;
 
-	printf("\tmovi.%d\t\tv%d,$%llu\n", expr->ctype->bit_size, new, value);
-	return new;
+	printf("\tmovi.%d\t\tv%d,$%llu\n", expr->ctype->bit_size, news, value);
+	return news;
 }
 
 static int show_fvalue(struct dmr_C *C, struct expression *expr)
 {
-	int new = new_pseudo();
+	int news = new_pseudo();
 	long double value = expr->fvalue;
 
-	printf("\tmovf.%d\t\tv%d,$%Lf\n", expr->ctype->bit_size, new, value);
-	return new;
+	printf("\tmovf.%d\t\tv%d,$%Lf\n", expr->ctype->bit_size, news, value);
+	return news;
 }
 
 static int show_string_expr(struct dmr_C *C, struct expression *expr)
 {
-	int new = new_pseudo();
+	int news = new_pseudo();
 
-	printf("\tmovi.%d\t\tv%d,&%s\n", C->target->bits_in_pointer, new, show_string(C, expr->string));
-	return new;
+	printf("\tmovi.%d\t\tv%d,&%s\n", C->target->bits_in_pointer, news, show_string(C, expr->string));
+	return news;
 }
 
 static int show_label_expr(struct dmr_C *C, struct expression *expr)
 {
-	int new = new_pseudo();
-	printf("\tmovi.%d\t\tv%d,.L%p\n", C->target->bits_in_pointer, new, expr->label_symbol);
-	return new;
+	int news = new_pseudo();
+	printf("\tmovi.%d\t\tv%d,.L%p\n", C->target->bits_in_pointer, news, expr->label_symbol);
+	return news;
 }
 
 static int show_conditional_expr(struct dmr_C *C, struct expression *expr)
 {
 	int cond = show_expression(C, expr->conditional);
-	int true = show_expression(C, expr->cond_true);
-	int false = show_expression(C, expr->cond_false);
-	int new = new_pseudo();
+	int truee = show_expression(C, expr->cond_true);
+	int falsee = show_expression(C, expr->cond_false);
+	int news = new_pseudo();
 
-	printf("[v%d]\tcmov.%d\t\tv%d,v%d,v%d\n", cond, expr->ctype->bit_size, new, true, false);
-	return new;
+	printf("[v%d]\tcmov.%d\t\tv%d,v%d,v%d\n", cond, expr->ctype->bit_size, news, truee, falsee);
+	return news;
 }
 
 static int show_statement_expr(struct dmr_C *C, struct expression *expr)
@@ -1002,13 +1002,13 @@ static int show_statement_expr(struct dmr_C *C, struct expression *expr)
 
 static int show_position_expr(struct dmr_C *C, struct expression *expr, struct symbol *base)
 {
-	int new = show_expression(C, expr->init_expr);
+	int news = show_expression(C, expr->init_expr);
 	struct symbol *ctype = expr->init_expr->ctype;
 	int bit_offset;
 
 	bit_offset = ctype ? ctype->bit_offset : -1;
 
-	printf("\tinsert v%d at [%d:%d] of %s\n", new,
+	printf("\tinsert v%d at [%d:%d] of %s\n", news,
 		expr->init_offset, bit_offset,
 		show_ident(C, base->ident));
 	return 0;

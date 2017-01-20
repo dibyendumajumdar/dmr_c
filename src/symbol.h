@@ -309,7 +309,7 @@ extern int expand_constant_p(struct dmr_C *C, struct expression *expr,
 			     int cost);
 
 extern struct symbol *lookup_symbol(struct ident *, enum namespace_type);
-extern struct symbol *create_symbol(struct global_symbols_t *S, int stream, const char *name, int type, int namespace);
+extern struct symbol *create_symbol(struct global_symbols_t *S, int stream, const char *name, int type, int ns);
 
 extern struct symbol *alloc_symbol(struct global_symbols_t *S,
 				   struct position pos, int type);

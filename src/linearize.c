@@ -654,7 +654,7 @@ static void remove_parent(struct dmr_C *C, struct basic_block *child, struct bas
 {
 	remove_bb_from_list(&child->parents, parent, 1);
 	if (!child->parents)
-		kill_bb(child);
+		kill_bb(C, child);
 }
 
 /* Change a "switch" into a branch */
@@ -2174,12 +2174,12 @@ static struct entrypoint *linearize_fn(struct dmr_C *C, struct symbol *sym, stru
 	 * Do trivial flow simplification - branches to
 	 * branches, kill dead basicblocks etc
 	 */
-	kill_unreachable_bbs(ep);
+	kill_unreachable_bbs(C, ep);
 
 	/*
 	 * Turn symbols into pseudos
 	 */
-	simplify_symbol_usage(ep);
+	simplify_symbol_usage(C, ep);
 
 repeat:
 	/*
@@ -2188,10 +2188,10 @@ repeat:
 	 */
 	do {
 		cleanup_and_cse(ep);
-		pack_basic_blocks(ep);
+		pack_basic_blocks(C, ep);
 	} while (C->L->repeat_phase & REPEAT_CSE);
 
-	kill_unreachable_bbs(ep);
+	kill_unreachable_bbs(C, ep);
 	vrfy_flow(ep);
 
 	/* Cleanup */
@@ -2206,7 +2206,7 @@ repeat:
 	 * if they trigger, we need to start all over
 	 * again
 	 */
-	if (simplify_flow(ep)) {
+	if (simplify_flow(C, ep)) {
 		clear_liveness(ep);
 		goto repeat;
 	}

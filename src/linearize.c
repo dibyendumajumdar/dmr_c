@@ -1366,24 +1366,24 @@ static pseudo_t linearize_short_conditional(struct dmr_C *C, struct entrypoint *
 {
 	pseudo_t src1, src2;
 	struct basic_block *bb_false;
-	struct basic_block *merge = alloc_basic_block(ep, expr->pos);
+	struct basic_block *merge = alloc_basic_block(C, ep, expr->pos);
 	pseudo_t phi1, phi2;
 	int size = type_size(expr->ctype);
 
 	if (!expr_false || !ep->active)
-		return VOID;
+		return VOID(C);
 
-	bb_false = alloc_basic_block(ep, expr_false->pos);
-	src1 = linearize_expression(ep, cond);
-	phi1 = alloc_phi(ep->active, src1, size);
-	add_branch(ep, expr, src1, merge, bb_false);
+	bb_false = alloc_basic_block(C, ep, expr_false->pos);
+	src1 = linearize_expression(C, ep, cond);
+	phi1 = alloc_phi(C, ep->active, src1, size);
+	add_branch(C, ep, expr, src1, merge, bb_false);
 
-	set_activeblock(ep, bb_false);
-	src2 = linearize_expression(ep, expr_false);
-	phi2 = alloc_phi(ep->active, src2, size);
-	set_activeblock(ep, merge);
+	set_activeblock(C, ep, bb_false);
+	src2 = linearize_expression(C, ep, expr_false);
+	phi2 = alloc_phi(C, ep->active, src2, size);
+	set_activeblock(C, ep, merge);
 
-	return add_join_conditional(ep, expr, phi1, phi2);
+	return add_join_conditional(C, ep, expr, phi1, phi2);
 }
 
 static pseudo_t linearize_conditional(struct dmr_C *C, struct entrypoint *ep, struct expression *expr,
@@ -1397,35 +1397,35 @@ static pseudo_t linearize_conditional(struct dmr_C *C, struct entrypoint *ep, st
 	int size = type_size(expr->ctype);
 
 	if (!cond || !expr_true || !expr_false || !ep->active)
-		return VOID;
-	bb_true = alloc_basic_block(ep, expr_true->pos);
-	bb_false = alloc_basic_block(ep, expr_false->pos);
-	merge = alloc_basic_block(ep, expr->pos);
+		return VOID(C);
+	bb_true = alloc_basic_block(C, ep, expr_true->pos);
+	bb_false = alloc_basic_block(C, ep, expr_false->pos);
+	merge = alloc_basic_block(C, ep, expr->pos);
 
-	linearize_cond_branch(ep, cond, bb_true, bb_false);
+	linearize_cond_branch(C, ep, cond, bb_true, bb_false);
 
-	set_activeblock(ep, bb_true);
-	src1 = linearize_expression(ep, expr_true);
-	phi1 = alloc_phi(ep->active, src1, size);
-	add_goto(ep, merge); 
+	set_activeblock(C, ep, bb_true);
+	src1 = linearize_expression(C, ep, expr_true);
+	phi1 = alloc_phi(C, ep->active, src1, size);
+	add_goto(C, ep, merge); 
 
-	set_activeblock(ep, bb_false);
-	src2 = linearize_expression(ep, expr_false);
-	phi2 = alloc_phi(ep->active, src2, size);
-	set_activeblock(ep, merge);
+	set_activeblock(C, ep, bb_false);
+	src2 = linearize_expression(C, ep, expr_false);
+	phi2 = alloc_phi(C, ep->active, src2, size);
+	set_activeblock(C, ep, merge);
 
-	return add_join_conditional(ep, expr, phi1, phi2);
+	return add_join_conditional(C, ep, expr, phi1, phi2);
 }
 
 static pseudo_t linearize_logical(struct dmr_C *C, struct entrypoint *ep, struct expression *expr)
 {
 	struct expression *shortcut;
 
-	shortcut = alloc_const_expression(expr->pos, expr->op == SPECIAL_LOGICAL_OR);
+	shortcut = alloc_const_expression(C, expr->pos, expr->op == SPECIAL_LOGICAL_OR);
 	shortcut->ctype = expr->ctype;
 	if (expr->op == SPECIAL_LOGICAL_OR)
-		return linearize_conditional(ep, expr, expr->left, shortcut, expr->right);
-	return linearize_conditional(ep, expr, expr->left, expr->right, shortcut);
+		return linearize_conditional(C, ep, expr, expr->left, shortcut, expr->right);
+	return linearize_conditional(C, ep, expr, expr->left, expr->right, shortcut);
 }
 
 static pseudo_t linearize_compare(struct dmr_C *C, struct entrypoint *ep, struct expression *expr)
@@ -1442,9 +1442,9 @@ static pseudo_t linearize_compare(struct dmr_C *C, struct entrypoint *ep, struct
 		[SPECIAL_UNSIGNED_GTE] = OP_SET_AE,
 	};
 
-	pseudo_t src1 = linearize_expression(ep, expr->left);
-	pseudo_t src2 = linearize_expression(ep, expr->right);
-	pseudo_t dst = add_binary_op(ep, expr->ctype, cmpop[expr->op], src1, src2);
+	pseudo_t src1 = linearize_expression(C, ep, expr->left);
+	pseudo_t src2 = linearize_expression(C, ep, expr->right);
+	pseudo_t dst = add_binary_op(C, ep, expr->ctype, cmpop[expr->op], src1, src2);
 	return dst;
 }
 
@@ -1454,55 +1454,55 @@ pseudo_t linearize_cond_branch(struct dmr_C *C, struct entrypoint *ep, struct ex
 	pseudo_t cond;
 
 	if (!expr || !bb_reachable(ep->active))
-		return VOID;
+		return VOID(C);
 
 	switch (expr->type) {
 
 	case EXPR_STRING:
 	case EXPR_VALUE:
-		add_goto(ep, expr->value ? bb_true : bb_false);
-		return VOID;
+		add_goto(C, ep, expr->value ? bb_true : bb_false);
+		return VOID(C);
 
 	case EXPR_FVALUE:
-		add_goto(ep, expr->fvalue ? bb_true : bb_false);
-		return VOID;
+		add_goto(C, ep, expr->fvalue ? bb_true : bb_false);
+		return VOID(C);
 		
 	case EXPR_LOGICAL:
-		linearize_logical_branch(ep, expr, bb_true, bb_false);
-		return VOID;
+		linearize_logical_branch(C, ep, expr, bb_true, bb_false);
+		return VOID(C);
 
 	case EXPR_COMPARE:
-		cond = linearize_compare(ep, expr);
-		add_branch(ep, expr, cond, bb_true, bb_false);
+		cond = linearize_compare(C, ep, expr);
+		add_branch(C, ep, expr, cond, bb_true, bb_false);
 		break;
 		
 	case EXPR_PREOP:
 		if (expr->op == '!')
-			return linearize_cond_branch(ep, expr->unop, bb_false, bb_true);
+			return linearize_cond_branch(C, ep, expr->unop, bb_false, bb_true);
 		/* fall through */
 	default: {
-		cond = linearize_expression(ep, expr);
-		add_branch(ep, expr, cond, bb_true, bb_false);
+		cond = linearize_expression(C, ep, expr);
+		add_branch(C, ep, expr, cond, bb_true, bb_false);
 
-		return VOID;
+		return VOID(C);
 	}
 	}
-	return VOID;
+	return VOID(C);
 }
 
 
 	
 static pseudo_t linearize_logical_branch(struct dmr_C *C, struct entrypoint *ep, struct expression *expr, struct basic_block *bb_true, struct basic_block *bb_false)
 {
-	struct basic_block *next = alloc_basic_block(ep, expr->pos);
+	struct basic_block *next = alloc_basic_block(C, ep, expr->pos);
 
 	if (expr->op == SPECIAL_LOGICAL_OR)
-		linearize_cond_branch(ep, expr->left, bb_true, next);
+		linearize_cond_branch(C, ep, expr->left, bb_true, next);
 	else
-		linearize_cond_branch(ep, expr->left, next, bb_false);
-	set_activeblock(ep, next);
-	linearize_cond_branch(ep, expr->right, bb_true, bb_false);
-	return VOID;
+		linearize_cond_branch(C, ep, expr->left, next, bb_false);
+	set_activeblock(C, ep, next);
+	linearize_cond_branch(C, ep, expr->right, bb_true, bb_false);
+	return VOID(C);
 }
 
 static pseudo_t linearize_cast(struct dmr_C *C, struct entrypoint *ep, struct expression *expr)

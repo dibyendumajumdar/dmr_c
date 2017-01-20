@@ -195,7 +195,7 @@ try_to_rewrite_target:
 	if (bb_list_size(target->parents) != 1)
 		return retval;
 	insert_branch(C, target, insn, final);
-	kill_instruction(insn);
+	kill_instruction(C, insn);
 	return 1;
 }
 
@@ -316,7 +316,7 @@ int dominates(struct dmr_C *C, pseudo_t pseudo, struct instruction *insn, struct
 }
 
 static int find_dominating_parents(struct dmr_C *C, pseudo_t pseudo, struct instruction *insn,
-	struct basic_block *bb, unsigned long generation, struct pseudo_list **dominators,
+	struct basic_block *bb, unsigned long generation, struct ptr_list **dominators,
 	int local, int loads)
 {
 	struct basic_block *parent;
@@ -399,7 +399,7 @@ void rewrite_load_instruction(struct dmr_C *C, struct instruction *insn, struct 
 complex_phi:
 	/* We leave symbol pseudos with a bogus usage list here */
 	if (insn->src->type != PSEUDO_SYM)
-		kill_use(&insn->src);
+		kill_use(C, &insn->src);
 	insn->opcode = OP_PHI;
 	insn->phi_list = dominators;
 }
@@ -409,7 +409,7 @@ static int find_dominating_stores(struct dmr_C *C, pseudo_t pseudo, struct instr
 {
 	struct basic_block *bb = insn->bb;
 	struct instruction *one, *dom = NULL;
-	struct pseudo_list *dominators;
+	struct ptr_list *dominators;
 	int partial;
 
 	/* Unreachable load? Undo it */
@@ -475,17 +475,17 @@ found:
 	return 1;
 }
 
-static void kill_store(struct instruction *insn)
+static void kill_store(struct dmr_C *C, struct instruction *insn)
 {
 	if (insn) {
 		insn->bb = NULL;
 		insn->opcode = OP_SNOP;
-		kill_use(&insn->target);
+		kill_use(C, &insn->target);
 	}
 }
 
 /* Kill a pseudo that is dead on exit from the bb */
-static void kill_dead_stores(pseudo_t pseudo, unsigned long generation, struct basic_block *bb, int local)
+static void kill_dead_stores(struct dmr_C *C, pseudo_t pseudo, unsigned long generation, struct basic_block *bb, int local)
 {
 	struct instruction *insn;
 	struct basic_block *parent;
@@ -506,7 +506,7 @@ static void kill_dead_stores(pseudo_t pseudo, unsigned long generation, struct b
 		if (insn->src == pseudo) {
 			if (opcode == OP_LOAD)
 				return;
-			kill_store(insn);
+			kill_store(C, insn);
 			continue;
 		}
 		if (local)
@@ -521,7 +521,7 @@ static void kill_dead_stores(pseudo_t pseudo, unsigned long generation, struct b
 			if (child && child != bb)
 				return;
 		} END_FOR_EACH_PTR(child);
-		kill_dead_stores(pseudo, generation, parent, local);
+		kill_dead_stores(C, pseudo, generation, parent, local);
 	} END_FOR_EACH_PTR(parent);
 }
 
@@ -537,7 +537,7 @@ static void kill_dominated_stores(struct dmr_C *C, pseudo_t pseudo, struct instr
 
 	/* Unreachable store? Undo it */
 	if (!bb) {
-		kill_store(insn);
+		kill_store(C, insn);
 		return;
 	}
 	if (bb->generation == generation)
@@ -558,7 +558,7 @@ static void kill_dominated_stores(struct dmr_C *C, pseudo_t pseudo, struct instr
 			return;
 		if (one->opcode == OP_LOAD)
 			return;
-		kill_store(one);
+		kill_store(C, one);
 	} END_FOR_EACH_PTR_REVERSE(one);
 
 	if (!found) {
@@ -667,7 +667,7 @@ static void simplify_one_symbol(struct dmr_C *C, struct entrypoint *ep, struct s
 	} END_FOR_EACH_PTR(pu);
 
 	/* Turn the store into a no-op */
-	kill_store(def);
+	kill_store(C, def);
 	return;
 
 multi_def:
@@ -685,7 +685,7 @@ external_visibility:
 		FOR_EACH_PTR(pseudo->users, pu) {
 			struct instruction *insn = pu->insn;
 			if (insn->opcode == OP_STORE)
-				kill_store(insn);
+				kill_store(C, insn);
 		} END_FOR_EACH_PTR(pu);
 	} else {
 		/*
@@ -749,7 +749,7 @@ void kill_bb(struct dmr_C *C, struct basic_block *bb)
 	struct basic_block *child, *parent;
 
 	FOR_EACH_PTR(bb->insns, insn) {
-		kill_instruction(insn);
+		kill_instruction(C, insn);
 		kill_defs(C, insn);
 		/*
 		 * We kill unreachable instructions even if they
@@ -784,7 +784,7 @@ void kill_unreachable_bbs(struct dmr_C *C, struct entrypoint *ep)
 		bb->ep = NULL;
 		DELETE_CURRENT_PTR(bb);
 	} END_FOR_EACH_PTR(bb);
-	PACK_PTR_LIST(&ep->bbs);
+	ptrlist_pack(&ep->bbs);
 }
 
 static int rewrite_parent_branch(struct dmr_C *C, struct basic_block *bb, struct basic_block *old, struct basic_block *new)
@@ -842,7 +842,7 @@ static struct basic_block * rewrite_branch_bb(struct dmr_C *C, struct basic_bloc
 	return target;
 }
 
-static void vrfy_bb_in_list(struct basic_block *bb, struct basic_block_list *list)
+static void vrfy_bb_in_list(struct basic_block *bb, struct ptr_list *list)
 {
 	if (bb) {
 		struct basic_block *tmp;
@@ -987,7 +987,7 @@ out:
 			replace_bb_in_list(&child->parents, bb, parent, 0);
 		} END_FOR_EACH_PTR(child);
 
-		kill_instruction(delete_last_instruction(&parent->insns));
+		kill_instruction(C, delete_last_instruction(&parent->insns));
 		FOR_EACH_PTR(bb->insns, insn) {
 			if (insn->bb) {
 				assert(insn->bb == bb);

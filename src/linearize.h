@@ -76,7 +76,7 @@ struct linearizer_state_t {
 	int n;
 	char pseudo_buffer[4][64];
 #define INSN_HASH_SIZE 256
-	struct instruction_list *insn_hash_table[INSN_HASH_SIZE];
+	struct ptr_list *insn_hash_table[INSN_HASH_SIZE];
 };
 
 #define VOID(C) (&C->L->void_pseudo)
@@ -485,6 +485,8 @@ const char *show_instruction(struct dmr_C *C, struct instruction *insn);
 
 void init_linearizer(struct dmr_C *C);
 void destroy_linearizer(struct dmr_C *C);
+
+#define hashval(x) ((uintptr_t)(x))
 
 #endif /* LINEARIZE_H */
 

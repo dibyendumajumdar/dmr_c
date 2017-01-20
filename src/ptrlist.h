@@ -107,6 +107,9 @@ static inline void **ptrlist_iter_this_address(struct ptr_list_iter *self) {
 #define REPLACE_CURRENT_PTR(type, var, replacement) \
 	ptrlist_iter_set(&var##iter__, replacement)
 
+#define INSERT_CURRENT(newval, var) \
+	ptrlist_iter_insert(&var##iter__, newval)	
+
 extern int test_ptrlist();
 
 #endif

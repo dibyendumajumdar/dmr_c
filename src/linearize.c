@@ -240,7 +240,7 @@ static const char *opcodes[] = {
 	[OP_COPY] = "copy",
 };
 
-static char *show_asm_constraints(struct dmr_C *C, char *buf, const char *sep, struct asm_constraint_list *list)
+static char *show_asm_constraints(struct dmr_C *C, char *buf, const char *sep, struct ptr_list *list)
 {
 	struct asm_constraint *entry;
 
@@ -384,7 +384,7 @@ const char *show_instruction(struct dmr_C *C, struct instruction *insn)
 		const char *s = " <-";
 		buf += sprintf(buf, "%s", show_pseudo(C, insn->target));
 		FOR_EACH_PTR(insn->phi_list, phi) {
-			buf += sprintf(buf, "%s %s", s, C, show_pseudo(C, phi));
+			buf += sprintf(buf, "%s %s", s, show_pseudo(C, phi));
 			s = ",";
 		} END_FOR_EACH_PTR(phi);
 		break;
@@ -838,7 +838,7 @@ pseudo_t alloc_phi(struct dmr_C *C, struct basic_block *source, pseudo_t pseudo,
 	use_pseudo(C, insn, pseudo, &insn->phi_src);
 	insn->bb = source;
 	insn->target = phi;
-	add_instruction(C, &source->insns, insn);
+	add_instruction(&source->insns, insn);
 	return phi;
 }
 
@@ -1641,7 +1641,7 @@ static pseudo_t linearize_one_symbol(struct dmr_C *C, struct entrypoint *ep, str
 	sym->initialized = 1;
 	ad.address = symbol_pseudo(C, ep, sym);
 	value = linearize_initializer(C, ep, sym->initializer, &ad);
-	finish_address_gen(C, ep, &ad);
+	finish_address_gen(ep, &ad);
 	return value;
 }
 
@@ -1748,7 +1748,7 @@ static void add_asm_output(struct dmr_C *C, struct entrypoint *ep, struct instru
 	if (!expr || !linearize_address_gen(C, ep, expr, &ad))
 		return;
 	linearize_store_gen(C, ep, pseudo, &ad);
-	finish_address_gen(C, ep, &ad);
+	finish_address_gen(ep, &ad);
 	rule = (struct asm_constraint *) allocator_allocate(&C->L->asm_constraint_allocator, 0);
 	rule->ident = ident;
 	rule->constraint = constraint;
@@ -2187,7 +2187,7 @@ repeat:
 	 * the rest.
 	 */
 	do {
-		cleanup_and_cse(ep);
+		cleanup_and_cse(C, ep);
 		pack_basic_blocks(C, ep);
 	} while (C->L->repeat_phase & REPEAT_CSE);
 
@@ -2198,7 +2198,7 @@ repeat:
 	clear_symbol_pseudos(ep);
 
 	/* And track pseudo register usage */
-	track_pseudo_liveness(ep);
+	track_pseudo_liveness(C, ep);
 
 	/*
 	 * Some flow optimizations can only effectively
@@ -2213,7 +2213,7 @@ repeat:
 
 	/* Finally, add deathnotes to pseudos now that we have them */
 	if (C->dbg_dead)
-		track_pseudo_death(ep);
+		track_pseudo_death(C, ep);
 
 	return ep;
 }

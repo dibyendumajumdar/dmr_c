@@ -431,6 +431,26 @@ static inline struct symbol *lookup_keyword(struct ident *ident,
 	return lookup_symbol(ident, ns);
 }
 
+static inline void concat_symbol_list(struct ptr_list *from, struct ptr_list **to)
+{
+	ptrlist_concat(from, to);
+}
+
+static inline void add_symbol(struct ptr_list **list, struct symbol *sym)
+{
+	ptrlist_add(list, sym);
+}
+
+static inline void add_statement(struct ptr_list **list, struct statement *stmt)
+{
+	ptrlist_add(list, stmt);
+}
+
+static inline void add_expression(struct ptr_list **list, struct expression *expr)
+{
+	ptrlist_add(list, expr);
+}
+
 #define is_restricted_type(type) (get_sym_type(type) == SYM_RESTRICT)
 #define is_fouled_type(type) (get_sym_type(type) == SYM_FOULED)
 #define is_bitfield_type(type) (get_sym_type(type) == SYM_BITFIELD)

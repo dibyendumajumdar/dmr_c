@@ -216,7 +216,7 @@ static void insn_uses(struct dmr_C *C, struct basic_block *bb, struct instructio
 	}
 }
 
-static void insn_defines(struct basic_block *bb, struct instruction *insn, pseudo_t pseudo)
+static void insn_defines(struct dmr_C *C, struct basic_block *bb, struct instruction *insn, pseudo_t pseudo)
 {
 	assert(trackable_pseudo(pseudo));
 	add_pseudo(&bb->defines, pseudo);
@@ -290,7 +290,7 @@ void track_pseudo_liveness(struct dmr_C *C, struct entrypoint *ep)
 is_used:
 		;
 		} END_FOR_EACH_PTR(def);
-		PACK_PTR_LIST(&bb->defines);
+		ptrlist_pack(&bb->defines);
 	} END_FOR_EACH_PTR(bb);
 }
 
@@ -311,7 +311,7 @@ void track_phi_uses(struct dmr_C *C, struct instruction *insn)
 			continue;
 		def = phi->def;
 		assert(def->opcode == OP_PHISOURCE);
-		add_ptr_list(&def->phi_users, insn);
+		ptrlist_add(&def->phi_users, insn);
 	} END_FOR_EACH_PTR(phi);
 }
 
@@ -324,7 +324,7 @@ static void track_bb_phi_uses(struct dmr_C *C, struct basic_block *bb)
 	} END_FOR_EACH_PTR(insn);
 }
 
-static void death_def(struct basic_block *bb, struct instruction *insn, pseudo_t pseudo)
+static void death_def(struct dmr_C *C, struct basic_block *bb, struct instruction *insn, pseudo_t pseudo)
 {
 }
 
@@ -365,7 +365,7 @@ static void track_pseudo_death_bb(struct dmr_C *C, struct basic_block *bb)
 			ptrlist_remove_all(&C->L->dead_list);
 		}
 	} END_FOR_EACH_PTR_REVERSE(insn);
-	free_ptr_list(&live);
+	ptrlist_remove_all(&live);
 }
 
 void track_pseudo_death(struct dmr_C *C, struct entrypoint *ep)

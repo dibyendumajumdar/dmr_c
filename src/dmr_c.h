@@ -98,7 +98,6 @@ struct dmr_C {
 	int once;
 
 	int verbose;
-	int dbg_dead;
 
 	int preprocess_only;
 

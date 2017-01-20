@@ -18,7 +18,7 @@
 #include <flow.h>
 
 static int find_dominating_parents(struct dmr_C *C, pseudo_t pseudo, struct instruction *insn,
-	struct basic_block *bb, unsigned long generation, struct pseudo_list **dominators,
+	struct basic_block *bb, unsigned long generation, struct ptr_list **dominators,
 	int local, int loads)
 {
 	struct basic_block *parent;
@@ -94,7 +94,7 @@ static void simplify_loads(struct dmr_C *C, struct basic_block *bb)
 			struct instruction *dom;
 			pseudo_t pseudo = insn->src;
 			int local = local_pseudo(pseudo);
-			struct pseudo_list *dominators;
+			struct ptr_list *dominators;
 			unsigned long generation;
 
 			/* Check for illegal offsets.. */
@@ -139,12 +139,12 @@ next_load:
 	} END_FOR_EACH_PTR_REVERSE(insn);
 }
 
-static void kill_store(struct instruction *insn)
+static void kill_store(struct dmr_C *C, struct instruction *insn)
 {
 	if (insn) {
 		insn->bb = NULL;
 		insn->opcode = OP_SNOP;
-		kill_use(&insn->target);
+		kill_use(C, &insn->target);
 	}
 }
 
@@ -172,7 +172,7 @@ static void kill_dominated_stores(struct dmr_C *C, struct basic_block *bb)
 					if (dom->opcode == OP_LOAD)
 						goto next_store;
 					/* Yeehaa! Found one! */
-					kill_store(dom);
+					kill_store(C, dom);
 				}
 			} END_FOR_EACH_PTR_REVERSE(dom);
 

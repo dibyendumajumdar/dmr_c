@@ -38,7 +38,7 @@ static void clean_up_one_instruction(struct dmr_C *C, struct basic_block *bb, st
 	if (!insn->bb)
 		return;
 	assert(insn->bb == bb);
-	C->L->repeat_phase |= simplify_instruction(insn);
+	C->L->repeat_phase |= simplify_instruction(C, insn);
 	hash = (insn->opcode << 3) + (insn->size >> 3);
 	switch (insn->opcode) {
 	case OP_SEL:
@@ -132,7 +132,7 @@ static void clean_up_insns(struct dmr_C *C, struct entrypoint *ep)
 }
 
 /* Compare two (sorted) phi-lists */
-static int phi_list_compare(struct dmr_C *C, struct pseudo_list *l1, struct pseudo_list *l2)
+static int phi_list_compare(struct dmr_C *C, struct ptr_list *l1, struct ptr_list *l2)
 {
 	pseudo_t phi1, phi2;
 
@@ -367,7 +367,7 @@ repeat:
 	C->L->repeat_phase = 0;
 	clean_up_insns(C, ep);
 	for (i = 0; i < INSN_HASH_SIZE; i++) {
-		struct instruction_list **list = C->L->insn_hash_table + i;
+		struct ptr_list **list = C->L->insn_hash_table + i;
 		if (*list) {
 			if (instruction_list_size(*list) > 1) {
 				struct instruction *insn, *last;

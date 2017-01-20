@@ -238,6 +238,12 @@ struct dmr_C *new_dmr_C()
 	C->arch_m64 = ARCH_M64_DEFAULT;
 	C->arch_msize_long = 0;
 
+#ifdef GCC_BASE
+	C->gcc_base_dir = GCC_BASE;
+#else
+	C->gcc_base_dir = NULL;
+#endif
+
 	C->Waddress_space = 1;
 	C->Wcast_truncate = 1;
 	C->Wcontext = 1;

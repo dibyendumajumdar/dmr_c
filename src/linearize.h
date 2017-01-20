@@ -63,6 +63,11 @@ struct linearizer_state_t {
 
 	int repeat_phase;
 	unsigned long bb_generation;
+	int liveness_changed;
+
+	struct ptr_list **live_list;
+	struct ptr_list *dead_list;
+
 
 #define MAX_VAL_HASH 64
 	struct ptr_list *prev[MAX_VAL_HASH];

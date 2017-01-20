@@ -73,12 +73,15 @@ typedef struct pseudo *pseudo_t;
 struct target_t;
 struct global_symbols_t;
 struct tokenizer_state_t;
+struct linearizer_state_t;
 
 struct dmr_C {
 	struct target_t *target;
 	struct global_symbols_t *S;
 	struct tokenizer_state_t *T;
 	struct parse_state_t *P;
+	struct linearizer_state_t *L;
+
 	// memory allocators
 	struct allocator token_allocator;
 	struct allocator byte_allocator;

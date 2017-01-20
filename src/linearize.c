@@ -23,24 +23,24 @@
 #include "flow.h"
 #include "target.h"
 
-pseudo_t linearize_statement(struct entrypoint *ep, struct statement *stmt);
-pseudo_t linearize_expression(struct entrypoint *ep, struct expression *expr);
+pseudo_t linearize_statement(struct dmr_C *C, struct entrypoint *ep, struct statement *stmt);
+pseudo_t linearize_expression(struct dmr_C *C, struct entrypoint *ep, struct expression *expr);
 
-static pseudo_t add_binary_op(struct entrypoint *ep, struct symbol *ctype, int op, pseudo_t left, pseudo_t right);
-static pseudo_t add_setval(struct entrypoint *ep, struct symbol *ctype, struct expression *val);
-static pseudo_t linearize_one_symbol(struct entrypoint *ep, struct symbol *sym);
+static pseudo_t add_binary_op(struct dmr_C *C, struct entrypoint *ep, struct symbol *ctype, int op, pseudo_t left, pseudo_t right);
+static pseudo_t add_setval(struct dmr_C *C, struct entrypoint *ep, struct symbol *ctype, struct expression *val);
+static pseudo_t linearize_one_symbol(struct dmr_C *C, struct entrypoint *ep, struct symbol *sym);
 
 struct access_data;
-static pseudo_t add_load(struct entrypoint *ep, struct access_data *);
-static pseudo_t linearize_initializer(struct entrypoint *ep, struct expression *initializer, struct access_data *);
+static pseudo_t add_load(struct dmr_C *C, struct entrypoint *ep, struct access_data *);
+static pseudo_t linearize_initializer(struct dmr_C *C, struct entrypoint *ep, struct expression *initializer, struct access_data *);
 
-struct pseudo void_pseudo = {0};
+//struct pseudo void_pseudo = {0};
 
-static struct position current_pos;
 
-ALLOCATOR(pseudo_user, "pseudo_user");
 
-static struct instruction *alloc_instruction(int opcode, int size)
+//ALLOCATOR(pseudo_user, "pseudo_user");
+
+static struct instruction *alloc_instruction(struct dmr_C *C, int opcode, int size)
 {
 	struct instruction * insn = __alloc_instruction(0);
 	insn->opcode = opcode;
@@ -54,19 +54,19 @@ static inline int type_size(struct symbol *type)
 	return type ? type->bit_size > 0 ? type->bit_size : 0 : 0;
 }
 
-static struct instruction *alloc_typed_instruction(int opcode, struct symbol *type)
+static struct instruction *alloc_typed_instruction(struct dmr_C *C, int opcode, struct symbol *type)
 {
 	struct instruction *insn = alloc_instruction(opcode, type_size(type));
 	insn->type = type;
 	return insn;
 }
 
-static struct entrypoint *alloc_entrypoint(void)
+static struct entrypoint *alloc_entrypoint(struct dmr_C *C)
 {
 	return __alloc_entrypoint(0);
 }
 
-static struct basic_block *alloc_basic_block(struct entrypoint *ep, struct position pos)
+static struct basic_block *alloc_basic_block(struct dmr_C *C, struct entrypoint *ep, struct position pos)
 {
 	struct basic_block *bb = __alloc_basic_block(0);
 	bb->context = -1;
@@ -75,7 +75,7 @@ static struct basic_block *alloc_basic_block(struct entrypoint *ep, struct posit
 	return bb;
 }
 
-static struct multijmp *alloc_multijmp(struct basic_block *target, int begin, int end)
+static struct multijmp *alloc_multijmp(struct dmr_C *C, struct basic_block *target, int begin, int end)
 {
 	struct multijmp *multijmp = __alloc_multijmp(0);
 	multijmp->target = target;
@@ -92,7 +92,7 @@ static inline int regno(pseudo_t n)
 	return retval;
 }
 
-const char *show_pseudo(pseudo_t pseudo)
+const char *show_pseudo(struct dmr_C *C, pseudo_t pseudo)
 {
 	static int n;
 	static char buffer[4][64];
@@ -247,7 +247,7 @@ static const char *opcodes[] = {
 	[OP_COPY] = "copy",
 };
 
-static char *show_asm_constraints(char *buf, const char *sep, struct asm_constraint_list *list)
+static char *show_asm_constraints(struct dmr_C *C, char *buf, const char *sep, struct asm_constraint_list *list)
 {
 	struct asm_constraint *entry;
 
@@ -262,7 +262,7 @@ static char *show_asm_constraints(char *buf, const char *sep, struct asm_constra
 	return buf;
 }
 
-static char *show_asm(char *buf, struct instruction *insn)
+static char *show_asm(struct dmr_C *C, char *buf, struct instruction *insn)
 {
 	struct asm_rules *rules = insn->asm_rules;
 
@@ -273,7 +273,7 @@ static char *show_asm(char *buf, struct instruction *insn)
 	return buf;
 }
 
-const char *show_instruction(struct instruction *insn)
+const char *show_instruction(struct dmr_C *C, struct instruction *insn)
 {
 	int opcode = insn->opcode;
 	static char buffer[4096];
@@ -495,7 +495,7 @@ const char *show_instruction(struct instruction *insn)
 	return buffer;
 }
 
-void show_bb(struct basic_block *bb)
+void show_bb(struct dmr_C *C, struct basic_block *bb)
 {
 	struct instruction *insn;
 
@@ -552,7 +552,7 @@ void show_bb(struct basic_block *bb)
 		printf("\tEND\n");
 }
 
-static void show_symbol_usage(pseudo_t pseudo)
+static void show_symbol_usage(struct dmr_C *C, pseudo_t pseudo)
 {
 	struct pseudo_user *pu;
 
@@ -563,7 +563,7 @@ static void show_symbol_usage(pseudo_t pseudo)
 	}
 }
 
-void show_entry(struct entrypoint *ep)
+void show_entry(struct dmr_C *C, struct entrypoint *ep)
 {
 	struct symbol *sym;
 	struct basic_block *bb;
@@ -599,14 +599,14 @@ void show_entry(struct entrypoint *ep)
 	printf("\n");
 }
 
-static void bind_label(struct symbol *label, struct basic_block *bb, struct position pos)
+static void bind_label(struct dmr_C *C, struct symbol *label, struct basic_block *bb, struct position pos)
 {
 	if (label->bb_target)
 		warning(pos, "label '%s' already bound", show_ident(label->ident));
 	label->bb_target = bb;
 }
 
-static struct basic_block * get_bound_block(struct entrypoint *ep, struct symbol *label)
+static struct basic_block * get_bound_block(struct dmr_C *C, struct entrypoint *ep, struct symbol *label)
 {
 	struct basic_block *bb = label->bb_target;
 
@@ -624,7 +624,7 @@ static void finish_block(struct entrypoint *ep)
 		ep->active = NULL;
 }
 
-static void add_goto(struct entrypoint *ep, struct basic_block *dst)
+static void add_goto(struct dmr_C *C, struct entrypoint *ep, struct basic_block *dst)
 {
 	struct basic_block *src = ep->active;
 	if (bb_reachable(src)) {
@@ -638,7 +638,7 @@ static void add_goto(struct entrypoint *ep, struct basic_block *dst)
 	}
 }
 
-static void add_one_insn(struct entrypoint *ep, struct instruction *insn)
+static void add_one_insn(struct dmr_C *C, struct entrypoint *ep, struct instruction *insn)
 {
 	struct basic_block *bb = ep->active;    
 
@@ -648,7 +648,7 @@ static void add_one_insn(struct entrypoint *ep, struct instruction *insn)
 	}
 }
 
-static void set_activeblock(struct entrypoint *ep, struct basic_block *bb)
+static void set_activeblock(struct dmr_C *C, struct entrypoint *ep, struct basic_block *bb)
 {
 	if (!bb_terminated(ep->active))
 		add_goto(ep, bb);
@@ -658,7 +658,7 @@ static void set_activeblock(struct entrypoint *ep, struct basic_block *bb)
 		add_bb(&ep->bbs, bb);
 }
 
-static void remove_parent(struct basic_block *child, struct basic_block *parent)
+static void remove_parent(struct dmr_C *C, struct basic_block *child, struct basic_block *parent)
 {
 	remove_bb_from_list(&child->parents, parent, 1);
 	if (!child->parents)
@@ -666,7 +666,7 @@ static void remove_parent(struct basic_block *child, struct basic_block *parent)
 }
 
 /* Change a "switch" into a branch */
-void insert_branch(struct basic_block *bb, struct instruction *jmp, struct basic_block *target)
+void insert_branch(struct dmr_C *C, struct basic_block *bb, struct instruction *jmp, struct basic_block *target)
 {
 	struct instruction *br, *old;
 	struct basic_block *child;
@@ -692,7 +692,7 @@ void insert_branch(struct basic_block *bb, struct instruction *jmp, struct basic
 }
 	
 
-void insert_select(struct basic_block *bb, struct instruction *br, struct instruction *phi_node, pseudo_t if_true, pseudo_t if_false)
+void insert_select(struct dmr_C *C, struct basic_block *bb, struct instruction *br, struct instruction *phi_node, pseudo_t if_true, pseudo_t if_false)
 {
 	pseudo_t target;
 	struct instruction *select;
@@ -724,7 +724,7 @@ static inline int bb_empty(struct basic_block *bb)
 }
 
 /* Add a label to the currently active block, return new active block */
-static struct basic_block * add_label(struct entrypoint *ep, struct symbol *label)
+static struct basic_block * add_label(struct dmr_C *C, struct entrypoint *ep, struct symbol *label)
 {
 	struct basic_block *bb = label->bb_target;
 
@@ -741,7 +741,7 @@ static struct basic_block * add_label(struct entrypoint *ep, struct symbol *labe
 	return bb;
 }
 
-static void add_branch(struct entrypoint *ep, struct expression *expr, pseudo_t cond, struct basic_block *bb_true, struct basic_block *bb_false)
+static void add_branch(struct dmr_C *C, struct entrypoint *ep, struct expression *expr, pseudo_t cond, struct basic_block *bb_true, struct basic_block *bb_false)
 {
 	struct basic_block *bb = ep->active;
 	struct instruction *br;
@@ -760,7 +760,7 @@ static void add_branch(struct entrypoint *ep, struct expression *expr, pseudo_t 
 }
 
 /* Dummy pseudo allocator */
-pseudo_t alloc_pseudo(struct instruction *def)
+pseudo_t alloc_pseudo(struct dmr_C *C, struct instruction *def)
 {
 	static int nr = 0;
 	struct pseudo * pseudo = __alloc_pseudo(0);
@@ -779,7 +779,7 @@ static void clear_symbol_pseudos(struct entrypoint *ep)
 	} END_FOR_EACH_PTR(pseudo);
 }
 
-static pseudo_t symbol_pseudo(struct entrypoint *ep, struct symbol *sym)
+static pseudo_t symbol_pseudo(struct dmr_C *C, struct entrypoint *ep, struct symbol *sym)
 {
 	pseudo_t pseudo;
 
@@ -800,7 +800,7 @@ static pseudo_t symbol_pseudo(struct entrypoint *ep, struct symbol *sym)
 	return pseudo;
 }
 
-pseudo_t value_pseudo(long long val)
+pseudo_t value_pseudo(struct dmr_C *C, long long val)
 {
 #define MAX_VAL_HASH 64
 	static struct pseudo_list *prev[MAX_VAL_HASH];
@@ -822,7 +822,7 @@ pseudo_t value_pseudo(long long val)
 	return pseudo;
 }
 
-static pseudo_t argument_pseudo(struct entrypoint *ep, int nr)
+static pseudo_t argument_pseudo(struct dmr_C *C, struct entrypoint *ep, int nr)
 {
 	pseudo_t pseudo = __alloc_pseudo(0);
 	struct instruction *entry = ep->entry;
@@ -836,7 +836,7 @@ static pseudo_t argument_pseudo(struct entrypoint *ep, int nr)
 	return pseudo;
 }
 
-pseudo_t alloc_phi(struct basic_block *source, pseudo_t pseudo, int size)
+pseudo_t alloc_phi(struct dmr_C *C, struct basic_block *source, pseudo_t pseudo, int size)
 {
 	struct instruction *insn = alloc_instruction(OP_PHISOURCE, size);
 	pseudo_t phi = __alloc_pseudo(0);
@@ -872,7 +872,7 @@ static void finish_address_gen(struct entrypoint *ep, struct access_data *ad)
 {
 }
 
-static int linearize_simple_address(struct entrypoint *ep,
+static int linearize_simple_address(struct dmr_C *C, struct entrypoint *ep,
 	struct expression *addr,
 	struct access_data *ad)
 {
@@ -893,7 +893,7 @@ static int linearize_simple_address(struct entrypoint *ep,
 	return 1;
 }
 
-static struct symbol *base_type(struct symbol *sym)
+static struct symbol *base_type(struct dmr_C *C, struct symbol *sym)
 {
 	struct symbol *base = sym;
 
@@ -906,7 +906,7 @@ static struct symbol *base_type(struct symbol *sym)
 	return sym;
 }
 
-static int linearize_address_gen(struct entrypoint *ep,
+static int linearize_address_gen(struct dmr_C *C, struct entrypoint *ep,
 	struct expression *expr,
 	struct access_data *ad)
 {
@@ -927,7 +927,7 @@ static int linearize_address_gen(struct entrypoint *ep,
 	return 0;
 }
 
-static pseudo_t add_load(struct entrypoint *ep, struct access_data *ad)
+static pseudo_t add_load(struct dmr_C *C, struct entrypoint *ep, struct access_data *ad)
 {
 	struct instruction *insn;
 	pseudo_t new;
@@ -947,7 +947,7 @@ static pseudo_t add_load(struct entrypoint *ep, struct access_data *ad)
 	return new;
 }
 
-static void add_store(struct entrypoint *ep, struct access_data *ad, pseudo_t value)
+static void add_store(struct dmr_C *C, struct entrypoint *ep, struct access_data *ad, pseudo_t value)
 {
 	struct basic_block *bb = ep->active;
 
@@ -960,7 +960,7 @@ static void add_store(struct entrypoint *ep, struct access_data *ad, pseudo_t va
 	}
 }
 
-static pseudo_t linearize_store_gen(struct entrypoint *ep,
+static pseudo_t linearize_store_gen(struct dmr_C *C, struct entrypoint *ep,
 		pseudo_t value,
 		struct access_data *ad)
 {
@@ -982,7 +982,7 @@ static pseudo_t linearize_store_gen(struct entrypoint *ep,
 	return value;
 }
 
-static pseudo_t add_binary_op(struct entrypoint *ep, struct symbol *ctype, int op, pseudo_t left, pseudo_t right)
+static pseudo_t add_binary_op(struct dmr_C *C, struct entrypoint *ep, struct symbol *ctype, int op, pseudo_t left, pseudo_t right)
 {
 	struct instruction *insn = alloc_typed_instruction(op, ctype);
 	pseudo_t target = alloc_pseudo(insn);
@@ -993,7 +993,7 @@ static pseudo_t add_binary_op(struct entrypoint *ep, struct symbol *ctype, int o
 	return target;
 }
 
-static pseudo_t add_setval(struct entrypoint *ep, struct symbol *ctype, struct expression *val)
+static pseudo_t add_setval(struct dmr_C *C, struct entrypoint *ep, struct symbol *ctype, struct expression *val)
 {
 	struct instruction *insn = alloc_typed_instruction(OP_SETVAL, ctype);
 	pseudo_t target = alloc_pseudo(insn);
@@ -1003,7 +1003,7 @@ static pseudo_t add_setval(struct entrypoint *ep, struct symbol *ctype, struct e
 	return target;
 }
 
-static pseudo_t add_symbol_address(struct entrypoint *ep, struct symbol *sym)
+static pseudo_t add_symbol_address(struct dmr_C *C, struct entrypoint *ep, struct symbol *sym)
 {
 	struct instruction *insn = alloc_instruction(OP_SYMADDR, bits_in_pointer);
 	pseudo_t target = alloc_pseudo(insn);
@@ -1014,7 +1014,7 @@ static pseudo_t add_symbol_address(struct entrypoint *ep, struct symbol *sym)
 	return target;
 }
 
-static pseudo_t linearize_load_gen(struct entrypoint *ep, struct access_data *ad)
+static pseudo_t linearize_load_gen(struct dmr_C *C, struct entrypoint *ep, struct access_data *ad)
 {
 	pseudo_t new = add_load(ep, ad);
 
@@ -1027,7 +1027,7 @@ static pseudo_t linearize_load_gen(struct entrypoint *ep, struct access_data *ad
 	return new;
 }
 
-static pseudo_t linearize_access(struct entrypoint *ep, struct expression *expr)
+static pseudo_t linearize_access(struct dmr_C *C, struct entrypoint *ep, struct expression *expr)
 {
 	struct access_data ad = { NULL, };
 	pseudo_t value;
@@ -1040,7 +1040,7 @@ static pseudo_t linearize_access(struct entrypoint *ep, struct expression *expr)
 }
 
 /* FIXME: FP */
-static pseudo_t linearize_inc_dec(struct entrypoint *ep, struct expression *expr, int postop)
+static pseudo_t linearize_inc_dec(struct dmr_C *C, struct entrypoint *ep, struct expression *expr, int postop)
 {
 	struct access_data ad = { NULL, };
 		pseudo_t old, new, one;
@@ -1057,7 +1057,7 @@ static pseudo_t linearize_inc_dec(struct entrypoint *ep, struct expression *expr
 	return postop ? old : new;
 }
 
-static pseudo_t add_uniop(struct entrypoint *ep, struct expression *expr, int op, pseudo_t src)
+static pseudo_t add_uniop(struct dmr_C *C, struct entrypoint *ep, struct expression *expr, int op, pseudo_t src)
 {
 	struct instruction *insn = alloc_typed_instruction(op, expr->ctype);
 	pseudo_t new = alloc_pseudo(insn);
@@ -1068,7 +1068,7 @@ static pseudo_t add_uniop(struct entrypoint *ep, struct expression *expr, int op
 	return new;
 }
 
-static pseudo_t linearize_slice(struct entrypoint *ep, struct expression *expr)
+static pseudo_t linearize_slice(struct dmr_C *C, struct entrypoint *ep, struct expression *expr)
 {
 	pseudo_t pre = linearize_expression(ep, expr->base);
 	struct instruction *insn = alloc_typed_instruction(OP_SLICE, expr->ctype);
@@ -1082,7 +1082,7 @@ static pseudo_t linearize_slice(struct entrypoint *ep, struct expression *expr)
 	return new;
 }
 
-static pseudo_t linearize_regular_preop(struct entrypoint *ep, struct expression *expr)
+static pseudo_t linearize_regular_preop(struct dmr_C *C, struct entrypoint *ep, struct expression *expr)
 {
 	pseudo_t pre = linearize_expression(ep, expr->unop);
 	switch (expr->op) {
@@ -1100,7 +1100,7 @@ static pseudo_t linearize_regular_preop(struct entrypoint *ep, struct expression
 	return VOID;
 }
 
-static pseudo_t linearize_preop(struct entrypoint *ep, struct expression *expr)
+static pseudo_t linearize_preop(struct dmr_C *C, struct entrypoint *ep, struct expression *expr)
 {
 	/*
 	 * '*' is an lvalue access, and is fundamentally different
@@ -1114,7 +1114,7 @@ static pseudo_t linearize_preop(struct entrypoint *ep, struct expression *expr)
 	return linearize_regular_preop(ep, expr);
 }
 
-static pseudo_t linearize_postop(struct entrypoint *ep, struct expression *expr)
+static pseudo_t linearize_postop(struct dmr_C *C, struct entrypoint *ep, struct expression *expr)
 {
 	return linearize_inc_dec(ep, expr, 1);
 }	
@@ -1125,7 +1125,7 @@ static pseudo_t linearize_postop(struct entrypoint *ep, struct expression *expr)
  * case, since you can't access through it anyway without another
  * cast.
  */
-static struct instruction *alloc_cast_instruction(struct symbol *src, struct symbol *ctype)
+static struct instruction *alloc_cast_instruction(struct dmr_C *C, struct symbol *src, struct symbol *ctype)
 {
 	int opcode = OP_CAST;
 	struct symbol *base = src;
@@ -1144,7 +1144,7 @@ static struct instruction *alloc_cast_instruction(struct symbol *src, struct sym
 	return alloc_typed_instruction(opcode, ctype);
 }
 
-static pseudo_t cast_pseudo(struct entrypoint *ep, pseudo_t src, struct symbol *from, struct symbol *to)
+static pseudo_t cast_pseudo(struct dmr_C *C, struct entrypoint *ep, pseudo_t src, struct symbol *from, struct symbol *to)
 {
 	pseudo_t result;
 	struct instruction *insn;
@@ -1164,7 +1164,7 @@ static pseudo_t cast_pseudo(struct entrypoint *ep, pseudo_t src, struct symbol *
 	return result;
 }
 
-static int opcode_sign(int opcode, struct symbol *ctype)
+static int opcode_sign(struct dmr_C *C, int opcode, struct symbol *ctype)
 {
 	if (ctype && (ctype->ctype.modifiers & MOD_SIGNED)) {
 		switch(opcode) {
@@ -1175,7 +1175,7 @@ static int opcode_sign(int opcode, struct symbol *ctype)
 	return opcode;
 }
 
-static pseudo_t linearize_assignment(struct entrypoint *ep, struct expression *expr)
+static pseudo_t linearize_assignment(struct dmr_C *C, struct entrypoint *ep, struct expression *expr)
 {
 	struct access_data ad = { NULL, };
 	struct expression *target = expr->left;
@@ -1215,7 +1215,7 @@ static pseudo_t linearize_assignment(struct entrypoint *ep, struct expression *e
 	return value;
 }
 
-static pseudo_t linearize_call_expression(struct entrypoint *ep, struct expression *expr)
+static pseudo_t linearize_call_expression(struct dmr_C *C, struct entrypoint *ep, struct expression *expr)
 {
 	struct expression *arg, *fn;
 	struct instruction *insn = alloc_typed_instruction(OP_CALL, expr->ctype);
@@ -1293,7 +1293,7 @@ static pseudo_t linearize_call_expression(struct entrypoint *ep, struct expressi
 	return retval;
 }
 
-static pseudo_t linearize_binop(struct entrypoint *ep, struct expression *expr)
+static pseudo_t linearize_binop(struct dmr_C *C, struct entrypoint *ep, struct expression *expr)
 {
 	pseudo_t src1, src2, dst;
 	static const int opcode[] = {
@@ -1315,11 +1315,11 @@ static pseudo_t linearize_binop(struct entrypoint *ep, struct expression *expr)
 	return dst;
 }
 
-static pseudo_t linearize_logical_branch(struct entrypoint *ep, struct expression *expr, struct basic_block *bb_true, struct basic_block *bb_false);
+static pseudo_t linearize_logical_branch(struct dmr_C *C, struct entrypoint *ep, struct expression *expr, struct basic_block *bb_true, struct basic_block *bb_false);
 
-pseudo_t linearize_cond_branch(struct entrypoint *ep, struct expression *expr, struct basic_block *bb_true, struct basic_block *bb_false);
+pseudo_t linearize_cond_branch(struct dmr_C *C, struct entrypoint *ep, struct expression *expr, struct basic_block *bb_true, struct basic_block *bb_false);
 
-static pseudo_t linearize_select(struct entrypoint *ep, struct expression *expr)
+static pseudo_t linearize_select(struct dmr_C *C, struct entrypoint *ep, struct expression *expr)
 {
 	pseudo_t cond, true, false, res;
 	struct instruction *insn;
@@ -1341,7 +1341,7 @@ static pseudo_t linearize_select(struct entrypoint *ep, struct expression *expr)
 	return res;
 }
 
-static pseudo_t add_join_conditional(struct entrypoint *ep, struct expression *expr,
+static pseudo_t add_join_conditional(struct dmr_C *C, struct entrypoint *ep, struct expression *expr,
 				     pseudo_t phi1, pseudo_t phi2)
 {
 	pseudo_t target;
@@ -1360,7 +1360,7 @@ static pseudo_t add_join_conditional(struct entrypoint *ep, struct expression *e
 	return target;
 }	
 
-static pseudo_t linearize_short_conditional(struct entrypoint *ep, struct expression *expr,
+static pseudo_t linearize_short_conditional(struct dmr_C *C, struct entrypoint *ep, struct expression *expr,
 					    struct expression *cond,
 					    struct expression *expr_false)
 {
@@ -1386,7 +1386,7 @@ static pseudo_t linearize_short_conditional(struct entrypoint *ep, struct expres
 	return add_join_conditional(ep, expr, phi1, phi2);
 }
 
-static pseudo_t linearize_conditional(struct entrypoint *ep, struct expression *expr,
+static pseudo_t linearize_conditional(struct dmr_C *C, struct entrypoint *ep, struct expression *expr,
 				      struct expression *cond,
 				      struct expression *expr_true,
 				      struct expression *expr_false)
@@ -1417,7 +1417,7 @@ static pseudo_t linearize_conditional(struct entrypoint *ep, struct expression *
 	return add_join_conditional(ep, expr, phi1, phi2);
 }
 
-static pseudo_t linearize_logical(struct entrypoint *ep, struct expression *expr)
+static pseudo_t linearize_logical(struct dmr_C *C, struct entrypoint *ep, struct expression *expr)
 {
 	struct expression *shortcut;
 
@@ -1428,7 +1428,7 @@ static pseudo_t linearize_logical(struct entrypoint *ep, struct expression *expr
 	return linearize_conditional(ep, expr, expr->left, expr->right, shortcut);
 }
 
-static pseudo_t linearize_compare(struct entrypoint *ep, struct expression *expr)
+static pseudo_t linearize_compare(struct dmr_C *C, struct entrypoint *ep, struct expression *expr)
 {
 	static const int cmpop[] = {
 		['>'] = OP_SET_GT, ['<'] = OP_SET_LT,
@@ -1449,7 +1449,7 @@ static pseudo_t linearize_compare(struct entrypoint *ep, struct expression *expr
 }
 
 
-pseudo_t linearize_cond_branch(struct entrypoint *ep, struct expression *expr, struct basic_block *bb_true, struct basic_block *bb_false)
+pseudo_t linearize_cond_branch(struct dmr_C *C, struct entrypoint *ep, struct expression *expr, struct basic_block *bb_true, struct basic_block *bb_false)
 {
 	pseudo_t cond;
 
@@ -1492,7 +1492,7 @@ pseudo_t linearize_cond_branch(struct entrypoint *ep, struct expression *expr, s
 
 
 	
-static pseudo_t linearize_logical_branch(struct entrypoint *ep, struct expression *expr, struct basic_block *bb_true, struct basic_block *bb_false)
+static pseudo_t linearize_logical_branch(struct dmr_C *C, struct entrypoint *ep, struct expression *expr, struct basic_block *bb_true, struct basic_block *bb_false)
 {
 	struct basic_block *next = alloc_basic_block(ep, expr->pos);
 
@@ -1505,7 +1505,7 @@ static pseudo_t linearize_logical_branch(struct entrypoint *ep, struct expressio
 	return VOID;
 }
 
-static pseudo_t linearize_cast(struct entrypoint *ep, struct expression *expr)
+static pseudo_t linearize_cast(struct dmr_C *C, struct entrypoint *ep, struct expression *expr)
 {
 	pseudo_t src;
 	struct expression *orig = expr->cast_expression;
@@ -1517,7 +1517,7 @@ static pseudo_t linearize_cast(struct entrypoint *ep, struct expression *expr)
 	return cast_pseudo(ep, src, orig->ctype, expr->ctype);
 }
 
-static pseudo_t linearize_position(struct entrypoint *ep, struct expression *pos, struct access_data *ad)
+static pseudo_t linearize_position(struct dmr_C *C, struct entrypoint *ep, struct expression *pos, struct access_data *ad)
 {
 	struct expression *init_expr = pos->init_expr;
 
@@ -1527,7 +1527,7 @@ static pseudo_t linearize_position(struct entrypoint *ep, struct expression *pos
 	return linearize_initializer(ep, init_expr, ad);
 }
 
-static pseudo_t linearize_initializer(struct entrypoint *ep, struct expression *initializer, struct access_data *ad)
+static pseudo_t linearize_initializer(struct dmr_C *C, struct entrypoint *ep, struct expression *initializer, struct access_data *ad)
 {
 	switch (initializer->type) {
 	case EXPR_INITIALIZER: {
@@ -1552,7 +1552,7 @@ static pseudo_t linearize_initializer(struct entrypoint *ep, struct expression *
 	return VOID;
 }
 
-static void linearize_argument(struct entrypoint *ep, struct symbol *arg, int nr)
+static void linearize_argument(struct dmr_C *C, struct entrypoint *ep, struct symbol *arg, int nr)
 {
 	struct access_data ad = { NULL, };
 
@@ -1563,7 +1563,7 @@ static void linearize_argument(struct entrypoint *ep, struct symbol *arg, int nr
 	finish_address_gen(ep, &ad);
 }
 
-pseudo_t linearize_expression(struct entrypoint *ep, struct expression *expr)
+pseudo_t linearize_expression(struct dmr_C *C, struct entrypoint *ep, struct expression *expr)
 {
 	if (!expr)
 		return VOID;
@@ -1637,7 +1637,7 @@ pseudo_t linearize_expression(struct entrypoint *ep, struct expression *expr)
 	return VOID;
 }
 
-static pseudo_t linearize_one_symbol(struct entrypoint *ep, struct symbol *sym)
+static pseudo_t linearize_one_symbol(struct dmr_C *C, struct entrypoint *ep, struct symbol *sym)
 {
 	struct access_data ad = { NULL, };
 	pseudo_t value;
@@ -1656,7 +1656,7 @@ static pseudo_t linearize_one_symbol(struct entrypoint *ep, struct symbol *sym)
 	return value;
 }
 
-static pseudo_t linearize_compound_statement(struct entrypoint *ep, struct statement *stmt)
+static pseudo_t linearize_compound_statement(struct dmr_C *C, struct entrypoint *ep, struct statement *stmt)
 {
 	pseudo_t pseudo;
 	struct statement *s;
@@ -1685,7 +1685,7 @@ static pseudo_t linearize_compound_statement(struct entrypoint *ep, struct state
 	return pseudo;
 }
 
-static pseudo_t linearize_inlined_call(struct entrypoint *ep, struct statement *stmt)
+static pseudo_t linearize_inlined_call(struct dmr_C *C, struct entrypoint *ep, struct statement *stmt)
 {
 	struct instruction *insn = alloc_instruction(OP_INLINED_CALL, 0);
 	struct statement *args = stmt->args;
@@ -1711,7 +1711,7 @@ static pseudo_t linearize_inlined_call(struct entrypoint *ep, struct statement *
 	return pseudo;
 }
 
-static pseudo_t linearize_context(struct entrypoint *ep, struct statement *stmt)
+static pseudo_t linearize_context(struct dmr_C *C, struct entrypoint *ep, struct statement *stmt)
 {
 	struct instruction *insn = alloc_instruction(OP_CONTEXT, 0);
 	struct expression *expr = stmt->expression;
@@ -1726,7 +1726,7 @@ static pseudo_t linearize_context(struct entrypoint *ep, struct statement *stmt)
 	return VOID;
 }
 
-static pseudo_t linearize_range(struct entrypoint *ep, struct statement *stmt)
+static pseudo_t linearize_range(struct dmr_C *C, struct entrypoint *ep, struct statement *stmt)
 {
 	struct instruction *insn = alloc_instruction(OP_RANGE, 0);
 
@@ -1737,10 +1737,10 @@ static pseudo_t linearize_range(struct entrypoint *ep, struct statement *stmt)
 	return VOID;
 }
 
-ALLOCATOR(asm_rules, "asm rules");
-ALLOCATOR(asm_constraint, "asm constraints");
+//ALLOCATOR(asm_rules, "asm rules");
+//ALLOCATOR(asm_constraint, "asm constraints");
 
-static void add_asm_input(struct entrypoint *ep, struct instruction *insn, struct expression *expr,
+static void add_asm_input(struct dmr_C *C, struct entrypoint *ep, struct instruction *insn, struct expression *expr,
 	const char *constraint, const struct ident *ident)
 {
 	pseudo_t pseudo = linearize_expression(ep, expr);
@@ -1752,7 +1752,7 @@ static void add_asm_input(struct entrypoint *ep, struct instruction *insn, struc
 	add_ptr_list(&insn->asm_rules->inputs, rule);
 }
 
-static void add_asm_output(struct entrypoint *ep, struct instruction *insn, struct expression *expr,
+static void add_asm_output(struct dmr_C *C, struct entrypoint *ep, struct instruction *insn, struct expression *expr,
 	const char *constraint, const struct ident *ident)
 {
 	struct access_data ad = { NULL, };
@@ -1770,7 +1770,7 @@ static void add_asm_output(struct entrypoint *ep, struct instruction *insn, stru
 	add_ptr_list(&insn->asm_rules->outputs, rule);
 }
 
-static pseudo_t linearize_asm_statement(struct entrypoint *ep, struct statement *stmt)
+static pseudo_t linearize_asm_statement(struct dmr_C *C, struct entrypoint *ep, struct statement *stmt)
 {
 	int state;
 	struct expression *expr;
@@ -1839,7 +1839,7 @@ static pseudo_t linearize_asm_statement(struct entrypoint *ep, struct statement 
 	return VOID;
 }
 
-static int multijmp_cmp(const void *_a, const void *_b)
+static int multijmp_cmp(struct dmr_C *C, const void *_a, const void *_b)
 {
 	const struct multijmp *a = _a;
 	const struct multijmp *b = _b;
@@ -1860,12 +1860,12 @@ static int multijmp_cmp(const void *_a, const void *_b)
 	return a->begin < b->begin ? -1 : 1;
 }
 
-static void sort_switch_cases(struct instruction *insn)
+static void sort_switch_cases(struct dmr_C *C, struct instruction *insn)
 {
 	sort_list((struct ptr_list **)&insn->multijmp_list, multijmp_cmp);
 }
 
-static pseudo_t linearize_declaration(struct entrypoint *ep, struct statement *stmt)
+static pseudo_t linearize_declaration(struct dmr_C *C, struct entrypoint *ep, struct statement *stmt)
 {
 	struct symbol *sym;
 
@@ -1877,7 +1877,7 @@ static pseudo_t linearize_declaration(struct entrypoint *ep, struct statement *s
 	return VOID;
 }
 
-static pseudo_t linearize_return(struct entrypoint *ep, struct statement *stmt)
+static pseudo_t linearize_return(struct dmr_C *C, struct entrypoint *ep, struct statement *stmt)
 {
 	struct expression *expr = stmt->expression;
 	struct basic_block *bb_return = get_bound_block(ep, stmt->ret_target);
@@ -1901,7 +1901,7 @@ static pseudo_t linearize_return(struct entrypoint *ep, struct statement *stmt)
 	return VOID;
 }
 
-static pseudo_t linearize_switch(struct entrypoint *ep, struct statement *stmt)
+static pseudo_t linearize_switch(struct dmr_C *C, struct entrypoint *ep, struct statement *stmt)
 {
 	struct symbol *sym;
 	struct instruction *switch_ins;
@@ -1964,7 +1964,7 @@ static pseudo_t linearize_switch(struct entrypoint *ep, struct statement *stmt)
 	return VOID;
 }
 
-static pseudo_t linearize_iterator(struct entrypoint *ep, struct statement *stmt)
+static pseudo_t linearize_iterator(struct dmr_C *C, struct entrypoint *ep, struct statement *stmt)
 {
 	struct statement  *pre_statement = stmt->iterator_pre_statement;
 	struct expression *pre_condition = stmt->iterator_pre_condition;
@@ -2007,7 +2007,7 @@ static pseudo_t linearize_iterator(struct entrypoint *ep, struct statement *stmt
 	return VOID;
 }
 
-pseudo_t linearize_statement(struct entrypoint *ep, struct statement *stmt)
+pseudo_t linearize_statement(struct dmr_C *C, struct entrypoint *ep, struct statement *stmt)
 {
 	struct basic_block *bb;
 
@@ -2143,7 +2143,7 @@ pseudo_t linearize_statement(struct entrypoint *ep, struct statement *stmt)
 	return VOID;
 }
 
-static struct entrypoint *linearize_fn(struct symbol *sym, struct symbol *base_type)
+static struct entrypoint *linearize_fn(struct dmr_C *C, struct symbol *sym, struct symbol *base_type)
 {
 	struct entrypoint *ep;
 	struct basic_block *bb;
@@ -2232,7 +2232,7 @@ repeat:
 	return ep;
 }
 
-struct entrypoint *linearize_symbol(struct symbol *sym)
+struct entrypoint *linearize_symbol(struct dmr_C *C, struct symbol *sym)
 {
 	struct symbol *base_type;
 

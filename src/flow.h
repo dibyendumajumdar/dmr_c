@@ -1,7 +1,14 @@
-#ifndef FLOW_H
-#define FLOW_H
+#ifndef DMR_C_FLOW_H
+#define DMR_C_FLOW_H
 
-#include "lib.h"
+/*
+* Flow - walk the linearized flowgraph, simplifying it as we
+* go along.
+*
+* Copyright (C) 2004 Linus Torvalds
+*/
+
+#include <dmr_c.h>
 
 extern unsigned long bb_generation;
 

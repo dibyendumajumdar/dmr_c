@@ -65,7 +65,9 @@ set(LIB_H
 	src/char.h
 	src/dmr_c.h
 	src/expression.h
+	src/flow.h
 	src/ident-list.h
+	src/linearize.h
 	src/parse.h
 	src/port.h 
 	src/ptrlist.h
@@ -78,11 +80,16 @@ set(LIB_H
 set(LIB_SRCS 
 	src/allocate.c
 	src/char.c
+	src/cse.c
 	src/dmr_c.c
 	src/expression.c
 	src/evaluate.c
 	src/expand.c
+	src/flow.c
 	src/inline.c
+	src/linearize.c
+	src/liveness.c
+	src/memops.c
 	src/parse.c
 	src/target.c
 	src/tokenize.c
@@ -90,7 +97,9 @@ set(LIB_SRCS
 	src/ptrlist.c
 	src/scope.c
 	src/show-parse.c
+	src/simplify.c
 	src/symbol.c
+	src/unssa.c
 	)
 
 if (MSVC OR APPLE)

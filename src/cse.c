@@ -21,8 +21,6 @@
 #define INSN_HASH_SIZE 256
 static struct instruction_list *insn_hash_table[INSN_HASH_SIZE];
 
-int repeat_phase;
-
 static int phi_compare(pseudo_t phi1, pseudo_t phi2)
 {
 	const struct instruction *def1 = phi1->def;

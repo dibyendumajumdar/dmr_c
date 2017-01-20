@@ -54,6 +54,8 @@ struct linearizer_state_t {
 	struct allocator asm_constraint_allocator;
 	struct allocator asm_rules_allocator;
 	struct position current_pos;
+	int repeat_phase;
+	unsigned long bb_generation;
 };
 
 #define VOID(C) (&C->L->void_pseudo)
@@ -459,6 +461,9 @@ void show_entry(struct dmr_C *C, struct entrypoint *ep);
 const char *show_pseudo(struct dmr_C *C, pseudo_t pseudo);
 void show_bb(struct dmr_C *C, struct basic_block *bb);
 const char *show_instruction(struct dmr_C *C, struct instruction *insn);
+
+void init_linearizer(struct dmr_C *C);
+void destroy_linearizer(struct dmr_C *C);
 
 #endif /* LINEARIZE_H */
 

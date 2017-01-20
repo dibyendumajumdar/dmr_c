@@ -19,8 +19,6 @@
 #include "flow.h"
 #include "target.h"
 
-unsigned long bb_generation;
-
 /*
  * Dammit, if we have a phi-node followed by a conditional
  * branch on that phi-node, we should damn well be able to

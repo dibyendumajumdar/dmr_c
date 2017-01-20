@@ -1974,37 +1974,37 @@ static pseudo_t linearize_iterator(struct dmr_C *C, struct entrypoint *ep, struc
 	struct basic_block *loop_top, *loop_body, *loop_continue, *loop_end;
 
 	concat_symbol_list(stmt->iterator_syms, &ep->syms);
-	linearize_statement(ep, pre_statement);
+	linearize_statement(C, ep, pre_statement);
 
-	loop_body = loop_top = alloc_basic_block(ep, stmt->pos);
-	loop_continue = alloc_basic_block(ep, stmt->pos);
-	loop_end = alloc_basic_block(ep, stmt->pos);
+	loop_body = loop_top = alloc_basic_block(C, ep, stmt->pos);
+	loop_continue = alloc_basic_block(C, ep, stmt->pos);
+	loop_end = alloc_basic_block(C, ep, stmt->pos);
 
 	/* An empty post-condition means that it's the same as the pre-condition */
 	if (!post_condition) {
-		loop_top = alloc_basic_block(ep, stmt->pos);
-		set_activeblock(ep, loop_top);
+		loop_top = alloc_basic_block(C, ep, stmt->pos);
+		set_activeblock(C, ep, loop_top);
 	}
 
 	if (pre_condition)
-			linearize_cond_branch(ep, pre_condition, loop_body, loop_end);
+			linearize_cond_branch(C, ep, pre_condition, loop_body, loop_end);
 
-	bind_label(stmt->iterator_continue, loop_continue, stmt->pos);
-	bind_label(stmt->iterator_break, loop_end, stmt->pos);
+	bind_label(C, stmt->iterator_continue, loop_continue, stmt->pos);
+	bind_label(C, stmt->iterator_break, loop_end, stmt->pos);
 
-	set_activeblock(ep, loop_body);
-	linearize_statement(ep, statement);
-	add_goto(ep, loop_continue);
+	set_activeblock(C, ep, loop_body);
+	linearize_statement(C, ep, statement);
+	add_goto(C, ep, loop_continue);
 
-	set_activeblock(ep, loop_continue);
-	linearize_statement(ep, post_statement);
+	set_activeblock(C, ep, loop_continue);
+	linearize_statement(C, ep, post_statement);
 	if (!post_condition)
-		add_goto(ep, loop_top);
+		add_goto(C, ep, loop_top);
 	else
-		linearize_cond_branch(ep, post_condition, loop_top, loop_end);
-	set_activeblock(ep, loop_end);
+		linearize_cond_branch(C, ep, post_condition, loop_top, loop_end);
+	set_activeblock(C, ep, loop_end);
 
-	return VOID;
+	return VOID(C);
 }
 
 pseudo_t linearize_statement(struct dmr_C *C, struct entrypoint *ep, struct statement *stmt)
@@ -2012,38 +2012,38 @@ pseudo_t linearize_statement(struct dmr_C *C, struct entrypoint *ep, struct stat
 	struct basic_block *bb;
 
 	if (!stmt)
-		return VOID;
+		return VOID(C);
 
 	bb = ep->active;
 	if (bb && !bb->insns)
 		bb->pos = stmt->pos;
-	current_pos = stmt->pos;
+	C->L->current_pos = stmt->pos;
 
 	switch (stmt->type) {
 	case STMT_NONE:
 		break;
 
 	case STMT_DECLARATION:
-		return linearize_declaration(ep, stmt);
+		return linearize_declaration(C, ep, stmt);
 
 	case STMT_CONTEXT:
-		return linearize_context(ep, stmt);
+		return linearize_context(C, ep, stmt);
 
 	case STMT_RANGE:
-		return linearize_range(ep, stmt);
+		return linearize_range(C, ep, stmt);
 
 	case STMT_EXPRESSION:
-		return linearize_expression(ep, stmt->expression);
+		return linearize_expression(C, ep, stmt->expression);
 
 	case STMT_ASM:
-		return linearize_asm_statement(ep, stmt);
+		return linearize_asm_statement(C, ep, stmt);
 
 	case STMT_RETURN:
-		return linearize_return(ep, stmt);
+		return linearize_return(C, ep, stmt);
 
 	case STMT_CASE: {
-		add_label(ep, stmt->case_label);
-		linearize_statement(ep, stmt->case_statement);
+		add_label(C, ep, stmt->case_label);
+		linearize_statement(C, ep, stmt->case_statement);
 		break;
 	}
 
@@ -2051,8 +2051,8 @@ pseudo_t linearize_statement(struct dmr_C *C, struct entrypoint *ep, struct stat
 		struct symbol *label = stmt->label_identifier;
 
 		if (label->used) {
-			add_label(ep, label);
-			linearize_statement(ep, stmt->label_statement);
+			add_label(C, ep, label);
+			linearize_statement(C, ep, stmt->label_statement);
 		}
 		break;
 	}
@@ -2069,7 +2069,7 @@ pseudo_t linearize_statement(struct dmr_C *C, struct entrypoint *ep, struct stat
 			break;
 
 		if (stmt->goto_label) {
-			add_goto(ep, get_bound_block(ep, stmt->goto_label));
+			add_goto(C, ep, get_bound_block(C, ep, stmt->goto_label));
 			break;
 		}
 
@@ -2079,18 +2079,18 @@ pseudo_t linearize_statement(struct dmr_C *C, struct entrypoint *ep, struct stat
 
 		/* This can happen as part of simplification */
 		if (expr->type == EXPR_LABEL) {
-			add_goto(ep, get_bound_block(ep, expr->label_symbol));
+			add_goto(C, ep, get_bound_block(C, ep, expr->label_symbol));
 			break;
 		}
 
-		pseudo = linearize_expression(ep, expr);
-		goto_ins = alloc_instruction(OP_COMPUTEDGOTO, 0);
-		use_pseudo(goto_ins, pseudo, &goto_ins->target);
-		add_one_insn(ep, goto_ins);
+		pseudo = linearize_expression(C, ep, expr);
+		goto_ins = alloc_instruction(C, OP_COMPUTEDGOTO, 0);
+		use_pseudo(C, goto_ins, pseudo, &goto_ins->target);
+		add_one_insn(C, ep, goto_ins);
 
 		FOR_EACH_PTR(stmt->target_list, sym) {
-			struct basic_block *bb_computed = get_bound_block(ep, sym);
-			struct multijmp *jmp = alloc_multijmp(bb_computed, 1, 0);
+			struct basic_block *bb_computed = get_bound_block(C, ep, sym);
+			struct multijmp *jmp = alloc_multijmp(C, bb_computed, 1, 0);
 			add_multijmp(&goto_ins->multijmp_list, jmp);
 			add_bb(&bb_computed->parents, ep->active);
 			add_bb(&active->children, bb_computed);
@@ -2102,8 +2102,8 @@ pseudo_t linearize_statement(struct dmr_C *C, struct entrypoint *ep, struct stat
 
 	case STMT_COMPOUND:
 		if (stmt->inline_fn)
-			return linearize_inlined_call(ep, stmt);
-		return linearize_compound_statement(ep, stmt);
+			return linearize_inlined_call(C, ep, stmt);
+		return linearize_compound_statement(C, ep, stmt);
 
 	/*
 	 * This could take 'likely/unlikely' into account, and
@@ -2113,34 +2113,34 @@ pseudo_t linearize_statement(struct dmr_C *C, struct entrypoint *ep, struct stat
 		struct basic_block *bb_true, *bb_false, *endif;
  		struct expression *cond = stmt->if_conditional;
 
-		bb_true = alloc_basic_block(ep, stmt->pos);
-		bb_false = endif = alloc_basic_block(ep, stmt->pos);
+		bb_true = alloc_basic_block(C, ep, stmt->pos);
+		bb_false = endif = alloc_basic_block(C, ep, stmt->pos);
 
- 		linearize_cond_branch(ep, cond, bb_true, bb_false);
+ 		linearize_cond_branch(C, ep, cond, bb_true, bb_false);
 
-		set_activeblock(ep, bb_true);
- 		linearize_statement(ep, stmt->if_true);
+		set_activeblock(C, ep, bb_true);
+ 		linearize_statement(C, ep, stmt->if_true);
  
  		if (stmt->if_false) {
-			endif = alloc_basic_block(ep, stmt->pos);
-			add_goto(ep, endif);
-			set_activeblock(ep, bb_false);
- 			linearize_statement(ep, stmt->if_false);
+			endif = alloc_basic_block(C, ep, stmt->pos);
+			add_goto(C, ep, endif);
+			set_activeblock(C, ep, bb_false);
+ 			linearize_statement(C, ep, stmt->if_false);
 		}
-		set_activeblock(ep, endif);
+		set_activeblock(C, ep, endif);
 		break;
 	}
 
 	case STMT_SWITCH:
-		return linearize_switch(ep, stmt);
+		return linearize_switch(C, ep, stmt);
 
 	case STMT_ITERATOR:
-		return linearize_iterator(ep, stmt);
+		return linearize_iterator(C, ep, stmt);
 
 	default:
 		break;
 	}
-	return VOID;
+	return VOID(C);
 }
 
 static struct entrypoint *linearize_fn(struct dmr_C *C, struct symbol *sym, struct symbol *base_type)
@@ -2155,15 +2155,15 @@ static struct entrypoint *linearize_fn(struct dmr_C *C, struct symbol *sym, stru
 	if (!base_type->stmt)
 		return NULL;
 
-	ep = alloc_entrypoint();
-	bb = alloc_basic_block(ep, sym->pos);
+	ep = alloc_entrypoint(C);
+	bb = alloc_basic_block(C, ep, sym->pos);
 	
 	ep->name = sym;
 	sym->ep = ep;
-	set_activeblock(ep, bb);
+	set_activeblock(C, ep, bb);
 
-	entry = alloc_instruction(OP_ENTRY, 0);
-	add_one_insn(ep, entry);
+	entry = alloc_instruction(C, OP_ENTRY, 0);
+	add_one_insn(C, ep, entry);
 	ep->entry = entry;
 
 	concat_symbol_list(base_type->arguments, &ep->syms);
@@ -2171,17 +2171,17 @@ static struct entrypoint *linearize_fn(struct dmr_C *C, struct symbol *sym, stru
 	/* FIXME!! We should do something else about varargs.. */
 	i = 0;
 	FOR_EACH_PTR(base_type->arguments, arg) {
-		linearize_argument(ep, arg, ++i);
+		linearize_argument(C, ep, arg, ++i);
 	} END_FOR_EACH_PTR(arg);
 
-	result = linearize_statement(ep, base_type->stmt);
+	result = linearize_statement(C, ep, base_type->stmt);
 	if (bb_reachable(ep->active) && !bb_terminated(ep->active)) {
 		struct symbol *ret_type = base_type->ctype.base_type;
-		struct instruction *insn = alloc_typed_instruction(OP_RET, ret_type);
+		struct instruction *insn = alloc_typed_instruction(C, OP_RET, ret_type);
 
 		if (type_size(ret_type) > 0)
-			use_pseudo(insn, result, &insn->src);
-		add_one_insn(ep, insn);
+			use_pseudo(C, insn, result, &insn->src);
+		add_one_insn(C, ep, insn);
 	}
 
 	/*
@@ -2203,7 +2203,7 @@ repeat:
 	do {
 		cleanup_and_cse(ep);
 		pack_basic_blocks(ep);
-	} while (repeat_phase & REPEAT_CSE);
+	} while (C->L->repeat_phase & REPEAT_CSE);
 
 	kill_unreachable_bbs(ep);
 	vrfy_flow(ep);
@@ -2238,11 +2238,20 @@ struct entrypoint *linearize_symbol(struct dmr_C *C, struct symbol *sym)
 
 	if (!sym)
 		return NULL;
-	current_pos = sym->pos;
+	C->L->current_pos = sym->pos;
 	base_type = sym->ctype.base_type;
 	if (!base_type)
 		return NULL;
 	if (base_type->type == SYM_FN)
-		return linearize_fn(sym, base_type);
+		return linearize_fn(C, sym, base_type);
 	return NULL;
+}
+
+
+void init_linearizer(struct dmr_C *C) {
+
+}
+
+void destroy_linearizer(struct dmr_C *C) {
+
 }

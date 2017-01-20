@@ -1511,10 +1511,10 @@ static pseudo_t linearize_cast(struct dmr_C *C, struct entrypoint *ep, struct ex
 	struct expression *orig = expr->cast_expression;
 
 	if (!orig)
-		return VOID;
+		return VOID(C);
 
-	src = linearize_expression(ep, orig);
-	return cast_pseudo(ep, src, orig->ctype, expr->ctype);
+	src = linearize_expression(C, ep, orig);
+	return cast_pseudo(C, ep, src, orig->ctype, expr->ctype);
 }
 
 static pseudo_t linearize_position(struct dmr_C *C, struct entrypoint *ep, struct expression *pos, struct access_data *ad)
@@ -1522,9 +1522,9 @@ static pseudo_t linearize_position(struct dmr_C *C, struct entrypoint *ep, struc
 	struct expression *init_expr = pos->init_expr;
 
 	ad->offset = pos->init_offset;
-	ad->source_type = base_type(init_expr->ctype);
+	ad->source_type = base_type(C, init_expr->ctype);
 	ad->result_type = init_expr->ctype;
-	return linearize_initializer(ep, init_expr, ad);
+	return linearize_initializer(C, ep, init_expr, ad);
 }
 
 static pseudo_t linearize_initializer(struct dmr_C *C, struct entrypoint *ep, struct expression *initializer, struct access_data *ad)
@@ -1533,23 +1533,23 @@ static pseudo_t linearize_initializer(struct dmr_C *C, struct entrypoint *ep, st
 	case EXPR_INITIALIZER: {
 		struct expression *expr;
 		FOR_EACH_PTR(initializer->expr_list, expr) {
-			linearize_initializer(ep, expr, ad);
+			linearize_initializer(C, ep, expr, ad);
 		} END_FOR_EACH_PTR(expr);
 		break;
 	}
 	case EXPR_POS:
-		linearize_position(ep, initializer, ad);
+		linearize_position(C, ep, initializer, ad);
 		break;
 	default: {
-		pseudo_t value = linearize_expression(ep, initializer);
-		ad->source_type = base_type(initializer->ctype);
+		pseudo_t value = linearize_expression(C, ep, initializer);
+		ad->source_type = base_type(C, initializer->ctype);
 		ad->result_type = initializer->ctype;
-		linearize_store_gen(ep, value, ad);
+		linearize_store_gen(C, ep, value, ad);
 		return value;
 	}
 	}
 
-	return VOID;
+	return VOID(C);
 }
 
 static void linearize_argument(struct dmr_C *C, struct entrypoint *ep, struct symbol *arg, int nr)
@@ -1558,83 +1558,83 @@ static void linearize_argument(struct dmr_C *C, struct entrypoint *ep, struct sy
 
 	ad.source_type = arg;
 	ad.result_type = arg;
-	ad.address = symbol_pseudo(ep, arg);
-	linearize_store_gen(ep, argument_pseudo(ep, nr), &ad);
+	ad.address = symbol_pseudo(C, ep, arg);
+	linearize_store_gen(C, ep, argument_pseudo(C, ep, nr), &ad);
 	finish_address_gen(ep, &ad);
 }
 
 pseudo_t linearize_expression(struct dmr_C *C, struct entrypoint *ep, struct expression *expr)
 {
 	if (!expr)
-		return VOID;
+		return VOID(C);
 
-	current_pos = expr->pos;
+	C->L->current_pos = expr->pos;
 	switch (expr->type) {
 	case EXPR_SYMBOL:
-		linearize_one_symbol(ep, expr->symbol);
-		return add_symbol_address(ep, expr->symbol);
+		linearize_one_symbol(C, ep, expr->symbol);
+		return add_symbol_address(C, ep, expr->symbol);
 
 	case EXPR_VALUE:
-		return value_pseudo(expr->value);
+		return value_pseudo(C, expr->value);
 
 	case EXPR_STRING: case EXPR_FVALUE: case EXPR_LABEL:
-		return add_setval(ep, expr->ctype, expr);
+		return add_setval(C, ep, expr->ctype, expr);
 
 	case EXPR_STATEMENT:
-		return linearize_statement(ep, expr->statement);
+		return linearize_statement(C, ep, expr->statement);
 
 	case EXPR_CALL:
-		return linearize_call_expression(ep, expr);
+		return linearize_call_expression(C, ep, expr);
 
 	case EXPR_BINOP:
-		return linearize_binop(ep, expr);
+		return linearize_binop(C, ep, expr);
 
 	case EXPR_LOGICAL:
-		return linearize_logical(ep, expr);
+		return linearize_logical(C, ep, expr);
 
 	case EXPR_COMPARE:
-		return  linearize_compare(ep, expr);
+		return  linearize_compare(C, ep, expr);
 
 	case EXPR_SELECT:
-		return	linearize_select(ep, expr);
+		return	linearize_select(C, ep, expr);
 
 	case EXPR_CONDITIONAL:
 		if (!expr->cond_true)
-			return linearize_short_conditional(ep, expr, expr->conditional, expr->cond_false);
+			return linearize_short_conditional(C, ep, expr, expr->conditional, expr->cond_false);
 
-		return  linearize_conditional(ep, expr, expr->conditional,
+		return  linearize_conditional(C, ep, expr, expr->conditional,
 					      expr->cond_true, expr->cond_false);
 
 	case EXPR_COMMA:
-		linearize_expression(ep, expr->left);
-		return linearize_expression(ep, expr->right);
+		linearize_expression(C, ep, expr->left);
+		return linearize_expression(C, ep, expr->right);
 
 	case EXPR_ASSIGNMENT:
-		return linearize_assignment(ep, expr);
+		return linearize_assignment(C, ep, expr);
 
 	case EXPR_PREOP:
-		return linearize_preop(ep, expr);
+		return linearize_preop(C, ep, expr);
 
 	case EXPR_POSTOP:
-		return linearize_postop(ep, expr);
+		return linearize_postop(C, ep, expr);
 
 	case EXPR_CAST:
 	case EXPR_FORCE_CAST:
 	case EXPR_IMPLIED_CAST:
-		return linearize_cast(ep, expr);
+		return linearize_cast(C, ep, expr);
 	
 	case EXPR_SLICE:
-		return linearize_slice(ep, expr);
+		return linearize_slice(C, ep, expr);
 
 	case EXPR_INITIALIZER:
 	case EXPR_POS:
-		warning(expr->pos, "unexpected initializer expression (%d %d)", expr->type, expr->op);
-		return VOID;
+		warning(C, expr->pos, "unexpected initializer expression (%d %d)", expr->type, expr->op);
+		return VOID(C);
 	default: 
-		warning(expr->pos, "unknown expression (%d %d)", expr->type, expr->op);
-		return VOID;
+		warning(C, expr->pos, "unknown expression (%d %d)", expr->type, expr->op);
+		return VOID(C);
 	}
-	return VOID;
+	return VOID(C);
 }
 
 static pseudo_t linearize_one_symbol(struct dmr_C *C, struct entrypoint *ep, struct symbol *sym)
@@ -1643,16 +1643,16 @@ static pseudo_t linearize_one_symbol(struct dmr_C *C, struct entrypoint *ep, str
 	pseudo_t value;
 
 	if (!sym || !sym->initializer || sym->initialized)
-		return VOID;
+		return VOID(C);
 
 	/* We need to output these puppies some day too.. */
 	if (sym->ctype.modifiers & (MOD_STATIC | MOD_TOPLEVEL))
-		return VOID;
+		return VOID(C);
 
 	sym->initialized = 1;
-	ad.address = symbol_pseudo(ep, sym);
-	value = linearize_initializer(ep, sym->initializer, &ad);
-	finish_address_gen(ep, &ad);
+	ad.address = symbol_pseudo(C, ep, sym);
+	value = linearize_initializer(C, ep, sym->initializer, &ad);
+	finish_address_gen(C, ep, &ad);
 	return value;
 }
 
@@ -1662,13 +1662,13 @@ static pseudo_t linearize_compound_statement(struct dmr_C *C, struct entrypoint 
 	struct statement *s;
 	struct symbol *ret = stmt->ret;
 
-	pseudo = VOID;
+	pseudo = VOID(C);
 	FOR_EACH_PTR(stmt->stmts, s) {
-		pseudo = linearize_statement(ep, s);
+		pseudo = linearize_statement(C, ep, s);
 	} END_FOR_EACH_PTR(s);
 
 	if (ret) {
-		struct basic_block *bb = add_label(ep, ret);
+		struct basic_block *bb = add_label(C, ep, ret);
 		struct instruction *phi_node = first_instruction(bb->insns);
 
 		if (!phi_node)

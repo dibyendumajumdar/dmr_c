@@ -817,7 +817,7 @@ static void set_stream_include_path(struct dmr_C *C, struct stream *stream)
 		path = "";
 		if (p) {
 			int len = (int)(p - stream->name + 1);
-			char *m = (char *) malloc(len+1);
+			char *m = (char *)allocator_allocate(&C->byte_allocator, len+1);
 			/* This includes the final "/" */
 			memcpy(m, stream->name, len);
 			m[len] = 0;

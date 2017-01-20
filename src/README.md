@@ -46,4 +46,9 @@ The parser implementation is in following:
 * ident-list.h
 * show-parse.c
 
+## Pre-processor
+
+The pre-processor depends upon the parser functions to evaluate expressions. It is implemented in:
+
+* pre-process.c
 

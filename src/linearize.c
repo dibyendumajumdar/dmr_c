@@ -1687,7 +1687,7 @@ static pseudo_t linearize_compound_statement(struct dmr_C *C, struct entrypoint 
 
 static pseudo_t linearize_inlined_call(struct dmr_C *C, struct entrypoint *ep, struct statement *stmt)
 {
-	struct instruction *insn = alloc_instruction(OP_INLINED_CALL, 0);
+	struct instruction *insn = alloc_instruction(C, OP_INLINED_CALL, 0);
 	struct statement *args = stmt->args;
 	struct basic_block *bb;
 	pseudo_t pseudo;
@@ -1697,23 +1697,23 @@ static pseudo_t linearize_inlined_call(struct dmr_C *C, struct entrypoint *ep, s
 
 		concat_symbol_list(args->declaration, &ep->syms);
 		FOR_EACH_PTR(args->declaration, sym) {
-			pseudo_t value = linearize_one_symbol(ep, sym);
-			use_pseudo(insn, value, add_pseudo(&insn->arguments, value));
+			pseudo_t value = linearize_one_symbol(C, ep, sym);
+			use_pseudo(C, insn, value, add_pseudo(&insn->arguments, value));
 		} END_FOR_EACH_PTR(sym);
 	}
 
-	insn->target = pseudo = linearize_compound_statement(ep, stmt);
-	use_pseudo(insn, symbol_pseudo(ep, stmt->inline_fn), &insn->func);
+	insn->target = pseudo = linearize_compound_statement(C, ep, stmt);
+	use_pseudo(C, insn, symbol_pseudo(C, ep, stmt->inline_fn), &insn->func);
 	bb = ep->active;
 	if (bb && !bb->insns)
 		bb->pos = stmt->pos;
-	add_one_insn(ep, insn);
+	add_one_insn(C, ep, insn);
 	return pseudo;
 }
 
 static pseudo_t linearize_context(struct dmr_C *C, struct entrypoint *ep, struct statement *stmt)
 {
-	struct instruction *insn = alloc_instruction(OP_CONTEXT, 0);
+	struct instruction *insn = alloc_instruction(C, OP_CONTEXT, 0);
 	struct expression *expr = stmt->expression;
 	int value = 0;
 
@@ -1722,52 +1722,49 @@ static pseudo_t linearize_context(struct dmr_C *C, struct entrypoint *ep, struct
 
 	insn->increment = value;
 	insn->context_expr = stmt->context;
-	add_one_insn(ep, insn);
-	return VOID;
+	add_one_insn(C, ep, insn);
+	return VOID(C);
 }
 
 static pseudo_t linearize_range(struct dmr_C *C, struct entrypoint *ep, struct statement *stmt)
 {
-	struct instruction *insn = alloc_instruction(OP_RANGE, 0);
+	struct instruction *insn = alloc_instruction(C, OP_RANGE, 0);
 
-	use_pseudo(insn, linearize_expression(ep, stmt->range_expression), &insn->src1);
-	use_pseudo(insn, linearize_expression(ep, stmt->range_low), &insn->src2);
-	use_pseudo(insn, linearize_expression(ep, stmt->range_high), &insn->src3);
-	add_one_insn(ep, insn);
-	return VOID;
+	use_pseudo(C, insn, linearize_expression(C, ep, stmt->range_expression), &insn->src1);
+	use_pseudo(C, insn, linearize_expression(C, ep, stmt->range_low), &insn->src2);
+	use_pseudo(C, insn, linearize_expression(C, ep, stmt->range_high), &insn->src3);
+	add_one_insn(C, ep, insn);
+	return VOID(C);
 }
-
-//ALLOCATOR(asm_rules, "asm rules");
-//ALLOCATOR(asm_constraint, "asm constraints");
 
 static void add_asm_input(struct dmr_C *C, struct entrypoint *ep, struct instruction *insn, struct expression *expr,
 	const char *constraint, const struct ident *ident)
 {
-	pseudo_t pseudo = linearize_expression(ep, expr);
-	struct asm_constraint *rule = __alloc_asm_constraint(0);
+	pseudo_t pseudo = linearize_expression(C, ep, expr);
+	struct asm_constraint *rule = (struct asm_constraint *)allocator_allocate(&C->L->asm_constraint_allocator, 0);
 
 	rule->ident = ident;
 	rule->constraint = constraint;
-	use_pseudo(insn, pseudo, &rule->pseudo);
-	add_ptr_list(&insn->asm_rules->inputs, rule);
+	use_pseudo(C, insn, pseudo, &rule->pseudo);
+	ptrlist_add(&insn->asm_rules->inputs, rule);
 }
 
 static void add_asm_output(struct dmr_C *C, struct entrypoint *ep, struct instruction *insn, struct expression *expr,
 	const char *constraint, const struct ident *ident)
 {
 	struct access_data ad = { NULL, };
-	pseudo_t pseudo = alloc_pseudo(insn);
+	pseudo_t pseudo = alloc_pseudo(C, insn);
 	struct asm_constraint *rule;
 
-	if (!expr || !linearize_address_gen(ep, expr, &ad))
+	if (!expr || !linearize_address_gen(C, ep, expr, &ad))
 		return;
-	linearize_store_gen(ep, pseudo, &ad);
-	finish_address_gen(ep, &ad);
-	rule = __alloc_asm_constraint(0);
+	linearize_store_gen(C, ep, pseudo, &ad);
+	finish_address_gen(C, ep, &ad);
+	rule = (struct asm_constraint *) allocator_allocate(&C->L->asm_constraint_allocator, 0);
 	rule->ident = ident;
 	rule->constraint = constraint;
-	use_pseudo(insn, pseudo, &rule->pseudo);
-	add_ptr_list(&insn->asm_rules->outputs, rule);
+	use_pseudo(C, insn, pseudo, &rule->pseudo);
+	ptrlist_add(&insn->asm_rules->outputs, rule);
 }
 
 static pseudo_t linearize_asm_statement(struct dmr_C *C, struct entrypoint *ep, struct statement *stmt)
@@ -1779,15 +1776,15 @@ static pseudo_t linearize_asm_statement(struct dmr_C *C, struct entrypoint *ep, 
 	const char *constraint;
 	struct ident *ident;
 
-	insn = alloc_instruction(OP_ASM, 0);
+	insn = alloc_instruction(C, OP_ASM, 0);
 	expr = stmt->asm_string;
 	if (!expr || expr->type != EXPR_STRING) {
-		warning(stmt->pos, "expected string in inline asm");
-		return VOID;
+		warning(C, stmt->pos, "expected string in inline asm");
+		return VOID(C);
 	}
 	insn->string = expr->string->data;
 
-	rules = __alloc_asm_rules(0);
+	rules = (struct asm_rules *) allocator_allocate(&C->L->asm_rules_allocator, 0);
 	insn->asm_rules = rules;
 
 	/* Gather the inputs.. */
@@ -1808,11 +1805,11 @@ static pseudo_t linearize_asm_statement(struct dmr_C *C, struct entrypoint *ep, 
 
 		case 2:	/* Expression */
 			state = 0;
-			add_asm_input(ep, insn, expr, constraint, ident);
+			add_asm_input(C, ep, insn, expr, constraint, ident);
 		}
 	} END_FOR_EACH_PTR(expr);
 
-	add_one_insn(ep, insn);
+	add_one_insn(C, ep, insn);
 
 	/* Assign the outputs */
 	state = 0;
@@ -1832,17 +1829,17 @@ static pseudo_t linearize_asm_statement(struct dmr_C *C, struct entrypoint *ep, 
 
 		case 2:
 			state = 0;
-			add_asm_output(ep, insn, expr, constraint, ident);
+			add_asm_output(C, ep, insn, expr, constraint, ident);
 		}
 	} END_FOR_EACH_PTR(expr);
 
-	return VOID;
+	return VOID(C);
 }
 
-static int multijmp_cmp(struct dmr_C *C, const void *_a, const void *_b)
+static int multijmp_cmp(void *ud, const void *_a, const void *_b)
 {
-	const struct multijmp *a = _a;
-	const struct multijmp *b = _b;
+	const struct multijmp *a = (const struct multijmp *)_a;
+	const struct multijmp *b = (const struct multijmp *)_b;
 
 	// "default" case?
 	if (a->begin > a->end) {
@@ -1862,7 +1859,7 @@ static int multijmp_cmp(struct dmr_C *C, const void *_a, const void *_b)
 
 static void sort_switch_cases(struct dmr_C *C, struct instruction *insn)
 {
-	sort_list((struct ptr_list **)&insn->multijmp_list, multijmp_cmp);
+	ptrlist_sort(&insn->multijmp_list, C, multijmp_cmp);
 }
 
 static pseudo_t linearize_declaration(struct dmr_C *C, struct entrypoint *ep, struct statement *stmt)
@@ -1872,59 +1869,59 @@ static pseudo_t linearize_declaration(struct dmr_C *C, struct entrypoint *ep, st
 	concat_symbol_list(stmt->declaration, &ep->syms);
 
 	FOR_EACH_PTR(stmt->declaration, sym) {
-		linearize_one_symbol(ep, sym);
+		linearize_one_symbol(C, ep, sym);
 	} END_FOR_EACH_PTR(sym);
-	return VOID;
+	return VOID(C);
 }
 
 static pseudo_t linearize_return(struct dmr_C *C, struct entrypoint *ep, struct statement *stmt)
 {
 	struct expression *expr = stmt->expression;
-	struct basic_block *bb_return = get_bound_block(ep, stmt->ret_target);
+	struct basic_block *bb_return = get_bound_block(C, ep, stmt->ret_target);
 	struct basic_block *active;
-	pseudo_t src = linearize_expression(ep, expr);
+	pseudo_t src = linearize_expression(C, ep, expr);
 	active = ep->active;
-	if (active && src != &void_pseudo) {
+	if (active && src != VOID(C)) {
 		struct instruction *phi_node = first_instruction(bb_return->insns);
 		pseudo_t phi;
 		if (!phi_node) {
-			phi_node = alloc_typed_instruction(OP_PHI, expr->ctype);
-			phi_node->target = alloc_pseudo(phi_node);
+			phi_node = alloc_typed_instruction(C, OP_PHI, expr->ctype);
+			phi_node->target = alloc_pseudo(C, phi_node);
 			phi_node->bb = bb_return;
 			add_instruction(&bb_return->insns, phi_node);
 		}
-		phi = alloc_phi(active, src, type_size(expr->ctype));
-		phi->ident = &return_ident;
-		use_pseudo(phi_node, phi, add_pseudo(&phi_node->phi_list, phi));
+		phi = alloc_phi(C, active, src, type_size(expr->ctype));
+		phi->ident = C->S->return_ident;
+		use_pseudo(C, phi_node, phi, add_pseudo(&phi_node->phi_list, phi));
 	}
-	add_goto(ep, bb_return);
-	return VOID;
+	add_goto(C, ep, bb_return);
+	return VOID(C);
 }
 
 static pseudo_t linearize_switch(struct dmr_C *C, struct entrypoint *ep, struct statement *stmt)
 {
 	struct symbol *sym;
 	struct instruction *switch_ins;
-	struct basic_block *switch_end = alloc_basic_block(ep, stmt->pos);
+	struct basic_block *switch_end = alloc_basic_block(C, ep, stmt->pos);
 	struct basic_block *active, *default_case;
 	struct multijmp *jmp;
 	pseudo_t pseudo;
 
-	pseudo = linearize_expression(ep, stmt->switch_expression);
+	pseudo = linearize_expression(C, ep, stmt->switch_expression);
 
 	active = ep->active;
 	if (!bb_reachable(active))
-		return VOID;
+		return VOID(C);
 
-	switch_ins = alloc_instruction(OP_SWITCH, 0);
-	use_pseudo(switch_ins, pseudo, &switch_ins->cond);
-	add_one_insn(ep, switch_ins);
+	switch_ins = alloc_instruction(C, OP_SWITCH, 0);
+	use_pseudo(C, switch_ins, pseudo, &switch_ins->cond);
+	add_one_insn(C, ep, switch_ins);
 	finish_block(ep);
 
 	default_case = NULL;
 	FOR_EACH_PTR(stmt->switch_case->symbol_list, sym) {
 		struct statement *case_stmt = sym->stmt;
-		struct basic_block *bb_case = get_bound_block(ep, sym);
+		struct basic_block *bb_case = get_bound_block(C, ep, sym);
 
 		if (!case_stmt->case_expression) {
 			default_case = bb_case;
@@ -1936,9 +1933,9 @@ static pseudo_t linearize_switch(struct dmr_C *C, struct entrypoint *ep, struct 
 			if (case_stmt->case_to)
 				end = (int) case_stmt->case_to->value;
 			if (begin > end)
-				jmp = alloc_multijmp(bb_case, end, begin);
+				jmp = alloc_multijmp(C, bb_case, end, begin);
 			else
-				jmp = alloc_multijmp(bb_case, begin, end);
+				jmp = alloc_multijmp(C, bb_case, begin, end);
 
 		}
 		add_multijmp(&switch_ins->multijmp_list, jmp);
@@ -1946,22 +1943,22 @@ static pseudo_t linearize_switch(struct dmr_C *C, struct entrypoint *ep, struct 
 		add_bb(&active->children, bb_case);
 	} END_FOR_EACH_PTR(sym);
 
-	bind_label(stmt->switch_break, switch_end, stmt->pos);
+	bind_label(C, stmt->switch_break, switch_end, stmt->pos);
 
 	/* And linearize the actual statement */
-	linearize_statement(ep, stmt->switch_statement);
-	set_activeblock(ep, switch_end);
+	linearize_statement(C, ep, stmt->switch_statement);
+	set_activeblock(C, ep, switch_end);
 
 	if (!default_case)
 		default_case = switch_end;
 
-	jmp = alloc_multijmp(default_case, 1, 0);
+	jmp = alloc_multijmp(C, default_case, 1, 0);
 	add_multijmp(&switch_ins->multijmp_list, jmp);
 	add_bb(&default_case->parents, active);
 	add_bb(&active->children, default_case);
-	sort_switch_cases(switch_ins);
+	sort_switch_cases(C, switch_ins);
 
-	return VOID;
+	return VOID(C);
 }
 
 static pseudo_t linearize_iterator(struct dmr_C *C, struct entrypoint *ep, struct statement *stmt)
@@ -2249,6 +2246,9 @@ struct entrypoint *linearize_symbol(struct dmr_C *C, struct symbol *sym)
 
 
 void init_linearizer(struct dmr_C *C) {
+	//ALLOCATOR(asm_rules, "asm rules");
+	//ALLOCATOR(asm_constraint, "asm constraints");
+
 
 }
 

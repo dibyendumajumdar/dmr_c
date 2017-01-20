@@ -11,13 +11,13 @@
 #include <stddef.h>
 #include <assert.h>
 
-#include "port.h"
-#include "parse.h"
-#include "expression.h"
-#include "linearize.h"
-#include "flow.h"
+#include <port.h>
+#include <parse.h>
+#include <expression.h>
+#include <linearize.h>
+#include <flow.h>
 
-static int find_dominating_parents(pseudo_t pseudo, struct instruction *insn,
+static int find_dominating_parents(struct dmr_C *C, pseudo_t pseudo, struct instruction *insn,
 	struct basic_block *bb, unsigned long generation, struct pseudo_list **dominators,
 	int local, int loads)
 {
@@ -34,7 +34,7 @@ static int find_dominating_parents(pseudo_t pseudo, struct instruction *insn,
 			int dominance;
 			if (one == insn)
 				goto no_dominance;
-			dominance = dominates(pseudo, insn, one, local);
+			dominance = dominates(C, pseudo, insn, one, local);
 			if (dominance < 0) {
 				if (one->opcode == OP_LOAD)
 					continue;
@@ -51,16 +51,16 @@ no_dominance:
 			continue;
 		parent->generation = generation;
 
-		if (!find_dominating_parents(pseudo, insn, parent, generation, dominators, local, loads))
+		if (!find_dominating_parents(C, pseudo, insn, parent, generation, dominators, local, loads))
 			return 0;
 		continue;
 
 found_dominator:
 		br = delete_last_instruction(&parent->insns);
-		phi = alloc_phi(parent, one->target, one->size);
+		phi = alloc_phi(C, parent, one->target, one->size);
 		phi->ident = phi->ident ? phi->ident: one->target->ident;
 		add_instruction(&parent->insns, br);
-		use_pseudo(insn, phi, add_pseudo(dominators, phi));
+		use_pseudo(C, insn, phi, add_pseudo(dominators, phi));
 	} END_FOR_EACH_PTR(parent);
 	return 1;
 }		
@@ -83,7 +83,7 @@ static int local_pseudo(pseudo_t pseudo)
 		&& !address_taken(pseudo);
 }
 
-static void simplify_loads(struct basic_block *bb)
+static void simplify_loads(struct dmr_C *C, struct basic_block *bb)
 {
 	struct instruction *insn;
 
@@ -98,13 +98,13 @@ static void simplify_loads(struct basic_block *bb)
 			unsigned long generation;
 
 			/* Check for illegal offsets.. */
-			check_access(insn);
-
+			check_access(C, insn);
+			
 			RECURSE_PTR_REVERSE(insn, dom) {
 				int dominance;
 				if (!dom->bb)
 					continue;
-				dominance = dominates(pseudo, insn, dom, local);
+				dominance = dominates(C, pseudo, insn, dom, local);
 				if (dominance) {
 					/* possible partial dominance? */
 					if (dominance < 0)  {
@@ -113,25 +113,25 @@ static void simplify_loads(struct basic_block *bb)
 						goto next_load;
 					}
 					/* Yeehaa! Found one! */
-					convert_load_instruction(insn, dom->target);
+					convert_load_instruction(C, insn, dom->target);
 					goto next_load;
 				}
 			} END_FOR_EACH_PTR_REVERSE(dom);
 
 			/* OK, go find the parents */
-			generation = ++bb_generation;
+			generation = ++C->L->bb_generation;
 			bb->generation = generation;
 			dominators = NULL;
-			if (find_dominating_parents(pseudo, insn, bb, generation, &dominators, local, 1)) {
+			if (find_dominating_parents(C, pseudo, insn, bb, generation, &dominators, local, 1)) {
 				/* This happens with initial assignments to structures etc.. */
 				if (!dominators) {
 					if (local) {
 						assert(pseudo->type != PSEUDO_ARG);
-						convert_load_instruction(insn, value_pseudo(0));
+						convert_load_instruction(C, insn, value_pseudo(C, 0));
 					}
 					goto next_load;
 				}
-				rewrite_load_instruction(insn, dominators);
+				rewrite_load_instruction(C, insn, dominators);
 			}
 		}
 next_load:
@@ -148,7 +148,7 @@ static void kill_store(struct instruction *insn)
 	}
 }
 
-static void kill_dominated_stores(struct basic_block *bb)
+static void kill_dominated_stores(struct dmr_C *C, struct basic_block *bb)
 {
 	struct instruction *insn;
 
@@ -164,7 +164,7 @@ static void kill_dominated_stores(struct basic_block *bb)
 				int dominance;
 				if (!dom->bb)
 					continue;
-				dominance = dominates(pseudo, insn, dom, local);
+				dominance = dominates(C, pseudo, insn, dom, local);
 				if (dominance) {
 					/* possible partial dominance? */
 					if (dominance < 0)
@@ -183,15 +183,15 @@ next_store:
 	} END_FOR_EACH_PTR_REVERSE(insn);
 }
 
-void simplify_memops(struct entrypoint *ep)
+void simplify_memops(struct dmr_C *C, struct entrypoint *ep)
 {
 	struct basic_block *bb;
 
 	FOR_EACH_PTR_REVERSE(ep->bbs, bb) {
-		simplify_loads(bb);
+		simplify_loads(C, bb);
 	} END_FOR_EACH_PTR_REVERSE(bb);
 
 	FOR_EACH_PTR_REVERSE(ep->bbs, bb) {
-		kill_dominated_stores(bb);
+		kill_dominated_stores(C, bb);
 	} END_FOR_EACH_PTR_REVERSE(bb);
 }

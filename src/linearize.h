@@ -70,6 +70,8 @@ struct linearizer_state_t {
 	char buffer[4096];
 	int n;
 	char pseudo_buffer[4][64];
+#define INSN_HASH_SIZE 256
+	struct instruction_list *insn_hash_table[INSN_HASH_SIZE];
 };
 
 #define VOID(C) (&C->L->void_pseudo)

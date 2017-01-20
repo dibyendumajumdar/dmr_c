@@ -12,14 +12,11 @@
 #include <stddef.h>
 #include <assert.h>
 
-#include "port.h"
-#include "parse.h"
-#include "expression.h"
-#include "linearize.h"
-#include "flow.h"
-
-#define INSN_HASH_SIZE 256
-static struct instruction_list *insn_hash_table[INSN_HASH_SIZE];
+#include <port.h>
+#include <parse.h>
+#include <expression.h>
+#include <linearize.h>
+#include <flow.h>
 
 static int phi_compare(pseudo_t phi1, pseudo_t phi2)
 {
@@ -34,14 +31,14 @@ static int phi_compare(pseudo_t phi1, pseudo_t phi2)
 }
 
 
-static void clean_up_one_instruction(struct basic_block *bb, struct instruction *insn)
+static void clean_up_one_instruction(struct dmr_C *C, struct basic_block *bb, struct instruction *insn)
 {
 	size_t hash;
 
 	if (!insn->bb)
 		return;
 	assert(insn->bb == bb);
-	repeat_phase |= simplify_instruction(insn);
+	C->L->repeat_phase |= simplify_instruction(insn);
 	hash = (insn->opcode << 3) + (insn->size >> 3);
 	switch (insn->opcode) {
 	case OP_SEL:
@@ -101,7 +98,7 @@ static void clean_up_one_instruction(struct basic_block *bb, struct instruction 
 		pseudo_t phi;
 		FOR_EACH_PTR(insn->phi_list, phi) {
 			struct instruction *def;
-			if (phi == VOID || !phi->def)
+			if (phi == VOID(C) || !phi->def)
 				continue;
 			def = phi->def;
 			hash += hashval(def->src1);
@@ -119,23 +116,23 @@ static void clean_up_one_instruction(struct basic_block *bb, struct instruction 
 	}
 	hash += hash >> 16;
 	hash &= INSN_HASH_SIZE-1;
-	add_instruction(insn_hash_table + hash, insn);
+	add_instruction(C->L->insn_hash_table + hash, insn);
 }
 
-static void clean_up_insns(struct entrypoint *ep)
+static void clean_up_insns(struct dmr_C *C, struct entrypoint *ep)
 {
 	struct basic_block *bb;
 
 	FOR_EACH_PTR(ep->bbs, bb) {
 		struct instruction *insn;
 		FOR_EACH_PTR(bb->insns, insn) {
-			clean_up_one_instruction(bb, insn);
+			clean_up_one_instruction(C, bb, insn);
 		} END_FOR_EACH_PTR(insn);
 	} END_FOR_EACH_PTR(bb);
 }
 
 /* Compare two (sorted) phi-lists */
-static int phi_list_compare(struct pseudo_list *l1, struct pseudo_list *l2)
+static int phi_list_compare(struct dmr_C *C, struct pseudo_list *l1, struct pseudo_list *l2)
 {
 	pseudo_t phi1, phi2;
 
@@ -144,9 +141,9 @@ static int phi_list_compare(struct pseudo_list *l1, struct pseudo_list *l2)
 	for (;;) {
 		int cmp;
 
-		while (phi1 && (phi1 == VOID || !phi1->def))
+		while (phi1 && (phi1 == VOID(C) || !phi1->def))
 			NEXT_PTR_LIST(phi1);
-		while (phi2 && (phi2 == VOID || !phi2->def))
+		while (phi2 && (phi2 == VOID(C) || !phi2->def))
 			NEXT_PTR_LIST(phi2);
 
 		if (!phi1)
@@ -164,8 +161,9 @@ static int phi_list_compare(struct pseudo_list *l1, struct pseudo_list *l2)
 	FINISH_PTR_LIST(phi1);
 }
 
-static int insn_compare(const void *_i1, const void *_i2)
+static int insn_compare(void *ud, const void *_i1, const void *_i2)
 {
+	struct dmr_C *C = (struct dmr_C *) ud;
 	const struct instruction *i1 = _i1;
 	const struct instruction *i2 = _i2;
 
@@ -219,7 +217,7 @@ static int insn_compare(const void *_i1, const void *_i2)
 
 	/* Other */
 	case OP_PHI:
-		return phi_list_compare(i1->phi_list, i2->phi_list);
+		return phi_list_compare(C, i1->phi_list, i2->phi_list);
 
 	case OP_CAST:
 	case OP_SCAST:
@@ -234,21 +232,21 @@ static int insn_compare(const void *_i1, const void *_i2)
 		break;
 
 	default:
-		warning(i1->pos, "bad instruction on hash chain");
+		warning(C, i1->pos, "bad instruction on hash chain");
 	}
 	if (i1->size != i2->size)
 		return i1->size < i2->size ? -1 : 1;
 	return 0;
 }
 
-static void sort_instruction_list(struct instruction_list **list)
+static void sort_instruction_list(struct dmr_C *C, struct ptr_list **list)
 {
-	sort_list((struct ptr_list **)list , insn_compare);
+	ptrlist_sort(list, C, insn_compare);
 }
 
-static struct instruction * cse_one_instruction(struct instruction *insn, struct instruction *def)
+static struct instruction * cse_one_instruction(struct dmr_C *C, struct instruction *insn, struct instruction *def)
 {
-	convert_instruction_target(insn, def->target);
+	convert_instruction_target(C, insn, def->target);
 
 	if (insn->opcode == OP_PHI) {
 		/* Remove the instruction from PHI users */
@@ -264,7 +262,7 @@ static struct instruction * cse_one_instruction(struct instruction *insn, struct
 
 	insn->opcode = OP_NOP;
 	insn->bb = NULL;
-	repeat_phase |= REPEAT_CSE;
+	C->L->repeat_phase |= REPEAT_CSE;
 	return def;
 }
 
@@ -304,9 +302,9 @@ static struct basic_block *trivial_common_parent(struct basic_block *bb1, struct
 	return parent;
 }
 
-static inline void remove_instruction(struct instruction_list **list, struct instruction *insn, int count)
+static inline void remove_instruction(struct ptr_list **list, struct instruction *insn, int count)
 {
-	delete_ptr_list_entry((struct ptr_list **)list, insn, count);
+	ptrlist_remove(list, insn, count);
 }
 
 static void add_instruction_to_end(struct instruction *insn, struct basic_block *bb)
@@ -317,7 +315,7 @@ static void add_instruction_to_end(struct instruction *insn, struct basic_block 
 	add_instruction(&bb->insns, br);
 }
 
-static struct instruction * try_to_cse(struct entrypoint *ep, struct instruction *i1, struct instruction *i2)
+static struct instruction * try_to_cse(struct dmr_C *C, struct entrypoint *ep, struct instruction *i1, struct instruction *i2)
 {
 	struct basic_block *b1, *b2, *common;
 
@@ -336,23 +334,23 @@ static struct instruction * try_to_cse(struct entrypoint *ep, struct instruction
 		struct instruction *insn;
 		FOR_EACH_PTR(b1->insns, insn) {
 			if (insn == i1)
-				return cse_one_instruction(i2, i1);
+				return cse_one_instruction(C, i2, i1);
 			if (insn == i2)
-				return cse_one_instruction(i1, i2);
+				return cse_one_instruction(C, i1, i2);
 		} END_FOR_EACH_PTR(insn);
-		warning(b1->pos, "Whaa? unable to find CSE instructions");
+		warning(C, b1->pos, "Whaa? unable to find CSE instructions");
 		return i1;
 	}
-	if (bb_dominates(ep, b1, b2, ++bb_generation))
-		return cse_one_instruction(i2, i1);
+	if (bb_dominates(ep, b1, b2, ++C->L->bb_generation))
+		return cse_one_instruction(C, i2, i1);
 
-	if (bb_dominates(ep, b2, b1, ++bb_generation))
-		return cse_one_instruction(i1, i2);
+	if (bb_dominates(ep, b2, b1, ++C->L->bb_generation))
+		return cse_one_instruction(C, i1, i2);
 
 	/* No direct dominance - but we could try to find a common ancestor.. */
 	common = trivial_common_parent(b1, b2);
 	if (common) {
-		i1 = cse_one_instruction(i2, i1);
+		i1 = cse_one_instruction(C, i2, i1);
 		remove_instruction(&b1->insns, i1, 1);
 		add_instruction_to_end(i1, common);
 	}
@@ -360,40 +358,40 @@ static struct instruction * try_to_cse(struct entrypoint *ep, struct instruction
 	return i1;
 }
 
-void cleanup_and_cse(struct entrypoint *ep)
+void cleanup_and_cse(struct dmr_C *C, struct entrypoint *ep)
 {
 	int i;
 
 	simplify_memops(ep);
 repeat:
-	repeat_phase = 0;
-	clean_up_insns(ep);
+	C->L->repeat_phase = 0;
+	clean_up_insns(C, ep);
 	for (i = 0; i < INSN_HASH_SIZE; i++) {
-		struct instruction_list **list = insn_hash_table + i;
+		struct instruction_list **list = C->L->insn_hash_table + i;
 		if (*list) {
 			if (instruction_list_size(*list) > 1) {
 				struct instruction *insn, *last;
 
-				sort_instruction_list(list);
+				sort_instruction_list(C, list);
 
 				last = NULL;
 				FOR_EACH_PTR(*list, insn) {
 					if (!insn->bb)
 						continue;
 					if (last) {
-						if (!insn_compare(last, insn))
-							insn = try_to_cse(ep, last, insn);
+						if (!insn_compare(C, last, insn))
+							insn = try_to_cse(C, ep, last, insn);
 					}
 					last = insn;
 				} END_FOR_EACH_PTR(insn);
 			}
-			free_ptr_list((struct ptr_list **)list);
+			ptrlist_remove_all(list);
 		}
 	}
 
-	if (repeat_phase & REPEAT_SYMBOL_CLEANUP)
+	if (C->L->repeat_phase & REPEAT_SYMBOL_CLEANUP)
 		simplify_memops(ep);
 
-	if (repeat_phase & REPEAT_CSE)
+	if (C->L->repeat_phase & REPEAT_CSE)
 		goto repeat;
 }

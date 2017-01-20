@@ -75,7 +75,7 @@ extern void ptrlist_destroy_all_allocated_nodes();
 static inline void **ptrlist_iter_this_address(struct ptr_list_iter *self) {
 	return &self->__list->list_[self->__nr];
 }
-
+#define ptr_list_empty(x) ((x) == NULL)
 #define FOR_EACH_PTR(list, var) \
 	{ struct ptr_list_iter var##iter__ = ptrlist_iterator_forward(list); \
 	for (var = ptrlist_iter_next(&var##iter__); var != NULL; var = ptrlist_iter_next(&var##iter__))

@@ -75,6 +75,25 @@ struct global_symbols_t;
 struct tokenizer_state_t;
 struct linearizer_state_t;
 
+struct warning {
+	const char *name;
+	int *flag;
+};
+
+enum standard {
+	STANDARD_C89,
+	STANDARD_C94,
+	STANDARD_C99,
+	STANDARD_GNU89,
+	STANDARD_GNU99,
+};
+
+enum {
+	WARNING_OFF,
+	WARNING_ON,
+	WARNING_FORCE_OFF
+};
+
 struct dmr_C {
 	struct target_t *target;
 	struct global_symbols_t *S;
@@ -84,6 +103,7 @@ struct dmr_C {
 
 	// memory allocators
 	struct allocator token_allocator;
+	struct allocator protected_token_allocator;
 	struct allocator byte_allocator;
 	struct allocator string_allocator;
 	struct allocator ident_allocator;
@@ -96,10 +116,14 @@ struct dmr_C {
 	int errors;
 	int die_if_error;
 	int once;
-
-	int verbose;
-
 	int preprocess_only;
+
+	const char *gcc_base_dir;
+	int verbose, optimize, optimize_size, preprocessing;
+
+	enum standard standard;
+	struct token *pre_buffer_begin;
+	struct token *pre_buffer_end;
 
 	int Waddress_space;
 	int Wbitwise;
@@ -125,11 +149,18 @@ struct dmr_C {
 	int Wundef;
 	int Wuninitialized;
 	int Wvla;
+	struct warning warnings[25];
+	struct warning debugs[2];
+
+#define CMDLINE_INCLUDE 20
+	int cmdline_include_nr;
+	char *cmdline_include[CMDLINE_INCLUDE];
 
 	int dbg_entry;
 	int dbg_dead;
 
 	int arch_m64;
+	int arch_msize_long;
 
 	/* TODO is this the right place? */
 	struct scope *block_scope, *function_scope, *file_scope, *global_scope;
@@ -156,7 +187,6 @@ struct dmr_C {
 	char preprocessor_buffer[MAX_STRING];
 	char preprocessor_mergebuffer[512];
 	char preprocessor_tokenseqbuffer[256];
-	int preprocessing;
 	time_t t;
 	char fullname[1024];
 };
@@ -167,7 +197,7 @@ extern void destroy_dmr_C(struct dmr_C *C);
 struct token *skip_to(struct token *, int);
 struct token *expect(struct dmr_C *C, struct token *token, int op, const char *where);
 
-extern void die(const char *, ...) FORMAT_ATTR(1) NORETURN_ATTR;
+extern void die(struct dmr_C *, const char *, ...) FORMAT_ATTR(2) NORETURN_ATTR;
 extern void info(struct dmr_C *, struct position, const char *, ...)
     FORMAT_ATTR(3);
 extern void warning(struct dmr_C *, struct position, const char *, ...)

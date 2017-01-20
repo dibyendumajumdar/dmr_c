@@ -333,7 +333,7 @@ int init_stream(struct dmr_C *C, const char *name, int fd,
 		C->T->input_streams = (struct stream *)realloc(
 		    C->T->input_streams, newalloc * sizeof(struct stream));
 		if (!C->T->input_streams)
-			die("Unable to allocate more streams space");
+			die(C, "Unable to allocate more streams space");
 		C->T->input_streams_allocated = newalloc;
 	}
 	current = C->T->input_streams + stream;

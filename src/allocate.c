@@ -150,6 +150,8 @@ void allocator_destroy(struct allocator *A) {
   A->freelist_ = NULL;
 }
 void allocator_transfer(struct allocator *A, struct allocator *transfer_to) {
+  assert(transfer_to->blobs_ == NULL);
+  assert(transfer_to->freelist_ == NULL);
   transfer_to->blobs_ = A->blobs_;
   transfer_to->allocations = A->allocations;
   transfer_to->total_bytes = A->total_bytes;

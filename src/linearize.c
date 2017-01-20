@@ -481,7 +481,7 @@ const char *show_instruction(struct dmr_C *C, struct instruction *insn)
 	}
 
 	if (buf >= C->L->buffer + sizeof(C->L->buffer))
-		die("instruction buffer overflowed %td\n", buf - C->L->buffer);
+		die(C, "instruction buffer overflowed %td\n", buf - C->L->buffer);
 	do { --buf; } while (*buf == ' ');
 	*++buf = 0;
 	return C->L->buffer;

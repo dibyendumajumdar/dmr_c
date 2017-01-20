@@ -527,7 +527,7 @@ static int get_one_number(struct dmr_C *C, int c, int next,
 {
 	struct token *token;
 	char *buffer = C->T->number_buffer;
-	char *p = buffer, *buf, *buffer_end = buffer + sizeof(buffer);
+	char *p = buffer, *buf, *buffer_end = buffer + sizeof C->T->number_buffer;
 	size_t len;
 
 	*p++ = c;

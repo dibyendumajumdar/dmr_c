@@ -297,6 +297,7 @@ void destroy_dmr_C(struct dmr_C *C)
 	destroy_symbols(C);
 	destroy_linearizer(C);
 	allocator_destroy(&C->token_allocator);
+	allocator_destroy(&C->protected_token_allocator);
 	allocator_destroy(&C->string_allocator);
 	allocator_destroy(&C->ident_allocator);
 	allocator_destroy(&C->byte_allocator);
@@ -305,7 +306,6 @@ void destroy_dmr_C(struct dmr_C *C)
 	allocator_destroy(&C->statement_allocator);
 	free(C);
 }
-
 
 void add_pre_buffer(struct dmr_C *C, const char *fmt, ...)
 {

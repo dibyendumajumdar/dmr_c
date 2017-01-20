@@ -193,6 +193,10 @@ struct dmr_C {
 
 extern struct dmr_C *new_dmr_C();
 extern void destroy_dmr_C(struct dmr_C *C);
+struct ptr_list *sparse_initialize(struct dmr_C *C, int argc, char **argv, struct ptr_list **filelist);
+extern struct ptr_list * sparse_keep_tokens(struct dmr_C *C, char *filename);
+extern struct ptr_list * sparse(struct dmr_C *C, char *filename);
+extern struct ptr_list * __sparse(struct dmr_C *C, char *filename);
 
 struct token *skip_to(struct token *, int);
 struct token *expect(struct dmr_C *C, struct token *token, int op, const char *where);

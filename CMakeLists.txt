@@ -114,3 +114,7 @@ add_library(dmr_c STATIC
 
 add_executable(runtests src/runtests.c)
 target_link_libraries(runtests dmr_c) 
+
+add_executable(sparse src/sparse.c)
+target_link_libraries(sparse dmr_c) 
+

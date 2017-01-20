@@ -49,13 +49,27 @@ struct pseudo {
 };
 
 struct linearizer_state_t {
+	struct allocator pseudo_allocator;
 	struct allocator pseudo_user_allocator;
-	struct pseudo void_pseudo;
 	struct allocator asm_constraint_allocator;
 	struct allocator asm_rules_allocator;
+	struct allocator multijmp_allocator;
+	struct allocator basic_block_allocator;
+	struct allocator entrypoint_allocator;
+	struct allocator instruction_allocator;
+
+	struct pseudo void_pseudo;
 	struct position current_pos;
+
 	int repeat_phase;
 	unsigned long bb_generation;
+
+#define MAX_VAL_HASH 64
+	struct ptr_list *prev[MAX_VAL_HASH];
+	int nr;
+	char buffer[4096];
+	int n;
+	char pseudo_buffer[4][64];
 };
 
 #define VOID(C) (&C->L->void_pseudo)

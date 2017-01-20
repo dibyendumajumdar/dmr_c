@@ -97,6 +97,9 @@ struct dmr_C {
 	int die_if_error;
 	int once;
 
+	int verbose;
+	int dbg_dead;
+
 	int preprocess_only;
 
 	int Waddress_space;

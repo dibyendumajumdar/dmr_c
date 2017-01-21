@@ -115,6 +115,8 @@ add_library(dmr_c STATIC
 add_executable(runtests src/runtests.c)
 target_link_libraries(runtests dmr_c) 
 
-add_executable(sparse src/sparse.c)
+add_executable(sparse driver/sparse.c)
 target_link_libraries(sparse dmr_c) 
 
+add_executable(linearize samples/show-linearize.c)
+target_link_libraries(linearize dmr_c) 

@@ -10,7 +10,7 @@ The code base is a fork of Sparse v0.5.0. The main changes are:
 
 * Remove global state (see issues log for outstanding issues)
 * Ensure the library can be built on Windows using MSVC
-* Modify the code to be more C++ friendly
+ * Modify the code to be more C++ friendly
 * Convert the LLVM backend to a JIT compiler
 
 ## Current status
@@ -20,7 +20,7 @@ The code base is a fork of Sparse v0.5.0. The main changes are:
 ## Build instructions
 
 The build is pretty standard CMake build. There are no external dependencies. For example:
-
+#
 ```
 mkdir build
 cd build
@@ -30,7 +30,7 @@ cmake ..
 This will generate appropriate build files that can then be used to build the project.
 
 ## Using dmr_c
-
+#
 Right now following pieces have been ported but testing is still ongoing so no guarantee that the build works correctly.
 
 * Tokenizer
@@ -40,13 +40,15 @@ Right now following pieces have been ported but testing is still ongoing so no g
 
 Details of each of these is given below.
 
+
 ## Tokenizer
 
 Here is a simple program that uses the tokenizer. The tokenizer converts the input into a stream of tokens.
 
 ```
 	struct dmr_C *C = new_dmr_C();
-	char test1[100] =
+
+char test1[100] =
 	    "int main() { printf(\"hello world!\\n\"); return 0; }";
 	struct token *start;
 	struct token *end;
@@ -95,3 +97,6 @@ for LLVM 3.9 on Windows 10.
 cmake -DLLVM_JIT=ON  -DLLVM_DIR=$LLVM_INSTALL_DIR\lib\cmake\llvm -G "Visual Studio 14 Win64" ..
 ```
 
+## Links
+
+* [Article on Sparse](https://lwn.net/Articles/689907/)

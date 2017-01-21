@@ -1213,11 +1213,9 @@ int main(int argc, char **argv)
 	if (!LLVMVerifyModule(module, LLVMPrintMessageAction, &error_message)) {
 		LLVMWriteBitcodeToFile(module, "out.bc");
 	}
-	else {
-		if (error_message) {
-			fprintf(stderr, "LLVM Verification failed: %s\n", error_message);
-			LLVMDisposeMessage(error_message);
-		}
+	if (error_message) {
+		fprintf(stderr, "%s\n", error_message);
+		LLVMDisposeMessage(error_message);
 	}
 	LLVMDisposeModule(module);
 

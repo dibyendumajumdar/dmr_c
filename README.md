@@ -86,4 +86,12 @@ To follow.
 
 To follow.
 
+## LLVM integration
+
+The Sparse project comes with an LLVM backend called sparse-llvm. This is included in dmr_C. Following instructions are
+for LLVM 3.9 on Windows 10. 
+
+```
+cmake -DLLVM_JIT=ON  -DLLVM_DIR=$LLVM_INSTALL_DIR\lib\cmake\llvm -G "Visual Studio 14 Win64" ..
+```
 

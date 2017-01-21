@@ -63,7 +63,7 @@ static LLVMTypeRef sym_func_type(struct dmr_C *C, LLVMModuleRef module, struct s
 		n_arg++;
 	} END_FOR_EACH_PTR(arg);
 
-	arg_type = calloc(n_arg, sizeof(LLVMTypeRef));
+	arg_type = alloca(n_arg * sizeof(LLVMTypeRef));
 
 	int idx = 0;
 	FOR_EACH_PTR(sym->arguments, arg) {
@@ -329,7 +329,9 @@ static LLVMValueRef pseudo_to_value(struct dmr_C *C, struct function *fn, struct
 				data = LLVMAddGlobal(fn->module, LLVMArrayType(LLVMInt8Type(), strlen(s) + 1), ".str");
 				LLVMSetLinkage(data, LLVMPrivateLinkage);
 				LLVMSetGlobalConstant(data, 1);
-				LLVMSetInitializer(data, LLVMConstString(strdup(s), strlen(s) + 1, true));
+				char *scopy = allocator_allocate(&C->byte_allocator, strlen(s) + 1);
+				strcpy(scopy, s);
+				LLVMSetInitializer(data, LLVMConstString(scopy, strlen(scopy) + 1, true));
 
 				result = LLVMConstGEP(data, indices, ARRAY_SIZE(indices));
 				break;
@@ -711,7 +713,7 @@ static void output_op_call(struct dmr_C *C, struct function *fn, struct instruct
 		n_arg++;
 	} END_FOR_EACH_PTR(arg);
 
-	args = calloc(n_arg, sizeof(LLVMValueRef));
+	args = alloca(n_arg * sizeof(LLVMValueRef));
 
 	i = 0;
 	FOR_EACH_PTR(insn->arguments, arg) {
@@ -1073,8 +1075,9 @@ static LLVMValueRef output_data(struct dmr_C *C, LLVMModuleRef module, struct sy
 		}
 		case EXPR_STRING: {
 			const char *s = initializer->string->data;
-
-			initial_value = LLVMConstString(strdup(s), strlen(s) + 1, true);
+			char *scopy = allocator_allocate(&C->byte_allocator, strlen(s) + 1);
+			strcpy(scopy, s);
+			initial_value = LLVMConstString(scopy, strlen(scopy) + 1, true);
 			break;
 		}
 		default:
@@ -1206,10 +1209,16 @@ int main(int argc, char **argv)
 		compile(C, module, symlist);
 	} END_FOR_EACH_PTR(file);
 
-	LLVMVerifyModule(module, LLVMPrintMessageAction, NULL);
-
-	LLVMWriteBitcodeToFile(module, "output.ll");
-
+	char *error_message = NULL;
+	if (!LLVMVerifyModule(module, LLVMPrintMessageAction, &error_message)) {
+		LLVMWriteBitcodeToFile(module, "out.bc");
+	}
+	else {
+		if (error_message) {
+			fprintf(stderr, "LLVM Verification failed: %s\n", error_message);
+			LLVMDisposeMessage(error_message);
+		}
+	}
 	LLVMDisposeModule(module);
 
 	destroy_dmr_C(C);

@@ -1,7 +1,6 @@
 # dmr_c
 
-dmr_c is a project that aims to create a JIT compiler for C. Is is being created by reworking the Linux Kernel Sparse library originally written
-by Linus Torvalds. 
+dmr_c is a project that aims to create a JIT compiler for C. Is is being created by reworking the Linux Kernel Sparse library originally written by Linus Torvalds. 
 
 The name dmr_C is a homage to Dennis M Ritchie.
 
@@ -12,10 +11,11 @@ The code base is a fork of Sparse v0.5.0. The main changes are:
 * Remove global state (see issues log for outstanding issues)
 * Ensure the library can be built on Windows using MSVC
 * Modify the code to be more C++ friendly
+* Convert the LLVM backend to a JIT compiler
 
 ## Current status
 
-* The parser works. Usage instructions to follow.
+* We are now able to build the sparse executable, but not all tests pass yet. 
 
 ## Build instructions
 
@@ -35,7 +35,8 @@ Right now following pieces have been ported but testing is still ongoing so no g
 
 * Tokenizer
 * Preprocesser
-* Parser 
+* Parser and Semantic analyser
+* Linearizer
 
 Details of each of these is given below.
 

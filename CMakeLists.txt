@@ -120,3 +120,6 @@ target_link_libraries(sparse dmr_c)
 
 add_executable(linearize samples/show-linearize.c)
 target_link_libraries(linearize dmr_c) 
+
+add_executable(showparse samples/show-parse.c)
+target_link_libraries(showparse dmr_c) 

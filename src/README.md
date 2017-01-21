@@ -52,3 +52,16 @@ The pre-processor depends upon the parser functions to evaluate expressions. It 
 
 * pre-process.c
 
+## Linearizer
+
+This component transforms the parsed representation to a linear form (SSA I believe). The implementation is in:
+
+* linearize.h
+* linearize.c
+* flow.h
+* flow.c
+* cse.c
+* liveness.c
+* memops.c 
+* simplify.c
+* unssa.c

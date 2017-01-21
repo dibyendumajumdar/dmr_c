@@ -4,6 +4,19 @@ project(dmr_c)
 enable_language(C)
 enable_testing()
 
+option(LLVM_JIT "Controls whether LLVM JIT compilation will be enabled, default is OFF" OFF)
+
+if (LLVM_JIT)
+    find_package(LLVM REQUIRED CONFIG)
+
+    message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
+    message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
+
+    include_directories(${LLVM_INCLUDE_DIRS})
+    add_definitions(${LLVM_DEFINITIONS})
+endif()
+
+
 if (MSVC)
     message( STATUS "MSVC selected" )
     set(CMAKE_C_FLAGS_DEBUG "/Od /D_DEBUG /MDd /Zi /RTC1 /EHsc")
@@ -107,6 +120,59 @@ if (MSVC OR APPLE)
     source_group("Source Files" FILES ${LIB_SRCS})
 endif ()
 
+# Enable minimal required LLVM components so that the
+# the size of the resulting binary is manageable
+if (LLVM_JIT)
+    if (${LLVM_PACKAGE_VERSION} VERSION_LESS "3.8")
+        set(LLVM_EXTRA_LIBS ipa)
+    endif()
+    message(STATUS "SYSTEM_PROCESSOR ${CMAKE_SYSTEM_PROCESSOR}")
+    if (CMAKE_SYSTEM_PROCESSOR MATCHES "(x86)|(X86)|(amd64)|(AMD64)")
+    set(LLVM_LIBS_PROCESSOR
+        X86CodeGen
+        X86AsmParser
+        X86Disassembler
+        X86AsmPrinter
+        X86Desc
+        X86Info
+        X86Utils
+        )
+    elseif (CMAKE_SYSTEM_PROCESSOR MATCHES "arm")
+    set(LLVM_LIBS_PROCESSOR
+        ARMCodeGen
+        ARMAsmParser
+        ARMDisassembler
+        ARMAsmPrinter
+        ARMDesc
+        ARMInfo
+        )
+    endif()
+    llvm_map_components_to_libnames(LLVM_LIBS
+            Analysis
+            Core
+            CodeGen
+            AsmParser
+            AsmPrinter
+            BitReader
+            ExecutionEngine
+            InstCombine
+            ${LLVM_EXTRA_LIBS}
+            ipo
+            MC
+            MCJIT
+            MCParser
+            Object
+            RuntimeDyld
+            ScalarOpts
+            Support
+            Target
+            TransformUtils
+        ${LLVM_LIBS_PROCESSOR}
+            )
+    message(STATUS "LLVM_LIBS ${LLVM_LIBS}")
+endif ()
+
+
 #Main library
 add_library(dmr_c STATIC 
         ${LIB_H}
@@ -123,3 +189,8 @@ target_link_libraries(linearize dmr_c)
 
 add_executable(showparse samples/show-parse.c)
 target_link_libraries(showparse dmr_c) 
+
+if (LLVM_JIT)
+    add_executable(sparse-llvm llvm/sparse-llvm.c)
+    target_link_libraries(sparse-llvm dmr_c ${LLVM_LIBS}) 
+endif()

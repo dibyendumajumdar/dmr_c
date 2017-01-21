@@ -24,38 +24,36 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include <stdarg.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 #include <ctype.h>
 #include <fcntl.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include <port.h>
-#include <dmr_c.h>
 #include <allocate.h>
-#include <token.h>
-#include <parse.h>
-#include <symbol.h>
+#include <dmr_c.h>
 #include <expression.h>
-
+#include <parse.h>
+#include <port.h>
+#include <symbol.h>
+#include <token.h>
 
 static void clean_up_symbols(struct dmr_C *C, struct ptr_list *list)
 {
 	struct symbol *sym;
 
-	FOR_EACH_PTR(list, sym) {
-		expand_symbol(C, sym);
-	} END_FOR_EACH_PTR(sym);
+	FOR_EACH_PTR(list, sym) { expand_symbol(C, sym); }
+	END_FOR_EACH_PTR(sym);
 }
 
 int main(int argc, char **argv)
 {
-	struct ptr_list * list;
-	struct ptr_list * filelist = NULL;
+	struct ptr_list *list;
+	struct ptr_list *filelist = NULL;
 	char *file;
-  
-  struct dmr_C *C = new_dmr_C();
+
+	struct dmr_C *C = new_dmr_C();
 
 	list = sparse_initialize(C, argc, argv, &filelist);
 
@@ -64,7 +62,8 @@ int main(int argc, char **argv)
 	show_symbol_list(C, list, "\n\n");
 	printf("\n\n");
 
-	FOR_EACH_PTR(filelist, file) {
+	FOR_EACH_PTR(filelist, file)
+	{
 		list = sparse(C, file);
 
 		// Simplification
@@ -73,7 +72,10 @@ int main(int argc, char **argv)
 		// Show the end result.
 		show_symbol_list(C, list, "\n\n");
 		printf("\n\n");
-	} END_FOR_EACH_PTR(file);
+	}
+	END_FOR_EACH_PTR(file);
+
+	destroy_dmr_C(C);
 
 	return 0;
 }

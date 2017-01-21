@@ -625,7 +625,8 @@ static struct symbol *evaluate_ptr_add(struct dmr_C *C, struct expression *expr,
 	return ctype;
 }
 
-#define MOD_IGN (MOD_VOLATILE | MOD_CONST)
+
+#define MOD_IGN (MOD_VOLATILE | MOD_CONST | MOD_PURE)
 
 const char *type_difference(struct dmr_C *C, struct ctype *c1, struct ctype *c2,
 	unsigned long mod1, unsigned long mod2)
@@ -1310,10 +1311,9 @@ static int whitelist_pointers(struct dmr_C *C, struct symbol *t1, struct symbol 
 	return !C->Wtypesign;
 }
 
-static int compatible_assignment_types(struct dmr_C *C, struct expression *expr, struct symbol *target,
-	struct expression **rp, const char *where)
+static int check_assignment_types(struct dmr_C *C, struct symbol *target, struct expression **rp,
+	const char **typediff)
 {
-	const char *typediff;
 	struct symbol *source = degenerate(C, *rp);
 	struct symbol *t, *s;
 	int tclass = classify_type(C, target, &t);
@@ -1330,8 +1330,8 @@ static int compatible_assignment_types(struct dmr_C *C, struct expression *expr,
 				return 1;
 		} else if (!(sclass & TYPE_RESTRICT))
 			goto Cast;
-		typediff = "different base types";
-		goto Err;
+		*typediff = "different base types";
+		return 0;
 	}
 
 	if (tclass == TYPE_PTR) {
@@ -1345,8 +1345,8 @@ static int compatible_assignment_types(struct dmr_C *C, struct expression *expr,
 			goto Cast;
 		}
 		if (!(sclass & TYPE_PTR)) {
-			typediff = "different base types";
-			goto Err;
+			*typediff = "different base types";
+			return 0;
 		}
 		b1 = examine_pointer_target(C->S, t);
 		b2 = examine_pointer_target(C->S, s);
@@ -1359,19 +1359,28 @@ static int compatible_assignment_types(struct dmr_C *C, struct expression *expr,
 			 * or mix address spaces [sparse].
 			 */
 			if (t->ctype.as != s->ctype.as) {
-				typediff = "different address spaces";
-				goto Err;
+				*typediff = "different address spaces";
+				return 0;
 			}
+			/*
+			 * If this is a function pointer assignment, it is
+			 * actually fine to assign a pointer to const data to
+			 * it, as a function pointer points to const data
+			 * implicitly, i.e., dereferencing it does not produce
+			 * an lvalue.
+			 */
+			if (b1->type == SYM_FN)
+				mod1 |= MOD_CONST;
 			if (mod2 & ~mod1) {
-				typediff = "different modifiers";
-				goto Err;
+				*typediff = "different modifiers";
+				return 0;
 			}
 			goto Cast;
 		}
 		/* It's OK if the target is more volatile or const than the source */
-		typediff = type_difference(C, &t->ctype, &s->ctype, 0, mod1);
-		if (typediff)
-			goto Err;
+		*typediff = type_difference(C, &t->ctype, &s->ctype, 0, mod1);
+		if (*typediff)
+			return 0;
 		return 1;
 	}
 
@@ -1382,22 +1391,58 @@ static int compatible_assignment_types(struct dmr_C *C, struct expression *expr,
 		/* XXX: need to turn into comparison with NULL */
 		if (t == &C->S->bool_ctype && (sclass & TYPE_PTR))
 			goto Cast;
-		typediff = "different base types";
-		goto Err;
+		*typediff = "different base types";
+		return 0;
 	}
-	typediff = "invalid types";
-
-Err:
-	warning(C, expr->pos, "incorrect type in %s (%s)", where, typediff);
-	info(C, expr->pos, "   expected %s", show_typename(C, target));
-	info(C, expr->pos, "   got %s", show_typename(C, source));
-	*rp = cast_to(C, *rp, target);
+	*typediff = "invalid types";
 	return 0;
 Cast:
 	*rp = cast_to(C, *rp, target);
 	return 1;
 }
 
+static int compatible_assignment_types(struct dmr_C *C, struct expression *expr, struct symbol *target,
+	struct expression **rp, const char *where)
+{
+	const char *typediff;
+	struct symbol *source = degenerate(C, *rp);
+
+	if (!check_assignment_types(C, target, rp, &typediff)) {
+		warning(C, expr->pos, "incorrect type in %s (%s)", where, typediff);
+		info(C, expr->pos, "   expected %s", show_typename(C, target));
+		info(C, expr->pos, "   got %s", show_typename(C, source));
+		*rp = cast_to(C, *rp, target);
+		return 0;
+	}
+
+	return 1;
+}
+
+static int compatible_transparent_union(struct dmr_C *C, struct symbol *target,
+	struct expression **rp)
+{
+	struct symbol *t, *member;
+	classify_type(C, target, &t);
+	if (t->type != SYM_UNION || !t->transparent_union)
+		return 0;
+
+	FOR_EACH_PTR(t->symbol_list, member) {
+		const char *typediff;
+		if (check_assignment_types(C, member, rp, &typediff))
+			return 1;
+	} END_FOR_EACH_PTR(member);
+
+	return 0;
+}
+
+static int compatible_argument_type(struct dmr_C *C, struct expression *expr, struct symbol *target,
+	struct expression **rp, const char *where)
+{
+	if (compatible_transparent_union(C, target, rp))
+		return 1;
+
+	return compatible_assignment_types(C, expr, target, rp, where);
+}
 static void mark_assigned(struct dmr_C *C, struct expression *expr)
 {
 	struct symbol *sym;
@@ -2060,7 +2105,8 @@ static struct symbol *evaluate_sizeof(struct dmr_C *C, struct expression *expr)
 	}
 
 	if (size == 1 && is_bool_type(C->S, type)) {
-		warning(C, expr->pos, "expression using sizeof bool");
+		if (C->Wsizeof_bool)
+			warning(C, expr->pos, "expression using sizeof bool");
 		size = C->target->bits_in_char;
 	}
 
@@ -2165,7 +2211,7 @@ static int evaluate_arguments(struct dmr_C *C, struct symbol *f, struct symbol *
 			static char where[30];
 			examine_symbol_type(C->S, target);
 			sprintf(where, "argument %d", i);
-			compatible_assignment_types(C, expr, target, p, where);
+			compatible_argument_type(C, expr, target, p, where);
 		}
 
 		i++;
@@ -2173,17 +2219,6 @@ static int evaluate_arguments(struct dmr_C *C, struct symbol *f, struct symbol *
 	} END_FOR_EACH_PTR(expr);
 	FINISH_PTR_LIST(argtype);
 	return 1;
-}
-
-static struct symbol *find_struct_ident(struct dmr_C *C, struct symbol *ctype, struct ident *ident)
-{
-	struct symbol *sym;
-
-	FOR_EACH_PTR(ctype->symbol_list, sym) {
-		if (sym->ident == ident)
-			return sym;
-	} END_FOR_EACH_PTR(sym);
-	return NULL;
 }
 
 static void convert_index(struct dmr_C *C, struct expression *e)
@@ -2200,9 +2235,10 @@ static void convert_index(struct dmr_C *C, struct expression *e)
 static void convert_ident(struct dmr_C *C, struct expression *e)
 {
 	struct expression *child = e->ident_expression;
-	struct symbol *sym = e->field;
+	int offset = e->offset;
+
 	e->type = EXPR_POS;
-	e->init_offset = sym->offset;
+	e->init_offset = offset;
 	e->init_nr = 1;
 	e->init_expr = child;
 }
@@ -2254,6 +2290,7 @@ static struct expression *first_subobject(struct dmr_C *C, struct symbol *ctype,
 		newe = alloc_expression(C, e->pos, EXPR_IDENTIFIER);
 		newe->ident_expression = e;
 		newe->field = newe->ctype = field;
+		newe->offset = field->offset;
 	}
 	*v = newe;
 	return newe;
@@ -2279,7 +2316,7 @@ static struct expression *check_designators(struct dmr_C *C, struct expression *
 			}
 			type = ctype->ctype.base_type;
 			if (ctype->bit_size >= 0 && type->bit_size >= 0) {
-				unsigned offset = e->idx_to * type->bit_size;
+				unsigned offset = array_element_offset(C->target, type->bit_size, e->idx_to);
 				if (offset >= ctype->bit_size) {
 					err = "index out of bounds in";
 					break;
@@ -2294,15 +2331,17 @@ static struct expression *check_designators(struct dmr_C *C, struct expression *
 			}
 			e = e->idx_expression;
 		} else if (e->type == EXPR_IDENTIFIER) {
+			int offset = 0;
 			if (ctype->type != SYM_STRUCT && ctype->type != SYM_UNION) {
 				err = "field name not in struct or union";
 				break;
 			}
-			ctype = find_struct_ident(C, ctype, e->expr_ident);
+			ctype = find_identifier(C, e->expr_ident, ctype->symbol_list, &offset);
 			if (!ctype) {
 				err = "unknown field name in";
 				break;
 			}
+			e->offset = offset;
 			e->field = e->ctype = ctype;
 			last = e;
 			if (!e->ident_expression) {
@@ -2344,7 +2383,7 @@ static struct expression *next_designators(struct dmr_C *C, struct expression *o
 					old->ctype, e, v);
 		if (!copy) {
 			n = old->idx_to + 1;
-			if (n * old->ctype->bit_size == ctype->bit_size) {
+			if (array_element_offset(C->target, old->ctype->bit_size, n) == ctype->bit_size) {
 				convert_index(C, old);
 				return NULL;
 			}
@@ -2362,6 +2401,7 @@ static struct expression *next_designators(struct dmr_C *C, struct expression *o
 	} else if (old->type == EXPR_IDENTIFIER) {
 		struct expression *copy;
 		struct symbol *field;
+		int offset = 0;
 
 		copy = next_designators(C, old->ident_expression,
 					old->ctype, e, v);
@@ -2373,6 +2413,17 @@ static struct expression *next_designators(struct dmr_C *C, struct expression *o
 			}
 			copy = e;
 			*v = newe = alloc_expression(C, e->pos, EXPR_IDENTIFIER);
+			/*
+			 * We can't necessarily trust "field->offset",
+			 * because the field might be in an anonymous
+			 * union, and the field offset is then the offset
+			 * within that union.
+			 *
+			 * The "old->offset - old->field->offset"
+			 * would be the offset of such an anonymous
+			 * union.
+			 */
+			offset = old->offset - old->field->offset;
 		} else {
 			field = old->field;
 			newe = alloc_expression(C, e->pos, EXPR_IDENTIFIER);
@@ -2382,6 +2433,7 @@ static struct expression *next_designators(struct dmr_C *C, struct expression *o
 		newe->expr_ident = field->ident;
 		newe->ident_expression = copy;
 		newe->ctype = field;
+		newe->offset = field->offset + offset;
 		convert_ident(C, old);
 	}
 	return newe;
@@ -2838,8 +2890,8 @@ static struct symbol *evaluate_call(struct dmr_C *C, struct expression *expr)
 	} else {
 		if (!evaluate_arguments(C, sym, ctype, arglist))
 			return NULL;
-		args = ptrlist_size(expr->args);
-		fnargs = ptrlist_size(ctype->arguments);
+		args = expression_list_size(expr->args);
+		fnargs = symbol_list_size(ctype->arguments);
 		if (args < fnargs)
 			expression_error(C, expr,
 				     "not enough arguments for function %s",
@@ -3047,10 +3099,18 @@ static void check_duplicates(struct dmr_C *C, struct symbol *sym)
 {
 	int declared = 0;
 	struct symbol *next = sym;
+	int initialized = sym->initializer != NULL;
 
 	while ((next = next->same_symbol) != NULL) {
 		const char *typediff;
 		evaluate_symbol(C, next);
+		if (initialized && next->initializer) {
+			sparse_error(C, sym->pos, "symbol '%s' has multiple initializers (originally initialized at %s:%d)",
+				show_ident(C, sym->ident),
+				stream_name(C, next->pos.stream), next->pos.line);
+			/* Only warn once */
+			initialized = 0;
+		}
 		declared++;
 		typediff = type_difference(C, &sym->ctype, &next->ctype, 0, 0);
 		if (typediff) {
@@ -3119,7 +3179,6 @@ void evaluate_symbol_list(struct dmr_C *C, struct ptr_list *list)
 	struct symbol *sym;
 
 	FOR_EACH_PTR(list, sym) {
-
 		evaluate_symbol(C, sym);
 		check_duplicates(C, sym);
 	} END_FOR_EACH_PTR(sym); 

@@ -97,9 +97,9 @@ struct statement {
 			struct statement *iterator_pre_statement;
 			struct expression *iterator_pre_condition;
 
-			struct statement *iterator_statement;
+			struct statement  *iterator_statement;
 
-			struct statement *iterator_post_statement;
+			struct statement  *iterator_post_statement;
 			struct expression *iterator_post_condition;
 		};
 		struct /* goto_struct */ {
@@ -162,6 +162,26 @@ extern struct symbol *ctype_integer(struct dmr_C *C, int size, int want_unsigned
 extern void copy_statement(struct dmr_C *C, struct statement *src, struct statement *dst);
 extern int inline_function(struct dmr_C *C, struct expression *expr, struct symbol *sym);
 extern void uninline(struct dmr_C *C, struct symbol *sym);
+
+static inline void add_statement(struct ptr_list **list, struct statement *stmt)
+{
+	ptrlist_add(list, stmt);
+}
+
+static inline void add_expression(struct ptr_list **list, struct expression *expr)
+{
+	ptrlist_add(list, expr);
+}
+
+static inline int statement_list_size(struct ptr_list *list)
+{
+	return ptrlist_size(list);
+}
+
+static inline int expression_list_size(struct ptr_list *list)
+{
+	return ptrlist_size(list);
+}
 
 extern int test_parse();
 

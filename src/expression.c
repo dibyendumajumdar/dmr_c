@@ -490,7 +490,7 @@ static struct token *expression_list(struct dmr_C *C, struct token *token, struc
 		token = assignment_expression(C, token, &expr);
 		if (!expr)
 			break;
-		ptrlist_add(list, expr);
+		add_expression(list, expr);
 		if (!match_op(token, ','))
 			break;
 		token = token->next;
@@ -686,7 +686,7 @@ static struct token *unary_expression(struct dmr_C *C, struct token *token, stru
 			struct symbol *sym = label_symbol(C, token->next);
 			if (!(sym->ctype.modifiers & MOD_ADDRESSABLE)) {
 				sym->ctype.modifiers |= MOD_ADDRESSABLE;
-				ptrlist_add(&C->P->function_computed_target_list, sym);
+				add_symbol(&C->P->function_computed_target_list, sym);
 			}
 			label->label_symbol = sym;
 			*tree = label;

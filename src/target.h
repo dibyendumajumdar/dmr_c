@@ -62,11 +62,19 @@ struct target_t {
 */
 
 static inline int bits_to_bytes(const struct target_t *target, int bits) {
-  return bits >= 0 ? bits / target->bits_in_char : -1;
+  return bits >= 0 ? (bits + target->bits_in_char - 1) / target->bits_in_char : -1;
 }
 
 static inline int bytes_to_bits(const struct target_t *target, int bytes) {
   return bytes * target->bits_in_char;
+}
+
+static inline unsigned long array_element_offset(const struct target_t *target, unsigned long base_bits, int idx)
+{
+	int fragment = base_bits % target->bits_in_char;
+	if (fragment)
+		base_bits += target->bits_in_char - fragment;
+	return base_bits * idx;
 }
 
 extern void init_target(struct dmr_C *C);

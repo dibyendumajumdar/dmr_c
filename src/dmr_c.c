@@ -275,30 +275,32 @@ struct dmr_C *new_dmr_C()
 	allocator_init(&C->statement_allocator, "statements", sizeof(struct statement),
 		__alignof__(struct statement), CHUNK);
 
-	C->warnings[0].name = "address-space"; C->warnings[0].flag = &C->Waddress_space;
-	C->warnings[1].name = "bitwise"; C->warnings[1].flag = &C->Wbitwise;
-	C->warnings[2].name = "cast-to-as"; C->warnings[2].flag = &C->Wcast_to_as;
-	C->warnings[3].name = "cast-truncate"; C->warnings[3].flag = &C->Wcast_truncate;
-	C->warnings[4].name = "context"; C->warnings[4].flag = &C->Wcontext;
-	C->warnings[5].name = "decl"; C->warnings[5].flag = &C->Wdecl;
+	C->warnings[0].name = "address-space";		C->warnings[0].flag = &C->Waddress_space;
+	C->warnings[1].name = "bitwise";			C->warnings[1].flag = &C->Wbitwise;
+	C->warnings[2].name = "cast-to-as";			C->warnings[2].flag = &C->Wcast_to_as;
+	C->warnings[3].name = "cast-truncate";		C->warnings[3].flag = &C->Wcast_truncate;
+	C->warnings[4].name = "context";			C->warnings[4].flag = &C->Wcontext;
+	C->warnings[5].name = "decl";				C->warnings[5].flag = &C->Wdecl;
 	C->warnings[6].name = "declaration-after-statement"; C->warnings[6].flag = &C->Wdeclarationafterstatement;
 	C->warnings[7].name = "default-bitfield-sign"; C->warnings[7].flag = &C->Wdefault_bitfield_sign;
-	C->warnings[8].name = "designated-init"; C->warnings[8].flag = &C->Wdesignated_init;
-	C->warnings[9].name = "do-while"; C->warnings[9].flag = &C->Wdo_while;
-	C->warnings[10].name = "enum-mismatch"; C->warnings[10].flag = &C->Wenum_mismatch;
-	C->warnings[11].name = "init-cstring"; C->warnings[11].flag = &C->Winit_cstring;
-	C->warnings[12].name = "non-pointer-null"; C->warnings[12].flag = &C->Wnon_pointer_null;
-	C->warnings[13].name = "old-initializer"; C->warnings[13].flag = &C->Wold_initializer;
-	C->warnings[14].name = "one-bit-signed-bitfield"; C->warnings[14].flag = &C->Wone_bit_signed_bitfield;
-	C->warnings[15].name = "paren-string"; C->warnings[15].flag = &C->Wparen_string;
-	C->warnings[16].name = "ptr-subtraction-blows"; C->warnings[16].flag = &C->Wptr_subtraction_blows;
-	C->warnings[17].name = "return-void"; C->warnings[17].flag = &C->Wreturn_void;
-	C->warnings[18].name = "shadow"; C->warnings[18].flag = &C->Wshadow;
-	C->warnings[19].name = "transparent-union"; C->warnings[19].flag = &C->Wtransparent_union;
-	C->warnings[20].name = "typesign"; C->warnings[20].flag = &C->Wtypesign;
-	C->warnings[21].name = "undef"; C->warnings[21].flag = &C->Wundef;
-	C->warnings[22].name = "uninitialized"; C->warnings[22].flag = &C->Wuninitialized;
-	C->warnings[23].name = "vla"; C->warnings[23].flag = &C->Wvla;
+	C->warnings[8].name = "designated-init";	C->warnings[8].flag = &C->Wdesignated_init;
+	C->warnings[9].name = "do-while";			C->warnings[9].flag = &C->Wdo_while;
+	C->warnings[10].name = "enum-mismatch";		C->warnings[10].flag = &C->Wenum_mismatch;
+	C->warnings[11].name = "sparse-error";		C->warnings[11].flag = &C->Wsparse_error;
+	C->warnings[12].name = "init-cstring";		C->warnings[12].flag = &C->Winit_cstring;
+	C->warnings[13].name = "non-pointer-null";	C->warnings[13].flag = &C->Wnon_pointer_null;
+	C->warnings[14].name = "old-initializer";	C->warnings[14].flag = &C->Wold_initializer;
+	C->warnings[15].name = "one-bit-signed-bitfield"; C->warnings[15].flag = &C->Wone_bit_signed_bitfield;
+	C->warnings[16].name = "paren-string";		C->warnings[16].flag = &C->Wparen_string;
+	C->warnings[17].name = "ptr-subtraction-blows"; C->warnings[17].flag = &C->Wptr_subtraction_blows;
+	C->warnings[18].name = "return-void";		C->warnings[18].flag = &C->Wreturn_void;
+	C->warnings[19].name = "shadow";			C->warnings[19].flag = &C->Wshadow;
+	C->warnings[20].name = "sizeof-bool";		C->warnings[20].flag = &C->Wsizeof_bool;
+	C->warnings[21].name = "transparent-union"; C->warnings[21].flag = &C->Wtransparent_union;
+	C->warnings[22].name = "typesign";			C->warnings[22].flag = &C->Wtypesign;
+	C->warnings[23].name = "undef";				C->warnings[23].flag = &C->Wundef;
+	C->warnings[24].name = "uninitialized";		C->warnings[24].flag = &C->Wuninitialized;
+	C->warnings[25].name = "vla";				C->warnings[25].flag = &C->Wvla;
 
 	C->debugs[0].name = "entry"; C->debugs[0].flag = &C->dbg_entry;
 	C->debugs[1].name = "dead";  C->debugs[1].flag = &C->dbg_dead;
@@ -526,7 +528,7 @@ static char **handle_onoff_switch(struct dmr_C *C, char *arg, char **next, const
 
 static char **handle_switch_W(struct dmr_C *C, char *arg, char **next)
 {
-	char ** ret = handle_onoff_switch(C, arg, next, C->warnings, 24);
+	char ** ret = handle_onoff_switch(C, arg, next, C->warnings, 26);
 	if (ret)
 		return ret;
 
@@ -560,7 +562,7 @@ static void handle_onoff_switch_finalize(const struct warning warnings[], int n)
 
 static void handle_switch_W_finalize(struct dmr_C *C)
 {
-	handle_onoff_switch_finalize(C->warnings, 24);
+	handle_onoff_switch_finalize(C->warnings, 26);
 
 	/* default Wdeclarationafterstatement based on the C dialect */
 	if (-1 == C->Wdeclarationafterstatement)

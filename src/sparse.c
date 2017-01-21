@@ -287,6 +287,8 @@ static void check_symbols(struct dmr_C *C, struct ptr_list *list)
 			check_context(C, ep);
 		}
 	} END_FOR_EACH_PTR(sym);
+	if (C->Wsparse_error && C->die_if_error)
+		exit(1);
 }
 
 int main(int argc, char **argv)

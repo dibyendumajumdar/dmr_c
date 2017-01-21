@@ -201,7 +201,7 @@ int test_allocator() {
   if (alloc.total_bytes !=
       (sizeof(struct allocation_blob) + sizeof(struct foo) * 2) * 2)
     return 1;
-  struct allocator alloc2;
+  struct allocator alloc2 = { 0 };
   struct allocation_blob *saved = alloc.blobs_;
   allocator_transfer(&alloc, &alloc2);
   if (alloc.blobs_ != NULL)

@@ -399,7 +399,7 @@ static void flush_to(struct ptr_list *b, void **buffer, int *nbuf) {
   assert(*nbuf >= nr);
   memcpy(b->list_, buffer, nr * sizeof(void *));
   *nbuf = *nbuf - nr;
-  memcpy(buffer, buffer + nr, *nbuf * sizeof(void *));
+  memmove(buffer, buffer + nr, *nbuf * sizeof(void *));
 }
 
 static void dump_to(struct ptr_list *b, void **buffer, int nbuf) {

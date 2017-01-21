@@ -168,6 +168,8 @@ static int expand_one_symbol(struct dmr_C *C, struct token **list)
 			time(&C->t);
 		strftime(C->date_buffer, 9, "%T", localtime(&C->t));
 		replace_with_string(C, token, C->date_buffer);
+	} else if (token->ident == C->S->__COUNTER___ident) {
+		replace_with_integer(C, token, C->counter_macro++);
 	}
 	return 1;
 }
@@ -196,7 +198,7 @@ static void expand_list(struct dmr_C *C, struct token **list)
 
 static void preprocessor_line(struct dmr_C *C, struct stream *stream, struct token **line);
 
-static struct token *collect_arg(struct dmr_C *C, struct token *prev, int vararg, struct position *pos)
+static struct token *collect_arg(struct dmr_C *C, struct token *prev, int vararg, struct position *pos, int count)
 {
 	struct stream *stream = C->T->input_streams + prev->pos.stream;
 	struct token **p = &prev->next;
@@ -218,6 +220,11 @@ static struct token *collect_arg(struct dmr_C *C, struct token *prev, int vararg
 		case TOKEN_STREAMBEGIN:
 			*p = &eof_token_entry;
 			return next;
+		case TOKEN_STRING:
+		case TOKEN_WIDE_STRING:
+			if (count > 1)
+				next->string->immutable = 1;
+			break;
 		}
 		if (C->false_nesting) {
 			*p = next->next;
@@ -263,7 +270,7 @@ static int collect_arguments(struct dmr_C *C, struct token *start, struct token 
 	arglist = arglist->next;	/* skip counter */
 
 	if (!wanted) {
-		next = collect_arg(C, start, 0, &what->pos);
+		next = collect_arg(C, start, 0, &what->pos, 0);
 		if (eof_token(next))
 			goto Eclosing;
 		if (!eof_token(start->next) || !match_op(next, ')')) {
@@ -273,7 +280,7 @@ static int collect_arguments(struct dmr_C *C, struct token *start, struct token 
 	} else {
 		for (count = 0; count < wanted; count++) {
 			struct argcount *p = &arglist->next->count;
-			next = collect_arg(C, start, p->vararg, &what->pos);
+			next = collect_arg(C, start, p->vararg, &what->pos, p->normal);
 			arglist = arglist->next->next;
 			if (eof_token(next))
 				goto Eclosing;
@@ -310,7 +317,7 @@ Efew:
 	goto out;
 Emany:
 	while (match_op(next, ',')) {
-		next = collect_arg(C, next, 0, &what->pos);
+		next = collect_arg(C, next, 0, &what->pos, 0);
 		count++;
 	}
 	if (eof_token(next))
@@ -1256,8 +1263,15 @@ static struct token *parse_expansion(struct dmr_C *C, struct token *expansion, s
 		} else {
 			try_arg(C, token, TOKEN_MACRO_ARGUMENT, arglist);
 		}
-		if (token_type(token) == TOKEN_ERROR)
+		switch (token_type(token)) {
+		case TOKEN_ERROR:
 			goto Earg;
+
+		case TOKEN_STRING:
+		case TOKEN_WIDE_STRING:
+			token->string->immutable = 1;
+			break;
+		}
 	}
 	token = alloc_token(C, &expansion->pos);
 	token_type(token) = TOKEN_UNTAINT;

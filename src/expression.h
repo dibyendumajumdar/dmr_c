@@ -54,31 +54,33 @@ enum expression_type {
 	EXPR_ALIGNOF,
 	EXPR_PTRSIZEOF,
 	EXPR_CONDITIONAL,
-	EXPR_SELECT, // a "safe" conditional expression
+	EXPR_SELECT,		// a "safe" conditional expression
 	EXPR_STATEMENT,
 	EXPR_CALL,
 	EXPR_COMMA,
 	EXPR_COMPARE,
 	EXPR_LABEL,
-	EXPR_INITIALIZER, // initializer list
-	EXPR_IDENTIFIER,  // identifier in initializer
-	EXPR_INDEX,       // index in initializer
-	EXPR_POS,	 // position in initializer
+	EXPR_INITIALIZER,	// initializer list
+	EXPR_IDENTIFIER,	// identifier in initializer
+	EXPR_INDEX,		// index in initializer
+	EXPR_POS,		// position in initializer
 	EXPR_FVALUE,
 	EXPR_SLICE,
 	EXPR_OFFSETOF,
 };
 
-enum { Int_const_expr = 1,
-       Float_literal = 2,
+enum {
+	Int_const_expr = 1,
+	Float_literal = 2,
 }; /* for expr->flags */
 
-enum { Taint_comma = 1,
+enum {
+	Taint_comma = 1,
 }; /* for expr->taint */
 
 struct expression {
-	enum expression_type type : 8;
-	unsigned flags : 8;
+	enum expression_type type:8;
+	unsigned flags:8;
 	int op;
 	struct position pos;
 	struct symbol *ctype;
@@ -113,8 +115,7 @@ struct expression {
 		// EXPR_STATEMENT
 		struct statement *statement;
 
-		// EXPR_BINOP, EXPR_COMMA, EXPR_COMPARE, EXPR_LOGICAL and
-		// EXPR_ASSIGNMENT
+		// EXPR_BINOP, EXPR_COMMA, EXPR_COMPARE, EXPR_LOGICAL and EXPR_ASSIGNMENT
 		struct /* binop_arg */ {
 			struct expression *left, *right;
 		};
@@ -151,6 +152,7 @@ struct expression {
 		struct ptr_list *expr_list;
 		// EXPR_IDENTIFIER
 		struct /* ident_expr */ {
+			int offset;
 			struct ident *expr_ident;
 			struct symbol *field;
 			struct expression *ident_expression;

@@ -50,7 +50,7 @@ void access_symbol(struct global_symbols_t *S, struct symbol *sym)
 {
 	if (sym->ctype.modifiers & MOD_INLINE) {
 		if (!(sym->ctype.modifiers & MOD_ACCESSED)) {
-			ptrlist_add(&S->translation_unit_used_list, sym);
+			add_symbol(&S->translation_unit_used_list, sym);
 			sym->ctype.modifiers |= MOD_ACCESSED;
 		}
 	}
@@ -234,7 +234,8 @@ static struct symbol * examine_array_type(struct global_symbols_t *S, struct sym
 		return sym;
 
 	if (array_size) {	
-		bit_size = (unsigned long) (base_type->bit_size * get_expression_value_silent(S->C, array_size));
+		bit_size = array_element_offset(S->C->target, base_type->bit_size,
+						(int) get_expression_value_silent(S->C, array_size));
 		if (array_size->type != EXPR_VALUE) {
 			if (S->C->Wvla)
 				warning(S->C, array_size->pos, "Variable length array is used.");
@@ -353,6 +354,14 @@ static int count_array_initializer(struct global_symbols_t *S, struct symbol *t,
 	return nr;
 }
 
+static struct expression *get_symbol_initializer(struct symbol *sym)
+{
+	do {
+		if (sym->initializer)
+			return sym->initializer;
+	} while ((sym = sym->same_symbol) != NULL);
+	return NULL;
+}
 static struct symbol * examine_node_type(struct global_symbols_t *S, struct symbol *sym)
 {
 	struct symbol *base_type = examine_base_type(S, sym);
@@ -375,12 +384,15 @@ static struct symbol * examine_node_type(struct global_symbols_t *S, struct symb
 		sym->ctype.alignment = alignment;
 
 	/* Unsized array? The size might come from the initializer.. */
-	if (bit_size < 0 && base_type->type == SYM_ARRAY && sym->initializer) {
-		struct symbol *node_type = base_type->ctype.base_type;
-		int count = count_array_initializer(S, node_type, sym->initializer);
+	if (bit_size < 0 && base_type->type == SYM_ARRAY) {
+		struct expression *initializer = get_symbol_initializer(sym);
+		if (initializer) {
+			struct symbol *node_type = base_type->ctype.base_type;
+			int count = count_array_initializer(S, node_type, initializer);
 
-		if (node_type && node_type->bit_size >= 0)
-			bit_size = node_type->bit_size * count;
+			if (node_type && node_type->bit_size >= 0)
+				bit_size = array_element_offset(S->C->target, node_type->bit_size, count);
+		}
 	}
 	
 	sym->bit_size = bit_size;
@@ -524,8 +536,8 @@ void create_fouled(struct global_symbols_t *S, struct symbol *type)
 		news->bit_size = S->C->target->bits_in_int;
 		news->type = SYM_FOULED;
 		news->ctype.base_type = type;
-		ptrlist_add(&S->restr, type);
-		ptrlist_add(&S->fouled, news);
+		add_symbol(&S->restr, type);
+		add_symbol(&S->fouled, news);
 	}
 }
 
@@ -561,12 +573,14 @@ void check_declaration(struct global_symbols_t *S, struct symbol *sym)
 			sym->same_symbol = next;
 			return;
 		}
-		if (sym->ctype.modifiers & next->ctype.modifiers & MOD_EXTERN) {
-			if ((sym->ctype.modifiers ^ next->ctype.modifiers) & MOD_INLINE)
-				continue;
-			sym->same_symbol = next;
-			return;
+		/* Extern in block level matches a TOPLEVEL non-static symbol */
+		if (sym->ctype.modifiers & MOD_EXTERN) {
+			if ((next->ctype.modifiers & (MOD_TOPLEVEL|MOD_STATIC)) == MOD_TOPLEVEL) {
+				sym->same_symbol = next;
+				return;
+			}
 		}
+
 
 		if (!S->C->Wshadow || warned)
 			continue;
@@ -901,7 +915,7 @@ void init_ctype(struct dmr_C *C)
 		struct symbol *sym = ctype->ptr;
 		unsigned long bit_size = ctype->bit_size ? *ctype->bit_size : -1;
 		unsigned long maxalign = ctype->maxalign ? *ctype->maxalign : 0;
-		unsigned long alignment = bits_to_bytes(T, bit_size + T->bits_in_char - 1);
+		unsigned long alignment = bits_to_bytes(T, bit_size);
 
 		if (alignment > maxalign)
 			alignment = maxalign;

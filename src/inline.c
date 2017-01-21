@@ -72,7 +72,7 @@ static struct ptr_list *copy_symbol_list(struct dmr_C *C, struct ptr_list *src)
 
 	FOR_EACH_PTR(src, sym) {
 		struct symbol *newsym = copy_symbol(C, sym->pos, sym);
-		ptrlist_add(&dst, newsym);
+		add_symbol(&dst, newsym);
 	} END_FOR_EACH_PTR(sym);
 	return dst;
 }
@@ -213,7 +213,7 @@ static struct expression * copy_expression(struct dmr_C *C, struct expression *e
 		expr->fn = fn;
 		expr->args = NULL;
 		FOR_EACH_PTR(list, arg) {
-			ptrlist_add(&expr->args, copy_expression(C, arg));
+			add_expression(&expr->args, copy_expression(C, arg));
 		} END_FOR_EACH_PTR(arg);
 		break;
 	}
@@ -225,7 +225,7 @@ static struct expression * copy_expression(struct dmr_C *C, struct expression *e
 		expr = dup_expression(C, expr);
 		expr->expr_list = NULL;
 		FOR_EACH_PTR(list, entry) {
-			ptrlist_add(&expr->expr_list, copy_expression(C, entry));
+			add_expression(&expr->expr_list, copy_expression(C, entry));
 		} END_FOR_EACH_PTR(entry);
 		break;
 	}
@@ -293,11 +293,11 @@ static struct ptr_list *copy_asm_constraints(struct dmr_C *C, struct ptr_list *i
 		case 0: /* identifier */
 		case 1: /* constraint */
 			state++;
-			ptrlist_add(&out, expr);
+			add_expression(&out, expr);
 			continue;
 		case 2: /* expression */
 			state = 0;
-			ptrlist_add(&out, copy_expression(C, expr));
+			add_expression(&out, copy_expression(C, expr));
 			continue;
 		}
 	} END_FOR_EACH_PTR(expr);
@@ -344,7 +344,7 @@ static struct statement *copy_one_statement(struct dmr_C *C, struct statement *s
 			struct symbol *newsym = copy_symbol(C, stmt->pos, sym);
 			if (newsym != sym)
 				newsym->initializer = copy_expression(C, sym->initializer);
-			ptrlist_add(&newstmt->declaration, newsym);
+			add_symbol(&newstmt->declaration, newsym);
 		} END_FOR_EACH_PTR(sym);
 		stmt = newstmt;
 		break;
@@ -478,7 +478,7 @@ void copy_statement(struct dmr_C *C, struct statement *src, struct statement *ds
 	struct statement *stmt;
 
 	FOR_EACH_PTR(src->stmts, stmt) {
-		ptrlist_add(&dst->stmts, copy_one_statement(C, stmt));
+		add_statement(&dst->stmts, copy_one_statement(C, stmt));
 	} END_FOR_EACH_PTR(stmt);
 	dst->args = copy_one_statement(C, src->args);
 	dst->ret = copy_symbol(C, src->pos, src->ret);
@@ -506,7 +506,7 @@ static struct ptr_list *create_symbol_list(struct dmr_C *C, struct ptr_list *src
 
 	FOR_EACH_PTR(src, sym) {
 		struct symbol *newsym = create_copy_symbol(C, sym);
-		ptrlist_add(&dst, newsym);
+		add_symbol(&dst, newsym);
 	} END_FOR_EACH_PTR(sym);
 	return dst;
 }
@@ -547,10 +547,10 @@ int inline_function(struct dmr_C *C, struct expression *expr, struct symbol *sym
 		if (name) {
 			*a = *name;
 			set_replace(C, name, a);
-			ptrlist_add(&fn_symbol_list, a);
+			add_symbol(&fn_symbol_list, a);
 		}
 		a->initializer = arg;
-		ptrlist_add(&arg_decl, a);
+		add_symbol(&arg_decl, a);
 
 		NEXT_PTR_LIST(name);
 	} END_FOR_EACH_PTR(arg);

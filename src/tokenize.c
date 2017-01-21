@@ -95,8 +95,7 @@ const char *show_ident(struct dmr_C *C, const struct ident *ident)
 	return C->T->ident_buffer;
 }
 
-static char *charstr(char *ptr, unsigned char c, unsigned char escape,
-		     unsigned char next)
+static char *charstr(char *ptr, unsigned char c, unsigned char escape, unsigned char next)
 {
 	if (isprint(c)) {
 		if (c == escape || c == '\\')
@@ -210,8 +209,7 @@ const char *show_token(struct dmr_C *C, const struct token *token)
 	case TOKEN_WIDE_CHAR_EMBEDDED_2:
 	case TOKEN_WIDE_CHAR_EMBEDDED_3:
 		return show_char(C, token->embedded,
-				 token_type(token) - TOKEN_WIDE_CHAR, 'L',
-				 '\'');
+				 token_type(token) - TOKEN_WIDE_CHAR, 'L', '\'');
 	case TOKEN_STRING:
 		return show_char(C, token->string->data,
 				 token->string->length - 1, 0, '"');
@@ -500,14 +498,15 @@ static void drop_token(struct stream_t *stream)
 	stream->token = NULL;
 }
 
-enum { Letter = 1,
-       Digit = 2,
-       Hex = 4,
-       Exp = 8,
-       Dot = 16,
-       ValidSecond = 32,
-       Quote = 64,
-       Escape = 128,
+enum {
+	Letter = 1,
+	Digit = 2,
+	Hex = 4,
+	Exp = 8,
+	Dot = 16,
+	ValidSecond = 32,
+	Quote = 64,
+	Escape = 128,
 };
 
 /*
@@ -684,8 +683,7 @@ unsigned char combinations[][4] = COMBINATION_STRINGS;
 #define NR_COMBINATIONS (SPECIAL_ARG_SEPARATOR - SPECIAL_BASE)
 
 /* hash function for two-character punctuators - all give unique values */
-#define special_hash(c0, c1)                                                   \
-	(((c0 * 8 + c1 * 2) + ((c0 * 8 + c1 * 2) >> 5)) & 31)
+#define special_hash(c0, c1) (((c0*8+c1*2)+((c0*8+c1*2)>>5))&31)
 
 static int get_one_special(struct dmr_C *C, int c, struct stream_t *stream)
 {
@@ -719,8 +717,7 @@ static int get_one_special(struct dmr_C *C, int c, struct stream_t *stream)
 	value = c;
 	if (C->T->cclass[next + 1] & ValidSecond) {
 		i = special_hash(c, next);
-		if (C->T->hash_results[i][0] == c &&
-		    C->T->hash_results[i][1] == next) {
+		if (C->T->hash_results[i][0] == c && C->T->hash_results[i][1] == next) {
 			value = C->T->code[i];
 			next = nextchar(C, stream);
 			if (value >= SPECIAL_LEFTSHIFT &&
@@ -740,13 +737,12 @@ static int get_one_special(struct dmr_C *C, int c, struct stream_t *stream)
 }
 
 #define IDENT_HASH_BITS (13)
-#define IDENT_HASH_SIZE (1 << IDENT_HASH_BITS)
-#define IDENT_HASH_MASK (IDENT_HASH_SIZE - 1)
+#define IDENT_HASH_SIZE (1<<IDENT_HASH_BITS)
+#define IDENT_HASH_MASK (IDENT_HASH_SIZE-1)
 
-#define ident_hash_init(c) (c)
-#define ident_hash_add(oldhash, c) ((oldhash)*11 + (c))
-#define ident_hash_end(hash)                                                   \
-	((((hash) >> IDENT_HASH_BITS) + (hash)) & IDENT_HASH_MASK)
+#define ident_hash_init(c)		(c)
+#define ident_hash_add(oldhash,c)	((oldhash)*11 + (c))
+#define ident_hash_end(hash)		((((hash) >> IDENT_HASH_BITS) + (hash)) & IDENT_HASH_MASK)
 
 void show_identifier_stats(struct dmr_C *C)
 {
@@ -807,15 +803,15 @@ static struct ident *create_hashed_ident(struct dmr_C *C, const char *name,
 
 	p = &C->T->hash_table[hash];
 	while ((ident = *p) != NULL) {
-		if (ident->len == (unsigned char)len) {
+		if (ident->len == (unsigned char) len) {
 			if (strncmp(name, ident->name, len) != 0)
 				goto next;
 
 			C->T->ident_hit++;
 			return ident;
 		}
-	next:
-		// misses++;
+next:
+		//misses++;
 		p = &ident->next;
 	}
 	ident = alloc_ident(C, name, len);
@@ -1080,8 +1076,7 @@ void init_tokenizer(struct dmr_C *C)
 * entry 0 is filled (by +=), so all the missing ones are OK.
 */
 #define RES(c0, c1)                                                            \
-	C->T->hash_results[special_hash(c0, c1)]                               \
-			  [0] = c0,                                            \
+	C->T->hash_results[special_hash(c0, c1)][0] = c0,                          \
 		      C->T->hash_results[special_hash(c0, c1)][1] = c1
 	RES('+', '='); /* 00 */
 	RES('/', '='); /* 01 */

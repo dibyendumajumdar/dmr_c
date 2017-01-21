@@ -36,20 +36,19 @@
 #include <sys/types.h>
 
 /*
-* This describes the pure lexical elements (tokens), with
-* no semantic meaning. In other words, an identifier doesn't
-* have a type or meaning, it is only a specific string in
-* the input stream.
-*
-* Semantic meaning is handled elsewhere.
-*/
+ * This describes the pure lexical elements (tokens), with
+ * no semantic meaning. In other words, an identifier doesn't
+ * have a type or meaning, it is only a specific string in
+ * the input stream.
+ *
+ * Semantic meaning is handled elsewhere.
+ */
 
 enum constantfile {
-	CONSTANT_FILE_MAYBE,  // To be determined, not inside any #ifs in this
-			      // file
-	CONSTANT_FILE_IFNDEF, // To be determined, currently inside #ifndef
-	CONSTANT_FILE_NOPE,   // No
-	CONSTANT_FILE_YES     // Yes
+  CONSTANT_FILE_MAYBE,    // To be determined, not inside any #ifs in this file
+  CONSTANT_FILE_IFNDEF,   // To be determined, currently inside #ifndef
+  CONSTANT_FILE_NOPE,     // No
+  CONSTANT_FILE_YES       // Yes
 };
 
 struct stream {
@@ -108,13 +107,21 @@ enum e_token_type {
 };
 
 /* Combination tokens */
-#define COMBINATION_STRINGS                                                    \
-	{                                                                      \
-		"+=", "++", "-=", "--", "->",                                  \
-		    "*=", "/=", "%=", "<=", ">=", "==", "!=", "&&",            \
-		    "&=", "||", "|=", "^=", "##", "<<", ">>", "..",            \
-		    "<<=", ">>=", "...", "", "<", ">", "<=", ">="              \
-	\
+#define COMBINATION_STRINGS {	\
+	"+=", "++",		\
+	"-=", "--", "->",	\
+	"*=",			\
+	"/=",			\
+	"%=",			\
+	"<=", ">=",		\
+	"==", "!=",		\
+	"&&", "&=",		\
+	"||", "|=",		\
+	"^=", "##",		\
+	"<<", ">>", "..",	\
+	"<<=", ">>=", "...",	\
+	"",			\
+	"<", ">", "<=", ">="	\
 }
 
 extern unsigned char combinations[][4];
@@ -153,7 +160,8 @@ enum special_token {
 };
 
 struct string {
-	unsigned int length;
+	unsigned int length:31;
+	unsigned int immutable:1;
 	char data[];
 };
 
@@ -184,6 +192,12 @@ struct token {
 	};
 };
 
+static inline struct token *containing_token(struct token **p)
+{
+	void *addr = (char *)p - ((char *)&((struct token *)0)->next - (char *)0);
+	return (struct token *)addr;
+}
+
 struct tokenizer_state_t {
 	unsigned int tabstop;
 	int input_stream_nr;
@@ -207,48 +221,41 @@ struct tokenizer_state_t {
 	const char **includepath;
 };
 
+
+#define token_type(x) ((x)->pos.type)
+
+/*
+ * Last token in the stream - points to itself.
+ * This allows us to not test for NULL pointers
+ * when following the token->next chain..
+ */
+extern struct token eof_token_entry;
+#define eof_token(x) ((x) == &eof_token_entry)
 extern void init_tokenizer(struct dmr_C *C);
 extern void destroy_tokenizer(struct dmr_C *C);
 
 extern int init_stream(struct dmr_C *C, const char *name, int fd,
-		       const char **next_path);
+	const char **next_path);
 extern const char *stream_name(struct dmr_C *C, int stream);
+extern struct ident *hash_ident(struct dmr_C *C, struct ident *ident);
+extern struct ident *built_in_ident(struct dmr_C *C, const char *name);
+extern struct token *built_in_token(struct dmr_C *C, int stream, const char *name);
 extern const char *show_special(struct dmr_C *C, int val);
 extern const char *show_ident(struct dmr_C *C, const struct ident *ident);
 extern const char *show_string(struct dmr_C *C, const struct string *string);
 extern const char *show_token(struct dmr_C *C, const struct token *token);
 extern const char *quote_token(struct dmr_C *C, const struct token *token);
 extern int *hash_stream(const char *name);
-extern void show_identifier_stats(struct dmr_C *C);
-extern struct ident *hash_ident(struct dmr_C *C, struct ident *ident);
-extern struct ident *built_in_ident(struct dmr_C *C, const char *name);
-extern struct token *built_in_token(struct dmr_C *C, int stream,
-				    const char *name);
-extern struct token *tokenize_buffer(struct dmr_C *C, unsigned char *buffer,
-				     unsigned long size,
-				     struct token **endtoken);
 extern struct token *tokenize(struct dmr_C *C, const char *name, int fd,
-			      struct token *endtoken, const char **next_path);
+	struct token *endtoken, const char **next_path);
+extern struct token *tokenize_buffer(struct dmr_C *C, unsigned char *buffer,
+	unsigned long size,
+	struct token **endtoken);
+extern void show_identifier_stats(struct dmr_C *C);
 extern struct token *preprocess(struct dmr_C *C, struct token *);
-
-#define token_type(x) ((x)->pos.type)
-/*
-* Last token in the stream - points to itself.
-* This allows us to not test for NULL pointers
-* when following the token->next chain..
-*/
-extern struct token eof_token_entry;
-#define eof_token(x) ((x) == &eof_token_entry)
-
-static inline struct token *containing_token(struct token **p)
+static inline int match_op(struct token *token, unsigned int op)
 {
-	void *addr = (char *)p - ((char *)&((struct token *)0)->next - (char *)0);
-	return (struct token *)addr;
-}
-
-static inline int match_op(struct token *token, int op)
-{
-	return token->pos.type == TOKEN_SPECIAL && (int)token->special == op;
+	return token->pos.type == TOKEN_SPECIAL && token->special == op;
 }
 
 static inline int match_ident(struct token *token, struct ident *id)

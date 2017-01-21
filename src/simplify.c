@@ -642,7 +642,7 @@ offset:
 		new = VOID(C);
 		warning(C, insn->pos, "crazy programmer");
 	}
-	insn->offset += (unsigned int) off->value;
+	insn->offset += (unsigned) off->value;
 	use_pseudo(C, insn, new, &insn->src);
 	remove_usage(C, addr, &insn->src);
 	return REPEAT_CSE | REPEAT_SYMBOL_CLEANUP;

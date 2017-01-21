@@ -33,7 +33,7 @@ static int phi_compare(pseudo_t phi1, pseudo_t phi2)
 
 static void clean_up_one_instruction(struct dmr_C *C, struct basic_block *bb, struct instruction *insn)
 {
-	size_t hash;
+	unsigned long hash;
 
 	if (!insn->bb)
 		return;

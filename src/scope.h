@@ -53,6 +53,7 @@ extern void start_function_scope(struct dmr_C *C);
 extern void end_function_scope(struct dmr_C *C);
 
 extern void bind_scope(struct dmr_C *C, struct symbol *, struct scope *);
+extern void rebind_scope(struct dmr_C *C, struct symbol *sym, struct scope *news);
 
 extern int is_outer_scope(struct dmr_C *C, struct scope *);
 

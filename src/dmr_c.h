@@ -135,8 +135,9 @@ struct dmr_C {
 	int Wdefault_bitfield_sign;
 	int Wdesignated_init;
 	int Wdo_while;
-	int Wenum_mismatch;
 	int Winit_cstring;
+	int Wenum_mismatch;
+	int Wsparse_error;
 	int Wnon_pointer_null;
 	int Wold_initializer;
 	int Wone_bit_signed_bitfield;
@@ -144,12 +145,13 @@ struct dmr_C {
 	int Wptr_subtraction_blows;
 	int Wreturn_void;
 	int Wshadow;
+	int Wsizeof_bool;
 	int Wtransparent_union;
 	int Wtypesign;
 	int Wundef;
 	int Wuninitialized;
 	int Wvla;
-	struct warning warnings[25];
+	struct warning warnings[26];
 	struct warning debugs[2];
 
 #define CMDLINE_INCLUDE 20
@@ -173,6 +175,7 @@ struct dmr_C {
 	char typename_array[200];
 
 	int false_nesting;
+	int counter_macro;		// __COUNTER__ expansion
 
 #define INCLUDEPATHS 300
 	const char *includepath[INCLUDEPATHS + 1];

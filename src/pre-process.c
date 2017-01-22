@@ -849,7 +849,7 @@ static int try_include(struct dmr_C *C, const char *path, const char *filename, 
 	memcpy(C->fullname+plen, filename, flen);
 	if (already_tokenized(C, C->fullname))
 		return 1;
-	printf("Opening %s\n", C->fullname);
+	//printf("Opening %s\n", C->fullname);
 	fd = open(C->fullname, O_RDONLY);
 	if (fd >= 0) {
 		char * streamname = (char *)allocator_allocate(&C->byte_allocator, plen + flen);

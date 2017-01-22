@@ -850,19 +850,50 @@ static int test_ptrlist_basics() {
 
 	struct mystruct *serial3_expected[4] = { s1, s2, s5, s6 };
 	struct mystruct *serial3_got[4];
+	int *reverse_expected[2] = { 2, 1 };
 
 	int i = 0;
-	struct ptr_list_iter iter5 = ptrlist_iterator_forward(mystruct_list);
-	for (struct mystruct *p = (struct mystruct *)ptrlist_iter_next(&iter5); p != NULL;
-		p = (struct mystruct *)ptrlist_iter_next(&iter5)) {
+	struct mystruct *p;
+	FOR_EACH_PTR(mystruct_list, p) {
 		if (i == 4)
 			return 1;
 		serial3_got[i++] = p;
-	}
+		if (i == 3) {
+			struct mystruct *p2;
+			int j = 0;
+			RECURSE_PTR_REVERSE(p, p2) {
+				if (j >= 2 || reverse_expected[j] != p2->i)
+					return 1;
+				j++;
+			} END_FOR_EACH_PTR_REVERSE(p2);
+		}
+	} END_FOR_EACH_PTR(p);
 	if (i != 4)
 		return 1;
 	for (int i = 0; i < 4; i++) {
 		if (serial3_expected[i] != serial3_got[i])
+			return 1;
+	}
+
+	i = 0;
+	FOR_EACH_PTR_REVERSE(mystruct_list, p) {
+		if (i == 4)
+			return 1;
+		serial3_got[i++] = p;
+		if (i == 2) {
+			struct mystruct *p3;
+			int j = 0;
+			RECURSE_PTR_REVERSE(p, p3) {
+				if (j >= 2 || reverse_expected[j] != p3->i)
+					return 1;
+				j++;
+			} END_FOR_EACH_PTR_REVERSE(p3);
+		}
+	} END_FOR_EACH_PTR_REVERSE(p);
+	if (i != 4)
+		return 1;
+	for (int i = 0; i < 4; i++) {
+		if (serial3_expected[3-i] != serial3_got[i])
 			return 1;
 	}
 

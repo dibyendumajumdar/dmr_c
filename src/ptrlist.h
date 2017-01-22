@@ -76,6 +76,8 @@ static inline void **ptrlist_iter_this_address(struct ptr_list_iter *self) {
 	return &self->__list->list_[self->__nr];
 }
 #define ptr_list_empty(x) ((x) == NULL)
+#define PTR_ENTRY_NOTAG(h,i)	((h)->list_[i])
+#define PTR_ENTRY(h,i)	(void *)(PTR_ENTRY_NOTAG(h,i))
 
 #if 0
 
@@ -114,9 +116,6 @@ static inline void **ptrlist_iter_this_address(struct ptr_list_iter *self) {
 	ptrlist_iter_insert(&var##iter__, newval)	
 
 #else
-
-#define PTR_ENTRY_NOTAG(h,i)	((h)->list_[i])
-#define PTR_ENTRY(h,i)	(void *)(PTR_ENTRY_NOTAG(h,i))
 
 #define DO_PREPARE(head, ptr, __head, __list, __nr, PTR_ENTRY)				\
 	do {										\

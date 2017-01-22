@@ -195,7 +195,7 @@ static int simplify_int_binop(struct dmr_C *C, struct expression *expr, struct s
 		if (r >= ctype->bit_size) {
 			if (conservative)
 				return 0;
-			r = check_shift_count(C, expr, ctype, (unsigned int) r);
+			r = check_shift_count(C, expr, ctype, r);
 			right->value = r;
 		}
 	}
@@ -619,7 +619,7 @@ static struct expression *constant_symbol_value(struct dmr_C *C, struct symbol *
 static int expand_dereference(struct dmr_C *C, struct expression *expr)
 {
 	struct expression *unop = expr->unop;
-	size_t offset;
+	unsigned int offset;
 
 	expand_expression(C, unop);
 
@@ -648,7 +648,7 @@ static int expand_dereference(struct dmr_C *C, struct expression *expr)
 
 	if (unop->type == EXPR_SYMBOL) {
 		struct symbol *sym = unop->symbol;
-		struct expression *value = constant_symbol_value(C, sym, (int) offset);
+		struct expression *value = constant_symbol_value(C, sym, offset);
 
 		/* Const symbol with a constant initializer? */
 		if (value) {

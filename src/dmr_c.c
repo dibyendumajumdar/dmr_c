@@ -123,19 +123,6 @@ unsigned int hexval(unsigned int c)
 	return retval;
 }
 
-void die(struct dmr_C *C, const char *fmt, ...)
-{
-	va_list args;
-	static char buffer[512];
-
-	va_start(args, fmt);
-	vsnprintf(buffer, sizeof(buffer), fmt, args);
-	va_end(args);
-
-	fprintf(stderr, "%s\n", buffer);
-	exit(1);
-}
-
 static void do_warn(struct dmr_C *C, const char *type, struct position pos,
 		    const char *fmt, va_list args)
 {
@@ -160,25 +147,6 @@ void info(struct dmr_C *C, struct position pos, const char *fmt, ...)
 	va_end(args);
 }
 
-void warning(struct dmr_C *C, struct position pos, const char *fmt, ...)
-{
-	va_list args;
-
-	if (!C->max_warnings) {
-		C->show_info = 0;
-		return;
-	}
-
-	if (!--C->max_warnings) {
-		C->show_info = 0;
-		fmt = "too many warnings";
-	}
-
-	va_start(args, fmt);
-	do_warn(C, "warning: ", pos, fmt, args);
-	va_end(args);
-}
-
 static void do_error(struct dmr_C *C, struct position pos, const char *fmt,
 		     va_list args)
 {
@@ -197,6 +165,33 @@ static void do_error(struct dmr_C *C, struct position pos, const char *fmt,
 	do_warn(C, "error: ", pos, fmt, args);
 	C->errors++;
 }
+
+
+void warning(struct dmr_C *C, struct position pos, const char *fmt, ...)
+{
+	va_list args;
+
+	if (C->Wsparse_error) {
+		va_start(args, fmt);
+		do_error(C, pos, fmt, args);
+		va_end(args);
+		return;
+	}
+	if (!C->max_warnings) {
+		C->show_info = 0;
+		return;
+	}
+
+	if (!--C->max_warnings) {
+		C->show_info = 0;
+		fmt = "too many warnings";
+	}
+
+	va_start(args, fmt);
+	do_warn(C, "warning: ", pos, fmt, args);
+	va_end(args);
+}
+
 
 void sparse_error(struct dmr_C *C, struct position pos, const char *fmt, ...)
 {
@@ -224,6 +219,19 @@ void error_die(struct dmr_C *C, struct position pos, const char *fmt, ...)
 	exit(1);
 }
 
+void die(struct dmr_C *C, const char *fmt, ...)
+{
+	va_list args;
+	static char buffer[512];
+
+	va_start(args, fmt);
+	vsnprintf(buffer, sizeof(buffer), fmt, args);
+	va_end(args);
+
+	fprintf(stderr, "%s\n", buffer);
+	exit(1);
+}
+
 
 #ifdef __x86_64__
 #define ARCH_M64_DEFAULT 1
@@ -242,6 +250,11 @@ struct dmr_C *new_dmr_C()
 	C->gcc_base_dir = GCC_BASE;
 #else
 	C->gcc_base_dir = NULL;
+#endif
+#ifdef MULTIARCH_TRIPLET
+	C->multiarch_dir = MULTIARCH_TRIPLET;
+#else
+	C->multiarch_dir = NULL;
 #endif
 
 	C->Waddress_space = 1;
@@ -438,6 +451,13 @@ static char **handle_switch_M(struct dmr_C *C, char *arg, char **next)
 	return next;
 }
 
+static char **handle_multiarch_dir(struct dmr_C *C, char *arg, char **next)
+{
+	C->multiarch_dir = *++next;
+	if (!C->multiarch_dir)
+		die(C, "missing argument for -multiarch-dir option");
+	return next;
+}
 static char **handle_switch_m(struct dmr_C *C, char *arg, char **next)
 {
 	if (!strcmp(arg, "m64")) {
@@ -448,7 +468,8 @@ static char **handle_switch_m(struct dmr_C *C, char *arg, char **next)
 	}
 	else if (!strcmp(arg, "msize-long")) {
 		C->arch_msize_long = 1;
-	}
+	} else if (!strcmp(arg, "multiarch-dir"))
+		return handle_multiarch_dir(C, arg, next);
 	return next;
 }
 
@@ -502,7 +523,7 @@ static char **handle_onoff_switch(struct dmr_C *C, char *arg, char **next, const
 
 	if (!strcmp(p, "sparse-all")) {
 		for (i = 0; i < n; i++) {
-			if (*warnings[i].flag != WARNING_FORCE_OFF)
+			if (*warnings[i].flag != WARNING_FORCE_OFF && warnings[i].flag != &C->Wsparse_error)
 				*warnings[i].flag = WARNING_ON;
 		}
 	}
@@ -695,6 +716,13 @@ static char **handle_nostdinc(struct dmr_C *C, char *arg, char **next)
 	return next;
 }
 
+static char **handle_switch_n(struct dmr_C *C, char *arg, char **next)
+{
+	if (!strcmp (arg, "nostdinc"))
+		return handle_nostdinc(C, arg, next);
+
+	return next;
+}
 static char **handle_base_dir(struct dmr_C *C, char *arg, char **next)
 {
 	C->gcc_base_dir = *++next;
@@ -703,28 +731,54 @@ static char **handle_base_dir(struct dmr_C *C, char *arg, char **next)
 	return next;
 }
 
+static char **handle_switch_g(struct dmr_C *C, char *arg, char **next)
+{
+	if (!strcmp (arg, "gcc-base-dir"))
+		return handle_base_dir(C, arg, next);
+
+	return next;
+}
 static char **handle_version(struct dmr_C *C, char *arg, char **next)
 {
 	printf("%s\n", SPARSE_VERSION);
 	exit(0);
 }
 
+static char **handle_param(struct dmr_C *C, char *arg, char **next)
+{
+	char *value = NULL;
+
+	/* For now just skip any '--param=*' or '--param *' */
+	if (*arg == '\0') {
+		value = *++next;
+	} else if (isspace((unsigned char)*arg) || *arg == '=') {
+		value = ++arg;
+	}
+
+	if (!value)
+		die(C, "missing argument for --param option");
+
+	return next;
+}
 struct switches {
 	const char *name;
 	char **(*fn)(struct dmr_C *, char *, char **);
+	unsigned int prefix:1;
 };
 
 static char **handle_long_options(struct dmr_C *C, char *arg, char **next)
 {
 	static struct switches cmd[] = {
+		{ "param", handle_param, 1 },
 		{ "version", handle_version },
 		{ NULL, NULL }
 	};
 	struct switches *s = cmd;
 
 	while (s->name) {
-		if (!strcmp(s->name, arg))
-			return s->fn(C, arg, next);
+		int optlen = strlen(s->name);
+		if (!strncmp(s->name, arg, optlen + !s->prefix))
+			return s->fn(C, arg + optlen, next);
 		s++;
 	}
 	return next;
@@ -733,39 +787,28 @@ static char **handle_long_options(struct dmr_C *C, char *arg, char **next)
 
 static char **handle_switch(struct dmr_C *C, char *arg, char **next)
 {
-	static struct switches cmd[] = {
-		{ "nostdinc", handle_nostdinc },
-		{ "gcc-base-dir", handle_base_dir },
-		{ NULL, NULL }
-	};
-	struct switches *s;
-
 	switch (*arg) {
+	case 'a': return handle_switch_a(C, arg, next);
 	case 'D': return handle_switch_D(C, arg, next);
 	case 'E': return handle_switch_E(C, arg, next);
+	case 'f': return handle_switch_f(C, arg, next);
+	case 'g': return handle_switch_g(C, arg, next);
+	case 'G': return handle_switch_G(C, arg, next);
 	case 'I': return handle_switch_I(C, arg, next);
 	case 'i': return handle_switch_i(C, arg, next);
 	case 'M': return handle_switch_M(C, arg, next);
 	case 'm': return handle_switch_m(C, arg, next);
+	case 'n': return handle_switch_n(C, arg, next);
 	case 'o': return handle_switch_o(C, arg, next);
+	case 'O': return handle_switch_O(C, arg, next);
+	case 's': return handle_switch_s(C, arg, next);
 	case 'U': return handle_switch_U(C, arg, next);
 	case 'v': return handle_switch_v(C, arg, next);
 	case 'W': return handle_switch_W(C, arg, next);
-	case 'O': return handle_switch_O(C, arg, next);
-	case 'f': return handle_switch_f(C, arg, next);
-	case 'G': return handle_switch_G(C, arg, next);
-	case 'a': return handle_switch_a(C, arg, next);
-	case 's': return handle_switch_s(C, arg, next);
 	case '-': return handle_long_options(C, arg + 1, next);
+
 	default:
 		break;
-	}
-
-	s = cmd;
-	while (s->name) {
-		if (!strcmp(s->name, arg))
-			return s->fn(C, arg, next);
-		s++;
 	}
 
 	/*
@@ -867,6 +910,17 @@ void declare_builtin_functions(struct dmr_C *C)
 	add_pre_buffer(C, "extern int __builtin_islessgreater(float, float);\n");
 	add_pre_buffer(C, "extern int __builtin_isunordered(float, float);\n");
 
+	/* And some INFINITY / NAN stuff.. */
+	add_pre_buffer(C, "extern double __builtin_huge_val(void);\n");
+	add_pre_buffer(C, "extern float __builtin_huge_valf(void);\n");
+	add_pre_buffer(C, "extern long double __builtin_huge_vall(void);\n");
+	add_pre_buffer(C, "extern double __builtin_inf(void);\n");
+	add_pre_buffer(C, "extern float __builtin_inff(void);\n");
+	add_pre_buffer(C, "extern long double __builtin_infl(void);\n");
+	add_pre_buffer(C, "extern double __builtin_nan(const char *);\n");
+	add_pre_buffer(C, "extern float __builtin_nanf(const char *);\n");
+	add_pre_buffer(C, "extern long double __builtin_nanl(const char *);\n");
+
 	/* And some __FORTIFY_SOURCE ones.. */
 	add_pre_buffer(C, "extern __SIZE_TYPE__ __builtin_object_size(void *, int);\n");
 	add_pre_buffer(C, "extern void * __builtin___memcpy_chk(void *, const void *, __SIZE_TYPE__, __SIZE_TYPE__);\n");
@@ -890,6 +944,12 @@ void create_builtin_stream(struct dmr_C *C)
 	add_pre_buffer(C, "#weak_define __GNUC__ %d\n", gcc_major);
 	add_pre_buffer(C, "#weak_define __GNUC_MINOR__ %d\n", gcc_minor);
 	add_pre_buffer(C, "#weak_define __GNUC_PATCHLEVEL__ %d\n", gcc_patchlevel);
+
+	/* add the multiarch include directories, if any */
+	if (C->multiarch_dir && *C->multiarch_dir) {
+		add_pre_buffer(C, "#add_system \"/usr/include/%s\"\n", C->multiarch_dir);
+		add_pre_buffer(C, "#add_system \"/usr/local/include/%s\"\n", C->multiarch_dir);
+	}
 
 	/* We add compiler headers path here because we have to parse
 	* the arguments to get it, falling back to default. */
@@ -944,6 +1004,7 @@ void create_builtin_stream(struct dmr_C *C)
 	add_pre_buffer(C, "#define __builtin_va_alist (*(void *)0)\n");
 	add_pre_buffer(C, "#define __builtin_va_arg_incr(x) ((x) + 1)\n");
 	add_pre_buffer(C, "#define __builtin_va_copy(dest, src) ({ dest = src; (void)0; })\n");
+	add_pre_buffer(C, "#define __builtin_ms_va_copy(dest, src) ({ dest = src; (void)0; })\n");
 	add_pre_buffer(C, "#define __builtin_va_end(arg)\n");
 	add_pre_buffer(C, "#define __builtin_ms_va_end(arg)\n");
 	add_pre_buffer(C, "#define __builtin_va_arg_pack()\n");
@@ -964,6 +1025,7 @@ void create_builtin_stream(struct dmr_C *C)
 	add_pre_buffer(C, "#weak_define __LONG_LONG_MAX__ " STRINGIFY(__LONG_LONG_MAX__) "\n");
 	add_pre_buffer(C, "#weak_define __WCHAR_MAX__ " STRINGIFY(__WCHAR_MAX__) "\n");
 	add_pre_buffer(C, "#weak_define __SIZEOF_POINTER__ " STRINGIFY(__SIZEOF_POINTER__) "\n");
+	add_pre_buffer(C, "#weak_define __CHAR_BIT__ " STRINGIFY(__CHAR_BIT__) "\n");
 }
 
 static struct ptr_list *sparse_tokenstream(struct dmr_C *C, struct token *token)
@@ -1005,8 +1067,7 @@ static struct ptr_list *sparse_file(struct dmr_C *C, const char *filename)
 
 	if (strcmp(filename, "-") == 0) {
 		fd = 0;
-	}
-	else {
+	} else {
 		fd = open(filename, O_RDONLY);
 		if (fd < 0)
 			die(C, "No such file: %s", filename);

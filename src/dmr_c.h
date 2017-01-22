@@ -119,6 +119,8 @@ struct dmr_C {
 	int preprocess_only;
 
 	const char *gcc_base_dir;
+	const char *multiarch_dir;
+
 	int verbose, optimize, optimize_size, preprocessing;
 
 	enum standard standard;

@@ -194,9 +194,32 @@ struct dmr_C {
 	char fullname[1024];
 };
 
+/*
+* Creates a new instance of dmr_C. Due to the way the parser and compiler works
+* at present it is recommended that each dmr_C instance be used to process one set
+* of inputs only. Destroy the dmr_C instance after use. This way all resources will
+* be released.
+*/
 extern struct dmr_C *new_dmr_C();
 extern void destroy_dmr_C(struct dmr_C *C);
-struct ptr_list *sparse_initialize(struct dmr_C *C, int argc, char **argv, struct ptr_list **filelist);
+
+/*
+* Appends the provided formatted string to the "pre buffer" that is processed by
+* sparse_initialize(). The input is tokenized immediately and added to the "pre buffer"
+* token stream.
+*/
+extern void add_pre_buffer(struct dmr_C *, const char *fmt, ...) FORMAT_ATTR(2);
+
+/*
+* Declares a bunch of gcc built-ins into a "pre buffer" which is processed in
+* sparse_initialize(). The add_pre_buffer() function is used to add input into the
+* pre buffer.
+*/
+extern void declare_builtin_functions(struct dmr_C *C);
+
+
+extern void create_builtin_stream(struct dmr_C *C);
+extern struct ptr_list * sparse_initialize(struct dmr_C *C, int argc, char **argv, struct ptr_list **filelist);
 extern struct ptr_list * sparse_keep_tokens(struct dmr_C *C, char *filename);
 extern struct ptr_list * sparse(struct dmr_C *C, char *filename);
 extern struct ptr_list * __sparse(struct dmr_C *C, char *filename);
@@ -215,7 +238,5 @@ extern void error_die(struct dmr_C *, struct position, const char *, ...)
     FORMAT_ATTR(3) NORETURN_ATTR;
 extern void expression_error(struct dmr_C *, struct expression *, const char *,
 			     ...) FORMAT_ATTR(3);
-
-extern void add_pre_buffer(struct dmr_C *, const char *fmt, ...) FORMAT_ATTR(2);
 
 #endif

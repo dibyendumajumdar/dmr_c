@@ -155,7 +155,7 @@ extern int show_statement(struct dmr_C *C, struct statement *);
 extern void show_statement_list(struct dmr_C *C, struct ptr_list *, const char *);
 extern int show_expression(struct dmr_C *C, struct expression *);
 
-extern struct token *external_declaration(struct dmr_C *C, struct token *token, struct ptr_list **list);
+extern struct token *external_declaration(struct dmr_C *C, struct token *token, struct ptr_list **symbol_list);
 
 extern struct symbol *ctype_integer(struct dmr_C *C, int size, int want_unsigned);
 

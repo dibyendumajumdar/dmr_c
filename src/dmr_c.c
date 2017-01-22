@@ -48,7 +48,7 @@
 #include <parse.h>
 #include <linearize.h>
 
-#define SPARSE_VERSION "" 
+#define SPARSE_VERSION "0.5" 
 #ifndef __GNUC__
 # define __GNUC__ 2
 # define __GNUC_MINOR__ 95

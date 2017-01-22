@@ -8,29 +8,29 @@ The name dmr_c is a homage to Dennis M Ritchie.
 
 The code base is a fork of Sparse v0.5.0. The main changes are:
 
-* Remove global state (see issues log for outstanding issues)
+* Removal of global state (see issues log for outstanding issues)
 * Ensure the library can be built on Windows using MSVC
- * Modify the code to be more C++ friendly
+* Modify the code to be more C++ friendly
 * Convert the LLVM backend to a JIT compiler
 
 ## Current status
 
-* We are now able to build the sparse executable, but not all tests pass yet. 
+* We are now able to build the sparse executable and library on Windows, Linux and Mac OSX, but not all tests pass yet.
+* Global state has been removed except for the way ptr_list nodes are allocated.
 
 ## Build instructions
 
 The build is pretty standard CMake build. There are no external dependencies. For example:
-#
+
 ```
 mkdir build
 cd build
 cmake ..
 ```
-
 This will generate appropriate build files that can then be used to build the project.
 
 ## Using dmr_c
-#
+
 Right now following pieces have been ported but testing is still ongoing so no guarantee that the build works correctly.
 
 * Tokenizer

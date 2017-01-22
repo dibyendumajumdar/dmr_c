@@ -1904,6 +1904,7 @@ static void init_preprocessor(struct dmr_C *C)
 		sym->normal = 0;
 	}
 
+	C->counter_macro = 0;
 }
 
 static void handle_preprocessor_line(struct dmr_C *C, struct stream *stream, struct token **line, struct token *start)

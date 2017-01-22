@@ -840,15 +840,16 @@ static int try_include(struct dmr_C *C, const char *path, const char *filename, 
 	int fd;
 	int plen = (int) strlen(path);
 
-	memset(C->fullname, 0, sizeof C->fullname);
 	memcpy(C->fullname, path, plen);
 	if (plen && path[plen-1] != '/') {
 		C->fullname[plen] = '/';
 		plen++;
 	}
+	/* flen includes extra 0 byte */
 	memcpy(C->fullname+plen, filename, flen);
 	if (already_tokenized(C, C->fullname))
 		return 1;
+	printf("Opening %s\n", C->fullname);
 	fd = open(C->fullname, O_RDONLY);
 	if (fd >= 0) {
 		char * streamname = (char *)allocator_allocate(&C->byte_allocator, plen + flen);

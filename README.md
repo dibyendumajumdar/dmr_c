@@ -29,6 +29,8 @@ cmake ..
 ```
 This will generate appropriate build files that can then be used to build the project.
 
+See instructions below on adding LLVM integration.
+
 ## Using dmr_c
 
 Right now following pieces have been ported but testing is still ongoing so no guarantee that the build works correctly.
@@ -37,9 +39,9 @@ Right now following pieces have been ported but testing is still ongoing so no g
 * Preprocesser
 * Parser and Semantic analyser
 * Linearizer
+* Sparse LLVM backend
 
 Details of each of these is given below.
-
 
 ## Tokenizer
 
@@ -96,6 +98,8 @@ for LLVM 3.9 on Windows 10.
 ```
 cmake -DLLVM_JIT=ON  -DLLVM_DIR=$LLVM_INSTALL_DIR\lib\cmake\llvm -G "Visual Studio 14 Win64" ..
 ```
+
+Here $LLVM_INSTALL_DIR refers to the path where LLVM is installed. 
 
 ## Links
 

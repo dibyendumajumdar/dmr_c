@@ -840,6 +840,7 @@ static int try_include(struct dmr_C *C, const char *path, const char *filename, 
 	int fd;
 	int plen = (int) strlen(path);
 
+	memset(C->fullname, 0, sizeof C->fullname);
 	memcpy(C->fullname, path, plen);
 	if (plen && path[plen-1] != '/') {
 		C->fullname[plen] = '/';

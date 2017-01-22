@@ -105,3 +105,4 @@ Here $LLVM_INSTALL_DIR refers to the path where LLVM is installed.
 
 * [Sparse - a Semantic Parser for C](https://sparse.wiki.kernel.org/index.php/Main_Page)
 * [Article on Sparse](https://lwn.net/Articles/689907/)
+* [Wikipedia entry for Sparse](https://en.wikipedia.org/wiki/Sparse)

@@ -394,6 +394,35 @@ static void array_sort(void **ptr, int nr, void *userdata,
   }
 }
 
+static void verify_sorted(struct ptr_list *l, int n, void *userdata,
+                          int (*cmp)(void *, const void *, const void *)) {
+  int i = 0;
+  const void *a;
+  struct ptr_list *head = l;
+
+  while (l->nr_ == 0) {
+    l = l->next_;
+    if (--n == 0)
+      return;
+    assert(l != head);
+  }
+
+  a = l->list_[0];
+  while (n > 0) {
+    const void *b;
+    if (++i >= l->nr_) {
+      i = 0;
+      l = l->next_;
+      n--;
+      assert(l != head || n == 0);
+      continue;
+    }
+    b = l->list_[i];
+    assert(cmp(userdata, a, b) <= 0);
+    a = b;
+  }
+}
+
 static void flush_to(struct ptr_list *b, void **buffer, int *nbuf) {
   int nr = b->nr_;
   assert(*nbuf >= nr);
@@ -433,7 +462,8 @@ merge_block_seqs(struct ptr_list *b1, int n, struct ptr_list *b2,
 
   // Do a quick skip in case entire blocks from b1 are
   // already less than smallest element in b2.
-  while (b1->nr_ == 0 || cmp(userdata, b1->list_[b1->nr_ - 1], b2->list_[0]) < 0) {
+  while (b1->nr_ == 0 || 
+  		cmp(userdata, PTR_ENTRY(b1, b1->nr_ - 1), PTR_ENTRY(b2,0)) < 0) {
     // printf ("Skipping whole block.\n");
     // BEEN_THERE('H');
     b1 = b1->next_;
@@ -444,8 +474,8 @@ merge_block_seqs(struct ptr_list *b1, int n, struct ptr_list *b2,
   }
 
   while (1) {
-    void *d1 = b1->list_[i1];
-    void *d2 = b2->list_[i2];
+    void *d1 = PTR_ENTRY(b1,i1);
+    void *d2 = PTR_ENTRY(b2,i2);
 
     assert(i1 >= 0 && i1 < b1->nr_);
     assert(i2 >= 0 && i2 < b2->nr_);
@@ -516,34 +546,7 @@ merge_block_seqs(struct ptr_list *b1, int n, struct ptr_list *b2,
   }
 }
 
-static void verify_sorted(struct ptr_list *l, int n, void *userdata,
-                          int (*cmp)(void *, const void *, const void *)) {
-  int i = 0;
-  const void *a;
-  struct ptr_list *head = l;
 
-  while (l->nr_ == 0) {
-    l = l->next_;
-    if (--n == 0)
-      return;
-    assert(l != head);
-  }
-
-  a = l->list_[0];
-  while (n > 0) {
-    const void *b;
-    if (++i >= l->nr_) {
-      i = 0;
-      l = l->next_;
-      n--;
-      assert(l != head || n == 0);
-      continue;
-    }
-    b = l->list_[i];
-    assert(cmp(userdata, a, b) <= 0);
-    a = b;
-  }
-}
 
 void ptrlist_sort(struct ptr_list **plist, void *userdata,
                   int (*cmp)(void *, const void *, const void *)) {

@@ -253,6 +253,7 @@ extern struct token *tokenize_buffer(struct dmr_C *C, unsigned char *buffer,
 	struct token **endtoken);
 extern void show_identifier_stats(struct dmr_C *C);
 extern struct token *preprocess(struct dmr_C *C, struct token *);
+extern void init_preprocessor_state(struct dmr_C *C);
 static inline int match_op(struct token *token, unsigned int op)
 {
 	return token->pos.type == TOKEN_SPECIAL && token->special == op;

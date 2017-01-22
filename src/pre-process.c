@@ -1846,18 +1846,7 @@ static int handle_nondirective(struct dmr_C *C, struct stream *stream, struct to
 
 
 static void init_preprocessor(struct dmr_C *C)
-{
-	C->includepath[0] = "";
-	C->includepath[1] = "/usr/include";
-	C->includepath[2] = "/usr/local/include";
-	C->includepath[3] = NULL;
-	
-	C->quote_includepath = C->includepath;
-	C->angle_includepath = C->includepath + 1;
-	C->isys_includepath = C->includepath + 1;
-	C->sys_includepath = C->includepath + 1;
-	C->dirafter_includepath = C->includepath + 3;
-
+{	
 	int i;
 	int stream = init_stream(C, "preprocessor", -1, C->includepath);
 	static struct {
@@ -2018,4 +2007,19 @@ struct token * preprocess(struct dmr_C *C, struct token *token)
 	C->preprocessing = 0;
 
 	return token;
+}
+
+
+void init_preprocessor_state(struct dmr_C *C) {
+	assert(C->includepath[0] == NULL);
+	C->includepath[0] = "";
+	C->includepath[1] = "/usr/include";
+	C->includepath[2] = "/usr/local/include";
+	C->includepath[3] = NULL;
+
+	C->quote_includepath = C->includepath;
+	C->angle_includepath = C->includepath + 1;
+	C->isys_includepath = C->includepath + 1;
+	C->sys_includepath = C->includepath + 1;
+	C->dirafter_includepath = C->includepath + 3;
 }

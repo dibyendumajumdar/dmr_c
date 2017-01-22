@@ -320,6 +320,7 @@ struct dmr_C *new_dmr_C()
 
 	init_target(C);
 	init_tokenizer(C);
+	init_preprocessor_state(C);
 	init_scope(C);
 	init_symbols(C);
 	init_ctype(C);
@@ -953,8 +954,10 @@ void create_builtin_stream(struct dmr_C *C)
 
 	/* We add compiler headers path here because we have to parse
 	* the arguments to get it, falling back to default. */
-	add_pre_buffer(C, "#add_system \"%s/include\"\n", C->gcc_base_dir);
-	add_pre_buffer(C, "#add_system \"%s/include-fixed\"\n", C->gcc_base_dir);
+	if (C->gcc_base_dir && *C->gcc_base_dir) {
+		add_pre_buffer(C, "#add_system \"%s/include\"\n", C->gcc_base_dir);
+		add_pre_buffer(C, "#add_system \"%s/include-fixed\"\n", C->gcc_base_dir);
+	}
 
 	add_pre_buffer(C, "#define __extension__\n");
 	add_pre_buffer(C, "#define __pragma__\n");

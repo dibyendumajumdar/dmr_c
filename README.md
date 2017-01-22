@@ -2,7 +2,7 @@
 
 dmr_c is a project that aims to create a JIT compiler for C. Is is being created by reworking the Linux Kernel [Sparse](https://sparse.wiki.kernel.org/index.php/Main_Page) library originally written by Linus Torvalds. 
 
-The name dmr_C is a homage to Dennis M Ritchie.
+The name dmr_c is a homage to Dennis M Ritchie.
 
 ## Overview
 
@@ -48,14 +48,14 @@ Here is a simple program that uses the tokenizer. The tokenizer converts the inp
 ```
 	struct dmr_C *C = new_dmr_C();
 
-char test1[100] =
+	char test1[100] =
 	    "int main() { printf(\"hello world!\\n\"); return 0; }";
 	struct token *start;
 	struct token *end;
 	start = tokenize_buffer(C, (unsigned char *)test1,
 				(unsigned long)strlen(test1), &end);
 
-    // do something with the tokens!
+	// do something with the tokens!
 
 	destroy_dmr_C(C);
 ```

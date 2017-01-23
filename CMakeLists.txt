@@ -71,6 +71,19 @@ if (APPLE)
     set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O1 -g3 -Wall -Wno-sign-compare -std=c++14 -fno-exceptions")
 endif ()
 
+if (CMAKE_COMPILER_IS_GNUCC)
+    execute_process(COMMAND ${CMAKE_C_COMPILER} --print-file-name=
+       OUTPUT_VARIABLE GCC_BASE OUTPUT_STRIP_TRAILING_WHITESPACE)
+    execute_process(COMMAND ${CMAKE_C_COMPILER} -print-multiarch
+       OUTPUT_VARIABLE MULTIARCH_TRIPLET ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+    add_definitions(-DGCC_BASE="${GCC_BASE}")
+    add_definitions(-DMULTIARCH_TRIPLET="${MULTIARCH_TRIPLET}")
+endif()
+
+message( STATUS "GCC_BASE_DIR      : " ${GCC_BASE})
+message( STATUS "MULTIARCH_TRIPLET : " ${MULTIARCH_TRIPLET} )
+
 include_directories("${PROJECT_SOURCE_DIR}/src")
 
 set(LIB_H 

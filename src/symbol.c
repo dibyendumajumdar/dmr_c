@@ -856,8 +856,20 @@ void init_ctype(struct dmr_C *C)
 	assert(T);
 	const struct ctype_declare *ctype;
 
+#ifdef _MSC_VER
+	if (sizeof(long long) == sizeof(size_t)) {
+		T->size_t_ctype = &S->ullong_ctype;
+		T->ssize_t_ctype = &S->llong_ctype;
+	}
+	else {
+		assert(sizeof(int) == sizeof(size_t));
+		T->size_t_ctype = &S->uint_ctype;
+		T->ssize_t_ctype = &S->int_ctype;
+	}
+#else
 	T->size_t_ctype = &S->uint_ctype;
 	T->ssize_t_ctype = &S->int_ctype;
+#endif
 
 #define MOD_ESIGNED (MOD_SIGNED | MOD_EXPLICITLY_SIGNED)
 #define MOD_LL (MOD_LONG | MOD_LONGLONG)

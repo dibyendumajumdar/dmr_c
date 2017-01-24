@@ -32,6 +32,8 @@
 #include <symbol.h>
 #include <target.h>
 
+enum dummy { DUMMY };
+
 void init_target(struct dmr_C *C) {
 
   struct target_t *t = (struct target_t *)calloc(1, sizeof(struct target_t));
@@ -52,7 +54,11 @@ void init_target(struct dmr_C *C) {
   t->bits_in_longlong = 64;
   t->bits_in_longlonglong = 128;
 
+#ifdef _MSC_VER
+  t->max_int_alignment = __alignof(long long); 
+#else
   t->max_int_alignment = 4;
+#endif
 
   /*
   * Floating point data types
@@ -66,8 +72,13 @@ void init_target(struct dmr_C *C) {
   /*
   * Pointer data type
   */
+#ifdef _MSC_VER
+  t->bits_in_pointer = sizeof(void *) * t->bits_in_char;
+  t->pointer_alignment = __alignof(void *);
+#else
   t->bits_in_pointer = 32;
   t->pointer_alignment = 4;
+#endif
 
   /*
   * Enum data types

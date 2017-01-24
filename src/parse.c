@@ -1100,7 +1100,7 @@ static struct token *attribute_aligned(struct dmr_C *C, struct token *token, str
 	if (match_op(token, '(')) {
 		token = parens_expression(C, token, &expr, "in attribute");
 		if (expr)
-			alignment = (int) const_expression_value(C, expr);
+			alignment = const_expression_value(C, expr);
 	}
 	if (alignment & (alignment-1)) {
 		warning(C, token->pos, "I don't like non-power-of-2 alignments");
@@ -1130,7 +1130,7 @@ static struct token *attribute_address_space(struct dmr_C *C, struct token *toke
 	token = expect(C, token, '(', "after address_space attribute");
 	token = conditional_expression(C, token, &expr);
 	if (expr) {
-		as = (int) const_expression_value(C, expr);
+		as = const_expression_value(C, expr);
 		if (C->Waddress_space && as)
 			ctx->ctype.as = as;
 	}
@@ -1228,16 +1228,16 @@ static struct token *attribute_context(struct dmr_C *C, struct token *token, str
 		sparse_error(C, token->pos, "expected context input/output values");
 		break;
 	case 1:
-		context->in = (unsigned) get_expression_value(C, args[0]);
+		context->in = get_expression_value(C, args[0]);
 		break;
 	case 2:
-		context->in = (unsigned) get_expression_value(C, args[0]);
-		context->out = (unsigned) get_expression_value(C, args[1]);
+		context->in = get_expression_value(C, args[0]);
+		context->out = get_expression_value(C, args[1]);
 		break;
 	case 3:
 		context->context_expr = args[0];
-		context->in = (unsigned) get_expression_value(C, args[1]);
-		context->out = (unsigned) get_expression_value(C, args[2]);
+		context->in = get_expression_value(C, args[1]);
+		context->out = get_expression_value(C, args[2]);
 		break;
 	}
 
@@ -1818,7 +1818,7 @@ static struct token *handle_bitfield(struct dmr_C *C, struct token *token, struc
 	bitfield = alloc_indirect_symbol(C, token->pos, ctype, SYM_BITFIELD);
 	token = conditional_expression(C, token->next, &expr);
 	width = const_expression_value(C, expr);
-	bitfield->bit_size = (int) width;
+	bitfield->bit_size = width;
 
 	if (width < 0 || width > INT_MAX) {
 		sparse_error(C, token->pos, "invalid bitfield width, %lld.", width);
@@ -1844,7 +1844,7 @@ static struct token *handle_bitfield(struct dmr_C *C, struct token *token, struc
 			warning(C, token->pos, "dubious bitfield without explicit `signed' or `unsigned'");
 		}
 	}
-	bitfield->bit_size = (int) width;
+	bitfield->bit_size = width;
 	bitfield->endpos = token->pos;
 	return token;
 }
@@ -2484,10 +2484,10 @@ static struct expression *index_expression(struct dmr_C *C, struct expression *f
 	int idx_from, idx_to;
 	struct expression *expr = alloc_expression(C, from->pos, EXPR_INDEX);
 
-	idx_from = (int) const_expression_value(C, from);
+	idx_from = const_expression_value(C, from);
 	idx_to = idx_from;
 	if (to) {
-		idx_to = (int) const_expression_value(C, to);
+		idx_to = const_expression_value(C, to);
 		if (idx_to < idx_from || idx_from < 0)
 			warning(C, from->pos, "nonsense array initializer index range");
 	}

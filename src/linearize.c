@@ -1125,7 +1125,9 @@ static struct instruction *alloc_cast_instruction(struct dmr_C *C, struct symbol
 		base = base->ctype.base_type;
 	if (base->type == SYM_PTR) {
 		base = base->ctype.base_type;
-		if (base != &C->S->void_ctype)
+		//BUG - this check leaves the cast as OP_CAST whereas it 
+		// should be OP_PTRCAST?
+		//if (base != &C->S->void_ctype)
 			opcode = OP_PTRCAST;
 	}
 	if (base->ctype.base_type == &C->S->fp_type)

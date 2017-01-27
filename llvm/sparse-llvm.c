@@ -363,7 +363,9 @@ static LLVMValueRef pseudo_to_value(struct dmr_C *C, struct function *fn, struct
 		break;
 	}
 	case PSEUDO_VAL:
-		result = LLVMConstInt(insn_symbol_type(C, fn->module, insn), pseudo->value, 1);
+		// BUG - psuedo->value has no defined type I think, so we should use the actual value type
+		//result = LLVMConstInt(insn_symbol_type(C, fn->module, insn), pseudo->value, 1);
+		result = LLVMConstInt(LLVMInt64Type(), pseudo->value, 1);
 		break;
 	case PSEUDO_ARG: {
 		result = LLVMGetParam(fn->fn, pseudo->nr - 1);

@@ -1117,17 +1117,16 @@ static pseudo_t linearize_postop(struct dmr_C *C, struct entrypoint *ep, struct 
 static struct instruction *alloc_cast_instruction(struct dmr_C *C, struct symbol *src, struct symbol *ctype)
 {
 	int opcode = OP_CAST;
-	struct symbol *base = src;
+	// https://patchwork.kernel.org/patch/9516077/
+	struct symbol *base = ctype;
 
-	if (base->ctype.modifiers & MOD_SIGNED)
+	if (src->ctype.modifiers & MOD_SIGNED)
 		opcode = OP_SCAST;
 	if (base->type == SYM_NODE)
 		base = base->ctype.base_type;
 	if (base->type == SYM_PTR) {
 		base = base->ctype.base_type;
-		//BUG - this check leaves the cast as OP_CAST whereas it 
-		// should be OP_PTRCAST?
-		//if (base != &C->S->void_ctype)
+		if (base != &C->S->void_ctype)
 			opcode = OP_PTRCAST;
 	}
 	if (base->ctype.base_type == &C->S->fp_type)

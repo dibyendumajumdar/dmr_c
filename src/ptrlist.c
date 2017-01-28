@@ -58,18 +58,16 @@ void ptrlist_split_node(struct ptr_list *head)
 	memset(head->list_ + old, 0xf0, nr * sizeof(void *));
 }
 
-struct ptr_list_iter ptrlist_iterator_forward(struct ptr_list *head) {
+struct ptr_list_iter ptrlist_forward_iterator(struct ptr_list *head) {
 	struct ptr_list_iter iter;
-	iter.__head = head;
-	iter.__list = iter.__head;
+	iter.__head = iter.__list = head;
 	iter.__nr = -1;
 	return iter;
 }
 
-struct ptr_list_iter ptrlist_iterator_reverse(struct ptr_list *tail) {
+struct ptr_list_iter ptrlist_reverse_iterator(struct ptr_list *tail) {
 	struct ptr_list_iter iter;
-	iter.__head = tail;
-	iter.__list = iter.__head;
+	iter.__head = iter.__list = tail;
 	iter.__nr = -99;
 	return iter;
 }
@@ -91,22 +89,22 @@ Lretry:
 }
 
 void *ptrlist_iter_prev(struct ptr_list_iter *self) {
-  if (self->__head == NULL)
-    return NULL;
+	if (self->__head == NULL)
+		return NULL;
 Lretry:
-  if (self->__nr < 0) {
-    if (self->__nr != -99 && self->__list == self->__head)
-      return NULL;
-    self->__list = self->__list->prev_;
-    self->__nr = self->__list->nr_;
-  }
-  self->__nr--;
-  if (self->__nr >= 0) {
-    return self->__list->list_[self->__nr];
-  } else if (self->__list != self->__head) {
-    goto Lretry;
-  }
-  return NULL;
+	if (self->__nr < 0) {
+		if (self->__nr != -99 && self->__list == self->__head)
+			return NULL;
+		self->__list = self->__list->prev_;
+		self->__nr = self->__list->nr_;
+	}
+	self->__nr--;
+	if (self->__nr >= 0) {
+		return self->__list->list_[self->__nr];
+	} else if (self->__list != self->__head) {
+		goto Lretry;
+	}
+	return NULL;
 }
 
 void ptrlist_iter_split_current(struct ptr_list_iter *self) {
@@ -285,7 +283,7 @@ void ptrlist_remove_all(struct ptr_list **listp) {
 
 
 int ptrlist_remove(struct ptr_list **self, void *entry, int count) {
-  struct ptr_list_iter iter = ptrlist_iterator_forward(*self);
+  struct ptr_list_iter iter = ptrlist_forward_iterator(*self);
   for (void *ptr = ptrlist_iter_next(&iter); ptr != NULL;
        ptr = ptrlist_iter_next(&iter)) {
     if (ptr == entry) {
@@ -302,7 +300,7 @@ out:
 
 int ptrlist_replace(struct ptr_list **self, void *old_ptr, void *new_ptr,
                     int count) {
-  struct ptr_list_iter iter = ptrlist_iterator_forward(*self);
+  struct ptr_list_iter iter = ptrlist_forward_iterator(*self);
   for (void *ptr = ptrlist_iter_next(&iter); ptr != NULL;
        ptr = ptrlist_iter_next(&iter)) {
     if (ptr == old_ptr) {
@@ -359,7 +357,7 @@ void *ptrlist_delete_last(struct ptr_list **head)
 }
 
 void ptrlist_concat(struct ptr_list *a, struct ptr_list **b) {
-  struct ptr_list_iter iter = ptrlist_iterator_forward(a);
+  struct ptr_list_iter iter = ptrlist_forward_iterator(a);
   for (void *ptr = ptrlist_iter_next(&iter); ptr != NULL;
        ptr = ptrlist_iter_next(&iter)) {
     ptrlist_add(b, ptr);
@@ -646,7 +644,7 @@ static int test_sort() {
   ptrlist_sort(&int_list, NULL, int_cmp);
 
   int *p = NULL;
-  struct ptr_list_iter iter = ptrlist_iterator_forward(int_list);
+  struct ptr_list_iter iter = ptrlist_forward_iterator(int_list);
   int count = 0;
   for (int *k = (int*)ptrlist_iter_next(&iter); k != NULL;
        k = (int*)ptrlist_iter_next(&iter)) {
@@ -674,7 +672,7 @@ static int test_sort() {
   ptrlist_sort(&int_list, NULL, int_cmp);
 
   p = NULL;
-  iter = ptrlist_iterator_forward(int_list);
+  iter = ptrlist_forward_iterator(int_list);
   count = 0;
   for (int *k = (int*)ptrlist_iter_next(&iter); k != NULL;
        k = (int*)ptrlist_iter_next(&iter)) {
@@ -770,7 +768,7 @@ static int test_ptrlist_basics() {
 	const int X = 5 + 1;
 	const int Y = X - 1;
 	const int Z = Y - 1;
-	struct ptr_list_iter iter1 = ptrlist_iterator_forward(token_list);
+	struct ptr_list_iter iter1 = ptrlist_forward_iterator(token_list);
 	for (int i = 0; i < X; i++) {
 		struct mytoken *tk = (struct mytoken *)ptrlist_iter_next(&iter1);
 		if (tk == NULL) {
@@ -781,7 +779,7 @@ static int test_ptrlist_basics() {
 		if (tk != toks[i])
 			return 1;
 	}
-	struct ptr_list_iter iter2 = ptrlist_iterator_reverse(token_list);
+	struct ptr_list_iter iter2 = ptrlist_reverse_iterator(token_list);
 	for (int i = 0; i < X; i++) {
 		struct mytoken *tk = (struct mytoken *)ptrlist_iter_prev(&iter2);
 		if (tk == NULL) {
@@ -793,7 +791,7 @@ static int test_ptrlist_basics() {
 			return 1;
 	}
 	struct mytoken *tok0 = (struct mytoken *)allocator_allocate(&token_allocator, 0);
-	struct ptr_list_iter iter3 = ptrlist_iterator_forward(token_list);
+	struct ptr_list_iter iter3 = ptrlist_forward_iterator(token_list);
 	if (!ptrlist_iter_next(&iter3))
 		return 1;
 	ptrlist_iter_insert(&iter3, tok0);
@@ -839,7 +837,7 @@ static int test_ptrlist_basics() {
 
 	if (ptrlist_remove(&mystruct_list, s3, 1) != 0)
 		return 1;
-	struct ptr_list_iter iter4 = ptrlist_iterator_forward(mystruct_list);
+	struct ptr_list_iter iter4 = ptrlist_forward_iterator(mystruct_list);
 	for (struct mystruct *p = (struct mystruct *)ptrlist_iter_next(&iter4); p != NULL;
 		p = (struct mystruct *)ptrlist_iter_next(&iter4)) {
 		if (p->i == 4)
@@ -868,6 +866,22 @@ static int test_ptrlist_basics() {
 			} END_FOR_EACH_PTR_REVERSE(p2);
 		}
 	} END_FOR_EACH_PTR(p);
+	if (i != 4)
+		return 1;
+	for (int i = 0; i < 4; i++) {
+		if (serial3_expected[i] != serial3_got[i])
+			return 1;
+	}
+
+	i = 0;
+	PREPARE_PTR_LIST(mystruct_list, p);
+	while (p != NULL) {
+		if (i == 4)
+			return 1;
+		serial3_got[i++] = p;
+		NEXT_PTR_LIST(p);
+	}
+	FINISH_PTR_LIST(p);
 	if (i != 4)
 		return 1;
 	for (int i = 0; i < 4; i++) {

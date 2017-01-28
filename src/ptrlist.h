@@ -61,8 +61,8 @@ extern void ptrlist_sort(struct ptr_list **self, void *,
 			 int (*cmp)(void *, const void *, const void *));
 
 /* iterator functions */
-extern struct ptr_list_iter ptrlist_iterator_forward(struct ptr_list *self);
-extern struct ptr_list_iter ptrlist_iterator_reverse(struct ptr_list *self);
+extern struct ptr_list_iter ptrlist_forward_iterator(struct ptr_list *self);
+extern struct ptr_list_iter ptrlist_reverse_iterator(struct ptr_list *self);
 extern void *ptrlist_iter_next(struct ptr_list_iter *self);
 extern void *ptrlist_iter_prev(struct ptr_list_iter *self);
 extern void ptrlist_iter_split_current(struct ptr_list_iter *self);
@@ -82,12 +82,12 @@ static inline void **ptrlist_iter_this_address(struct ptr_list_iter *self) {
 #if 0
 
 #define FOR_EACH_PTR(list, var) \
-	{ struct ptr_list_iter var##iter__ = ptrlist_iterator_forward(list); \
+	{ struct ptr_list_iter var##iter__ = ptrlist_forward_iterator(list); \
 	for (var = ptrlist_iter_next(&var##iter__); var != NULL; var = ptrlist_iter_next(&var##iter__))
 #define END_FOR_EACH_PTR(var) }
 
 #define FOR_EACH_PTR_REVERSE(list, var) \
-	{ struct ptr_list_iter var##iter__ = ptrlist_iterator_reverse(list); \
+	{ struct ptr_list_iter var##iter__ = ptrlist_reverse_iterator(list); \
 	for (var = ptrlist_iter_prev(&var##iter__); var != NULL; var = ptrlist_iter_prev(&var##iter__))
 #define END_FOR_EACH_PTR_REVERSE(var) }
 
@@ -96,11 +96,11 @@ static inline void **ptrlist_iter_this_address(struct ptr_list_iter *self) {
 	for (var = ptrlist_iter_prev(&var##iter__); var != NULL; var = ptrlist_iter_prev(&var##iter__))
 
 #define PREPARE_PTR_LIST(list, var)	\
-	struct ptr_list_iter var##iter__ = ptrlist_iterator_reverse(list); \
-	var = ptrlist_iter_prev(&var##iter__)
+	struct ptr_list_iter var##iter__ = ptrlist_forward_iterator(list); \
+	var = ptrlist_iter_next(&var##iter__)
 
 #define NEXT_PTR_LIST(var) \
-	var = ptrlist_iter_prev(&var##iter__)
+	var = ptrlist_iter_next(&var##iter__)
 #define FINISH_PTR_LIST(var) 
 
 #define THIS_ADDRESS(type, var) \

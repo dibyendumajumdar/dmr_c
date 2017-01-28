@@ -90,7 +90,7 @@ To follow.
 
 To follow.
 
-## LLVM integration
+## LLVM backend
 
 The Sparse project comes with an LLVM backend called sparse-llvm. This is included in dmr_C. Following instructions are
 for LLVM 3.9 on Windows 10. 
@@ -100,6 +100,10 @@ cmake -DLLVM_JIT=ON  -DLLVM_DIR=$LLVM_INSTALL_DIR\lib\cmake\llvm -G "Visual Stud
 ```
 
 Here $LLVM_INSTALL_DIR refers to the path where LLVM is installed. 
+
+Unfortunately the LLVM backend is not usable at present as it has some limitations. I am working on improving the backend but it
+will take a while to fix the issues because the backend works on linearized (SSA) output generated from the linearizer, so I need
+to understand this layer first.
 
 ## Links
 

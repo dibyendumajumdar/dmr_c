@@ -79,7 +79,7 @@ static inline void **ptrlist_iter_this_address(struct ptr_list_iter *self) {
 #define PTR_ENTRY_NOTAG(h,i)	((h)->list_[i])
 #define PTR_ENTRY(h,i)	(void *)(PTR_ENTRY_NOTAG(h,i))
 
-#if 0
+#if 1
 
 #define FOR_EACH_PTR(list, var) \
 	{ struct ptr_list_iter var##iter__ = ptrlist_forward_iterator(list); \

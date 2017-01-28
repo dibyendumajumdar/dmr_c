@@ -65,10 +65,12 @@ struct ptr_list_iter ptrlist_forward_iterator(struct ptr_list *head) {
 	return iter;
 }
 
-struct ptr_list_iter ptrlist_reverse_iterator(struct ptr_list *tail) {
+// Reverse iterator has to start from previous node not previous entry
+// in the given head
+struct ptr_list_iter ptrlist_reverse_iterator(struct ptr_list *head) {
 	struct ptr_list_iter iter;
-	iter.__head = iter.__list = tail;
-	iter.__nr = -99;
+	iter.__head = iter.__list = head ? head->prev_ : NULL;
+	iter.__nr = iter.__head ? iter.__head->nr_ : 0;
 	return iter;
 }
 
@@ -88,6 +90,7 @@ Lretry:
   return NULL;
 }
 
+#if 0
 void *ptrlist_iter_prev(struct ptr_list_iter *self) {
 	if (self->__head == NULL)
 		return NULL;
@@ -106,6 +109,23 @@ Lretry:
 	}
 	return NULL;
 }
+#else
+void *ptrlist_iter_prev(struct ptr_list_iter *self) {
+	if (self->__head == NULL)
+		return NULL;
+	self->__nr--;
+Lretry:
+	if (self->__nr >= 0 && self->__nr < self->__list->nr_) {
+		return self->__list->list_[self->__nr];
+	}
+	else if (self->__list->prev_ != self->__head) {
+		self->__list = self->__list->prev_;
+		self->__nr = self->__list->nr_-1;
+		goto Lretry;
+	}
+	return NULL;
+}
+#endif
 
 void ptrlist_iter_split_current(struct ptr_list_iter *self) {
   if (self->__list->nr_ == N_) {
@@ -848,7 +868,7 @@ static int test_ptrlist_basics() {
 
 	struct mystruct *serial3_expected[4] = { s1, s2, s5, s6 };
 	struct mystruct *serial3_got[4];
-	int *reverse_expected[2] = { 2, 1 };
+	int reverse_expected[2] = { 2, 1 };
 
 	int i = 0;
 	struct mystruct *p;

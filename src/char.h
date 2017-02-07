@@ -10,7 +10,16 @@
 #ifndef DMR_C_CHAR_H
 #define DMR_C_CHAR_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern void get_char_constant(struct dmr_C *C, struct token *, unsigned long long *);
 extern struct token *get_string_constant(struct dmr_C *C, struct token *, struct expression *);
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif

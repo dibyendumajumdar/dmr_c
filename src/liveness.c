@@ -19,7 +19,7 @@ static void phi_defines(struct dmr_C *C, struct instruction * phi_node, pseudo_t
 	pseudo_t phi;
 	FOR_EACH_PTR(phi_node->phi_list, phi) {
 		struct instruction *def;
-		if (phi == VOID(C))
+		if (phi == VOID_PSEUDO(C))
 			continue;
 		def = phi->def;
 		if (!def || !def->bb)
@@ -148,7 +148,7 @@ static void track_instruction_usage(struct dmr_C *C, struct basic_block *bb, str
 
 	case OP_CALL:
 		USES(func);
-		if (insn->target != VOID(C))
+		if (insn->target != VOID_PSEUDO(C))
 			DEFINES(target);
 		FOR_EACH_PTR(insn->arguments, pseudo) {
 			use(C, bb, insn, pseudo);
@@ -307,7 +307,7 @@ void track_phi_uses(struct dmr_C *C, struct instruction *insn)
 	pseudo_t phi;
 	FOR_EACH_PTR(insn->phi_list, phi) {
 		struct instruction *def;
-		if (phi == VOID(C) || !phi->def)
+		if (phi == VOID_PSEUDO(C) || !phi->def)
 			continue;
 		def = phi->def;
 		assert(def->opcode == OP_PHISOURCE);

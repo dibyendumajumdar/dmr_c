@@ -35,6 +35,10 @@
 #include "dmr_c.h"
 #include <sys/types.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
  * This describes the pure lexical elements (tokens), with
  * no semantic meaning. In other words, an identifier doesn't
@@ -265,5 +269,10 @@ static inline int match_ident(struct token *token, struct ident *id)
 }
 
 extern int test_tokenizer();
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif

@@ -19,6 +19,11 @@
 #include <parse.h>
 #include <symbol.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 struct instruction;
 
 struct pseudo_user {
@@ -79,7 +84,7 @@ struct linearizer_state_t {
 	struct ptr_list *insn_hash_table[INSN_HASH_SIZE];
 };
 
-#define VOID(C) (&C->L->void_pseudo)
+#define VOID_PSEUDO(C) (&C->L->void_pseudo)
 
 struct multijmp {
 	struct basic_block *target;
@@ -404,9 +409,9 @@ static inline void remove_bb_from_list(struct ptr_list **list, struct basic_bloc
 }
 
 static inline void replace_bb_in_list(struct ptr_list **list,
-	struct basic_block *old, struct basic_block *new, int count)
+	struct basic_block *old, struct basic_block *newbb, int count)
 {
-	ptrlist_replace(list, old, new, count);
+	ptrlist_replace(list, old, newbb, count);
 }
 
 struct entrypoint {
@@ -436,6 +441,11 @@ void init_linearizer(struct dmr_C *C);
 void destroy_linearizer(struct dmr_C *C);
 
 #define hashval(x) ((unsigned long)(((uintptr_t)(x))))
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif /* LINEARIZE_H */
 

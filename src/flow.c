@@ -246,7 +246,7 @@ void convert_instruction_target(struct dmr_C *C, struct instruction *insn, pseud
 	if (target == src)
 		return;
 	FOR_EACH_PTR(target->users, pu) {
-		if (*pu->userp != VOID(C)) {
+		if (*pu->userp != VOID_PSEUDO(C)) {
 			assert(*pu->userp == target);
 			*pu->userp = src;
 		}
@@ -654,7 +654,7 @@ static void simplify_one_symbol(struct dmr_C *C, struct entrypoint *ep, struct s
 	 * thing. Replace all loads with moves from the pseudo,
 	 * replace the store with a def.
 	 */
-	src = VOID(C);
+	src = VOID_PSEUDO(C);
 	if (def)
 		src = def->target;
 
@@ -740,7 +740,7 @@ static void kill_defs(struct dmr_C *C, struct instruction *insn)
 	if (target->def != insn)
 		return;
 
-	convert_instruction_target(C, insn, VOID(C));
+	convert_instruction_target(C, insn, VOID_PSEUDO(C));
 }
 
 void kill_bb(struct dmr_C *C, struct basic_block *bb)

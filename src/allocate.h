@@ -45,6 +45,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 struct allocation_blob {
 	struct allocation_blob *next;
 	size_t left, offset;
@@ -86,5 +91,10 @@ extern void allocator_transfer(struct allocator *A,
 			       struct allocator *transfer_to);
 
 extern int test_allocator();
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif

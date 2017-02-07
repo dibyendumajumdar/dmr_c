@@ -33,6 +33,11 @@
 #include <target.h>
 #include <token.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 /*
 * An identifier with semantic meaning is a "symbol".
 *
@@ -454,5 +459,10 @@ extern int is_ptr_type(struct symbol *);
 
 extern void create_fouled(struct global_symbols_t *S, struct symbol *type);
 extern struct symbol *befoul(struct global_symbols_t *S, struct symbol *type);
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif

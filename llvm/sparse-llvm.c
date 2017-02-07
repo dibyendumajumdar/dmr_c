@@ -579,7 +579,7 @@ static void output_op_ret(struct dmr_C *C, struct function *fn, struct instructi
 {
 	pseudo_t pseudo = insn->src;
 
-	if (pseudo && pseudo != VOID(C)) {
+	if (pseudo && pseudo != VOID_PSEUDO(C)) {
 		LLVMValueRef result = pseudo_to_value(C, fn, insn, pseudo);
 
 		LLVMBuildRet(fn->builder, result);

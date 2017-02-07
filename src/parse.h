@@ -32,6 +32,11 @@
 #include <dmr_c.h>
 #include <symbol.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 enum statement_type {
 	STMT_NONE,
 	STMT_DECLARATION,
@@ -184,5 +189,10 @@ static inline int expression_list_size(struct ptr_list *list)
 }
 
 extern int test_parse();
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif /* PARSE_H */

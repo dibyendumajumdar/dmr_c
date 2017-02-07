@@ -33,7 +33,7 @@ static void clear_phi(struct dmr_C *C, struct instruction *insn)
 
 	insn->bb = NULL;
 	FOR_EACH_PTR(insn->phi_list, phi) {
-		*THIS_ADDRESS(pseudo_t, phi) = VOID(C);
+		*THIS_ADDRESS(pseudo_t, phi) = VOID_PSEUDO(C);
 	} END_FOR_EACH_PTR(phi);
 }
 
@@ -125,10 +125,10 @@ static int clean_up_phi(struct dmr_C *C, struct instruction *insn)
 	same = 1;
 	FOR_EACH_PTR(insn->phi_list, phi) {
 		struct instruction *def;
-		if (phi == VOID(C))
+		if (phi == VOID_PSEUDO(C))
 			continue;
 		def = phi->def;
-		if (def->src1 == VOID(C) || !def->bb)
+		if (def->src1 == VOID_PSEUDO(C) || !def->bb)
 			continue;
 		if (last) {
 			if (last->src1 != def->src1)
@@ -139,7 +139,7 @@ static int clean_up_phi(struct dmr_C *C, struct instruction *insn)
 	} END_FOR_EACH_PTR(phi);
 
 	if (same) {
-		pseudo_t pseudo = last ? last->src1 : VOID(C);
+		pseudo_t pseudo = last ? last->src1 : VOID_PSEUDO(C);
 		convert_instruction_target(C, insn, pseudo);
 		clear_phi(C, insn);
 		return REPEAT_CSE;
@@ -178,7 +178,7 @@ void kill_use(struct dmr_C *C, pseudo_t *usep)
 {
 	if (usep) {
 		pseudo_t p = *usep;
-		*usep = VOID(C);
+		*usep = VOID_PSEUDO(C);
 		remove_usage(C, p, usep);
 	}
 }
@@ -251,7 +251,7 @@ static int dead_insn(struct dmr_C *C, struct instruction *insn, pseudo_t *src1, 
 {
 	struct pseudo_user *pu;
 	FOR_EACH_PTR(insn->target->users, pu) {
-		if (*pu->userp != VOID(C))
+		if (*pu->userp != VOID_PSEUDO(C))
 			return 0;
 	} END_FOR_EACH_PTR(pu);
 
@@ -637,9 +637,9 @@ static int simplify_one_memop(struct dmr_C *C, struct instruction *insn, pseudo_
 offset:
 	/* Invalid code */
 	if (new == orig) {
-		if (new == VOID(C))
+		if (new == VOID_PSEUDO(C))
 			return 0;
-		new = VOID(C);
+		new = VOID_PSEUDO(C);
 		warning(C, insn->pos, "crazy programmer");
 	}
 	insn->offset += off->value;

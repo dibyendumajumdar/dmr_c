@@ -30,8 +30,16 @@
 #define SENTINEL_ATTR
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void *blob_alloc(size_t size);
 void blob_free(void *addr, size_t size);
 long double string_to_ld(const char *nptr, char **endptr);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

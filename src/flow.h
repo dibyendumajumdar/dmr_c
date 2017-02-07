@@ -10,6 +10,11 @@
 
 #include <dmr_c.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 #define REPEAT_CSE		1
 #define REPEAT_SYMBOL_CLEANUP	2
 
@@ -43,5 +48,10 @@ extern void track_phi_uses(struct dmr_C *C, struct instruction *insn);
 
 extern void vrfy_flow(struct entrypoint *ep);
 extern int pseudo_in_list(struct ptr_list *list, pseudo_t pseudo);
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif

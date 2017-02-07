@@ -40,6 +40,10 @@
 #include <allocate.h>
 #include <ptrlist.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define DO_STRINGIFY(x) #x
 #define STRINGIFY(x) DO_STRINGIFY(x)
 
@@ -240,5 +244,10 @@ extern void error_die(struct dmr_C *, struct position, const char *, ...)
     FORMAT_ATTR(3) NORETURN_ATTR;
 extern void expression_error(struct dmr_C *, struct expression *, const char *,
 			     ...) FORMAT_ATTR(3);
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif

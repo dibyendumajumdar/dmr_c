@@ -94,7 +94,7 @@ const char *show_pseudo(struct dmr_C *C, pseudo_t pseudo)
 
 	if (!pseudo)
 		return "no pseudo";
-	if (pseudo == VOID(C))
+	if (pseudo == VOID_PSEUDO(C))
 		return "VOID";
 	buf = C->L->pseudo_buffer[3 & ++C->L->n];
 	switch(pseudo->type) {
@@ -291,7 +291,7 @@ const char *show_instruction(struct dmr_C *C, struct instruction *insn)
 		buf = C->L->buffer + 12;
 	switch (opcode) {
 	case OP_RET:
-		if (insn->src && insn->src != VOID(C))
+		if (insn->src && insn->src != VOID_PSEUDO(C))
 			buf += sprintf(buf, "%s", show_pseudo(C, insn->src));
 		break;
 	case OP_BR:
@@ -398,7 +398,7 @@ const char *show_instruction(struct dmr_C *C, struct instruction *insn)
 	case OP_INLINED_CALL:
 	case OP_CALL: {
 		struct pseudo *arg;
-		if (insn->target && insn->target != VOID(C))
+		if (insn->target && insn->target != VOID_PSEUDO(C))
 			buf += sprintf(buf, "%s <- ", show_pseudo(C, insn->target));
 		buf += sprintf(buf, "%s", show_pseudo(C, insn->func));
 		FOR_EACH_PTR(insn->arguments, arg) {
@@ -505,7 +505,7 @@ void show_bb(struct dmr_C *C, struct basic_block *bb)
 				const char *sep = " ";
 				printf("  **uses %s (from", show_pseudo(C, needs));
 				FOR_EACH_PTR(def->phi_list, phi) {
-					if (phi == VOID(C))
+					if (phi == VOID_PSEUDO(C))
 						continue;
 					printf("%s(%s:.L%p)", sep, show_pseudo(C, phi), phi->def->bb);
 					sep = ", ";
@@ -775,7 +775,7 @@ static pseudo_t symbol_pseudo(struct dmr_C *C, struct entrypoint *ep, struct sym
 	pseudo_t pseudo;
 
 	if (!sym)
-		return VOID(C);
+		return VOID_PSEUDO(C);
 
 	pseudo = sym->pseudo;
 	if (!pseudo) {
@@ -1022,7 +1022,7 @@ static pseudo_t linearize_access(struct dmr_C *C, struct entrypoint *ep, struct 
 	pseudo_t value;
 
 	if (!linearize_address_gen(C, ep, expr, &ad))
-		return VOID(C);
+		return VOID_PSEUDO(C);
 	value = linearize_load_gen(C, ep, &ad);
 	finish_address_gen(ep, &ad);
 	return value;
@@ -1036,7 +1036,7 @@ static pseudo_t linearize_inc_dec(struct dmr_C *C, struct entrypoint *ep, struct
 	int op = expr->op == SPECIAL_INCREMENT ? OP_ADD : OP_SUB;
 
 	if (!linearize_address_gen(C, ep, expr->unop, &ad))
-		return VOID(C);
+		return VOID_PSEUDO(C);
 
 	old = linearize_load_gen(C, ep, &ad);
 	one = value_pseudo(C, expr->op_value);
@@ -1086,7 +1086,7 @@ static pseudo_t linearize_regular_preop(struct dmr_C *C, struct entrypoint *ep, 
 	case '-':
 		return add_uniop(C, ep, expr, OP_NEG, pre);
 	}
-	return VOID(C);
+	return VOID_PSEUDO(C);
 }
 
 static pseudo_t linearize_preop(struct dmr_C *C, struct entrypoint *ep, struct expression *expr)
@@ -1139,12 +1139,12 @@ static pseudo_t cast_pseudo(struct dmr_C *C, struct entrypoint *ep, pseudo_t src
 	pseudo_t result;
 	struct instruction *insn;
 
-	if (src == VOID(C))
-		return VOID(C);
+	if (src == VOID_PSEUDO(C))
+		return VOID_PSEUDO(C);
 	if (!from || !to)
-		return VOID(C);
+		return VOID_PSEUDO(C);
 	if (from->bit_size < 0 || to->bit_size < 0)
-		return VOID(C);
+		return VOID_PSEUDO(C);
 	insn = alloc_cast_instruction(C, from, to);
 	result = alloc_pseudo(C, insn);
 	insn->target = result;
@@ -1193,7 +1193,7 @@ static pseudo_t linearize_assignment(struct dmr_C *C, struct entrypoint *ep, str
 		int opcode;
 
 		if (!src)
-			return VOID(C);
+			return VOID_PSEUDO(C);
 
 		oldvalue = cast_pseudo(C, ep, oldvalue, src->ctype, expr->ctype);
 		opcode = opcode_sign(C, op_trans[expr->op - SPECIAL_BASE], src->ctype);
@@ -1216,7 +1216,7 @@ static pseudo_t linearize_call_expression(struct dmr_C *C, struct entrypoint *ep
 
 	if (!expr->ctype) {
 		warning(C, expr->pos, "call with no type!");
-		return VOID(C);
+		return VOID_PSEUDO(C);
 	}
 
 	FOR_EACH_PTR(expr->args, arg) {
@@ -1249,7 +1249,7 @@ static pseudo_t linearize_call_expression(struct dmr_C *C, struct entrypoint *ep
 		call = linearize_expression(C, ep, fn);
 	}
 	use_pseudo(C, insn, call, &insn->func);
-	retval = VOID(C);
+	retval = VOID_PSEUDO(C);
 	if (expr->ctype != &C->S->void_ctype)
 		retval = alloc_pseudo(C, insn);
 	insn->target = retval;
@@ -1337,9 +1337,9 @@ static pseudo_t add_join_conditional(struct dmr_C *C, struct entrypoint *ep, str
 	pseudo_t target;
 	struct instruction *phi_node;
 
-	if (phi1 == VOID(C))
+	if (phi1 == VOID_PSEUDO(C))
 		return phi2;
-	if (phi2 == VOID(C))
+	if (phi2 == VOID_PSEUDO(C))
 		return phi1;
 
 	phi_node = alloc_typed_instruction(C, OP_PHI, expr->ctype);
@@ -1361,7 +1361,7 @@ static pseudo_t linearize_short_conditional(struct dmr_C *C, struct entrypoint *
 	int size = type_size(expr->ctype);
 
 	if (!expr_false || !ep->active)
-		return VOID(C);
+		return VOID_PSEUDO(C);
 
 	bb_false = alloc_basic_block(C, ep, expr_false->pos);
 	src1 = linearize_expression(C, ep, cond);
@@ -1387,7 +1387,7 @@ static pseudo_t linearize_conditional(struct dmr_C *C, struct entrypoint *ep, st
 	int size = type_size(expr->ctype);
 
 	if (!cond || !expr_true || !expr_false || !ep->active)
-		return VOID(C);
+		return VOID_PSEUDO(C);
 	bb_true = alloc_basic_block(C, ep, expr_true->pos);
 	bb_false = alloc_basic_block(C, ep, expr_false->pos);
 	merge = alloc_basic_block(C, ep, expr->pos);
@@ -1444,22 +1444,22 @@ pseudo_t linearize_cond_branch(struct dmr_C *C, struct entrypoint *ep, struct ex
 	pseudo_t cond;
 
 	if (!expr || !bb_reachable(ep->active))
-		return VOID(C);
+		return VOID_PSEUDO(C);
 
 	switch (expr->type) {
 
 	case EXPR_STRING:
 	case EXPR_VALUE:
 		add_goto(C, ep, expr->value ? bb_true : bb_false);
-		return VOID(C);
+		return VOID_PSEUDO(C);
 
 	case EXPR_FVALUE:
 		add_goto(C, ep, expr->fvalue ? bb_true : bb_false);
-		return VOID(C);
+		return VOID_PSEUDO(C);
 		
 	case EXPR_LOGICAL:
 		linearize_logical_branch(C, ep, expr, bb_true, bb_false);
-		return VOID(C);
+		return VOID_PSEUDO(C);
 
 	case EXPR_COMPARE:
 		cond = linearize_compare(C, ep, expr);
@@ -1474,10 +1474,10 @@ pseudo_t linearize_cond_branch(struct dmr_C *C, struct entrypoint *ep, struct ex
 		cond = linearize_expression(C, ep, expr);
 		add_branch(C, ep, expr, cond, bb_true, bb_false);
 
-		return VOID(C);
+		return VOID_PSEUDO(C);
 	}
 	}
-	return VOID(C);
+	return VOID_PSEUDO(C);
 }
 
 
@@ -1492,7 +1492,7 @@ static pseudo_t linearize_logical_branch(struct dmr_C *C, struct entrypoint *ep,
 		linearize_cond_branch(C, ep, expr->left, next, bb_false);
 	set_activeblock(C, ep, next);
 	linearize_cond_branch(C, ep, expr->right, bb_true, bb_false);
-	return VOID(C);
+	return VOID_PSEUDO(C);
 }
 
 static pseudo_t linearize_cast(struct dmr_C *C, struct entrypoint *ep, struct expression *expr)
@@ -1501,7 +1501,7 @@ static pseudo_t linearize_cast(struct dmr_C *C, struct entrypoint *ep, struct ex
 	struct expression *orig = expr->cast_expression;
 
 	if (!orig)
-		return VOID(C);
+		return VOID_PSEUDO(C);
 
 	src = linearize_expression(C, ep, orig);
 	return cast_pseudo(C, ep, src, orig->ctype, expr->ctype);
@@ -1539,7 +1539,7 @@ static pseudo_t linearize_initializer(struct dmr_C *C, struct entrypoint *ep, st
 	}
 	}
 
-	return VOID(C);
+	return VOID_PSEUDO(C);
 }
 
 static void linearize_argument(struct dmr_C *C, struct entrypoint *ep, struct symbol *arg, int nr)
@@ -1556,7 +1556,7 @@ static void linearize_argument(struct dmr_C *C, struct entrypoint *ep, struct sy
 pseudo_t linearize_expression(struct dmr_C *C, struct entrypoint *ep, struct expression *expr)
 {
 	if (!expr)
-		return VOID(C);
+		return VOID_PSEUDO(C);
 
 	C->L->current_pos = expr->pos;
 	switch (expr->type) {
@@ -1619,12 +1619,12 @@ pseudo_t linearize_expression(struct dmr_C *C, struct entrypoint *ep, struct exp
 	case EXPR_INITIALIZER:
 	case EXPR_POS:
 		warning(C, expr->pos, "unexpected initializer expression (%d %d)", expr->type, expr->op);
-		return VOID(C);
+		return VOID_PSEUDO(C);
 	default: 
 		warning(C, expr->pos, "unknown expression (%d %d)", expr->type, expr->op);
-		return VOID(C);
+		return VOID_PSEUDO(C);
 	}
-	return VOID(C);
+	return VOID_PSEUDO(C);
 }
 
 static pseudo_t linearize_one_symbol(struct dmr_C *C, struct entrypoint *ep, struct symbol *sym)
@@ -1633,11 +1633,11 @@ static pseudo_t linearize_one_symbol(struct dmr_C *C, struct entrypoint *ep, str
 	pseudo_t value;
 
 	if (!sym || !sym->initializer || sym->initialized)
-		return VOID(C);
+		return VOID_PSEUDO(C);
 
 	/* We need to output these puppies some day too.. */
 	if (sym->ctype.modifiers & (MOD_STATIC | MOD_TOPLEVEL))
-		return VOID(C);
+		return VOID_PSEUDO(C);
 
 	sym->initialized = 1;
 	ad.address = symbol_pseudo(C, ep, sym);
@@ -1652,7 +1652,7 @@ static pseudo_t linearize_compound_statement(struct dmr_C *C, struct entrypoint 
 	struct statement *s;
 	struct symbol *ret = stmt->ret;
 
-	pseudo = VOID(C);
+	pseudo = VOID_PSEUDO(C);
 	FOR_EACH_PTR(stmt->stmts, s) {
 		pseudo = linearize_statement(C, ep, s);
 	} END_FOR_EACH_PTR(s);
@@ -1713,7 +1713,7 @@ static pseudo_t linearize_context(struct dmr_C *C, struct entrypoint *ep, struct
 	insn->increment = value;
 	insn->context_expr = stmt->context;
 	add_one_insn(C, ep, insn);
-	return VOID(C);
+	return VOID_PSEUDO(C);
 }
 
 static pseudo_t linearize_range(struct dmr_C *C, struct entrypoint *ep, struct statement *stmt)
@@ -1724,7 +1724,7 @@ static pseudo_t linearize_range(struct dmr_C *C, struct entrypoint *ep, struct s
 	use_pseudo(C, insn, linearize_expression(C, ep, stmt->range_low), &insn->src2);
 	use_pseudo(C, insn, linearize_expression(C, ep, stmt->range_high), &insn->src3);
 	add_one_insn(C, ep, insn);
-	return VOID(C);
+	return VOID_PSEUDO(C);
 }
 
 static void add_asm_input(struct dmr_C *C, struct entrypoint *ep, struct instruction *insn, struct expression *expr,
@@ -1770,7 +1770,7 @@ static pseudo_t linearize_asm_statement(struct dmr_C *C, struct entrypoint *ep, 
 	expr = stmt->asm_string;
 	if (!expr || expr->type != EXPR_STRING) {
 		warning(C, stmt->pos, "expected string in inline asm");
-		return VOID(C);
+		return VOID_PSEUDO(C);
 	}
 	insn->string = expr->string->data;
 
@@ -1823,7 +1823,7 @@ static pseudo_t linearize_asm_statement(struct dmr_C *C, struct entrypoint *ep, 
 		}
 	} END_FOR_EACH_PTR(expr);
 
-	return VOID(C);
+	return VOID_PSEUDO(C);
 }
 
 static int multijmp_cmp(void *ud, const void *_a, const void *_b)
@@ -1861,7 +1861,7 @@ static pseudo_t linearize_declaration(struct dmr_C *C, struct entrypoint *ep, st
 	FOR_EACH_PTR(stmt->declaration, sym) {
 		linearize_one_symbol(C, ep, sym);
 	} END_FOR_EACH_PTR(sym);
-	return VOID(C);
+	return VOID_PSEUDO(C);
 }
 
 static pseudo_t linearize_return(struct dmr_C *C, struct entrypoint *ep, struct statement *stmt)
@@ -1871,7 +1871,7 @@ static pseudo_t linearize_return(struct dmr_C *C, struct entrypoint *ep, struct 
 	struct basic_block *active;
 	pseudo_t src = linearize_expression(C, ep, expr);
 	active = ep->active;
-	if (active && src != VOID(C)) {
+	if (active && src != VOID_PSEUDO(C)) {
 		struct instruction *phi_node = first_instruction(bb_return->insns);
 		pseudo_t phi;
 		if (!phi_node) {
@@ -1885,7 +1885,7 @@ static pseudo_t linearize_return(struct dmr_C *C, struct entrypoint *ep, struct 
 		use_pseudo(C, phi_node, phi, add_pseudo(&phi_node->phi_list, phi));
 	}
 	add_goto(C, ep, bb_return);
-	return VOID(C);
+	return VOID_PSEUDO(C);
 }
 
 static pseudo_t linearize_switch(struct dmr_C *C, struct entrypoint *ep, struct statement *stmt)
@@ -1901,7 +1901,7 @@ static pseudo_t linearize_switch(struct dmr_C *C, struct entrypoint *ep, struct 
 
 	active = ep->active;
 	if (!bb_reachable(active))
-		return VOID(C);
+		return VOID_PSEUDO(C);
 
 	switch_ins = alloc_instruction(C, OP_SWITCH, 0);
 	use_pseudo(C, switch_ins, pseudo, &switch_ins->cond);
@@ -1948,7 +1948,7 @@ static pseudo_t linearize_switch(struct dmr_C *C, struct entrypoint *ep, struct 
 	add_bb(&active->children, default_case);
 	sort_switch_cases(C, switch_ins);
 
-	return VOID(C);
+	return VOID_PSEUDO(C);
 }
 
 static pseudo_t linearize_iterator(struct dmr_C *C, struct entrypoint *ep, struct statement *stmt)
@@ -1991,7 +1991,7 @@ static pseudo_t linearize_iterator(struct dmr_C *C, struct entrypoint *ep, struc
 		linearize_cond_branch(C, ep, post_condition, loop_top, loop_end);
 	set_activeblock(C, ep, loop_end);
 
-	return VOID(C);
+	return VOID_PSEUDO(C);
 }
 
 pseudo_t linearize_statement(struct dmr_C *C, struct entrypoint *ep, struct statement *stmt)
@@ -1999,7 +1999,7 @@ pseudo_t linearize_statement(struct dmr_C *C, struct entrypoint *ep, struct stat
 	struct basic_block *bb;
 
 	if (!stmt)
-		return VOID(C);
+		return VOID_PSEUDO(C);
 
 	bb = ep->active;
 	if (bb && !bb->insns)
@@ -2127,7 +2127,7 @@ pseudo_t linearize_statement(struct dmr_C *C, struct entrypoint *ep, struct stat
 	default:
 		break;
 	}
-	return VOID(C);
+	return VOID_PSEUDO(C);
 }
 
 static struct entrypoint *linearize_fn(struct dmr_C *C, struct symbol *sym, struct symbol *base_type)

@@ -31,6 +31,11 @@
 
 #include <dmr_c.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 struct scope {
 	struct token *token;    /* Scope start information */
 	struct ptr_list *symbols; /* List of symbols in this scope */
@@ -59,5 +64,10 @@ extern int is_outer_scope(struct dmr_C *C, struct scope *);
 
 extern void init_scope(struct dmr_C *C);
 extern void destroy_all_scopes(struct dmr_C *C);
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif

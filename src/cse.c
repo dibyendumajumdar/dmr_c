@@ -98,7 +98,7 @@ static void clean_up_one_instruction(struct dmr_C *C, struct basic_block *bb, st
 		pseudo_t phi;
 		FOR_EACH_PTR(insn->phi_list, phi) {
 			struct instruction *def;
-			if (phi == VOID(C) || !phi->def)
+			if (phi == VOID_PSEUDO(C) || !phi->def)
 				continue;
 			def = phi->def;
 			hash += hashval(def->src1);
@@ -141,9 +141,9 @@ static int phi_list_compare(struct dmr_C *C, struct ptr_list *l1, struct ptr_lis
 	for (;;) {
 		int cmp;
 
-		while (phi1 && (phi1 == VOID(C) || !phi1->def))
+		while (phi1 && (phi1 == VOID_PSEUDO(C) || !phi1->def))
 			NEXT_PTR_LIST(phi1);
-		while (phi2 && (phi2 == VOID(C) || !phi2->def))
+		while (phi2 && (phi2 == VOID_PSEUDO(C) || !phi2->def))
 			NEXT_PTR_LIST(phi2);
 
 		if (!phi1)

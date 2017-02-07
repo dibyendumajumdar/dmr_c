@@ -36,6 +36,10 @@
 #include <dmr_c.h>
 #include <symbol.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 enum expression_type {
 	EXPR_VALUE = 1,
 	EXPR_STRING,
@@ -246,4 +250,10 @@ struct token *compound_statement(struct dmr_C *C, struct token *, struct stateme
 /* Cast folding of constant values.. */
 void cast_value(struct dmr_C *C, struct expression *expr, struct symbol *newtype,
 		struct expression *old, struct symbol *oldtype);
+
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif

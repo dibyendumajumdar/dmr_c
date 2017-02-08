@@ -1,4 +1,4 @@
-extern void empty();
+extern void empty(void);
 
-void empty() {
+void empty(void) {
 }

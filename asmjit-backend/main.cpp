@@ -13,13 +13,6 @@ using namespace asmjit;
 
 struct MyJIT {
 
-	// Small helper function to print the current content of `cb`.
-	//void dumpCode(X86Compiler& cb, const char* phase) {
-	//	StringBuilder sb;
-	//	
-	//	printf("%s:\n%s\n", phase, sb.getData());
-	//}
-
 	int unsupported(const char *feature)
 	{
 		fprintf(stderr,
@@ -38,9 +31,23 @@ struct MyJIT {
 			break;
 		case OP_RET:
 			if (insn->src) {
-				return unsupported("return value");
+				if (insn->src->type == PSEUDO_VAL) {
+					if (current_function_rettype_ == TypeId::Id::kI32) {
+						X86Gp vReg = cc->newGpd();
+						cc->mov(vReg, (int)insn->src->value);
+						cc->ret(vReg);
+					}
+					else {
+						return unsupported("return type");
+					}
+				}
+				else {
+					return unsupported("return type");
+				}
 			}
-			cc->endFunc();
+			else {
+				cc->ret();
+			}
 			break;
 		default:
 			unsupported(show_instruction(C, insn));
@@ -53,8 +60,8 @@ struct MyJIT {
 		struct instruction *insn;
 		FOR_EACH_PTR_TYPE(bb->insns, insn, struct instruction *)
 		{
-			// if (!insn->bb && C->verbose < 2)
-			//	continue;
+			if (!insn->bb)
+				continue;
 			printf("\t%s\n", show_instruction(C, insn));
 			compile_instruction(insn);
 		}
@@ -62,6 +69,33 @@ struct MyJIT {
 		// if (!bb_terminated(bb))
 		//	printf("\tEND\n");
 		return 0;
+	}
+
+	TypeId::Id get_type(struct symbol *type) {
+		if (type->type == SYM_NODE)
+			type = type->ctype.base_type;
+		if (is_void_type(C->S, type))
+			return TypeId::kVoid;
+		else if (is_int_type(C->S, type)) {
+			switch (type->bit_size) {
+				case 1:
+				case 8:
+					return TypeId::kI8;
+				case 16:
+					return TypeId::kI16;
+				case 32:
+					return TypeId::kI32;
+				case 64:
+					return TypeId::kI64;
+				default:
+					unsupported("integer type");
+					return TypeId::kVoid;
+			}
+		}
+		else {
+			unsupported("type");
+			return TypeId::kVoid;
+		}
 	}
 
 	int compile_function(struct dmr_C *C, struct entrypoint *ep)
@@ -78,16 +112,15 @@ struct MyJIT {
 		snprintf(function_name, sizeof function_name,
 			 show_ident(C, sym->ident));
 
-		if (!is_void_type(C->S, ret_type)) {
-			return unsupported("non void return types");
-		}
+		FuncSignatureX sig;
+		current_function_rettype_ = get_type(ret_type);
+		sig.setRet(current_function_rettype_);
 
 		show_symbol(C, ret_type);
+
+		current_function_ = cc->addFunc(sig);
+
 		struct basic_block *bb;
-
-		FuncSignatureX sig;
-		cc->addFunc(sig);
-
 		FOR_EACH_PTR_TYPE(ep->bbs, bb, struct basic_block *)
 		{
 			if (!bb)
@@ -96,7 +129,10 @@ struct MyJIT {
 		}
 		END_FOR_EACH_PTR(bb);
 
-		return unsupported("function");
+		cc->endFunc();
+		current_function_ = NULL;
+
+		return 0;
 	}
 
 	int is_prototype(struct symbol *sym)
@@ -132,7 +168,7 @@ struct MyJIT {
 		return 0;
 	}
 
-	MyJIT() : logger(stdout)
+	MyJIT() : logger(stderr)
 	{
 		C = new_dmr_C();
 		// Initialize to the same arch as JIT runtime.
@@ -162,6 +198,8 @@ struct MyJIT {
 		}
 		END_FOR_EACH_PTR(file);
 
+		cc->finalize();
+
 		return 0;
 	}
 
@@ -172,10 +210,14 @@ struct MyJIT {
 	}
 
 	struct dmr_C *C;
-	JitRuntime rt;   // Runtime specialized for JIT code execution.
-	CodeHolder code; // Holds code and relocation information.
+	// Runtime specialized for JIT code execution.
+	JitRuntime rt;
+	// Holds code and relocation information.
+	CodeHolder code;
 	X86Compiler *cc;
 	FileLogger logger;
+	CCFunc *current_function_;
+	TypeId::Id current_function_rettype_;
 };
 
 int main(int argc, char *argv[])

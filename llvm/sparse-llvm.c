@@ -304,6 +304,32 @@ static void pseudo_name(struct dmr_C *C, pseudo_t pseudo, char *buf)
 	}
 }
 
+static LLVMValueRef pseudo_val_to_value(struct dmr_C *C, struct function *fn, LLVMTypeRef type, pseudo_t pseudo)
+{
+	assert(pseudo->type == PSEUDO_VAL);
+	LLVMValueRef result = NULL;
+	switch (LLVMGetTypeKind(type)) {
+	case LLVMPointerTypeKind:
+		if (pseudo->value == 0)
+			result = LLVMConstPointerNull(type);
+		else
+			result = LLVMConstIntToPtr(
+				LLVMConstInt(
+					LLVMIntType(C->target->bits_in_pointer),
+					pseudo->value, 1),
+				type);
+		break;
+	case LLVMIntegerTypeKind:
+		result = LLVMConstInt(type, pseudo->value, 1);
+		break;
+	default:
+		assert(0);
+	}
+	// ORIGINAL result = LLVMConstInt(type, pseudo->value, 1);
+	// PREVIOUS FIX result = LLVMConstInt(LLVMInt64Type(), pseudo->value, 1);
+	return result;
+}
+
 static LLVMValueRef pseudo_to_value(struct dmr_C *C, struct function *fn, struct instruction *insn, pseudo_t pseudo)
 {
 	LLVMValueRef result = NULL;
@@ -366,25 +392,7 @@ static LLVMValueRef pseudo_to_value(struct dmr_C *C, struct function *fn, struct
 		// BUG - psuedo->value has no defined type I think, so we should
 		// use the actual value type
 		LLVMTypeRef type = insn_symbol_type(C, fn->module, insn);
-		switch (LLVMGetTypeKind(type)) {
-		case LLVMPointerTypeKind:
-			if (pseudo->value == 0)
-				result = LLVMConstPointerNull(type);
-			else
-				result = LLVMConstIntToPtr(
-				    LLVMConstInt(
-					LLVMIntType(C->target->bits_in_pointer),
-					pseudo->value, 1),
-				    type);
-			break;
-		case LLVMIntegerTypeKind:
-			result = LLVMConstInt(type, pseudo->value, 1);
-			break;
-		default:
-			assert(0);
-		}
-		// ORIGINAL result = LLVMConstInt(type, pseudo->value, 1);
-		// PREVIOUS FIX result = LLVMConstInt(LLVMInt64Type(), pseudo->value, 1);
+		result = pseudo_val_to_value(C, fn, type, pseudo);
 		break;
 	}
 	case PSEUDO_ARG: {
@@ -619,8 +627,13 @@ static LLVMValueRef calc_memop_addr(struct dmr_C *C, struct function *fn, struct
 
 	/* convert src to the effective pointer type */
 	src = pseudo_to_value(C, fn, insn, insn->src);
+	//printf("insn %s\n", show_instruction(C, insn));
+	//printf("pseudo %s\n", show_pseudo(C, insn->src));
+	//LLVMDumpValue(src);
+	//LLVMDumpType(LLVMTypeOf(src));
 	as = LLVMGetPointerAddressSpace(LLVMTypeOf(src));
 	addr_type = LLVMPointerType(insn_symbol_type(C, fn->module, insn), as);
+	//LLVMDumpType(addr_type);
 	src = LLVMBuildPointerCast(fn->builder, src, addr_type, "");
 
 	/* addr = src + off */
@@ -634,7 +647,7 @@ static void output_op_load(struct dmr_C *C, struct function *fn, struct instruct
 	LLVMValueRef addr, target;
 
 	addr = calc_memop_addr(C, fn, insn);
-
+		
 	/* perform load */
 	target = LLVMBuildLoad(fn->builder, addr, "load_target");
 
@@ -731,15 +744,48 @@ static void output_op_call(struct dmr_C *C, struct function *fn, struct instruct
 	struct pseudo *arg;
 	LLVMValueRef *args;
 
+	pseudo_t function_proto = insn->func;
+	int n_proto_args = 0;
+	struct symbol *proto_symbol = function_proto->sym->ctype.base_type;
+	struct symbol *proto_arg;
+	struct symbol **proto_args;
+
+	/* count function prototype args, get prototype argument symbols */
+	FOR_EACH_PTR(proto_symbol->arguments, proto_arg) {
+		n_proto_args++;
+	} END_FOR_EACH_PTR(proto_arg);
+
+	proto_args = alloca(n_proto_args * sizeof(struct symbol *));
+
+	int idx = 0;
+	FOR_EACH_PTR(proto_symbol->arguments, proto_arg) {
+		proto_args[idx++] = proto_arg->ctype.base_type;
+	} END_FOR_EACH_PTR(proto_arg);
+
+	n_arg = 0;
 	FOR_EACH_PTR(insn->arguments, arg) {
 		n_arg++;
 	} END_FOR_EACH_PTR(arg);
+
+	if (n_arg != n_proto_args) {
+		fprintf(stderr, "Mismatch in function arguments\n");
+		abort();
+	}
 
 	args = alloca(n_arg * sizeof(LLVMValueRef));
 
 	i = 0;
 	FOR_EACH_PTR(insn->arguments, arg) {
-		args[i++] = pseudo_to_value(C, fn, insn, arg);
+		if (arg->type == PSEUDO_VAL) {
+			/* as value pseudo do not have type information we use the 
+			   function prototype to decide types */
+			LLVMTypeRef type = symbol_type(C, fn->module, proto_args[i]);
+			args[i] = pseudo_val_to_value(C, fn, type, arg);
+		}
+		else {
+			args[i] = pseudo_to_value(C, fn, insn, arg);
+		}
+		i++;
 	} END_FOR_EACH_PTR(arg);
 
 	func = pseudo_to_value(C, fn, insn, insn->func);

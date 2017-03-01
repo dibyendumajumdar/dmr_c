@@ -362,11 +362,31 @@ static LLVMValueRef pseudo_to_value(struct dmr_C *C, struct function *fn, struct
 		}
 		break;
 	}
-	case PSEUDO_VAL:
-		// BUG - psuedo->value has no defined type I think, so we should use the actual value type
-		//result = LLVMConstInt(insn_symbol_type(C, fn->module, insn), pseudo->value, 1);
-		result = LLVMConstInt(LLVMInt64Type(), pseudo->value, 1);
+	case PSEUDO_VAL: {
+		// BUG - psuedo->value has no defined type I think, so we should
+		// use the actual value type
+		LLVMTypeRef type = insn_symbol_type(C, fn->module, insn);
+		switch (LLVMGetTypeKind(type)) {
+		case LLVMPointerTypeKind:
+			if (pseudo->value == 0)
+				result = LLVMConstPointerNull(type);
+			else
+				result = LLVMConstIntToPtr(
+				    LLVMConstInt(
+					LLVMIntType(C->target->bits_in_pointer),
+					pseudo->value, 1),
+				    type);
+			break;
+		case LLVMIntegerTypeKind:
+			result = LLVMConstInt(type, pseudo->value, 1);
+			break;
+		default:
+			assert(0);
+		}
+		// ORIGINAL result = LLVMConstInt(type, pseudo->value, 1);
+		// PREVIOUS FIX result = LLVMConstInt(LLVMInt64Type(), pseudo->value, 1);
 		break;
+	}
 	case PSEUDO_ARG: {
 		result = LLVMGetParam(fn->fn, pseudo->nr - 1);
 		break;

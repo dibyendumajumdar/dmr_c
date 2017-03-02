@@ -481,8 +481,17 @@ static void output_op_binary(struct dmr_C *C, struct function *fn, struct instru
 	case OP_ADD:
 		if (symbol_is_fp_type(C, insn->type))
 			target = LLVMBuildFAdd(fn->builder, lhs, rhs, target_name);
-		else
-			target = LLVMBuildAdd(fn->builder, lhs, rhs, target_name);
+		else {
+			if (LLVMGetTypeKind(LLVMTypeOf(lhs)) == LLVMPointerTypeKind) {
+				target = LLVMBuildGEP(fn->builder, lhs, &rhs, 1, "");
+			}
+			else if (LLVMGetTypeKind(LLVMTypeOf(lhs)) == LLVMPointerTypeKind) {
+				target = LLVMBuildGEP(fn->builder, rhs, &lhs, 1, "");
+			}
+			else {
+				target = LLVMBuildAdd(fn->builder, lhs, rhs, target_name);
+			}
+		}
 		break;
 	case OP_SUB:
 		if (symbol_is_fp_type(C, insn->type))
@@ -627,13 +636,8 @@ static LLVMValueRef calc_memop_addr(struct dmr_C *C, struct function *fn, struct
 
 	/* convert src to the effective pointer type */
 	src = pseudo_to_value(C, fn, insn, insn->src);
-	//printf("insn %s\n", show_instruction(C, insn));
-	//printf("pseudo %s\n", show_pseudo(C, insn->src));
-	//LLVMDumpValue(src);
-	//LLVMDumpType(LLVMTypeOf(src));
 	as = LLVMGetPointerAddressSpace(LLVMTypeOf(src));
 	addr_type = LLVMPointerType(insn_symbol_type(C, fn->module, insn), as);
-	//LLVMDumpType(addr_type);
 	src = LLVMBuildPointerCast(fn->builder, src, addr_type, "");
 
 	/* addr = src + off */
@@ -665,7 +669,9 @@ static void output_op_store(struct dmr_C *C, struct function *fn, struct instruc
 	/* perform store */
 	target = LLVMBuildStore(fn->builder, target_in, addr);
 
-	insn->target->priv = target;
+	// BUG - this clobbers the priv which should only be set on loads and other other ops
+	// that result in a value
+	//insn->target->priv = target;
 }
 
 static LLVMValueRef bool_value(struct dmr_C *C, struct function *fn, LLVMValueRef value)

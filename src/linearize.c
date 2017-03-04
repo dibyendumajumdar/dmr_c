@@ -692,7 +692,7 @@ void insert_select(struct dmr_C *C, struct basic_block *bb, struct instruction *
 	/* Remove the 'br' */
 	delete_last_instruction(&bb->insns);
 
-	select = alloc_instruction(C, OP_SEL, phi_node->size);
+	select = alloc_typed_instruction(C, OP_SEL, phi_node->type);
 	select->bb = bb;
 
 	assert(br->cond);
@@ -825,9 +825,9 @@ static pseudo_t argument_pseudo(struct dmr_C *C, struct entrypoint *ep, int nr)
 	return pseudo;
 }
 
-pseudo_t alloc_phi(struct dmr_C *C, struct basic_block *source, pseudo_t pseudo, int size)
+pseudo_t alloc_phi(struct dmr_C *C, struct basic_block *source, pseudo_t pseudo, struct symbol *type)
 {
-	struct instruction *insn = alloc_instruction(C, OP_PHISOURCE, size);
+	struct instruction *insn = alloc_typed_instruction(C, OP_PHISOURCE, type);
 	pseudo_t phi = (pseudo_t ) allocator_allocate(&C->L->pseudo_allocator, 0);
 	static int nr = 0;
 
@@ -1358,19 +1358,18 @@ static pseudo_t linearize_short_conditional(struct dmr_C *C, struct entrypoint *
 	struct basic_block *bb_false;
 	struct basic_block *merge = alloc_basic_block(C, ep, expr->pos);
 	pseudo_t phi1, phi2;
-	int size = type_size(expr->ctype);
 
 	if (!expr_false || !ep->active)
 		return VOID_PSEUDO(C);
 
 	bb_false = alloc_basic_block(C, ep, expr_false->pos);
 	src1 = linearize_expression(C, ep, cond);
-	phi1 = alloc_phi(C, ep->active, src1, size);
+	phi1 = alloc_phi(C, ep->active, src1, expr->ctype);
 	add_branch(C, ep, expr, src1, merge, bb_false);
 
 	set_activeblock(C, ep, bb_false);
 	src2 = linearize_expression(C, ep, expr_false);
-	phi2 = alloc_phi(C, ep->active, src2, size);
+	phi2 = alloc_phi(C, ep->active, src2, expr->ctype);
 	set_activeblock(C, ep, merge);
 
 	return add_join_conditional(C, ep, expr, phi1, phi2);
@@ -1396,12 +1395,12 @@ static pseudo_t linearize_conditional(struct dmr_C *C, struct entrypoint *ep, st
 
 	set_activeblock(C, ep, bb_true);
 	src1 = linearize_expression(C, ep, expr_true);
-	phi1 = alloc_phi(C, ep->active, src1, size);
+	phi1 = alloc_phi(C, ep->active, src1, expr->ctype);
 	add_goto(C, ep, merge); 
 
 	set_activeblock(C, ep, bb_false);
 	src2 = linearize_expression(C, ep, expr_false);
-	phi2 = alloc_phi(C, ep->active, src2, size);
+	phi2 = alloc_phi(C, ep->active, src2, expr->ctype);
 	set_activeblock(C, ep, merge);
 
 	return add_join_conditional(C, ep, expr, phi1, phi2);
@@ -1880,7 +1879,7 @@ static pseudo_t linearize_return(struct dmr_C *C, struct entrypoint *ep, struct 
 			phi_node->bb = bb_return;
 			add_instruction(&bb_return->insns, phi_node);
 		}
-		phi = alloc_phi(C, active, src, type_size(expr->ctype));
+		phi = alloc_phi(C, active, src, expr->ctype);
 		phi->ident = C->S->return_ident;
 		use_pseudo(C, phi_node, phi, add_pseudo(&phi_node->phi_list, phi));
 	}

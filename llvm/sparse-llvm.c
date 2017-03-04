@@ -308,16 +308,13 @@ static LLVMValueRef pseudo_val_to_value(struct dmr_C *C, struct function *fn, LL
 {
 	assert(pseudo->type == PSEUDO_VAL);
 	LLVMValueRef result = NULL;
+	LLVMTypeRef iptr_type;
+
 	switch (LLVMGetTypeKind(type)) {
 	case LLVMPointerTypeKind:
-		if (pseudo->value == 0)
-			result = LLVMConstPointerNull(type);
-		else
-			result = LLVMConstIntToPtr(
-				LLVMConstInt(
-					LLVMIntType(C->target->bits_in_pointer),
-					pseudo->value, 1),
-				type);
+		iptr_type = LLVMIntType(C->target->bits_in_pointer);
+		result = LLVMConstInt(iptr_type, pseudo->value, 1);
+		result = LLVMConstIntToPtr(result, type);
 		break;
 	case LLVMIntegerTypeKind:
 		result = LLVMConstInt(type, pseudo->value, 1);
@@ -325,8 +322,6 @@ static LLVMValueRef pseudo_val_to_value(struct dmr_C *C, struct function *fn, LL
 	default:
 		assert(0);
 	}
-	// ORIGINAL result = LLVMConstInt(type, pseudo->value, 1);
-	// PREVIOUS FIX result = LLVMConstInt(LLVMInt64Type(), pseudo->value, 1);
 	return result;
 }
 
@@ -485,7 +480,7 @@ static void output_op_binary(struct dmr_C *C, struct function *fn, struct instru
 			if (LLVMGetTypeKind(LLVMTypeOf(lhs)) == LLVMPointerTypeKind) {
 				target = LLVMBuildGEP(fn->builder, lhs, &rhs, 1, "");
 			}
-			else if (LLVMGetTypeKind(LLVMTypeOf(lhs)) == LLVMPointerTypeKind) {
+			else if (LLVMGetTypeKind(LLVMTypeOf(rhs)) == LLVMPointerTypeKind) {
 				target = LLVMBuildGEP(fn->builder, rhs, &lhs, 1, "");
 			}
 			else {
@@ -591,14 +586,27 @@ static void output_op_binary(struct dmr_C *C, struct function *fn, struct instru
 	case OP_SET_AE: {
 		LLVMTypeRef dst_type = insn_symbol_type(C, fn->module, insn);
 
-		if (LLVMGetTypeKind(LLVMTypeOf(lhs)) == LLVMIntegerTypeKind) {
+		switch (LLVMGetTypeKind(LLVMTypeOf(lhs))) {
+		case LLVMPointerTypeKind:
+		case LLVMIntegerTypeKind: {
 			LLVMIntPredicate op = translate_op(insn->opcode);
 
 			target = LLVMBuildICmp(fn->builder, op, lhs, rhs, target_name);
-		} else {
+			break;
+		}
+		case LLVMHalfTypeKind:
+		case LLVMFloatTypeKind:
+		case LLVMDoubleTypeKind:
+		case LLVMX86_FP80TypeKind:
+		case LLVMFP128TypeKind:
+		case LLVMPPC_FP128TypeKind: {
 			LLVMRealPredicate op = translate_fop(insn->opcode);
 
 			target = LLVMBuildFCmp(fn->builder, op, lhs, rhs, target_name);
+			break;
+		}
+		default:
+			assert(0);
 		}
 
 		target = LLVMBuildZExt(fn->builder, target, dst_type, target_name);
@@ -660,18 +668,18 @@ static void output_op_load(struct dmr_C *C, struct function *fn, struct instruct
 
 static void output_op_store(struct dmr_C *C, struct function *fn, struct instruction *insn)
 {
-	LLVMValueRef addr, target, target_in;
+	LLVMValueRef addr, target_in;
 
 	addr = calc_memop_addr(C, fn, insn);
 
 	target_in = pseudo_to_value(C, fn, insn, insn->target);
 
-	/* perform store */
-	target = LLVMBuildStore(fn->builder, target_in, addr);
+	//printf("insn %s\n", show_instruction(C, insn));
+	//LLVMDumpValue(addr);
+	//LLVMDumpValue(target_in);
 
-	// BUG - this clobbers the priv which should only be set on loads and other other ops
-	// that result in a value
-	//insn->target->priv = target;
+	/* perform store */
+	LLVMBuildStore(fn->builder, target_in, addr);
 }
 
 static LLVMValueRef bool_value(struct dmr_C *C, struct function *fn, LLVMValueRef value)
@@ -839,6 +847,8 @@ static void output_op_ptrcast(struct dmr_C *C, struct function *fn, struct instr
 {
 	LLVMValueRef src, target;
 	char target_name[64];
+	LLVMTypeRef dtype;
+	LLVMOpcode op;
 
 	src = insn->src->priv;
 	if (!src)
@@ -848,8 +858,19 @@ static void output_op_ptrcast(struct dmr_C *C, struct function *fn, struct instr
 
 	assert(!symbol_is_fp_type(C, insn->type));
 
-	target = LLVMBuildBitCast(fn->builder, src, insn_symbol_type(C, fn->module, insn), target_name);
+	dtype = insn_symbol_type(C, fn->module, insn);
+	switch (LLVMGetTypeKind(LLVMTypeOf(src))) {
+		case LLVMPointerTypeKind:
+			op = LLVMBitCast;
+			break;
+		case LLVMIntegerTypeKind:
+			op = LLVMIntToPtr;
+			break;
+		default:
+			assert(0);
+	}
 
+	target = LLVMBuildCast(fn->builder, op, src, dtype, target_name);
 	insn->target->priv = target;
 }
 
@@ -857,6 +878,13 @@ static void output_op_cast(struct dmr_C *C, struct function *fn, struct instruct
 {
 	LLVMValueRef src, target;
 	char target_name[64];
+	LLVMTypeRef dtype;
+	unsigned int width;
+
+	if (is_ptr_type(insn->type)) {
+		output_op_ptrcast(C, fn, insn);
+		return;
+	}
 
 	src = insn->src->priv;
 	if (!src)
@@ -866,11 +894,23 @@ static void output_op_cast(struct dmr_C *C, struct function *fn, struct instruct
 
 	assert(!symbol_is_fp_type(C, insn->type));
 
-	if (insn->size < LLVMGetIntTypeWidth(LLVMTypeOf(src)))
-		target = LLVMBuildTrunc(fn->builder, src, insn_symbol_type(C, fn->module, insn), target_name);
-	else
-		target = LLVMBuildCast(fn->builder, op, src, insn_symbol_type(C, fn->module, insn), target_name);
+	dtype = insn_symbol_type(C, fn->module, insn);
+	switch (LLVMGetTypeKind(LLVMTypeOf(src))) {
+		case LLVMPointerTypeKind:
+			op = LLVMPtrToInt;
+			break;
+		case LLVMIntegerTypeKind:
+			width = LLVMGetIntTypeWidth(LLVMTypeOf(src));
+			if (insn->size < width)
+				op = LLVMTrunc;
+			else if (insn->size == width)
+				op = LLVMBitCast;
+			break;
+		default:
+			assert(0);
+	}
 
+	target = LLVMBuildCast(fn->builder, op, src, dtype, target_name);
 	insn->target->priv = target;
 }
 
@@ -1006,9 +1046,22 @@ static void output_insn(struct dmr_C *C, struct function *fn, struct instruction
 		insn->target->priv = target;
 		break;
 	}
-	case OP_NEG:
-		assert(0);
+	case OP_NEG: {
+		LLVMValueRef src, target;
+		char target_name[64];
+
+		src = pseudo_to_value(C, fn, insn, insn->src);
+
+		pseudo_name(C, insn->target, target_name);
+
+		if (symbol_is_fp_type(C, insn->type))
+			target = LLVMBuildFNeg(fn->builder, src, target_name);
+		else
+			target = LLVMBuildNeg(fn->builder, src, target_name);
+
+		insn->target->priv = target;
 		break;
+	}
 	case OP_CONTEXT:
 		assert(0);
 		break;

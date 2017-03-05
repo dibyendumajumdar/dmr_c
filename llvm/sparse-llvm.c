@@ -674,10 +674,6 @@ static void output_op_store(struct dmr_C *C, struct function *fn, struct instruc
 
 	target_in = pseudo_to_value(C, fn, insn, insn->target);
 
-	//printf("insn %s\n", show_instruction(C, insn));
-	//LLVMDumpValue(addr);
-	//LLVMDumpValue(target_in);
-
 	/* perform store */
 	LLVMBuildStore(fn->builder, target_in, addr);
 }

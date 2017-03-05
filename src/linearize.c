@@ -1191,14 +1191,21 @@ static pseudo_t linearize_assignment(struct dmr_C *C, struct entrypoint *ep, str
 			[SPECIAL_XOR_ASSIGN - SPECIAL_BASE] = OP_XOR
 		};
 		int opcode;
+		struct symbol *ctype = src->ctype;
 
 		if (!src)
 			return VOID_PSEUDO(C);
 
 		oldvalue = cast_pseudo(C, ep, oldvalue, src->ctype, expr->ctype);
 		opcode = opcode_sign(C, op_trans[expr->op - SPECIAL_BASE], src->ctype);
-		dst = add_binary_op(C, ep, src->ctype, opcode, oldvalue, value);
-		value = cast_pseudo(C, ep, dst, expr->ctype, src->ctype);
+		if (opcode == OP_ADD || opcode == OP_SUB) {
+			if (is_ptr_type(target->ctype)) {
+				ctype = target->ctype;
+			}
+		}
+		dst = add_binary_op(C, ep, /*src->*/ ctype, opcode, oldvalue, value);
+
+		value = cast_pseudo(C, ep, dst, expr->ctype, /* src->*/ ctype);
 	}
 	value = linearize_store_gen(C, ep, value, &ad);
 	finish_address_gen(ep, &ad);

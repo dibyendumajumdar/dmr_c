@@ -107,15 +107,16 @@ enum {
 	Set_Short = 256,
 	Set_Long = 512,
 	Set_Vlong = 1024,
+	Set_Int128 = 2048,
 	Set_Any = Set_T | Set_Short | Set_Long | Set_Signed | Set_Unsigned
 };
 
 enum {
-	CInt = 0, CSInt, CUInt, CReal, CChar, CSChar, CUChar, CMax,
+	CInt = 0, CSInt, CUInt, CReal, CChar, CSChar, CUChar,
 };
 
 enum {
-	SNone = 0, STypedef, SAuto, SRegister, SExtern, SStatic, SForced
+	SNone = 0, STypedef, SAuto, SRegister, SExtern, SStatic, SForced, SMax,
 };
 
 static struct symbol_op typedef_op = {
@@ -126,6 +127,18 @@ static struct symbol_op typedef_op = {
 static struct symbol_op inline_op = {
 	.type = KW_MODIFIER,
 	.declarator = inline_specifier,
+};
+
+static declarator_t noreturn_specifier;
+static struct symbol_op noreturn_op = {
+	.type = KW_MODIFIER,
+	.declarator = noreturn_specifier,
+};
+
+static declarator_t alignas_specifier;
+static struct symbol_op alignas_op = {
+	.type = KW_MODIFIER,
+	.declarator = alignas_specifier,
 };
 
 static struct symbol_op auto_op = {
@@ -257,6 +270,12 @@ static struct symbol_op long_op = {
 	.type = KW_SPECIFIER | KW_LONG,
 	.test = Set_S|Set_Char|Set_Float|Set_Short|Set_Vlong,
 	.set = Set_Long,
+};
+
+static struct symbol_op int128_op = {
+	.type = KW_SPECIFIER | KW_LONG,
+	.test = Set_S|Set_T|Set_Char|Set_Short|Set_Int|Set_Float|Set_Double|Set_Long|Set_Vlong|Set_Int128,
+	.set =  Set_T|Set_Int128,
 };
 
 static struct symbol_op if_op = {
@@ -505,6 +524,7 @@ void init_parser(struct dmr_C *C, int stream)
 		struct symbol_op *op;
 		struct symbol *type;
 	} keyword_table[] = {
+
 		/* Type qualifiers */
 		{ "const",	NS_TYPEDEF,.op = &const_op },
 		{ "__const",	NS_TYPEDEF,.op = &const_op },
@@ -528,6 +548,7 @@ void init_parser(struct dmr_C *C, int stream)
 		{ "__signed",	NS_TYPEDEF,.op = &signed_op },
 		{ "__signed__",	NS_TYPEDEF,.op = &signed_op },
 		{ "unsigned",	NS_TYPEDEF,.op = &unsigned_op },
+		{ "__int128",	NS_TYPEDEF, .op = &int128_op },
 		{ "_Bool",	NS_TYPEDEF,.type = &C->S->bool_ctype,.op = &spec_op },
 
 		/* Predeclared types */
@@ -535,6 +556,7 @@ void init_parser(struct dmr_C *C, int stream)
 		{ "__builtin_ms_va_list", NS_TYPEDEF,.type = &C->S->ptr_ctype,.op = &spec_op },
 		{ "__int128_t",	NS_TYPEDEF,.type = &C->S->lllong_ctype,.op = &spec_op },
 		{ "__uint128_t",NS_TYPEDEF,.type = &C->S->ulllong_ctype,.op = &spec_op },
+
 
 		/* Extended types */
 		{ "typeof", 	NS_TYPEDEF,.op = &typeof_op },
@@ -551,6 +573,10 @@ void init_parser(struct dmr_C *C, int stream)
 		{ "inline",	NS_TYPEDEF,.op = &inline_op },
 		{ "__inline",	NS_TYPEDEF,.op = &inline_op },
 		{ "__inline__",	NS_TYPEDEF,.op = &inline_op },
+		
+		{ "_Noreturn",	NS_TYPEDEF, .op = &noreturn_op },
+
+		{ "_Alignas",	NS_TYPEDEF, .op = &alignas_op },
 
 		/* Ignored for now.. */
 		{ "restrict",	NS_TYPEDEF,.op = &restrict_op },
@@ -563,6 +589,7 @@ void init_parser(struct dmr_C *C, int stream)
 		{ "static",	NS_TYPEDEF,.op = &static_op },
 		{ "extern",	NS_TYPEDEF,.op = &extern_op },
 		{ "__thread",	NS_TYPEDEF,.op = &thread_op },
+		{ "_Thread_local",	NS_TYPEDEF, .op = &thread_op },
 
 		/* Statement */
 		{ "if",		NS_KEYWORD,.op = &if_op },
@@ -581,7 +608,7 @@ void init_parser(struct dmr_C *C, int stream)
 		{ "asm",	NS_KEYWORD,.op = &asm_op },
 		{ "__asm",	NS_KEYWORD,.op = &asm_op },
 		{ "__asm__",	NS_KEYWORD,.op = &asm_op },
-
+	
 		/* Attribute */
 		{ "packed",	NS_KEYWORD,.op = &packed_op },
 		{ "__packed__",	NS_KEYWORD,.op = &packed_op },
@@ -1272,7 +1299,8 @@ static struct token *recover_unknown_attribute(struct dmr_C *C, struct token *to
 {
 	struct expression *expr = NULL;
 
-	sparse_error(C, token->pos, "attribute '%s': unknown attribute", show_ident(C, token->ident));
+	if (C->Wunknown_attribute)
+		warning(C, token->pos, "attribute '%s': unknown attribute", show_ident(C, token->ident));
 	token = token->next;
 	if (match_op(token, '('))
 		token = parens_expression(C, token, &expr, "in attribute");
@@ -1323,7 +1351,7 @@ static const char *storage_class[] =
 
 static unsigned long storage_modifiers(struct dmr_C *C, struct decl_state *ctx)
 {
-	static unsigned long mod[CMax] =
+	static unsigned long mod[SMax] =
 	{
 		[SAuto] = MOD_AUTO,
 		[SExtern] = MOD_EXTERN,
@@ -1409,6 +1437,46 @@ static struct token *inline_specifier(struct dmr_C *C, struct token *next, struc
 	return next;
 }
 
+static struct token *noreturn_specifier(struct dmr_C *C, struct token *next, struct decl_state *ctx)
+{
+	apply_qualifier(C, &next->pos, &ctx->ctype, MOD_NORETURN);
+	return next;
+}
+
+static struct token *alignas_specifier(struct dmr_C *C, struct token *token, struct decl_state *ctx)
+{
+	int alignment = 0;
+
+	if (!match_op(token, '(')) {
+		sparse_error(C, token->pos, "expected '(' after _Alignas");
+		return token;
+	}
+	if (lookup_type(token->next)) {
+		struct symbol *sym = NULL;
+		token = typname(C, token->next, &sym, NULL);
+		sym = examine_symbol_type(C->S, sym);
+		alignment = sym->ctype.alignment;
+		token = expect(C, token, ')', "after _Alignas(...");
+	} else {
+		struct expression *expr = NULL;
+		token = parens_expression(C, token, &expr, "after _Alignas");
+		if (!expr)
+			return token;
+		alignment = const_expression_value(C, expr);
+	}
+
+	if (alignment < 0) {
+		warning(C, token->pos, "non-positive alignment");
+		return token;
+	}
+	if (alignment & (alignment-1)) {
+		warning(C, token->pos, "non-power-of-2 alignment");
+		return token;
+	}
+	if (alignment > ctx->ctype.alignment)
+		ctx->ctype.alignment = alignment;
+	return token;
+}
 static struct token *const_qualifier(struct dmr_C *C, struct token *next, struct decl_state *ctx)
 {
 	apply_qualifier(C, &next->pos, &ctx->ctype, MOD_CONST);
@@ -1521,6 +1589,8 @@ static struct token *declaration_specifiers(struct dmr_C *C, struct token *token
 			}
 			seen |= s->op->set;
 			cls += s->op->cls;
+			if (s->op->set & Set_Int128)
+				size = 2;
 			if (s->op->type & KW_SHORT) {
 				size = -1;
 			} else if (s->op->type & KW_LONG && size++) {
@@ -2829,8 +2899,10 @@ struct token *external_declaration(struct dmr_C *C, struct token *token, struct 
 			}
 		}
 		check_declaration(C->S, decl);
-		if (decl->same_symbol)
+		if (decl->same_symbol) {
 			decl->definition = decl->same_symbol->definition;
+			decl->op = decl->same_symbol->op;
+		}
 
 		if (!match_op(token, ','))
 			break;

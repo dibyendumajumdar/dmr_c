@@ -464,12 +464,16 @@ struct symbol *examine_symbol_type(struct global_symbols_t *S, struct symbol * s
 	case SYM_TYPEOF: {
 		struct symbol *base = evaluate_expression(S->C, sym->initializer);
 		if (base) {
+			unsigned long mod = 0;
+
 			if (is_bitfield_type(base))
 				warning(S->C, base->pos, "typeof applied to bitfield type");
-			if (base->type == SYM_NODE)
+			if (base->type == SYM_NODE) {
+				mod |= base->ctype.modifiers & MOD_TYPEOF;
 				base = base->ctype.base_type;
+			}
 			sym->type = SYM_NODE;
-			sym->ctype.modifiers = 0;
+			sym->ctype.modifiers = mod;
 			sym->ctype.base_type = base;
 			return examine_node_type(S, sym);
 		}
@@ -639,158 +643,6 @@ struct symbol *create_symbol(struct global_symbols_t *S, int stream, const char 
 	return sym;
 }
 
-static int evaluate_to_integer(struct global_symbols_t *S, struct expression *expr)
-{
-	expr->ctype = &S->int_ctype;
-	return 1;
-}
-
-static int evaluate_expect(struct global_symbols_t *S, struct expression *expr)
-{
-	/* Should we evaluate it to return the type of the first argument? */
-	expr->ctype = &S->int_ctype;
-	return 1;
-}
-
-static int arguments_choose(struct global_symbols_t *S, struct expression *expr)
-{
-	struct ptr_list *arglist = expr->args;
-	struct expression *arg;
-	int i = 0;
-
-	FOR_EACH_PTR (arglist, arg) {
-		if (!evaluate_expression(S->C, arg))
-			return 0;
-		i++;
-	} END_FOR_EACH_PTR(arg);
-	if (i < 3) {
-		sparse_error(S->C, expr->pos,
-			     "not enough arguments for __builtin_choose_expr");
-		return 0;
-	} if (i > 3) {
-		sparse_error(S->C, expr->pos,
-			     "too many arguments for __builtin_choose_expr");
-		return 0;
-	}
-	return 1;
-}
-
-static int evaluate_choose(struct global_symbols_t *S, struct expression *expr)
-{
-	(void)S;
-	struct ptr_list *list = expr->args;
-	struct expression *arg, *args[3];
-	int n = 0;
-
-	/* there will be exactly 3; we'd already verified that */
-	FOR_EACH_PTR(list, arg) {
-		args[n++] = arg;
-	} END_FOR_EACH_PTR(arg);
-
-	*expr = get_expression_value(S->C, args[0]) ? *args[1] : *args[2];
-
-	return 1;
-}
-
-static int expand_expect(struct dmr_C *C, struct expression *expr, int cost)
-{
-	(void)C;
-	(void)cost;
-	struct expression *arg = (struct expression *) ptrlist_first(expr->args);
-
-	if (arg)
-		*expr = *arg;
-	return 0;
-}
-
-/*
- * __builtin_warning() has type "int" and always returns 1,
- * so that you can use it in conditionals or whatever
- */
-static int expand_warning(struct dmr_C *C, struct expression *expr, int cost)
-{
-	(void)cost;
-	struct expression *arg;
-	struct ptr_list *arglist = expr->args;
-
-	FOR_EACH_PTR (arglist, arg) {
-		/*
-		 * Constant strings get printed out as a warning. By the
-		 * time we get here, the EXPR_STRING has been fully 
-		 * evaluated, so by now it's an anonymous symbol with a
-		 * string initializer.
-		 *
-		 * Just for the heck of it, allow any constant string
-		 * symbol.
-		 */
-		if (arg->type == EXPR_SYMBOL) {
-			struct symbol *sym = arg->symbol;
-			if (sym->initializer && sym->initializer->type == EXPR_STRING) {
-				struct string *string = sym->initializer->string;
-				warning(C, expr->pos, "%*s", string->length-1, string->data);
-			}
-			continue;
-		}
-
-		/*
-		 * Any other argument is a conditional. If it's
-		 * non-constant, or it is false, we exit and do
-		 * not print any warning.
-		 */
-		if (arg->type != EXPR_VALUE)
-			goto out;
-		if (!arg->value)
-			goto out;
-	} END_FOR_EACH_PTR(arg);
-out:
-	expr->type = EXPR_VALUE;
-	expr->value = 1;
-	expr->taint = 0;
-	return 0;
-}
-
-static struct symbol_op constant_p_op = {
-	.evaluate = evaluate_to_integer,
-	.expand = expand_constant_p
-};
-
-static struct symbol_op safe_p_op = {
-	.evaluate = evaluate_to_integer,
-	.expand = expand_safe_p
-};
-
-static struct symbol_op warning_op = {
-	.evaluate = evaluate_to_integer,
-	.expand = expand_warning
-};
-
-static struct symbol_op expect_op = {
-	.evaluate = evaluate_expect,
-	.expand = expand_expect
-};
-
-static struct symbol_op choose_op = {
-	.evaluate = evaluate_choose,
-	.args = arguments_choose,
-};
-
-/*
- * Builtin functions
- */
-static struct symbol builtin_fn_type = { .type = SYM_FN /* , .variadic =1 */ };
-static struct sym_init {
-	const char *name;
-	struct symbol *base_type;
-	unsigned int modifiers;
-	struct symbol_op *op;
-} eval_init_table[] = {
-	{ "__builtin_constant_p", &builtin_fn_type, MOD_TOPLEVEL, &constant_p_op },
-	{ "__builtin_safe_p", &builtin_fn_type, MOD_TOPLEVEL, &safe_p_op },
-	{ "__builtin_warning", &builtin_fn_type, MOD_TOPLEVEL, &warning_op },
-	{ "__builtin_expect", &builtin_fn_type, MOD_TOPLEVEL, &expect_op },
-	{ "__builtin_choose_expr", &builtin_fn_type, MOD_TOPLEVEL, &choose_op },
-	{ NULL,		NULL,		0, NULL }
-};
 
 
 
@@ -807,7 +659,6 @@ void init_symbols(struct dmr_C *C)
 		__alignof__(struct symbol), CHUNK);
 
 	int stream = init_stream(C, "builtin", -1, C->T->includepath);
-	struct sym_init *ptr;
 
 #define __INIT_IDENT(n, str, res) (struct ident *) allocator_allocate(&S->global_ident_allocator, sizeof(str)); S->n->len = sizeof(str)-1; memcpy(S->n->name, str, sizeof(str)); S->n->reserved = res;
 #define __IDENT(n,str,res) \
@@ -819,15 +670,6 @@ void init_symbols(struct dmr_C *C)
 #include "ident-list.h"
 
 	init_parser(C, stream);
-
-	builtin_fn_type.variadic = 1;
-	for (ptr = eval_init_table; ptr->name; ptr++) {
-		struct symbol *sym;
-		sym = create_symbol(C->S, stream, ptr->name, SYM_NODE, NS_SYMBOL);
-		sym->ctype.base_type = ptr->base_type;
-		sym->ctype.modifiers = ptr->modifiers;
-		sym->op = ptr->op;
-	}
 }
 
 void destroy_symbols(struct dmr_C *C) {

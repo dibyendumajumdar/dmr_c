@@ -86,7 +86,13 @@ static const char *parse_escape(struct dmr_C *C, const char *p, unsigned *val, c
 		break;
 	}
 	default:	/* everything else is left as is */
+		warning(C, pos, "unknown escape sequence: '\\%c'", c);
 		break;
+	case '\\':
+	case '\'':
+	case '"':
+	case '?':
+		break;	/* those are legal, so no warnings */
 	}
 	*val = c & ~((~0U << (bits - 1)) << 1);
 	return p;

@@ -157,6 +157,8 @@ struct dmr_C {
 	int Wundef;
 	int Wuninitialized;
 	int Wvla;
+	int Wunknown_attribute;
+	int Wtautological_compare;
 	struct warning warnings[26];
 	struct warning debugs[2];
 

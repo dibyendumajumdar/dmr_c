@@ -630,6 +630,7 @@ static struct token *unary_expression(struct dmr_C *C, struct token *token, stru
 				{ C->S->sizeof_ident, EXPR_SIZEOF },
 				{ C->S->__alignof___ident, EXPR_ALIGNOF },
 				{ C->S->__alignof_ident, EXPR_ALIGNOF },
+				{ C->S->_Alignof_ident, EXPR_ALIGNOF },
 				{ C->S->__sizeof_ptr___ident, EXPR_PTRSIZEOF },
 			};
 			int i;

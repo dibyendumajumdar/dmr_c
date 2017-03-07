@@ -252,7 +252,9 @@ struct symbol {
 #define MOD_SIZE	(MOD_CHAR | MOD_SHORT | MOD_LONG_ALL)
 #define MOD_IGNORE (MOD_TOPLEVEL | MOD_STORAGE | MOD_ADDRESSABLE |	\
 	MOD_ASSIGNED | MOD_USERTYPE | MOD_ACCESSED | MOD_EXPLICITLY_SIGNED)
-#define MOD_PTRINHERIT (MOD_VOLATILE | MOD_CONST | MOD_NODEREF | MOD_STORAGE | MOD_NORETURN | MOD_NOCAST)
+#define MOD_PTRINHERIT (MOD_VOLATILE | MOD_CONST | MOD_NODEREF | MOD_NORETURN | MOD_NOCAST)
+/* modifiers preserved by typeof() operator */
+#define MOD_TYPEOF	(MOD_VOLATILE | MOD_CONST | MOD_NOCAST | MOD_SPECIFIER)
 
 struct ctype_name {
 	struct symbol *sym;
@@ -406,6 +408,28 @@ static inline int is_bool_type(struct global_symbols_t *S, struct symbol *type)
 	if (type->type == SYM_NODE)
 		type = type->ctype.base_type;
 	return type == &S->bool_ctype;
+}
+
+static inline int is_scalar_type(struct global_symbols_t *S, struct symbol *type)
+{
+	if (type->type == SYM_NODE)
+		type = type->ctype.base_type;
+	switch (type->type) {
+	case SYM_ENUM:
+	case SYM_BITFIELD:
+	case SYM_PTR:
+	case SYM_ARRAY:		// OK, will be a PTR after conversion
+	case SYM_FN:
+	case SYM_RESTRICT:	// OK, always integer types
+		return 1;
+	default:
+		break;
+	}
+	if (type->ctype.base_type == &S->int_type)
+		return 1;
+	if (type->ctype.base_type == &S->fp_type)
+		return 1;
+	return 0;
 }
 
 static inline int is_function(struct symbol *type)

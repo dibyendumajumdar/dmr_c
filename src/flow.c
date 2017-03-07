@@ -120,6 +120,8 @@ static int try_to_simplify_bb(struct dmr_C *C, struct basic_block *bb, struct in
 			continue;
 		changed |= rewrite_branch(C, source, &br->bb_true, bb, target);
 		changed |= rewrite_branch(C, source, &br->bb_false, bb, target);
+		if (changed)
+			kill_use(C, THIS_ADDRESS(pseudo_t, phi));
 	} END_FOR_EACH_PTR(phi);
 	return changed;
 }
@@ -315,17 +317,25 @@ int dominates(struct dmr_C *C, pseudo_t pseudo, struct instruction *insn, struct
 	return 1;
 }
 
+static int phisrc_in_bb(struct ptr_list *list, struct basic_block *bb)
+{
+	pseudo_t p;
+	FOR_EACH_PTR(list, p) {
+		if (p->def->bb == bb)
+			return 1;
+	} END_FOR_EACH_PTR(p);
+
+	return 0;
+}
 static int find_dominating_parents(struct dmr_C *C, pseudo_t pseudo, struct instruction *insn,
 	struct basic_block *bb, unsigned long generation, struct ptr_list **dominators,
-	int local, int loads)
+	int local)
 {
 	struct basic_block *parent;
 
 	if (!bb->parents)
 		return !!local;
 
-	if (bb_list_size(bb->parents) > 1)
-		loads = 0;
 	FOR_EACH_PTR(bb->parents, parent) {
 		struct instruction *one;
 		struct instruction *br;
@@ -343,8 +353,6 @@ static int find_dominating_parents(struct dmr_C *C, pseudo_t pseudo, struct inst
 			}
 			if (!dominance)
 				continue;
-			if (one->opcode == OP_LOAD && !loads)
-				continue;
 			goto found_dominator;
 		} END_FOR_EACH_PTR_REVERSE(one);
 no_dominance:
@@ -352,11 +360,13 @@ no_dominance:
 			continue;
 		parent->generation = generation;
 
-		if (!find_dominating_parents(C, pseudo, insn, parent, generation, dominators, local, loads))
+		if (!find_dominating_parents(C, pseudo, insn, parent, generation, dominators, local))
 			return 0;
 		continue;
 
 found_dominator:
+		if (dominators && phisrc_in_bb(*dominators, parent))
+			continue;
 		br = delete_last_instruction(&parent->insns);
 		phi = alloc_phi(C, parent, one->target, one->type);
 		phi->ident = phi->ident ? phi->ident : pseudo->ident;
@@ -391,7 +401,7 @@ void rewrite_load_instruction(struct dmr_C *C, struct instruction *insn, struct 
 	 * pseudo.
 	 */
 	FOR_EACH_PTR(dominators, phi) {
-		phi->def->bb = NULL;
+		kill_instruction(C, phi->def);
 	} END_FOR_EACH_PTR(phi);
 	convert_load_instruction(C, insn, new);
 	return;
@@ -453,7 +463,7 @@ found:
 	bb->generation = generation;
 
 	dominators = NULL;
-	if (!find_dominating_parents(C, pseudo, insn, bb, generation, &dominators, local, 1))
+	if (!find_dominating_parents(C, pseudo, insn, bb, generation, &dominators, local))
 		return 0;
 
 	/* This happens with initial assignments to structures etc.. */
@@ -749,13 +759,12 @@ void kill_bb(struct dmr_C *C, struct basic_block *bb)
 	struct basic_block *child, *parent;
 
 	FOR_EACH_PTR(bb->insns, insn) {
-		kill_instruction(C, insn);
+		kill_instruction_force(C, insn);
 		kill_defs(C, insn);
 		/*
 		 * We kill unreachable instructions even if they
 		 * otherwise aren't "killable" (e.g. volatile loads)
 		 */
-		insn->bb = NULL;
 	} END_FOR_EACH_PTR(insn);
 	bb->insns = NULL;
 

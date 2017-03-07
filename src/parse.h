@@ -114,15 +114,6 @@ struct statement {
 			struct expression *goto_expression;
 			struct ptr_list *target_list;
 		};
-		struct /* goto_bb */ {
-			struct expression *bb_conditional;
-			struct symbol *bb_target;
-		};
-		struct /* multijmp */ {
-			struct expression *multi_from;
-			struct expression *multi_to;
-			struct symbol *multi_target;
-		};
 		struct /* asm */ {
 			struct expression *asm_string;
 			struct ptr_list *asm_outputs;

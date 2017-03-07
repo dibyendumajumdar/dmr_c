@@ -76,7 +76,8 @@ struct linearizer_state_t {
 
 #define MAX_VAL_HASH 64
 	struct ptr_list *prev[MAX_VAL_HASH];
-	int nr;
+	int nr;	/* pseudo number */
+	int bb_nr; /* basic block number */
 	char buffer[4096];
 	int n;
 	char pseudo_buffer[4][64];
@@ -141,9 +142,6 @@ struct instruction {
 		struct /* slice */ {
 			pseudo_t base;
 			unsigned from, len;
-		};
-		struct /* multijump */ {
-			int begin, end;
 		};
 		struct /* setval */ {
 			pseudo_t symbol;		/* Subtle: same offset as "src" !! */
@@ -266,7 +264,10 @@ struct basic_block {
 	struct ptr_list *children; /* basic_block destinations */
 	struct ptr_list *insns;	/* Linear list of instructions */
 	struct ptr_list *needs, *defines; /* pseudo lists */
-	void *priv;
+	union {
+		unsigned int nr;	/* unique id for label's names */
+		void *priv;
+	};
 };
 
 static inline int instruction_list_size(struct ptr_list *list)

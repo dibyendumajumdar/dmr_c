@@ -70,11 +70,13 @@ struct stream {
 };
 
 struct ident {
-	struct ident *next;     /* Hash chain of identifiers */
-	struct symbol *symbols; /* Pointer to semantic meaning list */
-	unsigned char len;      /* Length of identifier name */
-	unsigned char tainted : 1, reserved : 1, keyword : 1;
-	char name[]; /* Actual identifier */
+	struct ident *next;	/* Hash chain of identifiers */
+	struct symbol *symbols;	/* Pointer to semantic meaning list */
+	unsigned char len;	/* Length of identifier name */
+	unsigned char tainted:1,
+	              reserved:1,
+		      keyword:1;
+	char name[];		/* Actual identifier */
 };
 
 enum e_token_type {
@@ -171,17 +173,17 @@ struct string {
 
 /* will fit into 32 bits */
 struct argcount {
-	unsigned normal : 10;
-	unsigned quoted : 10;
-	unsigned str : 10;
-	unsigned vararg : 1;
+	unsigned normal:10;
+	unsigned quoted:10;
+	unsigned str:10;
+	unsigned vararg:1;
 };
 
 /*
-* This is a very common data structure, it should be kept
-* as small as humanly possible. Big (rare) types go as
-* pointers.
-*/
+ * This is a very common data structure, it should be kept
+ * as small as humanly possible. Big (rare) types go as
+ * pointers.
+ */
 struct token {
 	struct position pos;
 	struct token *next;

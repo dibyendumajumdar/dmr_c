@@ -46,14 +46,14 @@
 #define EOF (-1)
 #define BUFSIZE (8192)
 
-struct stream_t {
+typedef struct {
 	int fd, offset, size;
 	int pos, line, nr;
 	int newline, whitespace;
 	struct token **tokenlist;
 	struct token *token;
 	unsigned char *buffer;
-};
+} stream_t;
 
 const char *stream_name(struct dmr_C *C, int stream)
 {
@@ -64,7 +64,7 @@ const char *stream_name(struct dmr_C *C, int stream)
 	return C->T->input_streams[stream].name;
 }
 
-static struct position stream_pos(struct stream_t *stream)
+static struct position stream_pos(stream_t *stream)
 {
 	struct position pos;
 	pos.type = 0;
@@ -127,7 +127,7 @@ const char *show_string(struct dmr_C *C, const struct string *string)
 		return "<bad_string>";
 	ptr = C->T->string_buffer;
 	*ptr++ = '"';
-	for (i = 0; i < (int)string->length - 1; i++) {
+	for (i = 0; i < string->length - 1; i++) {
 		const char *p = string->data + i;
 		ptr = charstr(ptr, p[0], '"', p[1]);
 	}
@@ -136,8 +136,7 @@ const char *show_string(struct dmr_C *C, const struct string *string)
 	return C->T->string_buffer;
 }
 
-static const char *show_char(struct dmr_C *C, const char *s, size_t len,
-			     char prefix, char delim)
+static const char *show_char(struct dmr_C *C, const char *s, size_t len, char prefix, char delim)
 {
 	char *p = C->T->char_buffer;
 	if (prefix)
@@ -150,8 +149,7 @@ static const char *show_char(struct dmr_C *C, const char *s, size_t len,
 	return C->T->char_buffer;
 }
 
-static const char *quote_char(struct dmr_C *C, const char *s, size_t len,
-			      char prefix, char delim)
+static const char *quote_char(struct dmr_C *C, const char *s, size_t len, char prefix, char delim)
 {
 	size_t i;
 	char *p = C->T->quote_buffer;
@@ -320,16 +318,14 @@ int *hash_stream(const char *name)
 	return input_stream_hashes + hash;
 }
 
-int init_stream(struct dmr_C *C, const char *name, int fd,
-		const char **next_path)
+int init_stream(struct dmr_C *C, const char *name, int fd, const char **next_path)
 {
 	int stream = C->T->input_stream_nr, *hash;
 	struct stream *current;
 
 	if (stream >= C->T->input_streams_allocated) {
 		int newalloc = stream * 4 / 3 + 10;
-		C->T->input_streams = (struct stream *)realloc(
-		    C->T->input_streams, newalloc * sizeof(struct stream));
+		C->T->input_streams = (struct stream *)realloc(C->T->input_streams, newalloc * sizeof(struct stream));
 		if (!C->T->input_streams)
 			die(C, "Unable to allocate more streams space");
 		C->T->input_streams_allocated = newalloc;
@@ -348,7 +344,7 @@ int init_stream(struct dmr_C *C, const char *name, int fd,
 	return stream;
 }
 
-static struct token *alloc_token(struct dmr_C *C, struct stream_t *stream)
+static struct token *alloc_token(struct dmr_C *C, stream_t *stream)
 {
 	struct token *token = (struct token *)allocator_allocate(&C->token_allocator, 0);
 	token->pos = stream_pos(stream);
@@ -359,7 +355,7 @@ static struct token *alloc_token(struct dmr_C *C, struct stream_t *stream)
 *  Argh...  That was surprisingly messy - handling '\r' complicates the
 *  things a _lot_.
 */
-static int nextchar_slow(struct dmr_C *C, struct stream_t *stream)
+static int nextchar_slow(struct dmr_C *C, stream_t *stream)
 {
 	int offset = stream->offset;
 	int size = stream->size;
@@ -393,8 +389,7 @@ norm:
 	if (!had_backslash) {
 		switch (c) {
 		case '\t':
-			stream->pos +=
-			    C->T->tabstop - stream->pos % C->T->tabstop;
+			stream->pos += C->T->tabstop - stream->pos % C->T->tabstop;
 			break;
 		case '\n':
 			stream->line++;
@@ -437,8 +432,7 @@ got_eof:
 	if (stream->pos)
 		warning(C, stream_pos(stream), "no newline at end of file");
 	else if (spliced)
-		warning(C, stream_pos(stream),
-			"backslash-newline at end of file");
+		warning(C, stream_pos(stream), "backslash-newline at end of file");
 	return EOF;
 }
 
@@ -447,7 +441,7 @@ got_eof:
 *  Slow path (including the logics with line-splicing and EOF sanity
 *  checks) is in nextchar_slow().
 */
-static inline int nextchar(struct dmr_C *C, struct stream_t *stream)
+static inline int nextchar(struct dmr_C *C, stream_t *stream)
 {
 	int offset = stream->offset;
 
@@ -464,7 +458,7 @@ static inline int nextchar(struct dmr_C *C, struct stream_t *stream)
 
 struct token eof_token_entry;
 
-static struct token *mark_eof(struct dmr_C *C, struct stream_t *stream)
+static struct token *mark_eof(struct dmr_C *C, stream_t *stream)
 {
 	struct token *end;
 
@@ -481,7 +475,7 @@ static struct token *mark_eof(struct dmr_C *C, struct stream_t *stream)
 	return end;
 }
 
-static void add_token(struct stream_t *stream)
+static void add_token(stream_t *stream)
 {
 	struct token *token = stream->token;
 
@@ -491,7 +485,7 @@ static void add_token(struct stream_t *stream)
 	stream->tokenlist = &token->next;
 }
 
-static void drop_token(struct stream_t *stream)
+static void drop_token(stream_t *stream)
 {
 	stream->newline |= stream->token->pos.newline;
 	stream->whitespace |= stream->token->pos.whitespace;
@@ -506,7 +500,6 @@ enum {
 	Dot = 16,
 	ValidSecond = 32,
 	Quote = 64,
-	Escape = 128,
 };
 
 /*
@@ -521,8 +514,7 @@ enum {
 *	pp-number P sign
 *	pp-number .
 */
-static int get_one_number(struct dmr_C *C, int c, int next,
-			  struct stream_t *stream)
+static int get_one_number(struct dmr_C *C, int c, int next, stream_t *stream)
 {
 	struct token *token;
 	char *buffer = C->T->number_buffer;
@@ -568,7 +560,7 @@ static int get_one_number(struct dmr_C *C, int c, int next,
 	return next;
 }
 
-static int eat_string(struct dmr_C *C, int next, struct stream_t *stream,
+static int eat_string(struct dmr_C *C, int next, stream_t *stream,
 		      enum e_token_type type)
 {
 	char *buffer = C->T->string_buffer2;
@@ -602,9 +594,6 @@ static int eat_string(struct dmr_C *C, int next, struct stream_t *stream,
 			want_hex = 0;
 			escape = next == '\\';
 		} else {
-			if (!(C->T->cclass[next + 1] & Escape))
-				warning(C, stream_pos(stream),
-					"Unknown escape '%c'", next);
 			escape = 0;
 			want_hex = next == 'x';
 		}
@@ -614,8 +603,7 @@ static int eat_string(struct dmr_C *C, int next, struct stream_t *stream,
 			"\\x used with no following hex digits");
 	if (len > MAX_STRING) {
 		warning(C, stream_pos(stream),
-			"string too long (%d bytes, %d bytes max)", len,
-			MAX_STRING);
+			"string too long (%d bytes, %d bytes max)", len, MAX_STRING);
 		len = MAX_STRING;
 	}
 	if (delim == '\'' && len <= 4) {
@@ -642,7 +630,7 @@ static int eat_string(struct dmr_C *C, int next, struct stream_t *stream,
 	return nextchar(C, stream);
 }
 
-static int drop_stream_eoln(struct dmr_C *C, struct stream_t *stream)
+static int drop_stream_eoln(struct dmr_C *C, stream_t *stream)
 {
 	drop_token(stream);
 	for (;;) {
@@ -655,7 +643,7 @@ static int drop_stream_eoln(struct dmr_C *C, struct stream_t *stream)
 	}
 }
 
-static int drop_stream_comment(struct dmr_C *C, struct stream_t *stream)
+static int drop_stream_comment(struct dmr_C *C, stream_t *stream)
 {
 	int newline;
 	int next;
@@ -685,7 +673,7 @@ unsigned char combinations[][4] = COMBINATION_STRINGS;
 /* hash function for two-character punctuators - all give unique values */
 #define special_hash(c0, c1) (((c0*8+c1*2)+((c0*8+c1*2)>>5))&31)
 
-static int get_one_special(struct dmr_C *C, int c, struct stream_t *stream)
+static int get_one_special(struct dmr_C *C, int c, stream_t *stream)
 {
 	struct token *token;
 	int next, value, i;
@@ -749,8 +737,8 @@ void show_identifier_stats(struct dmr_C *C)
 	int i;
 	int distribution[100];
 
-	fprintf(stderr, "identifiers: %d hits, %d misses\n", C->T->ident_hit,
-		C->T->ident_miss);
+	fprintf(stderr, "identifiers: %d hits, %d misses\n", 
+		C->T->ident_hit, C->T->ident_miss);
 
 	for (i = 0; i < 100; i++)
 		distribution[i] = 0;
@@ -857,7 +845,7 @@ struct token *built_in_token(struct dmr_C *C, int stream, const char *name)
 	return token;
 }
 
-static int get_one_identifier(struct dmr_C *C, int c, struct stream_t *stream)
+static int get_one_identifier(struct dmr_C *C, int c, stream_t *stream)
 {
 	struct token *token;
 	struct ident *ident;
@@ -899,7 +887,7 @@ static int get_one_identifier(struct dmr_C *C, int c, struct stream_t *stream)
 	return next;
 }
 
-static int get_one_token(struct dmr_C *C, int c, struct stream_t *stream)
+static int get_one_token(struct dmr_C *C, int c, stream_t *stream)
 {
 	long kclass = C->T->cclass[c + 1];
 	if (kclass & Digit)
@@ -909,7 +897,7 @@ static int get_one_token(struct dmr_C *C, int c, struct stream_t *stream)
 	return get_one_special(C, c, stream);
 }
 
-static struct token *setup_stream(struct dmr_C *C, struct stream_t *stream,
+static struct token *setup_stream(struct dmr_C *C, stream_t *stream,
 				  int idx, int fd, unsigned char *buf,
 				  unsigned int buf_size)
 {
@@ -933,7 +921,7 @@ static struct token *setup_stream(struct dmr_C *C, struct stream_t *stream,
 	return begin;
 }
 
-static struct token *tokenize_stream(struct dmr_C *C, struct stream_t *stream)
+static struct token *tokenize_stream(struct dmr_C *C, stream_t *stream)
 {
 	int c = nextchar(C, stream);
 	while (c != EOF) {
@@ -954,7 +942,7 @@ static struct token *tokenize_stream(struct dmr_C *C, struct stream_t *stream)
 struct token *tokenize_buffer(struct dmr_C *C, unsigned char *buffer,
 			      unsigned long size, struct token **endtoken)
 {
-	struct stream_t stream;
+	stream_t stream;
 	struct token *begin;
 
 	begin = setup_stream(C, &stream, 0, -1, buffer, size);
@@ -966,7 +954,7 @@ struct token *tokenize(struct dmr_C *C, const char *name, int fd,
 		       struct token *endtoken, const char **next_path)
 {
 	struct token *begin, *end;
-	struct stream_t stream;
+	stream_t stream;
 	unsigned char buffer[BUFSIZE];
 	int idx;
 
@@ -994,14 +982,14 @@ void init_tokenizer(struct dmr_C *C)
 	C->T->special['\n'] = 1;
 	C->T->special['\\'] = 1;
 
-	C->T->cclass['0' + 1] = Digit | Hex | Escape; /* \<octal> */
-	C->T->cclass['1' + 1] = Digit | Hex | Escape; /* \<octal> */
-	C->T->cclass['2' + 1] = Digit | Hex | Escape; /* \<octal> */
-	C->T->cclass['3' + 1] = Digit | Hex | Escape; /* \<octal> */
-	C->T->cclass['4' + 1] = Digit | Hex | Escape; /* \<octal> */
-	C->T->cclass['5' + 1] = Digit | Hex | Escape; /* \<octal> */
-	C->T->cclass['6' + 1] = Digit | Hex | Escape; /* \<octal> */
-	C->T->cclass['7' + 1] = Digit | Hex | Escape; /* \<octal> */
+	C->T->cclass['0' + 1] = Digit | Hex; /* \<octal> */
+	C->T->cclass['1' + 1] = Digit | Hex; /* \<octal> */
+	C->T->cclass['2' + 1] = Digit | Hex; /* \<octal> */
+	C->T->cclass['3' + 1] = Digit | Hex; /* \<octal> */
+	C->T->cclass['4' + 1] = Digit | Hex; /* \<octal> */
+	C->T->cclass['5' + 1] = Digit | Hex; /* \<octal> */
+	C->T->cclass['6' + 1] = Digit | Hex; /* \<octal> */
+	C->T->cclass['7' + 1] = Digit | Hex; /* \<octal> */
 	C->T->cclass['8' + 1] = Digit | Hex;
 	C->T->cclass['9' + 1] = Digit | Hex;
 	C->T->cclass['A' + 1] = Letter | Hex;
@@ -1030,12 +1018,12 @@ void init_tokenizer(struct dmr_C *C)
 	C->T->cclass['X' + 1] = Letter;
 	C->T->cclass['Y' + 1] = Letter;
 	C->T->cclass['Z' + 1] = Letter;
-	C->T->cclass['a' + 1] = Letter | Hex | Escape; /* \a, \b */
-	C->T->cclass['b' + 1] = Letter | Hex | Escape; /* \a, \b */
+	C->T->cclass['a' + 1] = Letter | Hex; /* \a, \b */
+	C->T->cclass['b' + 1] = Letter | Hex; /* \a, \b */
 	C->T->cclass['c' + 1] = Letter | Hex;
 	C->T->cclass['d' + 1] = Letter | Hex;
-	C->T->cclass['e' + 1] = Letter | Hex | Exp | Escape; /* \e, e<exp> */
-	C->T->cclass['f' + 1] = Letter | Hex | Escape;       /* \f */
+	C->T->cclass['e' + 1] = Letter | Hex | Exp; /* \e, e<exp> */
+	C->T->cclass['f' + 1] = Letter | Hex;       /* \f */
 	C->T->cclass['g' + 1] = Letter;
 	C->T->cclass['h' + 1] = Letter;
 	C->T->cclass['i' + 1] = Letter;
@@ -1043,17 +1031,17 @@ void init_tokenizer(struct dmr_C *C)
 	C->T->cclass['k' + 1] = Letter;
 	C->T->cclass['l' + 1] = Letter;
 	C->T->cclass['m' + 1] = Letter;
-	C->T->cclass['n' + 1] = Letter | Escape; /* \n */
+	C->T->cclass['n' + 1] = Letter; /* \n */
 	C->T->cclass['o' + 1] = Letter;
 	C->T->cclass['p' + 1] = Letter | Exp; /* p<exp> */
 	C->T->cclass['q' + 1] = Letter;
-	C->T->cclass['r' + 1] = Letter | Escape; /* \r */
+	C->T->cclass['r' + 1] = Letter; /* \r */
 	C->T->cclass['s' + 1] = Letter;
-	C->T->cclass['t' + 1] = Letter | Escape; /* \t */
+	C->T->cclass['t' + 1] = Letter; /* \t */
 	C->T->cclass['u' + 1] = Letter;
-	C->T->cclass['v' + 1] = Letter | Escape; /* \v */
+	C->T->cclass['v' + 1] = Letter; /* \v */
 	C->T->cclass['w' + 1] = Letter;
-	C->T->cclass['x' + 1] = Letter | Escape; /* \x<hex> */
+	C->T->cclass['x' + 1] = Letter; /* \x<hex> */
 	C->T->cclass['y' + 1] = Letter;
 	C->T->cclass['z' + 1] = Letter;
 	C->T->cclass['_' + 1] = Letter;
@@ -1066,10 +1054,8 @@ void init_tokenizer(struct dmr_C *C)
 	C->T->cclass['&' + 1] = ValidSecond;
 	C->T->cclass['|' + 1] = ValidSecond;
 	C->T->cclass['#' + 1] = ValidSecond;
-	C->T->cclass['\'' + 1] = Quote | Escape;
-	C->T->cclass['"' + 1] = Quote | Escape;
-	C->T->cclass['\\' + 1] = Escape;
-	C->T->cclass['?' + 1] = Escape;
+	C->T->cclass['\'' + 1] = Quote;
+	C->T->cclass['"' + 1] = Quote;
 
 /*
 * note that we won't get false positives - special_hash(0,0) is 0 and

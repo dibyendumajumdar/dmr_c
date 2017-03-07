@@ -14,7 +14,7 @@
 #include <flow.h>
 
 static void phi_defines(struct dmr_C *C, struct instruction * phi_node, pseudo_t target,
-	void (*defines)(struct dmr_C *C, struct basic_block *, struct instruction *, pseudo_t))
+	void (*defines)(struct dmr_C *C, struct basic_block *, pseudo_t))
 {
 	pseudo_t phi;
 	FOR_EACH_PTR(phi_node->phi_list, phi) {
@@ -24,37 +24,33 @@ static void phi_defines(struct dmr_C *C, struct instruction * phi_node, pseudo_t
 		def = phi->def;
 		if (!def || !def->bb)
 			continue;
-		if (def->opcode == OP_PHI) {
-			phi_defines(C, def, target, defines);
-			continue;
-		}
-		defines(C, def->bb, phi->def, target);
+		defines(C, def->bb, target);
 	} END_FOR_EACH_PTR(phi);
 }
 
 static void asm_liveness(struct dmr_C *C, struct basic_block *bb, struct instruction *insn,
-	void (*def)(struct dmr_C *C, struct basic_block *, struct instruction *, pseudo_t),
-	void (*use)(struct dmr_C *C, struct basic_block *, struct instruction *, pseudo_t))
+	void (*def)(struct dmr_C *C, struct basic_block *, pseudo_t),
+	void (*use)(struct dmr_C *C, struct basic_block *, pseudo_t))
 {
 	struct asm_constraint *entry;
 
 	FOR_EACH_PTR(insn->asm_rules->inputs, entry) {
-		use(C, bb, insn, entry->pseudo);
+		use(C, bb, entry->pseudo);
 	} END_FOR_EACH_PTR(entry);
 		
 	FOR_EACH_PTR(insn->asm_rules->outputs, entry) {
-		def(C, bb, insn, entry->pseudo);
+		def(C, bb, entry->pseudo);
 	} END_FOR_EACH_PTR(entry);
 }
 
 static void track_instruction_usage(struct dmr_C *C, struct basic_block *bb, struct instruction *insn,
-	void (*def)(struct dmr_C *C, struct basic_block *, struct instruction *, pseudo_t),
-	void (*use)(struct dmr_C *C, struct basic_block *, struct instruction *, pseudo_t))
+	void (*def)(struct dmr_C *C, struct basic_block *, pseudo_t),
+	void (*use)(struct dmr_C *C, struct basic_block *, pseudo_t))
 {
 	pseudo_t pseudo;
 
-	#define USES(x)		use(C, bb, insn, insn->x)
-	#define DEFINES(x)	def(C, bb, insn, insn->x)
+	#define USES(x)		use(C, bb, insn->x)
+	#define DEFINES(x)	def(C, bb, insn->x)
 
 	switch (insn->opcode) {
 	case OP_RET:
@@ -151,7 +147,7 @@ static void track_instruction_usage(struct dmr_C *C, struct basic_block *bb, str
 		if (insn->target != VOID_PSEUDO(C))
 			DEFINES(target);
 		FOR_EACH_PTR(insn->arguments, pseudo) {
-			use(C, bb, insn, pseudo);
+			use(C, bb, pseudo);
 		} END_FOR_EACH_PTR(pseudo);
 		break;
 
@@ -207,7 +203,7 @@ static inline int trackable_pseudo(pseudo_t pseudo)
 	return pseudo && (pseudo->type == PSEUDO_REG || pseudo->type == PSEUDO_ARG);
 }
 
-static void insn_uses(struct dmr_C *C, struct basic_block *bb, struct instruction *insn, pseudo_t pseudo)
+static void insn_uses(struct dmr_C *C, struct basic_block *bb, pseudo_t pseudo)
 {
 	if (trackable_pseudo(pseudo)) {
 		struct instruction *def = pseudo->def;
@@ -216,7 +212,7 @@ static void insn_uses(struct dmr_C *C, struct basic_block *bb, struct instructio
 	}
 }
 
-static void insn_defines(struct dmr_C *C, struct basic_block *bb, struct instruction *insn, pseudo_t pseudo)
+static void insn_defines(struct dmr_C *C, struct basic_block *bb, pseudo_t pseudo)
 {
 	assert(trackable_pseudo(pseudo));
 	add_pseudo(&bb->defines, pseudo);
@@ -324,11 +320,11 @@ static void track_bb_phi_uses(struct dmr_C *C, struct basic_block *bb)
 	} END_FOR_EACH_PTR(insn);
 }
 
-static void death_def(struct dmr_C *C, struct basic_block *bb, struct instruction *insn, pseudo_t pseudo)
+static void death_def(struct dmr_C *C, struct basic_block *bb, pseudo_t pseudo)
 {
 }
 
-static void death_use(struct dmr_C *C, struct basic_block *bb, struct instruction *insn, pseudo_t pseudo)
+static void death_use(struct dmr_C *C, struct basic_block *bb, pseudo_t pseudo)
 {
 	if (trackable_pseudo(pseudo) && !pseudo_in_list(*C->L->live_list, pseudo)) {
 		add_pseudo(&C->L->dead_list, pseudo);

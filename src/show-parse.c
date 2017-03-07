@@ -498,14 +498,14 @@ static void show_switch_statement(struct dmr_C *C, struct statement *stmt)
 			} else
 				printf("    what?");
 		}
-		printf(": .L%p\n", sym->bb_target);
+		printf(": .L%p\n", sym);
 	} END_FOR_EACH_PTR(sym);
 	printf("# end case table\n");
 
 	show_statement(C, stmt->switch_statement);
 
 	if (stmt->switch_break->used)
-		printf(".L%p:\n", stmt->switch_break->bb_target);
+		printf(".L%p:\n", stmt->switch_break);
 }
 
 static void show_symbol_decl(struct dmr_C *C, struct ptr_list *syms)
@@ -652,7 +652,7 @@ int show_statement(struct dmr_C *C, struct statement *stmt)
 			int val = show_expression(C, stmt->goto_expression);
 			printf("\tgoto\t\t*v%d\n", val);
 		} else {
-			printf("\tgoto\t\t.L%p\n", stmt->goto_label->bb_target);
+			printf("\tgoto\t\t.L%p\n", stmt->goto_label);
 		}
 		break;
 	case STMT_ASM:

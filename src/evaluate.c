@@ -50,6 +50,7 @@
 static struct symbol *degenerate(struct dmr_C *C, struct expression *expr);
 static struct symbol *evaluate_symbol(struct dmr_C *C, struct symbol *sym);
 static void examine_fn_arguments(struct dmr_C *C, struct symbol *fn);
+static struct symbol *cast_to_bool(struct dmr_C *C, struct expression *expr);
 
 static struct symbol *evaluate_symbol_expression(struct dmr_C *C, struct expression *expr)
 {
@@ -121,7 +122,6 @@ static struct symbol *evaluate_string(struct dmr_C *C, struct expression *expr)
 /* type has come from classify_type and is an integer type */
 static inline struct symbol *integer_promotion(struct dmr_C *C, struct symbol *type)
 {
-	struct symbol *orig_type = type;
 	unsigned long mod =  type->ctype.modifiers;
 	int width = type->bit_size;
 
@@ -132,7 +132,6 @@ static inline struct symbol *integer_promotion(struct dmr_C *C, struct symbol *t
 	 */
 	if (type->type == SYM_BITFIELD) {
 		type = type->ctype.base_type;
-		orig_type = type;
 	}
 	mod = type->ctype.modifiers;
 	if (width < C->target->bits_in_int)
@@ -144,7 +143,7 @@ static inline struct symbol *integer_promotion(struct dmr_C *C, struct symbol *t
 			return &C->S->uint_ctype;
 		return &C->S->int_ctype;
 	}
-	return orig_type;
+	return type;
 }
 
 /*
@@ -331,6 +330,10 @@ static struct expression * cast_to(struct dmr_C *C, struct expression *old, stru
 	expr->ctype = type;
 	expr->cast_type = type;
 	expr->cast_expression = old;
+
+	if (is_bool_type(C->S, type))
+		cast_to_bool(C, expr);
+
 	return expr;
 }
 
@@ -732,7 +735,7 @@ const char *type_difference(struct dmr_C *C, struct ctype *c1, struct ctype *c2,
 			mod2 = t2->ctype.modifiers;
 			as2 = t2->ctype.as;
 
-			if (base1->variadic != base2->variadic)
+			if (t1->variadic != t2->variadic)
 				return "incompatible variadic arguments";
 			examine_fn_arguments(C, t1);
 			examine_fn_arguments(C, t2);
@@ -869,6 +872,11 @@ static struct symbol *evaluate_conditional(struct dmr_C *C, struct expression *e
 	if (ctype) {
 		if (is_safe_type(ctype))
 			warning(C, expr->pos, "testing a 'safe expression'");
+		if (!is_scalar_type(C->S, ctype)) {
+			sparse_error(C, expr->pos, "incorrect type in conditional");
+			info(C, expr->pos, "   got %s", show_typename(C, ctype));
+			ctype = NULL;
+		}
 	}
 
 	return ctype;
@@ -1262,7 +1270,7 @@ static int evaluate_assign_op(struct dmr_C *C, struct expression *expr)
 			if (!restricted_value(C, expr->right, t))
 				return 1;
 		} else if (!(sclass & TYPE_RESTRICT))
-			goto Cast;
+			goto usual;
 		/* source and target would better be identical restricted */
 		if (t == s)
 			return 1;
@@ -1285,6 +1293,9 @@ static int evaluate_assign_op(struct dmr_C *C, struct expression *expr)
 	expression_error(C, expr, "invalid assignment");
 	return 0;
 
+usual:
+	target = usual_conversions(C, op, expr->left, expr->right,
+				tclass, sclass, target, source);
 Cast:
 	expr->right = cast_to(C, expr->right, target);
 	return 1;
@@ -2174,7 +2185,7 @@ static struct symbol *evaluate_alignof(struct dmr_C *C, struct expression *expr)
 	return C->target->size_t_ctype;
 }
 
-static int evaluate_arguments(struct dmr_C *C, struct symbol *f, struct symbol *fn, struct ptr_list *head)
+static int evaluate_arguments(struct dmr_C *C, struct symbol *fn, struct ptr_list *head)
 {
 	struct expression *expr;
 	struct ptr_list *argument_types = fn->arguments;
@@ -2689,6 +2700,27 @@ static void evaluate_initializer(struct dmr_C *C, struct symbol *ctype, struct e
 		expression_error(C, *ep, "invalid initializer");
 }
 
+static struct symbol *cast_to_bool(struct dmr_C *C, struct expression *expr)
+{
+	struct expression *old = expr->cast_expression;
+	struct expression *zero;
+	struct symbol *otype;
+	int oclass = classify_type(C, degenerate(C, old), &otype);
+	struct symbol *ctype;
+
+	if (oclass & TYPE_COMPOUND)
+		return NULL;
+
+	zero = alloc_const_expression(C, expr->pos, 0);
+	expr->op = SPECIAL_NOTEQUAL;
+	ctype = usual_conversions(C, expr->op, old, zero,
+			oclass, TYPE_NUM, otype, zero->ctype);
+	expr->type = EXPR_COMPARE;
+	expr->left = cast_to(C, old, ctype);
+	expr->right = cast_to(C, zero, ctype);
+
+	return expr->ctype;
+}
 static struct symbol *evaluate_cast(struct dmr_C *C, struct expression *expr)
 {
 	struct expression *target = expr->cast_expression;
@@ -2817,6 +2849,10 @@ static struct symbol *evaluate_cast(struct dmr_C *C, struct expression *expr)
 			}
 		}
 	}
+
+	if (t1 == &C->S->bool_ctype)
+		cast_to_bool(C, expr);
+
 out:
 	return ctype;
 }
@@ -2888,7 +2924,7 @@ static struct symbol *evaluate_call(struct dmr_C *C, struct expression *expr)
 		if (!sym->op->args(C->S, expr))
 			return NULL;
 	} else {
-		if (!evaluate_arguments(C, sym, ctype, arglist))
+		if (!evaluate_arguments(C, ctype, arglist))
 			return NULL;
 		args = expression_list_size(expr->args);
 		fnargs = symbol_list_size(ctype->arguments);

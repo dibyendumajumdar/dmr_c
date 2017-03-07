@@ -33,7 +33,15 @@ extern int simplify_instruction(struct dmr_C *C, struct instruction *);
 
 extern void kill_bb(struct dmr_C *C, struct basic_block *);
 extern void kill_use(struct dmr_C *C, pseudo_t *usep);
-extern void kill_instruction(struct dmr_C *C, struct instruction *);
+extern void kill_insn(struct dmr_C *C, struct instruction *, int force);
+static inline void kill_instruction(struct dmr_C *C, struct instruction *insn)
+{
+	kill_insn(C, insn, 0);
+}
+static inline void kill_instruction_force(struct dmr_C *C, struct instruction *insn)
+{
+	kill_insn(C, insn, 1);
+}
 extern void kill_unreachable_bbs(struct dmr_C *C, struct entrypoint *ep);
 
 void check_access(struct dmr_C *C, struct instruction *insn);

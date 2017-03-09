@@ -210,6 +210,9 @@ target_link_libraries(linearize dmr_c)
 add_executable(showparse samples/show-parse.c)
 target_link_libraries(showparse dmr_c) 
 
+add_executable(showsymbols samples/show-symbols.c)
+target_link_libraries(showsymbols dmr_c) 
+
 add_executable(jittest asmjit-backend/main.cpp ${ASMJIT_SRC})
 target_link_libraries(jittest dmr_c) 
 

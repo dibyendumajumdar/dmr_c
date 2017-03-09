@@ -268,6 +268,7 @@ struct dmr_C *new_dmr_C()
 	C->Wold_initializer = 1;
 	C->Wone_bit_signed_bitfield = 1;
 	C->Wuninitialized = 1;
+	C->Wunknown_attribute = 1;
 	C->Wvla = 1;
 
 	C->max_warnings = 100;
@@ -309,11 +310,13 @@ struct dmr_C *new_dmr_C()
 	C->warnings[18].name = "return-void";		C->warnings[18].flag = &C->Wreturn_void;
 	C->warnings[19].name = "shadow";			C->warnings[19].flag = &C->Wshadow;
 	C->warnings[20].name = "sizeof-bool";		C->warnings[20].flag = &C->Wsizeof_bool;
-	C->warnings[21].name = "transparent-union"; C->warnings[21].flag = &C->Wtransparent_union;
-	C->warnings[22].name = "typesign";			C->warnings[22].flag = &C->Wtypesign;
-	C->warnings[23].name = "undef";				C->warnings[23].flag = &C->Wundef;
-	C->warnings[24].name = "uninitialized";		C->warnings[24].flag = &C->Wuninitialized;
-	C->warnings[25].name = "vla";				C->warnings[25].flag = &C->Wvla;
+	C->warnings[21].name = "tautological-compare"; C->warnings[21].flag = &C->Wtautological_compare;
+	C->warnings[22].name = "transparent-union"; C->warnings[22].flag = &C->Wtransparent_union;
+	C->warnings[23].name = "typesign";			C->warnings[23].flag = &C->Wtypesign;
+	C->warnings[24].name = "undef";				C->warnings[24].flag = &C->Wundef;
+	C->warnings[25].name = "uninitialized";		C->warnings[25].flag = &C->Wuninitialized;
+	C->warnings[26].name = "unknown-attribute"; C->warnings[26].flag = &C->Wunknown_attribute;
+	C->warnings[27].name = "vla";				C->warnings[27].flag = &C->Wvla;
 
 	C->debugs[0].name = "entry"; C->debugs[0].flag = &C->dbg_entry;
 	C->debugs[1].name = "dead";  C->debugs[1].flag = &C->dbg_dead;

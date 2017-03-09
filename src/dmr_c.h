@@ -152,14 +152,14 @@ struct dmr_C {
 	int Wreturn_void;
 	int Wshadow;
 	int Wsizeof_bool;
+	int Wtautological_compare;
 	int Wtransparent_union;
 	int Wtypesign;
 	int Wundef;
 	int Wuninitialized;
-	int Wvla;
 	int Wunknown_attribute;
-	int Wtautological_compare;
-	struct warning warnings[26];
+	int Wvla;
+	struct warning warnings[28];
 	struct warning debugs[2];
 
 #define CMDLINE_INCLUDE 20

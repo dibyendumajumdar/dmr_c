@@ -368,6 +368,7 @@ static LLVMValueRef pseudo_to_value(struct dmr_C *C, struct function *fn, struct
 				assert(0);
 			}
 		} else {
+			show_symbol(C, sym);
 			const char *name = show_ident(C, sym->ident);
 			LLVMTypeRef type = symbol_type(C, fn->module, sym);
 

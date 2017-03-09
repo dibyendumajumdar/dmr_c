@@ -368,18 +368,49 @@ static LLVMValueRef pseudo_to_value(struct dmr_C *C, struct function *fn, struct
 				assert(0);
 			}
 		} else {
-			show_symbol(C, sym);
 			const char *name = show_ident(C, sym->ident);
 			LLVMTypeRef type = symbol_type(C, fn->module, sym);
-
 			if (LLVMGetTypeKind(type) == LLVMFunctionTypeKind) {
 				result = LLVMGetNamedFunction(fn->module, name);
 				if (!result)
 					result = LLVMAddFunction(fn->module, name, type);
 			} else {
-				result = LLVMGetNamedGlobal(fn->module, name);
-				if (!result)
-					result = LLVMAddGlobal(fn->module, type, name);
+				char localname[256] = { 0 };
+				if (is_extern(sym) || is_toplevel(sym)) {
+					result = LLVMGetNamedGlobal(fn->module, name);
+					if (!result)
+						result = LLVMAddGlobal(fn->module, type, name);
+				}
+				else {
+					result = (LLVMValueRef)sym->priv;
+					if (!result) {
+						LLVMBasicBlockRef entrybbr;
+						LLVMValueRef ptr;
+
+						/* insert alloca into entry block */
+						entrybbr = LLVMGetEntryBasicBlock(fn->fn);
+						LLVMBuilderRef tmp_builder = LLVMCreateBuilder();
+						LLVMValueRef firstins = LLVMGetFirstInstruction(entrybbr);
+						if (firstins)
+							LLVMPositionBuilderBefore(tmp_builder, firstins);
+						else
+							LLVMPositionBuilderAtEnd(tmp_builder, entrybbr);
+
+						snprintf(localname, sizeof localname, "%s_%p", name, sym);
+//						if (is_array_type(sym)) {
+//							long long n = sym->type == SYM_NODE ? 
+//								get_expression_value(C, sym->ctype.base_type->array_size) : 
+//								get_expression_value(C, sym->array_size);
+//							LLVMValueRef size = LLVMConstInt(LLVMInt64Type(), n, 1);
+//							result = LLVMBuildArrayAlloca(fn->builder, type, size, localname);
+//						}
+//						else {
+							result = LLVMBuildAlloca(tmp_builder, type, localname);
+//						}
+						LLVMDisposeBuilder(tmp_builder);
+						sym->priv = result;
+					}
+				}
 			}
 		}
 		break;

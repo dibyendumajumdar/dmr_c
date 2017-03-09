@@ -203,6 +203,7 @@ struct symbol {
 		};
 	};
 	pseudo_t pseudo;
+	void *priv;
 };
 
 /* Modifiers */
@@ -442,6 +443,16 @@ static inline int is_extern_inline(struct symbol *sym)
 	return (sym->ctype.modifiers & MOD_EXTERN) &&
 		(sym->ctype.modifiers & MOD_INLINE) &&
 		is_function(sym->ctype.base_type);
+}
+
+static inline int is_toplevel(struct symbol *sym)
+{
+	return (sym->ctype.modifiers & MOD_TOPLEVEL);
+}
+
+static inline int is_extern(struct symbol *sym)
+{
+	return (sym->ctype.modifiers & MOD_EXTERN);
 }
 
 static inline int get_sym_type(struct symbol *type)

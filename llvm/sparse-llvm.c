@@ -384,30 +384,23 @@ static LLVMValueRef pseudo_to_value(struct dmr_C *C, struct function *fn, struct
 				else {
 					result = (LLVMValueRef)sym->priv;
 					if (!result) {
-						LLVMBasicBlockRef entrybbr;
-						LLVMValueRef ptr;
-
 						/* insert alloca into entry block */
-						entrybbr = LLVMGetEntryBasicBlock(fn->fn);
+						/* LLVM requires allocas to be at the start */
+						LLVMBasicBlockRef entrybbr = LLVMGetEntryBasicBlock(fn->fn);
+						/* Use temporary Builder as we don't want to mess the function builder */
 						LLVMBuilderRef tmp_builder = LLVMCreateBuilder();
 						LLVMValueRef firstins = LLVMGetFirstInstruction(entrybbr);
 						if (firstins)
 							LLVMPositionBuilderBefore(tmp_builder, firstins);
 						else
 							LLVMPositionBuilderAtEnd(tmp_builder, entrybbr);
-
+						/* Since multiple locals may have same name but in different scopes we 
+						   append the symbol's address to make each variable unique */
 						snprintf(localname, sizeof localname, "%s_%p", name, sym);
-//						if (is_array_type(sym)) {
-//							long long n = sym->type == SYM_NODE ? 
-//								get_expression_value(C, sym->ctype.base_type->array_size) : 
-//								get_expression_value(C, sym->array_size);
-//							LLVMValueRef size = LLVMConstInt(LLVMInt64Type(), n, 1);
-//							result = LLVMBuildArrayAlloca(fn->builder, type, size, localname);
-//						}
-//						else {
-							result = LLVMBuildAlloca(tmp_builder, type, localname);
-//						}
+						result = LLVMBuildAlloca(tmp_builder, type, localname);
 						LLVMDisposeBuilder(tmp_builder);
+						/* Store the alloca instruction for references to the value later on.
+						   TODO - should we convert this to pointer here? */
 						sym->priv = result;
 					}
 				}

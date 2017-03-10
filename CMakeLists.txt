@@ -201,7 +201,7 @@ add_library(dmr_c STATIC
 add_executable(runtests src/runtests.c)
 target_link_libraries(runtests dmr_c) 
 
-add_executable(sparse driver/sparse.c)
+add_executable(sparse sparse/sparse.c)
 target_link_libraries(sparse dmr_c) 
 
 add_executable(linearize samples/show-linearize.c)
@@ -217,6 +217,6 @@ add_executable(jittest asmjit-backend/main.cpp ${ASMJIT_SRC})
 target_link_libraries(jittest dmr_c) 
 
 if (LLVM_JIT)
-    add_executable(sparse-llvm llvm/sparse-llvm.c)
+    add_executable(sparse-llvm llvm-backend/sparse-llvm.c)
     target_link_libraries(sparse-llvm dmr_c ${LLVM_LIBS}) 
 endif()

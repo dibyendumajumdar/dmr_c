@@ -464,18 +464,7 @@ static inline int get_sym_type(struct symbol *type)
 	return type->type;
 }
 
-static inline struct symbol *get_nth1_arg(struct symbol *fn, int idx)
-{
-	/* TODO assert that symbol is a function */
-	struct ptr_list *args = fn->ctype.base_type->arguments;
-	struct symbol *arg;
-	int i = 0;
-	FOR_EACH_PTR(args, arg) {
-		if (++i == idx)
-			return arg;
-	} END_FOR_EACH_PTR(arg);
-	return NULL;
-}
+extern struct symbol *get_nth1_arg(struct symbol *fn, int idx);
 
 static inline struct symbol *lookup_keyword(struct ident *ident,
 					    enum namespace_type ns)

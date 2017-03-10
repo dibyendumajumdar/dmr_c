@@ -304,20 +304,21 @@ static void pseudo_name(struct dmr_C *C, pseudo_t pseudo, char *buf)
 	}
 }
 
-static LLVMValueRef pseudo_val_to_value(struct dmr_C *C, struct function *fn, LLVMTypeRef type, pseudo_t pseudo)
+static LLVMValueRef val_to_value(struct dmr_C *C, struct function *fn, unsigned long long val, struct symbol *ctype)
 {
-	assert(pseudo->type == PSEUDO_VAL);
-	LLVMValueRef result = NULL;
-	LLVMTypeRef iptr_type;
+	LLVMTypeRef dtype;
+	LLVMTypeRef itype;
+	LLVMValueRef result;
 
-	switch (LLVMGetTypeKind(type)) {
+	dtype = symbol_type(C, fn->module, ctype);
+	switch (LLVMGetTypeKind(dtype)) {
 	case LLVMPointerTypeKind:
-		iptr_type = LLVMIntType(C->target->bits_in_pointer);
-		result = LLVMConstInt(iptr_type, pseudo->value, 1);
-		result = LLVMConstIntToPtr(result, type);
+		itype = LLVMIntType(C->target->bits_in_pointer);
+		result = LLVMConstInt(itype, val, 1);
+		result = LLVMConstIntToPtr(result, dtype);
 		break;
 	case LLVMIntegerTypeKind:
-		result = LLVMConstInt(type, pseudo->value, 1);
+		result = LLVMConstInt(dtype, val, 1);
 		break;
 	default:
 		assert(0);
@@ -409,10 +410,7 @@ static LLVMValueRef pseudo_to_value(struct dmr_C *C, struct function *fn, struct
 		break;
 	}
 	case PSEUDO_VAL: {
-		// BUG - psuedo->value has no defined type I think, so we should
-		// use the actual value type
-		LLVMTypeRef type = insn_symbol_type(C, fn->module, insn);
-		result = pseudo_val_to_value(C, fn, type, pseudo);
+		result = val_to_value(C, fn, pseudo->value, insn->type);
 		break;
 	}
 	case PSEUDO_ARG: {
@@ -779,48 +777,26 @@ static void output_op_call(struct dmr_C *C, struct function *fn, struct instruct
 	struct pseudo *arg;
 	LLVMValueRef *args;
 
-	pseudo_t function_proto = insn->func;
-	int n_proto_args = 0;
-	struct symbol *proto_symbol = function_proto->sym->ctype.base_type;
-	struct symbol *proto_arg;
-	struct symbol **proto_args;
-
-	/* count function prototype args, get prototype argument symbols */
-	FOR_EACH_PTR(proto_symbol->arguments, proto_arg) {
-		n_proto_args++;
-	} END_FOR_EACH_PTR(proto_arg);
-
-	proto_args = alloca(n_proto_args * sizeof(struct symbol *));
-
-	int idx = 0;
-	FOR_EACH_PTR(proto_symbol->arguments, proto_arg) {
-		proto_args[idx++] = proto_arg->ctype.base_type;
-	} END_FOR_EACH_PTR(proto_arg);
-
 	n_arg = 0;
 	FOR_EACH_PTR(insn->arguments, arg) {
 		n_arg++;
 	} END_FOR_EACH_PTR(arg);
 
-	if (n_arg != n_proto_args) {
-		fprintf(stderr, "Mismatch in function arguments\n");
-		abort();
-	}
-
 	args = alloca(n_arg * sizeof(LLVMValueRef));
 
 	i = 0;
 	FOR_EACH_PTR(insn->arguments, arg) {
+		LLVMValueRef value;
 		if (arg->type == PSEUDO_VAL) {
-			/* as value pseudo do not have type information we use the 
-			   function prototype to decide types */
-			LLVMTypeRef type = symbol_type(C, fn->module, proto_args[i]);
-			args[i] = pseudo_val_to_value(C, fn, type, arg);
+			/* Value pseudos do not have type information. */
+			/* Use the function prototype to get the type. */
+			struct symbol *ctype = get_nth1_arg(insn->func->sym, i + 1);
+			value = val_to_value(C, fn, arg->value, ctype);
 		}
 		else {
-			args[i] = pseudo_to_value(C, fn, insn, arg);
+			value = pseudo_to_value(C, fn, insn, arg);
 		}
-		i++;
+		args[i++] = value;
 	} END_FOR_EACH_PTR(arg);
 
 	func = pseudo_to_value(C, fn, insn, insn->func);

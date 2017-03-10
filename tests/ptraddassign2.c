@@ -3,7 +3,7 @@
 
 static int *incr(int *p) {
 	int *tmp = p;
-	tmp += 5;
+	tmp += 4;
 	return tmp;
 }
 

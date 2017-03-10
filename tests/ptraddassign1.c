@@ -3,7 +3,7 @@
 
 static char *incr(char *p) {
 	char *tmp = p;
-	tmp += 5;
+	tmp += 4;
 	return tmp;
 }
 

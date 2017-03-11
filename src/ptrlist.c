@@ -90,6 +90,21 @@ Lretry:
   return NULL;
 }
 
+void *ptrlist_nth_entry(struct ptr_list *list, unsigned int idx)
+{
+	struct ptr_list *head = list;
+	if (!head)
+		return NULL;
+	do {
+		unsigned int nr = list->nr_;
+		if (idx < nr)
+			return list->list_[idx];
+		else
+			idx -= nr;
+	} while ((list = list->next_) != head);
+	return NULL;
+}
+
 #if 0
 void *ptrlist_iter_prev(struct ptr_list_iter *self) {
 	if (self->__head == NULL)

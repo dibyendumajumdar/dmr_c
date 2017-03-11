@@ -50,6 +50,7 @@ struct ptr_list_iter {
 /* The ptr list */
 extern int ptrlist_size(const struct ptr_list *self);
 extern void **ptrlist_add(struct ptr_list **self, void *ptr);
+extern void *ptrlist_nth_entry(struct ptr_list *list, unsigned int idx);
 extern void *ptrlist_first(struct ptr_list *list);
 extern void *ptrlist_last(struct ptr_list *list);
 extern int ptrlist_linearize(struct ptr_list *head, void **arr, int max);

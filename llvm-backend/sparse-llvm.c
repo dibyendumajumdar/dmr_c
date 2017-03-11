@@ -299,6 +299,9 @@ static void pseudo_name(struct dmr_C *C, pseudo_t pseudo, char *buf)
 	case PSEUDO_PHI:
 		snprintf(buf, MAX_PSEUDO_NAME, "PHI%d", pseudo->nr);
 		break;
+	case PSEUDO_VOID:
+		buf[0] = '\0';
+		break;
 	default:
 		assert(0);
 	}
@@ -310,6 +313,7 @@ static LLVMValueRef val_to_value(struct dmr_C *C, struct function *fn, unsigned 
 	LLVMTypeRef itype;
 	LLVMValueRef result;
 
+	assert(ctype);
 	dtype = symbol_type(C, fn->module, ctype);
 	switch (LLVMGetTypeKind(dtype)) {
 	case LLVMPointerTypeKind:
@@ -369,18 +373,23 @@ static LLVMValueRef pseudo_to_value(struct dmr_C *C, struct function *fn, struct
 				assert(0);
 			}
 		} else {
+			result = (LLVMValueRef)sym->priv;
+			if (result)
+				return result;
 			const char *name = show_ident(C, sym->ident);
 			LLVMTypeRef type = symbol_type(C, fn->module, sym);
 			if (LLVMGetTypeKind(type) == LLVMFunctionTypeKind) {
 				result = LLVMGetNamedFunction(fn->module, name);
 				if (!result)
 					result = LLVMAddFunction(fn->module, name, type);
+				sym->priv = result;
 			} else {
 				char localname[256] = { 0 };
 				if (is_extern(sym) || is_toplevel(sym)) {
 					result = LLVMGetNamedGlobal(fn->module, name);
 					if (!result)
 						result = LLVMAddGlobal(fn->module, type, name);
+					sym->priv = result;
 				}
 				else {
 					result = (LLVMValueRef)sym->priv;
@@ -499,17 +508,12 @@ static void output_op_binary(struct dmr_C *C, struct function *fn, struct instru
 	case OP_ADD:
 		if (symbol_is_fp_type(C, insn->type))
 			target = LLVMBuildFAdd(fn->builder, lhs, rhs, target_name);
-		else {
-			if (LLVMGetTypeKind(LLVMTypeOf(lhs)) == LLVMPointerTypeKind) {
-				target = calc_gep(C, fn->builder, lhs, rhs);
-			}
-			else if (LLVMGetTypeKind(LLVMTypeOf(rhs)) == LLVMPointerTypeKind) {
-				target = calc_gep(C, fn->builder, rhs, lhs);
-			}
-			else {
-				target = LLVMBuildAdd(fn->builder, lhs, rhs, target_name);
-			}
-		}
+		else if (LLVMGetTypeKind(LLVMTypeOf(lhs)) == LLVMPointerTypeKind)
+			target = calc_gep(C, fn->builder, lhs, rhs);
+		else if (LLVMGetTypeKind(LLVMTypeOf(rhs)) == LLVMPointerTypeKind) 
+			target = calc_gep(C, fn->builder, rhs, lhs);
+		else 
+			target = LLVMBuildAdd(fn->builder, lhs, rhs, target_name);
 		break;
 	case OP_SUB:
 		if (symbol_is_fp_type(C, insn->type))
@@ -770,28 +774,35 @@ static void output_op_switch(struct dmr_C *C, struct function *fn, struct instru
 	insn->target->priv = target;
 }
 
+static struct symbol *get_function_basetype(struct symbol *type)
+{
+	if (type->type == SYM_PTR)
+		type = type->ctype.base_type;
+	assert(type->type == SYM_FN);
+	return type;
+}
+
 static void output_op_call(struct dmr_C *C, struct function *fn, struct instruction *insn)
 {
 	LLVMValueRef target, func;
 	int n_arg = 0, i;
 	struct pseudo *arg;
 	LLVMValueRef *args;
+	char name[64];
 
-	n_arg = 0;
-	FOR_EACH_PTR(insn->arguments, arg) {
-		n_arg++;
-	} END_FOR_EACH_PTR(arg);
-
+	n_arg = ptrlist_size(insn->arguments);
 	args = alloca(n_arg * sizeof(LLVMValueRef));
 
 	i = 0;
 	FOR_EACH_PTR(insn->arguments, arg) {
+		struct symbol *ftype = get_function_basetype(insn->fntype);
 		LLVMValueRef value;
 		if (arg->type == PSEUDO_VAL) {
 			/* Value pseudos do not have type information. */
 			/* Use the function prototype to get the type. */
-			struct symbol *ctype = get_nth1_arg(insn->func->sym, i + 1);
-			value = val_to_value(C, fn, arg->value, ctype);
+			struct symbol *atype;
+			atype = get_nth_symbol(ftype->arguments, i);
+			value = val_to_value(C, fn, arg->value, atype);
 		}
 		else {
 			value = pseudo_to_value(C, fn, insn, arg);
@@ -800,6 +811,7 @@ static void output_op_call(struct dmr_C *C, struct function *fn, struct instruct
 	} END_FOR_EACH_PTR(arg);
 
 	func = pseudo_to_value(C, fn, insn, insn->func);
+	pseudo_name(C, insn->target, name);
 	target = LLVMBuildCall(fn->builder, func, args, n_arg, "");
 
 	insn->target->priv = target;
@@ -948,9 +960,18 @@ static void output_insn(struct dmr_C *C, struct function *fn, struct instruction
 	case OP_BR:
 		output_op_br(C, fn, insn);
 		break;
-	case OP_SYMADDR:
-		assert(0);
+	case OP_SYMADDR: {
+		LLVMValueRef res, src;
+		LLVMTypeRef dtype;
+		char name[64];
+			
+		src = pseudo_to_value(C, fn, insn, insn->symbol);
+		dtype = symbol_type(C, fn->module, insn->type);
+		pseudo_name(C, insn->target, name);
+		res = LLVMBuildBitCast(fn->builder, src, dtype, name);
+		insn->target->priv = res;
 		break;
+	}
 	case OP_SETVAL:
 		assert(0);
 		break;
@@ -1081,11 +1102,9 @@ static void output_insn(struct dmr_C *C, struct function *fn, struct instruction
 	}
 }
 
-static void output_bb(struct dmr_C *C, struct function *fn, struct basic_block *bb, unsigned long generation)
+static void output_bb(struct dmr_C *C, struct function *fn, struct basic_block *bb)
 {
 	struct instruction *insn;
-
-	bb->generation = generation;
 
 	FOR_EACH_PTR(bb->insns, insn) {
 		if (!insn->bb)
@@ -1100,7 +1119,6 @@ static void output_bb(struct dmr_C *C, struct function *fn, struct basic_block *
 
 static void output_fn(struct dmr_C *C, LLVMModuleRef module, struct entrypoint *ep)
 {
-	unsigned long generation = ++C->L->bb_generation;
 	struct symbol *sym = ep->name;
 	struct symbol *base_type = sym->ctype.base_type;
 	struct symbol *ret_type = sym->ctype.base_type->ctype.base_type;
@@ -1132,11 +1150,16 @@ static void output_fn(struct dmr_C *C, LLVMModuleRef module, struct entrypoint *
 	function.builder = LLVMCreateBuilder();
 
 	static int nr_bb;
-
+	/* give a name to each argument */
+	for (int i = 0; i < nr_args; i++) {
+		char name[MAX_PSEUDO_NAME];
+		LLVMValueRef arg;
+		arg = LLVMGetParam(function.fn, i);
+		snprintf(name, sizeof(name), "ARG%d", i + 1);
+		LLVMSetValueName(arg, name);		
+	}
+	/* create the BBs */
 	FOR_EACH_PTR(ep->bbs, bb) {
-		if (bb->generation == generation)
-			continue;
-
 		LLVMBasicBlockRef bbr;
 		char bbname[32];
 		struct instruction *insn;
@@ -1167,12 +1190,9 @@ static void output_fn(struct dmr_C *C, LLVMModuleRef module, struct entrypoint *
 	END_FOR_EACH_PTR(bb);
 
 	FOR_EACH_PTR(ep->bbs, bb) {
-		if (bb->generation == generation)
-			continue;
-
 		LLVMPositionBuilderAtEnd(function.builder, bb->priv);
 
-		output_bb(C, &function, bb, generation);
+		output_bb(C, &function, bb);
 	}
 	END_FOR_EACH_PTR(bb);
 }
@@ -1209,7 +1229,6 @@ static LLVMValueRef output_data(struct dmr_C *C, LLVMModuleRef module, struct sy
 		}
 	} else {
 		LLVMTypeRef type = symbol_type(C, module, sym);
-
 		initial_value = LLVMConstNull(type);
 	}
 

@@ -812,14 +812,14 @@ pseudo_t value_pseudo(struct dmr_C *C, long long val)
 	return pseudo;
 }
 
-static pseudo_t argument_pseudo(struct dmr_C *C, struct entrypoint *ep, int nr)
+static pseudo_t argument_pseudo(struct dmr_C *C, struct entrypoint *ep, int nr, struct symbol *arg)
 {
 	pseudo_t pseudo = (pseudo_t)allocator_allocate(&C->L->pseudo_allocator, 0);
 	struct instruction *entry = ep->entry;
 
 	pseudo->type = PSEUDO_ARG;
 	pseudo->nr = nr;
-	pseudo->def = entry;
+	pseudo->sym = arg;
 	add_pseudo(&entry->arg_list, pseudo);
 
 	/* Argument pseudos have neither usage nor def */
@@ -993,9 +993,10 @@ static pseudo_t add_setval(struct dmr_C *C, struct entrypoint *ep, struct symbol
 	return target;
 }
 
-static pseudo_t add_symbol_address(struct dmr_C *C, struct entrypoint *ep, struct symbol *sym)
+static pseudo_t add_symbol_address(struct dmr_C *C, struct entrypoint *ep, struct expression *expr)
 {
-	struct instruction *insn = alloc_instruction(C, OP_SYMADDR, C->target->bits_in_pointer);
+	struct instruction *insn = alloc_typed_instruction(C, OP_SYMADDR, expr->ctype);
+	struct symbol *sym = expr->symbol;
 	pseudo_t target = alloc_pseudo(C, insn);
 
 	insn->target = target;
@@ -1387,7 +1388,6 @@ static pseudo_t linearize_conditional(struct dmr_C *C, struct entrypoint *ep, st
 	pseudo_t src1, src2;
 	pseudo_t phi1, phi2;
 	struct basic_block *bb_true, *bb_false, *merge;
-	int size = type_size(expr->ctype);
 
 	if (!cond || !expr_true || !expr_false || !ep->active)
 		return VOID_PSEUDO(C);
@@ -1552,7 +1552,7 @@ static void linearize_argument(struct dmr_C *C, struct entrypoint *ep, struct sy
 	ad.source_type = arg;
 	ad.result_type = arg;
 	ad.address = symbol_pseudo(C, ep, arg);
-	linearize_store_gen(C, ep, argument_pseudo(C, ep, nr), &ad);
+	linearize_store_gen(C, ep, argument_pseudo(C, ep, nr, arg), &ad);
 	finish_address_gen(ep, &ad);
 }
 
@@ -1565,7 +1565,7 @@ pseudo_t linearize_expression(struct dmr_C *C, struct entrypoint *ep, struct exp
 	switch (expr->type) {
 	case EXPR_SYMBOL:
 		linearize_one_symbol(C, ep, expr->symbol);
-		return add_symbol_address(C, ep, expr->symbol);
+		return add_symbol_address(C, ep, expr);
 
 	case EXPR_VALUE:
 		return value_pseudo(C, expr->value);

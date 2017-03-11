@@ -464,7 +464,10 @@ static inline int get_sym_type(struct symbol *type)
 	return type->type;
 }
 
-extern struct symbol *get_nth1_arg(struct symbol *fn, int idx);
+static inline struct symbol *get_nth_symbol(struct ptr_list *list, unsigned int idx)
+{
+	return (struct symbol *)ptrlist_nth_entry(list, idx);
+}
 
 static inline struct symbol *lookup_keyword(struct ident *ident,
 					    enum namespace_type ns)

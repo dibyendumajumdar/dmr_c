@@ -1230,7 +1230,9 @@ int simplify_instruction(struct dmr_C *C, struct instruction *insn)
 	case OP_SYMADDR:
 		if (dead_insn(C, insn, NULL, NULL, NULL))
 			return REPEAT_CSE | REPEAT_SYMBOL_CLEANUP;
-		return replace_with_pseudo(C, insn, insn->symbol);
+		// return replace_with_pseudo(C, insn, insn->symbol);
+		// Keep SYMADDR (see patch from Luc)
+		return 0;
 	case OP_CAST:
 	case OP_SCAST:
 	case OP_FPCAST:

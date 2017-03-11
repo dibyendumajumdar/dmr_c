@@ -792,20 +792,21 @@ static pseudo_t symbol_pseudo(struct dmr_C *C, struct entrypoint *ep, struct sym
 	return pseudo;
 }
 
-pseudo_t value_pseudo(struct dmr_C *C, long long val)
+pseudo_t value_pseudo(struct dmr_C *C, long long val, struct symbol *type)
 {
 	int hash = val & (MAX_VAL_HASH-1);
 	struct ptr_list **list = C->L->prev + hash;
 	pseudo_t pseudo;
 
 	FOR_EACH_PTR(*list, pseudo) {
-		if (pseudo->value == val)
+		if (pseudo->value == val && pseudo->sym == type)
 			return pseudo;
 	} END_FOR_EACH_PTR(pseudo);
 
 	pseudo = (pseudo_t)allocator_allocate(&C->L->pseudo_allocator, 0);
 	pseudo->type = PSEUDO_VAL;
 	pseudo->value = val;
+	pseudo->sym = type;
 	add_pseudo(list, pseudo);
 
 	/* Value pseudos have neither nr, usage nor def */
@@ -962,10 +963,10 @@ static pseudo_t linearize_store_gen(struct dmr_C *C, struct entrypoint *ep,
 		unsigned long long mask = (1ULL << ad->bit_size)-1;
 
 		if (shift) {
-			store = add_binary_op(C, ep, ad->source_type, OP_SHL, value, value_pseudo(C, shift));
+			store = add_binary_op(C, ep, ad->source_type, OP_SHL, value, value_pseudo(C, shift, &C->S->int_ctype));
 			mask <<= shift;
 		}
-		orig = add_binary_op(C, ep, ad->source_type, OP_AND, orig, value_pseudo(C, ~mask));
+		orig = add_binary_op(C, ep, ad->source_type, OP_AND, orig, value_pseudo(C, ~mask, ad->source_type));
 		store = add_binary_op(C, ep, ad->source_type, OP_OR, orig, store);
 	}
 	add_store(C, ep, ad, store);
@@ -1010,7 +1011,7 @@ static pseudo_t linearize_load_gen(struct dmr_C *C, struct entrypoint *ep, struc
 	pseudo_t new = add_load(C, ep, ad);
 
 	if (ad->bit_offset) {
-		pseudo_t shift = value_pseudo(C, ad->bit_offset);
+		pseudo_t shift = value_pseudo(C, ad->bit_offset, &C->S->int_ctype);
 		pseudo_t newval = add_binary_op(C, ep, ad->source_type, OP_LSR, new, shift);
 		new = newval;
 	}
@@ -1041,7 +1042,7 @@ static pseudo_t linearize_inc_dec(struct dmr_C *C, struct entrypoint *ep, struct
 		return VOID_PSEUDO(C);
 
 	old = linearize_load_gen(C, ep, &ad);
-	one = value_pseudo(C, expr->op_value);
+	one = value_pseudo(C, expr->op_value, expr->ctype);
 	new = add_binary_op(C, ep, expr->ctype, op, old, one);
 	linearize_store_gen(C, ep, new, &ad);
 	finish_address_gen(ep, &ad);
@@ -1080,7 +1081,7 @@ static pseudo_t linearize_regular_preop(struct dmr_C *C, struct entrypoint *ep, 
 	case '+':
 		return pre;
 	case '!': {
-		pseudo_t zero = value_pseudo(C, 0);
+		pseudo_t zero = value_pseudo(C, 0, expr->unop->ctype);
 		return add_binary_op(C, ep, expr->ctype, OP_SET_EQ, pre, zero);
 	}
 	case '~':
@@ -1130,8 +1131,7 @@ static struct instruction *alloc_cast_instruction(struct dmr_C *C, struct symbol
 		base = base->ctype.base_type;
 		if (base != &C->S->void_ctype)
 			opcode = OP_PTRCAST;
-	}
-	if (base->ctype.base_type == &C->S->fp_type)
+	} else if (base->ctype.base_type == &C->S->fp_type)
 		opcode = OP_FPCAST;
 	return alloc_typed_instruction(C, opcode, ctype);
 }
@@ -1568,7 +1568,7 @@ pseudo_t linearize_expression(struct dmr_C *C, struct entrypoint *ep, struct exp
 		return add_symbol_address(C, ep, expr);
 
 	case EXPR_VALUE:
-		return value_pseudo(C, expr->value);
+		return value_pseudo(C, expr->value, expr->ctype);
 
 	case EXPR_STRING: case EXPR_FVALUE: case EXPR_LABEL:
 		return add_setval(C, ep, expr->ctype, expr);

@@ -253,7 +253,8 @@ void convert_instruction_target(struct dmr_C *C, struct instruction *insn, pseud
 			*pu->userp = src;
 		}
 	} END_FOR_EACH_PTR(pu);
-	concat_user_list(target->users, &src->users);
+	if (has_use_list(src))
+		concat_user_list(target->users, &src->users);
 	target->users = NULL;
 }
 
@@ -471,7 +472,7 @@ found:
 		if (!local)
 			return 0;
 		check_access(C, insn);
-		convert_load_instruction(C, insn, value_pseudo(C, 0));
+		convert_load_instruction(C, insn, value_pseudo(C, 0, insn->type));
 		return 1;
 	}
 

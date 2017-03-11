@@ -419,7 +419,7 @@ static LLVMValueRef pseudo_to_value(struct dmr_C *C, struct function *fn, struct
 		break;
 	}
 	case PSEUDO_VAL: {
-		result = val_to_value(C, fn, pseudo->value, insn->type);
+		result = val_to_value(C, fn, pseudo->value, pseudo->sym);
 		break;
 	}
 	case PSEUDO_ARG: {
@@ -608,32 +608,17 @@ static void output_op_binary(struct dmr_C *C, struct function *fn, struct instru
 	insn->target->priv = target;
 }
 
-static struct symbol *pseudo_get_type(pseudo_t pseudo) {
-	switch (pseudo->type) {
-	case PSEUDO_SYM:
-	case PSEUDO_ARG:
-		return pseudo->sym;
-	case PSEUDO_PHI:
-	case PSEUDO_REG:
-		return pseudo->def->type;
-	default:
-		assert(0);
-		return NULL;
-	}
-}
-
 static void output_op_compare(struct dmr_C *C, struct function *fn, struct instruction *insn)
 {
 	LLVMValueRef lhs, rhs, target;
 	char target_name[64];
 
 	if (insn->src1->type == PSEUDO_VAL)
-		lhs = val_to_value(C, fn, insn->src1->value, pseudo_get_type(insn->src2));
+		lhs = val_to_value(C, fn, insn->src1->value, pseudo_type(C, insn->src2));
 	else
 		lhs = pseudo_to_value(C, fn, insn, insn->src1);
 	if (insn->src2->type == PSEUDO_VAL)
-		//rhs = LLVMConstInt(LLVMTypeOf(lhs), insn->src2->value, 1);
-		rhs = val_to_value(C, fn, insn->src2->value, pseudo_get_type(insn->src1));
+		rhs = val_to_value(C, fn, insn->src2->value, pseudo_type(C, insn->src1));
 	else
 		rhs = pseudo_to_value(C, fn, insn, insn->src2);
 
@@ -823,7 +808,10 @@ static void output_op_call(struct dmr_C *C, struct function *fn, struct instruct
 			atype = get_nth_symbol(ftype->arguments, i);
 			/* Value pseudos do not have type information. */
 			/* Use the function prototype to get the type. */
-			value = val_to_value(C, fn, arg->value, atype);
+			if (atype)
+				value = val_to_value(C, fn, arg->value, atype);
+			else
+				value = val_to_value(C, fn, arg->value, arg->sym);
 		}
 		else {
 			value = pseudo_to_value(C, fn, insn, arg);

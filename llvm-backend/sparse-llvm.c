@@ -604,7 +604,6 @@ static void output_op_binary(struct dmr_C *C, struct function *fn, struct instru
 		assert(0);
 		break;
 	}
-
 	insn->target->priv = target;
 }
 
@@ -777,7 +776,7 @@ static void output_op_switch(struct dmr_C *C, struct function *fn, struct instru
 		}
 	} END_FOR_EACH_PTR(jmp);
 
-	insn->target->priv = target;
+	//insn->target->priv = target;
 }
 
 static struct symbol *get_function_basetype(struct symbol *type)

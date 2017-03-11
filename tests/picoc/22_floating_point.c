@@ -4,7 +4,8 @@ extern double sin(double);
 int main(void)
 {
 	// variables
-	float a = 12.34 + 56.78;
+	float a;
+	a = 12.34 + 56.78;
 	printf("%f\n", a);
 
 	// infix operators

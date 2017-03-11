@@ -1,26 +1,28 @@
 # dmr_c
 
-dmr_c is a project that aims to create a JIT compiler for C. Is is being created by reworking the Linux Kernel [Sparse](https://sparse.wiki.kernel.org/index.php/Main_Page) library originally written by Linus Torvalds. 
+The aim of the dmr_c project is to create a JIT compiler for C. Is is based on the the Linux [Sparse](https://sparse.wiki.kernel.org/index.php/Main_Page) library originally written by Linus Torvalds. 
 
 The name dmr_c is a homage to Dennis M Ritchie.
 
 ## Overview
 
-The code base is a fork of Sparse v0.5.0. The main changes are:
+The code base is a fork of Sparse. The main changes are:
 
 * Removal of global state (see issues log for outstanding issues)
 * Ensure the library can be built on Windows using MSVC
 * Modify the code to be more C++ friendly
 * Convert the LLVM backend to a JIT compiler
+* Add other backends - possibly based on nanojit and/or asmjit.
 
 ## Current status
 
-* We are now able to build the sparse executable and library on Windows, Linux and Mac OSX, but not all tests pass yet.
+* We are now able to build on Windows, Linux and Mac OSX.
 * Global state has been removed except for the way ptr_list nodes are allocated.
+* The LLVM backend has had many fixes but it still doesn't work correctly to be able to compile real programs.
 
 ## Build instructions
 
-The build is pretty standard CMake build. There are no external dependencies. For example:
+The build is pretty standard CMake build. There are no external dependencies except LLVM. To build without LLVM backend just try:
 
 ```
 mkdir build
@@ -29,7 +31,17 @@ cmake ..
 ```
 This will generate appropriate build files that can then be used to build the project.
 
-See instructions below on adding LLVM integration.
+To build with LLVM support, additional arguments are needed. Following instructions are for LLVM 3.9 on Windows 10. 
+
+```
+mkdir build
+cd build
+cmake -DLLVM_JIT=ON -DLLVM_DIR=$LLVM_INSTALL_DIR\lib\cmake\llvm -G "Visual Studio 15 2017 Win64" ..
+```
+
+Here $LLVM_INSTALL_DIR refers to the path where LLVM is installed. 
+
+Build on Linux and Mac OSX is similar.
 
 ## Using dmr_c
 
@@ -86,24 +98,17 @@ There is no driver as yet to pass various arguments but the underlying pre-proce
 
 To follow.
 
-## Driver program
-
-To follow.
-
 ## LLVM backend
 
-The Sparse project comes with an LLVM backend called sparse-llvm. This is included in dmr_C. Following instructions are
-for LLVM 3.9 on Windows 10. 
+The Sparse project comes with an LLVM backend called sparse-llvm. This is included in dmr_C. Unfortunately the LLVM backend is not usable at present as it has some bugs. It will take a while to fix the issues because the backend - this is work in progress.
 
-```
-cmake -DLLVM_JIT=ON  -DLLVM_DIR=$LLVM_INSTALL_DIR\lib\cmake\llvm -G "Visual Studio 14 Win64" ..
-```
+## Samples 
 
-Here $LLVM_INSTALL_DIR refers to the path where LLVM is installed. 
+The build generates a few example command line tools that use the Sparse library:
 
-Unfortunately the LLVM backend is not usable at present as it has some limitations. I am working on improving the backend but it
-will take a while to fix the issues because the backend works on linearized (SSA) output generated from the linearizer, so I need
-to understand this layer first.
+* show-parse - this tool outputs the parse tree as built by Sparse
+* show-symbols - this tool outputs the global / static symbols in C code - the output is produced in XML format
+* linearizer - this tool outputs the linearized output from Sparse
 
 ## Links
 

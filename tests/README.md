@@ -1,13 +1,14 @@
 # Tests for Sparse-LLVM backend
 
-The tests in this folder are for validating the LLVM backend for Sparse. Each test can be compiled and run - the test should end normally with return code 0 on success.
+The tests in the sub folders are for validating the LLVM backend for Sparse. Each test can be compiled and run
 
-Following steps show how to test one program.
+The tests in the picoc folder are adapted from the picoc project.
 
-```
-sparse-llvm funcptr1.c 
-lli out.bc
-echo $?
-```
+## Running tests
 
+Sorry there is no driver yet.
+All tests can be compiled and run individually.
+There are two types of tests:
 
+* The tests in set1 folder return non-zero on failure.
+* The tests in picoc and avltree generate output which must be compared with the expected output.

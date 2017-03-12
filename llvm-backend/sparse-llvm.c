@@ -337,6 +337,10 @@ static LLVMValueRef pseudo_to_value(struct dmr_C *C, struct function *fn, struct
 	switch (pseudo->type) {
 	case PSEUDO_REG:
 		result = pseudo->priv;
+		if (!result) {
+			printf("insn %s\n", show_instruction(C, insn));
+			printf("pseudo %s\n", show_pseudo(C, pseudo));
+		}
 		break;
 	case PSEUDO_SYM: {
 		struct symbol *sym = pseudo->sym;

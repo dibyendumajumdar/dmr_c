@@ -315,7 +315,8 @@ static LLVMValueRef val_to_value(struct dmr_C *C, struct function *fn, unsigned 
 
 	assert(ctype);
 	dtype = symbol_type(C, fn->module, ctype);
-	switch (LLVMGetTypeKind(dtype)) {
+	LLVMTypeKind kind = LLVMGetTypeKind(dtype);
+	switch (kind) {
 	case LLVMPointerTypeKind:
 		itype = LLVMIntType(C->target->bits_in_pointer);
 		result = LLVMConstInt(itype, val, 1);
@@ -324,7 +325,12 @@ static LLVMValueRef val_to_value(struct dmr_C *C, struct function *fn, unsigned 
 	case LLVMIntegerTypeKind:
 		result = LLVMConstInt(dtype, val, 1);
 		break;
+	case LLVMFloatTypeKind:
+	case LLVMDoubleTypeKind:
+		result = LLVMConstReal(dtype, (double)val);
+		break;
 	default:
+		printf("unsupported kind %d\n", kind);
 		assert(0);
 	}
 	return result;
@@ -935,6 +941,51 @@ static void output_op_cast(struct dmr_C *C, struct function *fn, struct instruct
 	insn->target->priv = target;
 }
 
+static void output_op_fpcast(struct dmr_C *C, struct function *fn, struct instruction *insn)
+{
+	LLVMValueRef src, target;
+	char target_name[64];
+	LLVMTypeRef dtype;
+	LLVMOpcode op;
+
+	src = insn->src->priv;
+	if (!src)
+		src = pseudo_to_value(C, fn, insn, insn->src);
+
+	pseudo_name(C, insn->target, target_name);
+
+	dtype = insn_symbol_type(C, fn->module, insn);
+	switch (LLVMGetTypeKind(LLVMTypeOf(src))) {
+	case LLVMIntegerTypeKind:
+		op = LLVMSIToFP;
+		break;
+	case LLVMFloatTypeKind: {
+		if (insn->size == 32)
+			op = LLVMBitCast;
+		else if (insn->size == 64)
+			op = LLVMFPExt;
+		else
+			assert(0 && "Unsupported source float type in fpcast");
+		break;
+	}
+	case LLVMDoubleTypeKind: {
+		if (insn->size == 32)
+			op = LLVMFPTrunc;
+		else if (insn->size == 64)
+			op = LLVMBitCast;
+		else
+			assert(0 && "unsupported source double type in fpcast");
+		break;
+	}
+	default:
+		assert(0 && "unsupported source type in fpcast");
+	}
+
+	target = LLVMBuildCast(fn->builder, op, src, dtype, target_name);
+	insn->target->priv = target;
+}
+
+
 static void output_op_copy(struct dmr_C *C, struct function *fn, struct instruction *insn,
 			   pseudo_t pseudo)
 {
@@ -963,6 +1014,75 @@ static void output_op_copy(struct dmr_C *C, struct function *fn, struct instruct
 	insn->target->priv = target;
 }
 
+static void output_op_setval(struct dmr_C *C, struct function *fn, struct instruction *insn) 
+{
+	struct expression *expr = insn->val;
+	pseudo_t pseudo = insn->target;
+	char target_name[64];
+	LLVMTypeRef const_type;
+	LLVMValueRef target = NULL;
+
+	if (!expr)
+		return;
+
+	pseudo_name(C, insn->target, target_name);
+	const_type = insn_symbol_type(C, fn->module, insn);
+
+	switch (expr->type) {
+	case EXPR_FVALUE:
+		target = LLVMConstReal(const_type, expr->fvalue);
+		break;
+	default:
+		assert(0 && "unsupported expression type in setval");
+	}
+
+	insn->target->priv = target;
+}
+
+static void output_op_symaddr(struct dmr_C *C, struct function *fn, struct instruction *insn)
+{
+	LLVMValueRef res, src;
+	LLVMTypeRef dtype;
+	char name[64];
+
+	src = pseudo_to_value(C, fn, insn, insn->symbol);
+	dtype = symbol_type(C, fn->module, insn->type);
+	pseudo_name(C, insn->target, name);
+	res = LLVMBuildBitCast(fn->builder, src, dtype, name);
+	insn->target->priv = res;
+}
+
+static void output_op_not(struct dmr_C *C, struct function *fn, struct instruction *insn)
+{
+	LLVMValueRef src, target;
+	char target_name[64];
+
+	src = pseudo_to_value(C, fn, insn, insn->src);
+
+	pseudo_name(C, insn->target, target_name);
+
+	target = LLVMBuildNot(fn->builder, src, target_name);
+
+	insn->target->priv = target;
+}
+
+static void output_op_neg(struct dmr_C *C, struct function *fn, struct instruction *insn)
+{
+	LLVMValueRef src, target;
+	char target_name[64];
+
+	src = pseudo_to_value(C, fn, insn, insn->src);
+
+	pseudo_name(C, insn->target, target_name);
+
+	if (symbol_is_fp_type(C, insn->type))
+		target = LLVMBuildFNeg(fn->builder, src, target_name);
+	else
+		target = LLVMBuildNeg(fn->builder, src, target_name);
+
+	insn->target->priv = target;
+}
+
 static void output_insn(struct dmr_C *C, struct function *fn, struct instruction *insn)
 {
 	switch (insn->opcode) {
@@ -972,20 +1092,11 @@ static void output_insn(struct dmr_C *C, struct function *fn, struct instruction
 	case OP_BR:
 		output_op_br(C, fn, insn);
 		break;
-	case OP_SYMADDR: {
-		LLVMValueRef res, src;
-		LLVMTypeRef dtype;
-		char name[64];
-			
-		src = pseudo_to_value(C, fn, insn, insn->symbol);
-		dtype = symbol_type(C, fn->module, insn->type);
-		pseudo_name(C, insn->target, name);
-		res = LLVMBuildBitCast(fn->builder, src, dtype, name);
-		insn->target->priv = res;
+	case OP_SYMADDR:
+		output_op_symaddr(C, fn, insn);
 		break;
-	}
 	case OP_SETVAL:
-		assert(0);
+		output_op_setval(C, fn, insn);
 		break;
 	case OP_SWITCH:
 		output_op_switch(C, fn, insn);
@@ -1024,7 +1135,7 @@ static void output_insn(struct dmr_C *C, struct function *fn, struct instruction
 		output_op_cast(C, fn, insn, LLVMSExt);
 		break;
 	case OP_FPCAST:
-		assert(0);
+		output_op_fpcast(C, fn, insn);
 		break;
 	case OP_PTRCAST:
 		output_op_ptrcast(C, fn, insn);
@@ -1065,35 +1176,12 @@ static void output_insn(struct dmr_C *C, struct function *fn, struct instruction
 	case OP_SLICE:
 		assert(0);
 		break;
-	case OP_NOT: {
-		LLVMValueRef src, target;
-		char target_name[64];
-
-		src = pseudo_to_value(C, fn, insn, insn->src);
-
-		pseudo_name(C, insn->target, target_name);
-
-		target = LLVMBuildNot(fn->builder, src, target_name);
-
-		insn->target->priv = target;
+	case OP_NOT:
+		output_op_not(C, fn, insn);
+		break;	
+	case OP_NEG:
+		output_op_neg(C, fn, insn);
 		break;
-	}
-	case OP_NEG: {
-		LLVMValueRef src, target;
-		char target_name[64];
-
-		src = pseudo_to_value(C, fn, insn, insn->src);
-
-		pseudo_name(C, insn->target, target_name);
-
-		if (symbol_is_fp_type(C, insn->type))
-			target = LLVMBuildFNeg(fn->builder, src, target_name);
-		else
-			target = LLVMBuildNeg(fn->builder, src, target_name);
-
-		insn->target->priv = target;
-		break;
-	}
 	case OP_CONTEXT:
 		assert(0);
 		break;

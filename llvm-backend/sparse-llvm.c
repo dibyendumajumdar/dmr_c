@@ -682,7 +682,8 @@ static LLVMValueRef calc_memop_addr(struct dmr_C *C, struct function *fn, struct
 
 	/* int type large enough to hold a pointer */
 	int_type = LLVMIntType(C->target->bits_in_pointer);
-	off = LLVMConstInt(int_type, insn->offset, 0);
+
+	off = LLVMConstInt(int_type, (int) insn->offset, 0);
 
 	/* convert src to the effective pointer type */
 	src = pseudo_to_value(C, fn, insn, insn->src);

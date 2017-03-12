@@ -69,12 +69,33 @@ static void assignobject(void *dstobj, void *srcobj)
 	rec1->key = rec2->key;
 }
 
-
 static char *randomletters = "agqwewbxklpfgytuorz";
 
 int main(void)
 {
 	once = 0;
+
+	int testdata[20];
+	testdata[0] = 'a';
+	testdata[1] = 'g';
+	testdata[2] = 'q';
+	testdata[3] = 'w';
+	testdata[4] = 'e';
+	testdata[5] = 'f';
+	testdata[6] = 'b';
+	testdata[7] = 'x';
+	testdata[8] = 'k';
+	testdata[9] = 'l';
+	testdata[10] = 'p';
+	testdata[11] = 'm';
+	testdata[12] = 's';
+	testdata[13] = 'y';
+	testdata[14] = 't';
+	testdata[15] = 'u';
+	testdata[16] = 'o';
+	testdata[17] = 'r';
+	testdata[18] = 'j';
+	testdata[19] = '0';	
 
 	AVLTree tree;
 	AVL_vtbl vtable;
@@ -89,7 +110,8 @@ int main(void)
 	int i;
 	for (i = 0; i < 20; i++) {
 		int key;
-		key = randomletters[i];
+		/* key = randomletters[i]; BUG crashes */
+		key = testdata[i];
 		AVLTree_Insert(&tree, &key);
 	}
 

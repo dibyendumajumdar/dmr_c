@@ -338,8 +338,8 @@ static LLVMValueRef pseudo_to_value(struct dmr_C *C, struct function *fn, struct
 	case PSEUDO_REG:
 		result = pseudo->priv;
 		if (!result) {
-			printf("insn %s\n", show_instruction(C, insn));
-			printf("pseudo %s\n", show_pseudo(C, pseudo));
+			fprintf(stderr, "pseudo uninitialized, please check if variable has been iniialized: insn %s\n", show_instruction(C, insn));
+			abort();
 		}
 		break;
 	case PSEUDO_SYM: {

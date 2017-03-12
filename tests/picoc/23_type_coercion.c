@@ -12,7 +12,7 @@ static void intfunc(int a)
 
 static void floatfunc(float a)
 {
-    printf("float: %f\n", a);
+    printf("float: %f\n", (double)a);
 }
 
 int main(void)
@@ -29,9 +29,9 @@ int main(void)
 	floatfunc(98);
 	floatfunc(99.0);
 
-	printf("%c %d %f\n", 'a', 'b', 'c');
-	printf("%c %d %f\n", 97, 98, 99);
-	printf("%c %d %f\n", 97.0, 98.0, 99.0);
+	printf("%c %d %f\n", 'a', 'b', (double)'c');
+	printf("%c %d %f\n", 97, 98, (double)99);
+	printf("%c %d %f\n", (char)97.0, (int)98.0, 99.0);
 
 	char b = 97;
 	char c = 97.0;
@@ -45,7 +45,7 @@ int main(void)
 	float f = 'a';
 	float g = 97;
 
-	printf("%f %f\n", f, g);
+	printf("%f %f\n", (double)f, (double)g);
 
 	return 0;
 }

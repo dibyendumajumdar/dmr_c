@@ -1341,6 +1341,7 @@ static LLVMValueRef output_data(struct dmr_C *C, LLVMModuleRef module, struct sy
 			break;
 		}
 		default:
+			fprintf(stderr, "Unsupported expr type in global data initializer: %d\n", initializer->type);
 			assert(0);
 		}
 	} else {

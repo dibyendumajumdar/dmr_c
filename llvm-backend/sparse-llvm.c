@@ -1484,16 +1484,18 @@ int main(int argc, char **argv)
 	} END_FOR_EACH_PTR(file);
 
 	char *error_message = NULL;
+	int rc = 0;
 	if (!LLVMVerifyModule(module, LLVMPrintMessageAction, &error_message)) {
-		if (error_message) {
-			fprintf(stderr, "%s\n", error_message);
-			LLVMDisposeMessage(error_message);
-		}
+		rc = 1;
+	}
+	if (error_message) {
+		fprintf(stderr, "%s\n", error_message);
+		LLVMDisposeMessage(error_message);
 	}
 	LLVMWriteBitcodeToFile(module, "out.bc");
 	LLVMDisposeModule(module);
 
 	destroy_dmr_C(C);
 
-	return 0;
+	return rc;
 }

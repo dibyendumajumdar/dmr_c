@@ -1489,10 +1489,15 @@ int main(int argc, char **argv)
 		rc = 1;
 	}
 	if (error_message) {
-		fprintf(stderr, "%s\n", error_message);
+		fprintf(stderr, "%s\n\n", error_message);
 		LLVMDisposeMessage(error_message);
 	}
-	LLVMWriteBitcodeToFile(module, "out.bc");
+	if (rc == 0) {
+		LLVMWriteBitcodeToFile(module, "out.bc");
+	}
+	else {
+		LLVMDumpModule(module);
+	}
 	LLVMDisposeModule(module);
 
 	destroy_dmr_C(C);

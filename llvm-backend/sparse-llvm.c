@@ -1441,8 +1441,9 @@ static void set_target(struct dmr_C *C, LLVMModuleRef module)
 		return;
 
 	snprintf(triple, sizeof(triple), "%s-%s-%s-%s", arch, vendor, os, env);
-	LLVMSetTarget(module, triple);
-	LLVMSetDataLayout(module, layout);
+	// FIXME - what do we do here?
+	//LLVMSetTarget(module, triple);
+	//LLVMSetDataLayout(module, layout);
 }
 
 int main(int argc, char **argv)

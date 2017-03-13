@@ -50,15 +50,11 @@ void init_target(struct dmr_C *C) {
   t->bits_in_char = 8;
   t->bits_in_short = 16;
   t->bits_in_int = 32;
-  t->bits_in_long = 32;
+  t->bits_in_long = sizeof(long) * t->bits_in_char;
   t->bits_in_longlong = 64;
   t->bits_in_longlonglong = 128;
 
-#ifdef _MSC_VER
-  t->max_int_alignment = __alignof(long long); 
-#else
-  t->max_int_alignment = 4;
-#endif
+  t->max_int_alignment = __alignof__(long long); 
 
   /*
   * Floating point data types
@@ -72,13 +68,8 @@ void init_target(struct dmr_C *C) {
   /*
   * Pointer data type
   */
-#ifdef _MSC_VER
   t->bits_in_pointer = sizeof(void *) * t->bits_in_char;
-  t->pointer_alignment = __alignof(void *);
-#else
-  t->bits_in_pointer = 32;
-  t->pointer_alignment = 4;
-#endif
+  t->pointer_alignment = __alignof__(void *);
 
   /*
   * Enum data types

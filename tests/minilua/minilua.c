@@ -7040,11 +7040,16 @@ static int os_remove(lua_State*L) {
 static int os_exit(lua_State*L) {
 	exit(luaL_optint(L, 1, EXIT_SUCCESS));
 }
+#if INITIALIZER_SUPPORTED
 static const luaL_Reg syslib[] = {
 {"exit",os_exit},
 {"remove",os_remove},
 {NULL,NULL}
 };
+#else
+static const luaL_Reg syslib[3];
+};
+#endif
 static int luaopen_os(lua_State*L) {
 	luaL_register(L, "os", syslib);
 	return 1;
@@ -7699,6 +7704,7 @@ static int str_format(lua_State*L) {
 	luaL_pushresult(&b);
 	return 1;
 }
+#if INITIALIZER_SUPPORTED
 static const luaL_Reg strlib[] = {
 {"byte",str_byte},
 {"char",str_char},
@@ -7713,6 +7719,9 @@ static const luaL_Reg strlib[] = {
 {"upper",str_upper},
 {NULL,NULL}
 };
+#else
+static const luaL_Reg strlib[12];
+#endif
 static void createmetatable(lua_State*L) {
 	lua_createtable(L, 0, 1);
 	lua_pushliteral(L, "");
@@ -7728,6 +7737,7 @@ static int luaopen_string(lua_State*L) {
 	createmetatable(L);
 	return 1;
 }
+#if INITIALIZER_SUPPORTED
 static const luaL_Reg lualibs[] = {
 {"",luaopen_base},
 {"table",luaopen_table},
@@ -7736,6 +7746,9 @@ static const luaL_Reg lualibs[] = {
 {"string",luaopen_string},
 {NULL,NULL}
 };
+#else
+static const luaL_Reg lualibs[6];
+#endif
 static void luaL_openlibs(lua_State*L) {
 	const luaL_Reg*lib = lualibs;
 	for (; lib->func; lib++) {
@@ -7797,6 +7810,7 @@ static int tohex(lua_State*L) {
 	lua_pushlstring(L, buf, (size_t)n);
 	return 1;
 }
+#if INITIALIZER_SUPPORTED
 static const struct luaL_Reg bitlib[] = {
 {"tobit",tobit},
 {"bnot",bnot},
@@ -7812,9 +7826,11 @@ static const struct luaL_Reg bitlib[] = {
 {"tohex",tohex},
 {NULL,NULL}
 };
-
+#else
+static const struct luaL_Reg bitlib[13];
+#endif
 #if !INITIALIZER_SUPPORTED
-static void init_globals() {
+static void init_globals(void) {
 
 	luaO_nilobject_.value.p = NULL;
 	luaO_nilobject_.value.tt = 0;
@@ -7984,10 +8000,52 @@ static void init_globals() {
 	flib[i].name = "__gc"; flib[i].func = io_gc; i++;
 	flib[i].name = NULL; flib[i].func = NULL;
 
+	i = 0;
+	syslib[i].name = "exit"; syslib[i].func = os_exit; i++;
+	syslib[i].name = "remove"; syslib[i].func = os_remove; i++;
+	syslib[i].name = NULL; syslib[i].func = NULL;
+
+	i = 0;
+	strlib[i].name = "byte"; strlib[i].func = str_byte; i++;
+	strlib[i].name = "char"; strlib[i].func = str_char; i++;
+	strlib[i].name = "find"; strlib[i].func = str_find; i++;
+	strlib[i].name = "format"; strlib[i].func = str_format; i++;
+	strlib[i].name = "gmatch"; strlib[i].func = gmatch; i++;
+	strlib[i].name = "gsub"; strlib[i].func = str_gsub; i++;
+	strlib[i].name = "lower"; strlib[i].func = str_lower; i++;
+	strlib[i].name = "match"; strlib[i].func = str_match; i++;
+	strlib[i].name = "rep"; strlib[i].func = str_rep; i++;
+	strlib[i].name = "sub"; strlib[i].func = str_sub; i++;
+	strlib[i].name = "upper"; strlib[i].func = str_upper; i++;
+	strlib[i].name = NULL; strlib[i].func = NULL;
+
+	i = 0;
+	lualibs[i].name = ""; lualibs[i].func = luaopen_base; i++;
+	lualibs[i].name = "table"; lualibs[i].func = luaopen_table; i++;
+	lualibs[i].name = "io"; lualibs[i].func = luaopen_io; i++;
+	lualibs[i].name = "os"; lualibs[i].func = luaopen_os; i++;
+	lualibs[i].name = "string"; lualibs[i].func = luaopen_string; i++;
+	lualibs[i].name = NULL; lualibs[i].func = NULL;
+
+	i = 0;
+	bitlib[i].name = "tobit"; bitlib[i].func = tobit; i++;
+	bitlib[i].name = "bnot"; bitlib[i].func = bnot; i++;
+	bitlib[i].name = "band"; bitlib[i].func = band; i++;
+	bitlib[i].name = "bor"; bitlib[i].func = bor; i++;
+	bitlib[i].name = "bxor"; bitlib[i].func = bxor; i++;
+	bitlib[i].name = "lshift"; bitlib[i].func = lshift; i++;
+	bitlib[i].name = "rshift"; bitlib[i].func = rshift; i++;
+	bitlib[i].name = "arshift"; bitlib[i].func = arshift; i++;
+	bitlib[i].name = "rol"; bitlib[i].func = rol; i++;
+	bitlib[i].name = "ror"; bitlib[i].func = ror; i++;
+	bitlib[i].name = "bswap"; bitlib[i].func = bswap; i++;
+	bitlib[i].name = "tohex"; bitlib[i].func = tohex; i++;
+	bitlib[i].name = NULL; bitlib[i].func = NULL;
 
 }
 #endif
 int main(int argc, char**argv) {
+	init_globals();
 	lua_State*L = luaL_newstate();
 	int i;
 	luaL_openlibs(L);

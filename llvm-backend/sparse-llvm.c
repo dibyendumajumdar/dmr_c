@@ -538,6 +538,8 @@ static void output_op_binary(struct dmr_C *C, struct function *fn, struct instru
 	case OP_SUB:
 		if (symbol_is_fp_type(C, insn->type))
 			target = LLVMBuildFSub(fn->builder, lhs, rhs, target_name);
+		else if (LLVMGetTypeKind(LLVMTypeOf(lhs)) == LLVMPointerTypeKind)
+			target = calc_gep(C, fn->builder, lhs, rhs);
 		else
 			target = LLVMBuildSub(fn->builder, lhs, rhs, target_name);
 		break;

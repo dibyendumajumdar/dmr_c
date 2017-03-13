@@ -798,7 +798,7 @@ static void output_op_switch(struct dmr_C *C, struct function *fn, struct instru
 	FOR_EACH_PTR(insn->multijmp_list, jmp) {
 		if (jmp->begin == jmp->end) {		/* case N */
 			LLVMAddCase(target,
-				LLVMConstInt(LLVMInt32Type(), jmp->begin, 0),
+				LLVMConstInt(LLVMTypeOf(sw_val), jmp->begin, 0),
 				jmp->target->priv);
 		} else if (jmp->begin < jmp->end) {	/* case M..N */
 			assert(0);

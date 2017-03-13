@@ -842,6 +842,7 @@ static void output_op_call(struct dmr_C *C, struct function *fn, struct instruct
 
 	func = pseudo_to_value(C, fn, insn, insn->func);
 	pseudo_name(C, insn->target, name);
+	printf("call insn %s\n", show_instruction(C, insn));
 	target = LLVMBuildCall(fn->builder, func, args, n_arg, name);
 
 	insn->target->priv = target;

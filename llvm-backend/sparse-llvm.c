@@ -1307,6 +1307,8 @@ static void output_fn(struct dmr_C *C, LLVMModuleRef module, struct entrypoint *
 		output_bb(C, &function, bb);
 	}
 	END_FOR_EACH_PTR(bb);
+
+	LLVMDisposeBuilder(function.builder);
 }
 
 static LLVMValueRef output_data(struct dmr_C *C, LLVMModuleRef module, struct symbol *sym)

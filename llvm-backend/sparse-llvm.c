@@ -1485,7 +1485,7 @@ int main(int argc, char **argv)
 
 	char *error_message = NULL;
 	int rc = 0;
-	if (!LLVMVerifyModule(module, LLVMPrintMessageAction, &error_message)) {
+	if (LLVMVerifyModule(module, LLVMPrintMessageAction, &error_message)) {
 		rc = 1;
 	}
 	if (error_message) {

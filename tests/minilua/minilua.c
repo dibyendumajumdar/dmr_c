@@ -4291,6 +4291,7 @@ static BinOpr getbinopr(int op) {
 	default:return OPR_NOBINOPR;
 	}
 }
+#if INITIALIZER_SUPPORTED
 static const struct {
 	lu_byte left;
 	lu_byte right;
@@ -4301,6 +4302,12 @@ static const struct {
 {3,3},{3,3},{3,3},{3,3},
 {2,2},{1,1}
 };
+#else
+static const struct {
+	lu_byte left;
+	lu_byte right;
+}priority[15];
+#endif
 static BinOpr subexpr(LexState*ls, expdesc*v, unsigned int limit) {
 	BinOpr op;
 	UnOpr uop;
@@ -7897,6 +7904,24 @@ static void init_globals() {
 		".."; luaX_tokens[i++] = "..."; luaX_tokens[i++] = "=="; luaX_tokens[i++] = ">="; luaX_tokens[i++] = "<="; luaX_tokens[i++] = "~="; luaX_tokens[i++] =
 		"<number>"; luaX_tokens[i++] = "<name>"; luaX_tokens[i++] = "<string>"; luaX_tokens[i++] = "<eof>"; luaX_tokens[i++] =
 		NULL;
+
+	i = 0;
+	priority[i].left = 6; priority[i++].right = 6;
+	priority[i].left = 6; priority[i++].right = 6;
+	priority[i].left = 7; priority[i++].right = 7;
+	priority[i].left = 7; priority[i++].right = 7;
+	priority[i].left = 7; priority[i++].right = 7;
+	priority[i].left = 10; priority[i++].right = 9;
+	priority[i].left = 5; priority[i++].right = 4;
+	priority[i].left = 3; priority[i++].right = 3;
+	priority[i].left = 3; priority[i++].right = 3;
+	priority[i].left = 3; priority[i++].right = 3;
+	priority[i].left = 3; priority[i++].right = 3;
+	priority[i].left = 3; priority[i++].right = 3;
+	priority[i].left = 3; priority[i++].right = 3;
+	priority[i].left = 2; priority[i++].right = 2;
+	priority[i].left = 1; priority[i++].right = 1;
+
 
 }
 #endif

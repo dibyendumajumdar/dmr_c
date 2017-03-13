@@ -345,7 +345,7 @@ static LLVMValueRef pseudo_to_value(struct dmr_C *C, struct function *fn, struct
 		result = pseudo->priv;
 		if (!result) {
 			fprintf(stderr, "pseudo uninitialized, please check if variable has been initialized: insn %s\n", show_instruction(C, insn));
-			abort();
+			exit(1);
 		}
 		break;
 	case PSEUDO_SYM: {
@@ -455,6 +455,7 @@ static LLVMValueRef pseudo_to_value(struct dmr_C *C, struct function *fn, struct
 		assert(0);
 	}
 
+	assert(result);
 	return result;
 }
 

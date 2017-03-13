@@ -946,7 +946,7 @@ static void output_op_cast(struct dmr_C *C, struct function *fn, struct instruct
 				op = LLVMBitCast;
 			break;
 		default: {
-			fprintf(stderr, "unsupported op_cast instruction %s\n", show_instruction(C, insn));
+			fprintf(stderr, "unsupported op_cast instruction %s: type %d\n", show_instruction(C, insn), (int)LLVMGetTypeKind(LLVMTypeOf(src)));
 			exit(1);
 		}
 	}

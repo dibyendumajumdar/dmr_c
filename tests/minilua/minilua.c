@@ -2685,6 +2685,7 @@ static const lu_byte luaP_opmodes[(cast(int, OP_VARARG) + 1)];
 #endif
 #define next(ls)(ls->current=zgetc(ls->z))
 #define currIsNewline(ls)(ls->current=='\n'||ls->current=='\r')
+#if INITIALIZER_SUPPORTED
 static const char*const luaX_tokens[] = {
 "and","break","do","else","elseif",
 "end","false","for","function","if",
@@ -2694,6 +2695,9 @@ static const char*const luaX_tokens[] = {
 "<number>","<name>","<string>","<eof>",
 NULL
 };
+#else
+static const char*const luaX_tokens[32];
+#endif
 #define save_and_next(ls)(save(ls,ls->current),next(ls))
 static void save(LexState*ls, int c) {
 	Mbuffer*b = ls->buff;
@@ -7885,6 +7889,14 @@ static void init_globals() {
 		; luaP_opmodes[i++] = opmode(0, 1, OpArgU, OpArgN, iABx)
 		; luaP_opmodes[i++] = opmode(0, 1, OpArgU, OpArgN, iABC);
 
+	i = 0;
+	luaX_tokens[i++] = "and"; luaX_tokens[i++] = "break"; luaX_tokens[i++] = "do"; luaX_tokens[i++] = "else"; luaX_tokens[i++] = "elseif"; luaX_tokens[i++] =
+		"end"; luaX_tokens[i++] = "false"; luaX_tokens[i++] = "for"; luaX_tokens[i++] = "function"; luaX_tokens[i++] = "if"; luaX_tokens[i++] =
+		"in"; luaX_tokens[i++] = "local"; luaX_tokens[i++] = "nil"; luaX_tokens[i++] = "not"; luaX_tokens[i++] = "or"; luaX_tokens[i++] = "repeat"; luaX_tokens[i++] =
+		"return"; luaX_tokens[i++] = "then"; luaX_tokens[i++] = "true"; luaX_tokens[i++] = "until"; luaX_tokens[i++] = "while"; luaX_tokens[i++] =
+		".."; luaX_tokens[i++] = "..."; luaX_tokens[i++] = "=="; luaX_tokens[i++] = ">="; luaX_tokens[i++] = "<="; luaX_tokens[i++] = "~="; luaX_tokens[i++] =
+		"<number>"; luaX_tokens[i++] = "<name>"; luaX_tokens[i++] = "<string>"; luaX_tokens[i++] = "<eof>"; luaX_tokens[i++] =
+		NULL;
 
 }
 #endif

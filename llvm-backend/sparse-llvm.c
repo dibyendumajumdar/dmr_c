@@ -836,6 +836,7 @@ static void output_op_call(struct dmr_C *C, struct function *fn, struct instruct
 		else {
 			value = pseudo_to_value(C, fn, insn, arg);
 		}
+		assert(value);
 		args[i++] = value;
 	} END_FOR_EACH_PTR(arg);
 

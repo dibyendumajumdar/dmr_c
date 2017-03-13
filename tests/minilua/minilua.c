@@ -1063,7 +1063,7 @@ static int luaD_rawrunprotected(lua_State*L, Pfunc f, void*ud) {
 	lj.previous = L->errorJmp;
 	L->errorJmp = &lj;
 	LUAI_TRY(L, &lj,
-		(*f)(L, ud);
+		f(L, ud);
 	);
 	L->errorJmp = lj.previous;
 	return lj.status;
@@ -1188,7 +1188,7 @@ static int luaD_precall(lua_State*L, StkId func, int nresults) {
 		L->base = ci->base = ci->func + 1;
 		ci->top = L->top + 20;
 		ci->nresults = nresults;
-		n = (*curr_func(L)->c.f)(L);
+		n = curr_func(L)->c.f(L);
 		if (n < 0)
 			return 2;
 		else {
@@ -2341,7 +2341,7 @@ static void close_state(lua_State*L) {
 	luaM_freearray(L, G(L)->strt.hash, G(L)->strt.size, TString*);
 	luaZ_freebuffer(L, &g->buff);
 	freestack(L, L);
-	(*g->frealloc)(g->ud, fromstate(L), state_size(LG), 0);
+	g->frealloc(g->ud, fromstate(L), state_size(LG), 0);
 }
 static void luaE_freethread(lua_State*L, lua_State*L1) {
 	luaF_close(L1, L1->stack);
@@ -2352,7 +2352,7 @@ static lua_State*lua_newstate(lua_Alloc f, void*ud) {
 	int i;
 	lua_State*L;
 	global_State*g;
-	void*l = (*f)(ud, NULL, 0, state_size(LG));
+	void*l = f(ud, NULL, 0, state_size(LG));
 	if (l == NULL)return NULL;
 	L = tostate(l);
 	g = &((LG*)L)->g;

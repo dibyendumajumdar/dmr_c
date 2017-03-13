@@ -6446,6 +6446,7 @@ static int luaB_newproxy(lua_State*L) {
 	lua_setmetatable(L, 2);
 	return 1;
 }
+#if INITIALIZER_SUPPORTED
 static const luaL_Reg base_funcs[] = {
 {"assert",luaB_assert},
 {"error",luaB_error},
@@ -6461,6 +6462,9 @@ static const luaL_Reg base_funcs[] = {
 {"unpack",luaB_unpack},
 {NULL,NULL}
 };
+#else
+static const luaL_Reg base_funcs[13];
+#endif
 static void auxopen(lua_State*L, const char*name,
 	lua_CFunction f, lua_CFunction u) {
 	lua_pushcfunction(L, u);
@@ -7921,6 +7925,22 @@ static void init_globals() {
 	priority[i].left = 3; priority[i++].right = 3;
 	priority[i].left = 2; priority[i++].right = 2;
 	priority[i].left = 1; priority[i++].right = 1;
+
+	i = 0;
+	base_funcs[i].name = "assert";  base_funcs[i].func = luaB_assert; i++;
+	base_funcs[i].name = "error";  base_funcs[i].func = luaB_error; i++;
+	base_funcs[i].name = "loadfile";  base_funcs[i].func = luaB_loadfile; i++;
+	base_funcs[i].name = "loadstring";  base_funcs[i].func = luaB_loadstring; i++;
+	base_funcs[i].name = "next";  base_funcs[i].func = luaB_next; i++;
+	base_funcs[i].name = "pcall";  base_funcs[i].func = luaB_pcall; i++;
+	base_funcs[i].name = "rawget";  base_funcs[i].func = luaB_rawget; i++;
+	base_funcs[i].name = "setfenv";  base_funcs[i].func = luaB_setfenv; i++;
+	base_funcs[i].name = "setmetatable";  base_funcs[i].func = luaB_setmetatable; i++;
+	base_funcs[i].name = "tonumber";  base_funcs[i].func = luaB_tonumber; i++;
+	base_funcs[i].name = "type";  base_funcs[i].func = luaB_type; i++;
+	base_funcs[i].name = "unpack";  base_funcs[i].func = luaB_unpack; i++;
+	base_funcs[i].name = NULL;  base_funcs[i].func = NULL;
+
 
 
 }

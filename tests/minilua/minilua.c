@@ -7808,9 +7808,6 @@ static void init_globals() {
 	log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; 
 	log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; 
 	log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8;
-
-};
-
 }
 #endif
 int main(int argc, char**argv) {

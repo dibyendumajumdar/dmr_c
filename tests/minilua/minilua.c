@@ -7048,7 +7048,6 @@ static const luaL_Reg syslib[] = {
 };
 #else
 static const luaL_Reg syslib[3];
-};
 #endif
 static int luaopen_os(lua_State*L) {
 	luaL_register(L, "os", syslib);

@@ -2700,7 +2700,7 @@ static const char*const luaX_tokens[] = {
 NULL
 };
 #else
-static const char*const luaX_tokens[32];
+static const char* luaX_tokens[32];
 #endif
 #define save_and_next(ls)(save(ls,ls->current),next(ls))
 static void save(LexState*ls, int c) {

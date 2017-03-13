@@ -6641,6 +6641,7 @@ static int sort(lua_State*L) {
 	auxsort(L, 1, n);
 	return 0;
 }
+#if INITIALIZER_SUPPORTED
 static const luaL_Reg tab_funcs[] = {
 {"concat",tconcat},
 {"insert",tinsert},
@@ -6648,11 +6649,18 @@ static const luaL_Reg tab_funcs[] = {
 {"sort",sort},
 {NULL,NULL}
 };
+#else
+static const luaL_Reg tab_funcs[5];
+#endif
 static int luaopen_table(lua_State*L) {
 	luaL_register(L, "table", tab_funcs);
 	return 1;
 }
+#if INITIALIZER_SUPPORTED
 static const char*const fnames[] = { "input","output" };
+#else
+static const char*const fnames[2];
+#endif
 static int pushresult(lua_State*L, int i, const char*filename) {
 	int en = errno;
 	if (i) {
@@ -6949,6 +6957,7 @@ static int io_flush(lua_State*L) {
 static int f_flush(lua_State*L) {
 	return pushresult(L, fflush(tofile(L)) == 0, NULL);
 }
+#if INITIALIZER_SUPPORTED
 static const luaL_Reg iolib[] = {
 {"close",io_close},
 {"flush",io_flush},
@@ -6970,6 +6979,10 @@ static const luaL_Reg flib[] = {
 {"__gc",io_gc},
 {NULL,NULL}
 };
+#else
+static const luaL_Reg iolib[10];
+static const luaL_Reg flib[7];
+#endif
 static void createmeta(lua_State*L) {
 	luaL_newmetatable(L, "FILE*");
 	lua_pushvalue(L, -1);
@@ -7941,6 +7954,35 @@ static void init_globals() {
 	base_funcs[i].name = "unpack";  base_funcs[i].func = luaB_unpack; i++;
 	base_funcs[i].name = NULL;  base_funcs[i].func = NULL;
 
+	i = 0;
+	tab_funcs[i].name = "concat"; tab_funcs[i].func = tconcat; i++;
+	tab_funcs[i].name = "insert"; tab_funcs[i].func = tinsert; i++;
+	tab_funcs[i].name = "remove"; tab_funcs[i].func = tremove; i++;
+	tab_funcs[i].name = "sort"; tab_funcs[i].func = sort; i++;
+	tab_funcs[i].name = NULL; tab_funcs[i].func = NULL;
+
+	fnames[0] = "input";
+	fnames[1] = "output";
+
+	i = 0;
+	iolib[i].name = "close"; iolib[i].func = io_close; i++;
+	iolib[i].name = "flush"; iolib[i].func = io_flush; i++;
+	iolib[i].name = "input"; iolib[i].func = io_input; i++;
+	iolib[i].name = "lines"; iolib[i].func = io_lines; i++;
+	iolib[i].name = "open"; iolib[i].func = io_open; i++;
+	iolib[i].name = "output"; iolib[i].func = io_output; i++;
+	iolib[i].name = "read"; iolib[i].func = io_read; i++;
+	iolib[i].name = "type"; iolib[i].func = io_type; i++;
+	iolib[i].name = "write"; iolib[i].func = io_write; i++;
+	iolib[i].name = NULL; iolib[i].func = NULL;
+	i = 0;
+	flib[i].name = "close"; flib[i].func = io_close; i++;
+	flib[i].name = "flush"; flib[i].func = f_flush; i++;
+	flib[i].name = "lines"; flib[i].func = f_lines; i++;
+	flib[i].name = "read"; flib[i].func = f_read; i++;
+	flib[i].name = "write"; flib[i].func = f_write; i++;
+	flib[i].name = "__gc"; flib[i].func = io_gc; i++;
+	flib[i].name = NULL; flib[i].func = NULL;
 
 
 }

@@ -368,7 +368,11 @@ typedef struct Table {
 #define lmod(s,size)(check_exp((size&(size-1))==0,(cast(int,(s)&((size)-1)))))
 #define twoto(x)((size_t)1<<(x))
 #define sizenode(t)(twoto((t)->lsizenode))
+#if INITIALIZER_SUPPORTED
 static const TValue luaO_nilobject_;
+#else
+static TValue luaO_nilobject_;
+#endif
 #define ceillog2(x)(luaO_log2((x)-1)+1)
 static int luaO_log2(unsigned int x);
 #define gfasttm(g,et,e)((et)==NULL?NULL:((et)->flags&(1u<<(e)))?NULL:luaT_gettm(et,e,(g)->tmname[e]))
@@ -605,7 +609,7 @@ static void luaV_concat(lua_State*L, int total, int last);
 #if INITIALIZER_SUPPORTED
 static const TValue luaO_nilobject_ = { {NULL},0 };
 #else
-static const TValue luaO_nilobject_;
+static TValue luaO_nilobject_;
 #endif
 static int luaO_int2fb(unsigned int x) {
 	int e = 0;
@@ -622,7 +626,7 @@ static int luaO_fb2int(int x) {
 	else return((x & 7) + 8) << (e - 1);
 }
 #if !INITIALIZER_SUPPORTED
-static const lu_byte log_2[256];
+static lu_byte log_2[256];
 #endif
 static int luaO_log2(unsigned int x) {
 #if INITIALIZER_SUPPORTED
@@ -786,8 +790,8 @@ static const char*const luaT_typenames[] = {
 "proto","upval"
 };
 #else
-static const char*const luaT_typenames[11];
-static const char*const luaT_eventname[17];
+static const char* luaT_typenames[11];
+static const char* luaT_eventname[17];
 #endif
 static void luaT_init(lua_State*L) {
 #if INITIALIZER_SUPPORTED
@@ -1363,7 +1367,7 @@ static const Node dummynode_ = {
 {{{NULL},0,NULL}}
 };
 #else
-static const Node dummynode_;
+static Node dummynode_;
 #endif
 static Node*hashnum(const Table*t, lua_Number n) {
 	unsigned int a[cast_int(sizeof(lua_Number) / sizeof(int))];
@@ -2681,7 +2685,7 @@ opmode(0,1,OpArgR,OpArgN,iABC)
 ,opmode(0,1,OpArgU,OpArgN,iABC)
 };
 #else
-static const lu_byte luaP_opmodes[(cast(int, OP_VARARG) + 1)];
+static lu_byte luaP_opmodes[(cast(int, OP_VARARG) + 1)];
 #endif
 #define next(ls)(ls->current=zgetc(ls->z))
 #define currIsNewline(ls)(ls->current=='\n'||ls->current=='\r')
@@ -4303,7 +4307,7 @@ static const struct {
 {2,2},{1,1}
 };
 #else
-static const struct {
+static struct {
 	lu_byte left;
 	lu_byte right;
 }priority[15];
@@ -6463,7 +6467,7 @@ static const luaL_Reg base_funcs[] = {
 {NULL,NULL}
 };
 #else
-static const luaL_Reg base_funcs[13];
+static luaL_Reg base_funcs[13];
 #endif
 static void auxopen(lua_State*L, const char*name,
 	lua_CFunction f, lua_CFunction u) {
@@ -6650,7 +6654,7 @@ static const luaL_Reg tab_funcs[] = {
 {NULL,NULL}
 };
 #else
-static const luaL_Reg tab_funcs[5];
+static luaL_Reg tab_funcs[5];
 #endif
 static int luaopen_table(lua_State*L) {
 	luaL_register(L, "table", tab_funcs);
@@ -6659,7 +6663,7 @@ static int luaopen_table(lua_State*L) {
 #if INITIALIZER_SUPPORTED
 static const char*const fnames[] = { "input","output" };
 #else
-static const char*const fnames[2];
+static const char* fnames[2];
 #endif
 static int pushresult(lua_State*L, int i, const char*filename) {
 	int en = errno;
@@ -6980,8 +6984,8 @@ static const luaL_Reg flib[] = {
 {NULL,NULL}
 };
 #else
-static const luaL_Reg iolib[10];
-static const luaL_Reg flib[7];
+static luaL_Reg iolib[10];
+static luaL_Reg flib[7];
 #endif
 static void createmeta(lua_State*L) {
 	luaL_newmetatable(L, "FILE*");
@@ -7047,7 +7051,7 @@ static const luaL_Reg syslib[] = {
 {NULL,NULL}
 };
 #else
-static const luaL_Reg syslib[3];
+static luaL_Reg syslib[3];
 #endif
 static int luaopen_os(lua_State*L) {
 	luaL_register(L, "os", syslib);
@@ -7446,7 +7450,7 @@ static int str_find_aux(lua_State*L, int find) {
 				if (find) {
 					lua_pushinteger(L, s1 - s + 1);
 					lua_pushinteger(L, res - s);
-					return push_captures(&ms, NULL, 0) + 2;
+					return push_captures(&ms, NULL, NULL) + 2;
 				}
 				else
 					return push_captures(&ms, s1, res);
@@ -7719,7 +7723,7 @@ static const luaL_Reg strlib[] = {
 {NULL,NULL}
 };
 #else
-static const luaL_Reg strlib[12];
+static luaL_Reg strlib[12];
 #endif
 static void createmetatable(lua_State*L) {
 	lua_createtable(L, 0, 1);
@@ -7746,7 +7750,7 @@ static const luaL_Reg lualibs[] = {
 {NULL,NULL}
 };
 #else
-static const luaL_Reg lualibs[6];
+static luaL_Reg lualibs[6];
 #endif
 static void luaL_openlibs(lua_State*L) {
 	const luaL_Reg*lib = lualibs;
@@ -7826,7 +7830,7 @@ static const struct luaL_Reg bitlib[] = {
 {NULL,NULL}
 };
 #else
-static const struct luaL_Reg bitlib[13];
+static struct luaL_Reg bitlib[13];
 #endif
 #if !INITIALIZER_SUPPORTED
 static void init_globals(void) {

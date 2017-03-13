@@ -779,11 +779,15 @@ static void luaO_chunkid(char*out, const char*source, size_t bufflen) {
 static TValue*luaH_setnum(lua_State*L, Table*t, int key);
 static const TValue*luaH_getstr(Table*t, TString*key);
 static TValue*luaH_set(lua_State*L, Table*t, const TValue*key);
+#if INITIALIZER_SUPPORTED
 static const char*const luaT_typenames[] = {
 "nil","boolean","userdata","number",
 "string","table","function","userdata","thread",
 "proto","upval"
 };
+#else
+static const char*const luaT_typenames[11];
+#endif
 static void luaT_init(lua_State*L) {
 	static const char*const luaT_eventname[] = {
 	"__index","__newindex",
@@ -7808,6 +7812,13 @@ static void init_globals() {
 	log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; 
 	log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; 
 	log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8;
+
+	i = 0;
+	luaT_typenames[i++] = "nil"; luaT_typenames[i++] = "boolean"; luaT_typenames[i++] = "userdata";
+	luaT_typenames[i++] = "number"; luaT_typenames[i++] = "string"; luaT_typenames[i++] = "table";
+	luaT_typenames[i++] = "function"; luaT_typenames[i++] = "userdata"; luaT_typenames[i++] = "thread";
+	luaT_typenames[i++] = "proto"; luaT_typenames[i++] = "upval";
+
 }
 #endif
 int main(int argc, char**argv) {

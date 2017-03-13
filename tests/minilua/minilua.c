@@ -22,6 +22,7 @@
 * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ******************************************************************************/
+#define INITIALIZER_SUPPORTED 0
 #ifdef _MSC_VER
 typedef unsigned __int64 U64;
 #else
@@ -601,7 +602,11 @@ static const TValue*luaV_tonumber(const TValue*obj, TValue*n);
 static int luaV_tostring(lua_State*L, StkId obj);
 static void luaV_execute(lua_State*L, int nexeccalls);
 static void luaV_concat(lua_State*L, int total, int last);
+#if INITIALIZER_SUPPORTED
 static const TValue luaO_nilobject_ = { {NULL},0 };
+#else
+static const TValue luaO_nilobject_;
+#endif
 static int luaO_int2fb(unsigned int x) {
 	int e = 0;
 	while (x >= 16) {
@@ -616,7 +621,11 @@ static int luaO_fb2int(int x) {
 	if (e == 0)return x;
 	else return((x & 7) + 8) << (e - 1);
 }
+#if !INITIALIZER_SUPPORTED
+static const lu_byte log_2[256];
+#endif
 static int luaO_log2(unsigned int x) {
+#if INITIALIZER_SUPPORTED
 	static const lu_byte log_2[256] = {
 	0,1,2,2,3,3,3,3,4,4,4,4,4,4,4,4,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,
 	6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,
@@ -627,6 +636,7 @@ static int luaO_log2(unsigned int x) {
 	8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,
 	8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8
 	};
+#endif
 	int l = -1;
 	while (x >= 256) { l += 8; x >>= 8; }
 	return l + log_2[x];
@@ -7759,6 +7769,50 @@ static const struct luaL_Reg bitlib[] = {
 {"tohex",tohex},
 {NULL,NULL}
 };
+
+#if !INITIALIZER_SUPPORTED
+static void init_globals() {
+
+	luaO_nilobject_.value.p = NULL;
+	luaO_nilobject_.value.tt = 0;
+	int i = 0;
+	log_2[i++] = 0; log_2[i++] = 1; log_2[i++] = 2; log_2[i++] = 2; log_2[i++] = 3; log_2[i++] = 3; log_2[i++] = 3; log_2[i++] = 3; 
+	log_2[i++] = 4; log_2[i++] = 4; log_2[i++] = 4; log_2[i++] = 4; log_2[i++] = 4; log_2[i++] = 4; log_2[i++] = 4; log_2[i++] = 4; 
+	log_2[i++] = 5; log_2[i++] = 5; log_2[i++] = 5; log_2[i++] = 5; log_2[i++] = 5; log_2[i++] = 5; log_2[i++] = 5; log_2[i++] = 5; 
+	log_2[i++] = 5; log_2[i++] = 5; log_2[i++] = 5; log_2[i++] = 5; log_2[i++] = 5; log_2[i++] = 5; log_2[i++] = 5; log_2[i++] = 5; 
+	log_2[i++] = 6; log_2[i++] = 6; log_2[i++] = 6; log_2[i++] = 6; log_2[i++] = 6; log_2[i++] = 6; log_2[i++] = 6; log_2[i++] = 6; 
+	log_2[i++] = 6; log_2[i++] = 6; log_2[i++] = 6; log_2[i++] = 6; log_2[i++] = 6; log_2[i++] = 6; log_2[i++] = 6; log_2[i++] = 6; 
+	log_2[i++] = 6; log_2[i++] = 6; log_2[i++] = 6; log_2[i++] = 6; log_2[i++] = 6; log_2[i++] = 6; log_2[i++] = 6; log_2[i++] = 6; 
+	log_2[i++] = 6; log_2[i++] = 6; log_2[i++] = 6; log_2[i++] = 6; log_2[i++] = 6; log_2[i++] = 6; log_2[i++] = 6; log_2[i++] = 6; 
+	log_2[i++] = 7; log_2[i++] = 7; log_2[i++] = 7; log_2[i++] = 7; log_2[i++] = 7; log_2[i++] = 7; log_2[i++] = 7; log_2[i++] = 7; 
+	log_2[i++] = 7; log_2[i++] = 7; log_2[i++] = 7; log_2[i++] = 7; log_2[i++] = 7; log_2[i++] = 7; log_2[i++] = 7; log_2[i++] = 7; 
+	log_2[i++] = 7; log_2[i++] = 7; log_2[i++] = 7; log_2[i++] = 7; log_2[i++] = 7; log_2[i++] = 7; log_2[i++] = 7; log_2[i++] = 7; 
+	log_2[i++] = 7; log_2[i++] = 7; log_2[i++] = 7; log_2[i++] = 7; log_2[i++] = 7; log_2[i++] = 7; log_2[i++] = 7; log_2[i++] = 7; 
+	log_2[i++] = 7; log_2[i++] = 7; log_2[i++] = 7; log_2[i++] = 7; log_2[i++] = 7; log_2[i++] = 7; log_2[i++] = 7; log_2[i++] = 7; 
+	log_2[i++] = 7; log_2[i++] = 7; log_2[i++] = 7; log_2[i++] = 7; log_2[i++] = 7; log_2[i++] = 7; log_2[i++] = 7; log_2[i++] = 7; 
+	log_2[i++] = 7; log_2[i++] = 7; log_2[i++] = 7; log_2[i++] = 7; log_2[i++] = 7; log_2[i++] = 7; log_2[i++] = 7; log_2[i++] = 7; 
+	log_2[i++] = 7; log_2[i++] = 7; log_2[i++] = 7; log_2[i++] = 7; log_2[i++] = 7; log_2[i++] = 7; log_2[i++] = 7; log_2[i++] = 7; 
+	log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; 
+	log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; 
+	log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; 
+	log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; 
+	log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; 
+	log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; 
+	log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; 
+	log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; 
+	log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; 
+	log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; 
+	log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; 
+	log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; 
+	log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; 
+	log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; 
+	log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; 
+	log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8; log_2[i++] = 8;
+
+};
+
+}
+#endif
 int main(int argc, char**argv) {
 	lua_State*L = luaL_newstate();
 	int i;

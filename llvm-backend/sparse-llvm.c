@@ -1485,12 +1485,12 @@ int main(int argc, char **argv)
 
 	char *error_message = NULL;
 	if (!LLVMVerifyModule(module, LLVMPrintMessageAction, &error_message)) {
-		LLVMWriteBitcodeToFile(module, "out.bc");
+		if (error_message) {
+			fprintf(stderr, "%s\n", error_message);
+			LLVMDisposeMessage(error_message);
+		}
 	}
-	if (error_message) {
-		fprintf(stderr, "%s\n", error_message);
-		LLVMDisposeMessage(error_message);
-	}
+	LLVMWriteBitcodeToFile(module, "out.bc");
 	LLVMDisposeModule(module);
 
 	destroy_dmr_C(C);

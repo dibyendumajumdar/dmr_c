@@ -1,24 +1,16 @@
-loading unsized types is not allowed
-  %load_target3 = load i8* (i8*, i8*, i64, i64), i8* (i8*, i8*, i64, i64)* %14
-Called function must be a pointer!
-  %R57 = call i8 %load_target3(i8* %load_target1, i8* %ARG2, i64 %ARG3, i64 %ARG4)
-Both operands to ICmp instruction are not of the same type!
-  %R59 = icmp eq i8 %R57, i8* null
-Function return type does not match operand type of return inst!
-  ret i8 %R57
- i8*Integer arithmetic operators only work with integral types!
-  %R217 = sub i8* %R213, %R216
-Both operands to ICmp instruction are not of the same type!
-  %R218 = icmp sle i8* %R217, i64 16
 Integer arithmetic operators only work with integral types!
-  %R235 = sub i8* %R226, %5
+  %R216 = sub i8* %R212, %R215
+Both operands to ICmp instruction are not of the same type!
+  %R217 = icmp sle i8* %R216, i64 16
+Integer arithmetic operators only work with integral types!
+  %R234 = sub i8* %R225, %5
 Call parameter type does not match function signature!
-  %R235 = sub i8* %R226, %5
- i64  %R237 = call { [24 x i8] }* @luaS_newlstr(%struct.lua_State* %ARG1, i8* %5, i8* %R235)
+  %R234 = sub i8* %R225, %5
+ i64  %R236 = call { [24 x i8] }* @luaS_newlstr(%struct.lua_State* %ARG1, i8* %5, i8* %R234)
 Integer arithmetic operators only work with integral types!
-  %R247 = sub i8* %R243, %R246
+  %R246 = sub i8* %R242, %R245
 Both operands to ICmp instruction are not of the same type!
-  %R248 = icmp sle i8* %R247, i64 16
+  %R247 = icmp sle i8* %R246, i64 16
 Switch constants must all be same type as switch value!
   switch i8 %load_target6, label %L71 [
     i32 37, label %L70
@@ -29,17 +21,17 @@ Switch constants must all be same type as switch value!
     i32 115, label %L59
   ]
 Integer arithmetic operators only work with integral types!
-  %R298 = sub i8* %R294, %R297
+  %R297 = sub i8* %R293, %R296
 Both operands to ICmp instruction are not of the same type!
-  %R299 = icmp sle i8* %R298, i64 16
+  %R298 = icmp sle i8* %R297, i64 16
 Integer arithmetic operators only work with integral types!
-  %R323 = sub i8* %R319, %R322
+  %R322 = sub i8* %R318, %R321
 Both operands to ICmp instruction are not of the same type!
-  %R324 = icmp sle i8* %R323, i64 16
+  %R323 = icmp sle i8* %R322, i64 16
 Integer arithmetic operators only work with integral types!
-  %R364 = sub %struct.lua_TValue* %load_target23, %load_target24
+  %R363 = sub %struct.lua_TValue* %load_target23, %load_target24
 Both operands to a binary operator are not of the same type!
-  %R365 = sdiv %struct.lua_TValue* %R364, i64 16
+  %R364 = sdiv %struct.lua_TValue* %R363, i64 16
 Stored value type does not match pointer operand type!
   store %struct.UpVal* %2, %struct.lua_TValue** %6
  %struct.lua_TValue*Stored value type does not match pointer operand type!
@@ -49,11 +41,11 @@ Stored value type does not match pointer operand type!
  %struct.UpVal*Stored value type does not match pointer operand type!
   store { [184 x i8] }* %load_target1, { [184 x i8] }*** %0
  { [184 x i8] }**Stored value type does not match pointer operand type!
-  store i32 %R667, i8* %28
+  store i32 %R666, i8* %28
  i8Stored value type does not match pointer operand type!
   store %struct.global_State* %45, %struct.UpVal** %49
  %struct.UpVal*Both operands to ICmp instruction are not of the same type!
-  %R703 = icmp ne %struct.lua_TValue* %load_target, %struct.UpVal* %6
+  %R702 = icmp ne %struct.lua_TValue* %load_target, %struct.UpVal* %6
 Call parameter type does not match function signature!
   %load_target1 = load { [184 x i8] }*, { [184 x i8] }** %7
  %struct.UpVal*  call void @luaF_freeupval(%struct.lua_State* %ARG1, { [184 x i8] }* %load_target1)
@@ -66,162 +58,162 @@ Stored value type does not match pointer operand type!
   %load_target1 = load { [184 x i8] }*, { [184 x i8] }** %7
  %struct.UpVal*  call void @luaC_linkupval(%struct.lua_State* %ARG1, { [184 x i8] }* %load_target1)
 Integer arithmetic operators only work with integral types!
-  %R901 = sub %struct.CallInfo* %load_target2, %load_target3
+  %R900 = sub %struct.CallInfo* %load_target2, %load_target3
 Both operands to a binary operator are not of the same type!
-  %R902 = sdiv %struct.CallInfo* %R901, i64 40
+  %R901 = sdiv %struct.CallInfo* %R900, i64 40
 Call parameter type does not match function signature!
   %14 = bitcast i8* %13 to %struct.lua_longjmp*
  %struct.__jmp_buf_tag*  call void @longjmp(%struct.lua_longjmp* %14, i32 1)
 Call parameter type does not match function signature!
   %18 = bitcast i8* %17 to %struct.lua_longjmp*
- %struct.__jmp_buf_tag*  %R957 = call i32 @_setjmp(%struct.lua_longjmp* %18)
+ %struct.__jmp_buf_tag*  %R956 = call i32 @_setjmp(%struct.lua_longjmp* %18)
 Integer arithmetic operators only work with integral types!
-  %R972 = sub %struct.lua_TValue* %load_target1, %ARG2
+  %R971 = sub %struct.lua_TValue* %load_target1, %ARG2
 Both operands to a binary operator are not of the same type!
-  %R973 = sdiv %struct.lua_TValue* %R972, i64 16
+  %R972 = sdiv %struct.lua_TValue* %R971, i64 16
 Both operands to a binary operator are not of the same type!
-  %R974 = mul %struct.lua_TValue* %R973, i64 16
+  %R973 = mul %struct.lua_TValue* %R972, i64 16
 Integer arithmetic operators only work with integral types!
-  %R986 = sub %struct.lua_TValue* %load_target4, %ARG2
+  %R985 = sub %struct.lua_TValue* %load_target4, %ARG2
 Both operands to a binary operator are not of the same type!
-  %R987 = sdiv %struct.lua_TValue* %R986, i64 16
+  %R986 = sdiv %struct.lua_TValue* %R985, i64 16
 Both operands to a binary operator are not of the same type!
-  %R988 = mul %struct.lua_TValue* %R987, i64 16
+  %R987 = mul %struct.lua_TValue* %R986, i64 16
 Integer arithmetic operators only work with integral types!
-  %R1004 = sub %struct.lua_TValue* %load_target11, %ARG2
+  %R1003 = sub %struct.lua_TValue* %load_target11, %ARG2
 Both operands to a binary operator are not of the same type!
-  %R1005 = sdiv %struct.lua_TValue* %R1004, i64 16
+  %R1004 = sdiv %struct.lua_TValue* %R1003, i64 16
 Both operands to a binary operator are not of the same type!
-  %R1006 = mul %struct.lua_TValue* %R1005, i64 16
+  %R1005 = mul %struct.lua_TValue* %R1004, i64 16
 Integer arithmetic operators only work with integral types!
-  %R1014 = sub %struct.lua_TValue* %load_target13, %ARG2
+  %R1013 = sub %struct.lua_TValue* %load_target13, %ARG2
 Both operands to a binary operator are not of the same type!
-  %R1015 = sdiv %struct.lua_TValue* %R1014, i64 16
+  %R1014 = sdiv %struct.lua_TValue* %R1013, i64 16
 Both operands to a binary operator are not of the same type!
-  %R1016 = mul %struct.lua_TValue* %R1015, i64 16
+  %R1015 = mul %struct.lua_TValue* %R1014, i64 16
 Integer arithmetic operators only work with integral types!
-  %R1024 = sub %struct.lua_TValue* %load_target15, %ARG2
+  %R1023 = sub %struct.lua_TValue* %load_target15, %ARG2
 Both operands to a binary operator are not of the same type!
-  %R1025 = sdiv %struct.lua_TValue* %R1024, i64 16
+  %R1024 = sdiv %struct.lua_TValue* %R1023, i64 16
 Both operands to a binary operator are not of the same type!
-  %R1026 = mul %struct.lua_TValue* %R1025, i64 16
+  %R1025 = mul %struct.lua_TValue* %R1024, i64 16
 Integer arithmetic operators only work with integral types!
-  %R1036 = sub %struct.lua_TValue* %load_target17, %ARG2
+  %R1035 = sub %struct.lua_TValue* %load_target17, %ARG2
 Both operands to a binary operator are not of the same type!
-  %R1037 = sdiv %struct.lua_TValue* %R1036, i64 16
+  %R1036 = sdiv %struct.lua_TValue* %R1035, i64 16
 Both operands to a binary operator are not of the same type!
-  %R1038 = mul %struct.lua_TValue* %R1037, i64 16
+  %R1037 = mul %struct.lua_TValue* %R1036, i64 16
 Integer arithmetic operators only work with integral types!
-  %R1110 = sub %struct.CallInfo* %load_target3, %load_target
+  %R1109 = sub %struct.CallInfo* %load_target3, %load_target
 Both operands to a binary operator are not of the same type!
-  %R1111 = sdiv %struct.CallInfo* %R1110, i64 40
+  %R1110 = sdiv %struct.CallInfo* %R1109, i64 40
 Both operands to a binary operator are not of the same type!
-  %R1112 = mul %struct.CallInfo* %R1111, i64 40
+  %R1111 = mul %struct.CallInfo* %R1110, i64 40
 Both operands to a binary operator are not of the same type!
-  %R1170 = sub %struct.lua_TValue* %load_target3, i64 %R1169
+  %R1169 = sub %struct.lua_TValue* %load_target3, i64 %R1168
 Integer arithmetic operators only work with integral types!
-  %R1213 = sub i8* %R1209, %R1212
+  %R1212 = sub i8* %R1208, %R1211
 Integer arithmetic operators only work with integral types!
-  %R1244 = sub i8* %R1240, %R1243
+  %R1243 = sub i8* %R1239, %R1242
 Both operands to ICmp instruction are not of the same type!
-  %R1245 = icmp sle i8* %R1244, i64 16
+  %R1244 = icmp sle i8* %R1243, i64 16
 Integer arithmetic operators only work with integral types!
-  %R1278 = sub i8* %R1274, %R1277
+  %R1277 = sub i8* %R1273, %R1276
 Integer arithmetic operators only work with integral types!
-  %R1297 = sub i8* %R1293, %R1296
+  %R1296 = sub i8* %R1292, %R1295
 Both operands to ICmp instruction are not of the same type!
-  %R1303 = icmp sle i8* %R1297, i64 %R1302
+  %R1302 = icmp sle i8* %R1296, i64 %R1301
 Integer arithmetic operators only work with integral types!
-  %R1337 = sub %struct.lua_TValue* %load_target21, %R1313
+  %R1336 = sub %struct.lua_TValue* %load_target21, %R1312
 Both operands to a binary operator are not of the same type!
-  %R1338 = sdiv %struct.lua_TValue* %R1337, i64 16
+  %R1337 = sdiv %struct.lua_TValue* %R1336, i64 16
 Integer arithmetic operators only work with integral types!
-  %R1401 = sub i8* %R1397, %R1400
+  %R1400 = sub i8* %R1396, %R1399
 Both operands to ICmp instruction are not of the same type!
-  %R1402 = icmp sle i8* %R1401, i64 320
+  %R1401 = icmp sle i8* %R1400, i64 320
 Both operands to a binary operator are not of the same type!
-  %R1449 = sub %struct.lua_TValue* %load_target49, i64 %R1448
+  %R1448 = sub %struct.lua_TValue* %load_target49, i64 %R1447
 Integer arithmetic operators only work with integral types!
-  %R1537 = sub i8* %R1533, %R1536
+  %R1536 = sub i8* %R1532, %R1535
 Call parameter type does not match function signature!
   %19 = bitcast i8* %18 to %struct.SParser*
- %struct.Mbuffer*  %R1602 = call %struct.Proto* @luaY_parser(%struct.lua_State* %ARG1, %struct.Zio* %load_target4, %struct.SParser* %19, i8* %load_target5)
+ %struct.Mbuffer*  %R1601 = call %struct.Proto* @luaY_parser(%struct.lua_State* %ARG1, %struct.Zio* %load_target4, %struct.SParser* %19, i8* %load_target5)
 Call parameter type does not match function signature!
   %load_target7 = load { [184 x i8] }*, { [184 x i8] }** %29
- %struct.Table*  %R1610 = call { [56 x i8] }* @luaF_newLclosure(%struct.lua_State* %ARG1, i32 %R1606, { [184 x i8] }* %load_target7)
+ %struct.Table*  %R1609 = call { [56 x i8] }* @luaF_newLclosure(%struct.lua_State* %ARG1, i32 %R1605, { [184 x i8] }* %load_target7)
 Integer arithmetic operators only work with integral types!
-  %R1641 = sub i8* %R1637, %R1640
+  %R1640 = sub i8* %R1636, %R1639
 Both operands to ICmp instruction are not of the same type!
-  %R1642 = icmp sle i8* %R1641, i64 16
+  %R1641 = icmp sle i8* %R1640, i64 16
 Integer arithmetic operators only work with integral types!
-  %R1659 = sub i8* %R1655, %R1658
+  %R1658 = sub i8* %R1654, %R1657
 Call parameter type does not match function signature!
-  %R1659 = sub i8* %R1655, %R1658
- i64  %R1662 = call i32 @luaD_pcall(%struct.lua_State* %ARG1, void (%struct.lua_State*, i8*)* @f_parser, i8* %R1652, i8* %R1659, i64 %load_target2)
+  %R1658 = sub i8* %R1654, %R1657
+ i64  %R1661 = call i32 @luaD_pcall(%struct.lua_State* %ARG1, void (%struct.lua_State*, i8*)* @f_parser, i8* %R1651, i8* %R1658, i64 %load_target2)
 Stored value type does not match pointer operand type!
-  store i32 %R1775, i8* %15
+  store i32 %R1774, i8* %15
  i8Both operands to a binary operator are not of the same type!
-  %R1841 = lshr i64 %ARG3, i32 5
+  %R1840 = lshr i64 %ARG3, i32 5
 Stored value type does not match pointer operand type!
   store { [184 x i8] }* %26, { [24 x i8] }** %3
  { [24 x i8] }*Stored value type does not match pointer operand type!
-  store i32 %R1937, i8* %7
+  store i32 %R1936, i8* %7
  i8Both operands to a binary operator are not of the same type!
-  %R1991 = shl i64 1, i32 %R1990
+  %R1990 = shl i64 1, i32 %R1989
 Both operands to a binary operator are not of the same type!
-  %R2014 = shl i64 1, i32 %R2013
+  %R2013 = shl i64 1, i32 %R2012
 Both operands to a binary operator are not of the same type!
-  %R2029 = shl i64 1, i32 %R2028
+  %R2028 = shl i64 1, i32 %R2027
 Both operands to a binary operator are not of the same type!
-  %R2046 = shl i64 1, i32 %R2045
+  %R2045 = shl i64 1, i32 %R2044
 Both operands to a binary operator are not of the same type!
-  %R2062 = shl i64 1, i32 %R2061
+  %R2061 = shl i64 1, i32 %R2060
 Call parameter type does not match function signature!
   %13 = bitcast i8* %12 to %struct.Node*
- %struct.lua_TValue*  %R2104 = call i32 @luaO_rawequalObj(%struct.Node* %13, %struct.lua_TValue* %ARG3)
+ %struct.lua_TValue*  %R2103 = call i32 @luaO_rawequalObj(%struct.Node* %13, %struct.lua_TValue* %ARG3)
 Integer arithmetic operators only work with integral types!
-  %R2120 = sub %struct.Node* %10, %load_target17
+  %R2119 = sub %struct.Node* %10, %load_target17
 Both operands to a binary operator are not of the same type!
-  %R2121 = sdiv %struct.Node* %R2120, i64 40
+  %R2120 = sdiv %struct.Node* %R2119, i64 40
 Both operands to a binary operator are not of the same type!
-  %R2184 = shl i64 1, i32 %R2183
+  %R2183 = shl i64 1, i32 %R2182
 Both operands to a binary operator are not of the same type!
-  %R2346 = shl i64 1, i32 %R2345
+  %R2345 = shl i64 1, i32 %R2344
 Call parameter type does not match function signature!
   %21 = bitcast i8* %20 to %struct.Node*
- %struct.lua_TValue*  %R2363 = call i32 @countint(%struct.Node* %21, i32* %ARG2)
+ %struct.lua_TValue*  %R2362 = call i32 @countint(%struct.Node* %21, i32* %ARG2)
 Both operands to a binary operator are not of the same type!
-  %R2430 = shl i64 1, i32 %R2424
+  %R2429 = shl i64 1, i32 %R2423
 Both operands to a binary operator are not of the same type!
-  %R2546 = shl i64 1, i32 %R2475
+  %R2545 = shl i64 1, i32 %R2474
 Call parameter type does not match function signature!
   %64 = bitcast i8* %63 to %struct.Node*
- %struct.lua_TValue*  %R2566 = call %struct.lua_TValue* @luaH_set(%struct.lua_State* %ARG1, %struct.Table* %ARG2, %struct.Node* %64)
+ %struct.lua_TValue*  %R2565 = call %struct.lua_TValue* @luaH_set(%struct.lua_State* %ARG1, %struct.Table* %ARG2, %struct.Node* %64)
 Both operands to a binary operator are not of the same type!
-  %R2583 = shl i64 1, i32 %R2475
+  %R2582 = shl i64 1, i32 %R2474
 Both operands to a binary operator are not of the same type!
-  %R2593 = shl i64 1, i32 %R2592
+  %R2592 = shl i64 1, i32 %R2591
 Both operands to a binary operator are not of the same type!
-  %R2672 = shl i64 1, i32 %R2671
+  %R2671 = shl i64 1, i32 %R2670
 Call parameter type does not match function signature!
   %11 = bitcast i8* %10 to %struct.Node*
- %struct.lua_TValue*  %R2728 = call %struct.Node* @mainposition(%struct.Table* %ARG2, %struct.Node* %11)
+ %struct.lua_TValue*  %R2727 = call %struct.Node* @mainposition(%struct.Table* %ARG2, %struct.Node* %11)
 Stored value type does not match pointer operand type!
   store %struct.Node* %51, %struct.lua_TValue** %2
  %struct.lua_TValue*Stored value type does not match pointer operand type!
   store %struct.Node* %13, %struct.lua_TValue** %1
  %struct.lua_TValue*Both operands to a binary operator are not of the same type!
-  %R2817 = shl i64 1, i32 %R2816
+  %R2816 = shl i64 1, i32 %R2815
 Both operands to ICmp instruction are not of the same type!
-  %R2831 = icmp eq { [184 x i8] }* %load_target5, { [24 x i8] }* %ARG2
+  %R2830 = icmp eq { [184 x i8] }* %load_target5, { [24 x i8] }* %ARG2
 Stored value type does not match pointer operand type!
   store %struct.Node* %15, %struct.lua_TValue** %1
  %struct.lua_TValue*Call parameter type does not match function signature!
   %load_target1 = load { [184 x i8] }*, { [184 x i8] }** %9
- { [24 x i8] }*  %R2847 = call %struct.lua_TValue* @luaH_getstr(%struct.Table* %ARG1, { [184 x i8] }* %load_target1)
+ { [24 x i8] }*  %R2846 = call %struct.lua_TValue* @luaH_getstr(%struct.Table* %ARG1, { [184 x i8] }* %load_target1)
 Call parameter type does not match function signature!
   %17 = bitcast i8* %16 to %struct.Node*
- %struct.lua_TValue*  %R2869 = call i32 @luaO_rawequalObj(%struct.Node* %17, %struct.lua_TValue* %ARG2)
+ %struct.lua_TValue*  %R2868 = call i32 @luaO_rawequalObj(%struct.Node* %17, %struct.lua_TValue* %ARG2)
 Stored value type does not match pointer operand type!
   store %struct.Node* %14, %struct.lua_TValue** %1
  %struct.lua_TValue*Switch constants must all be same type as switch value!
@@ -235,7 +227,7 @@ Stored value type does not match pointer operand type!
     i32 10, label %L498
   ]
 Both operands to ICmp instruction are not of the same type!
-  %R3097 = icmp eq %struct.lua_TValue* %load_target15, { [184 x i8] }* %40
+  %R3096 = icmp eq %struct.lua_TValue* %load_target15, { [184 x i8] }* %40
 Stored value type does not match pointer operand type!
   store %struct.lua_State* %load_target1, { [184 x i8] }*** %0
  { [184 x i8] }**Stored value type does not match pointer operand type!
@@ -243,15 +235,15 @@ Stored value type does not match pointer operand type!
  { [184 x i8] }**Stored value type does not match pointer operand type!
   store { [184 x i8] }* %load_target2, { [184 x i8] }*** %0
  { [184 x i8] }**Both operands to a binary operator are not of the same type!
-  %R3335 = shl i64 1, i32 %R3334
+  %R3334 = shl i64 1, i32 %R3333
 Integer arithmetic operators only work with integral types!
-  %R3588 = sub %struct.CallInfo* %load_target, %load_target1
+  %R3587 = sub %struct.CallInfo* %load_target, %load_target1
 Both operands to a binary operator are not of the same type!
-  %R3589 = sdiv %struct.CallInfo* %R3588, i64 40
+  %R3588 = sdiv %struct.CallInfo* %R3587, i64 40
 Integer arithmetic operators only work with integral types!
-  %R3594 = sub %struct.lua_TValue* %ARG2, %load_target2
+  %R3593 = sub %struct.lua_TValue* %ARG2, %load_target2
 Both operands to a binary operator are not of the same type!
-  %R3595 = sdiv %struct.lua_TValue* %R3594, i64 16
+  %R3594 = sdiv %struct.lua_TValue* %R3593, i64 16
 Switch constants must all be same type as switch value!
   switch i8 %load_target2, label %L632 [
     i32 5, label %L623
@@ -261,9 +253,9 @@ Switch constants must all be same type as switch value!
   ]
 Call parameter type does not match function signature!
   %load_target = load { [184 x i8] }*, { [184 x i8] }** %5
- %struct.Table*  %R3694 = call i32 @traversetable(%struct.global_State* %ARG1, { [184 x i8] }* %load_target)
+ %struct.Table*  %R3693 = call i32 @traversetable(%struct.global_State* %ARG1, { [184 x i8] }* %load_target)
 Both operands to a binary operator are not of the same type!
-  %R3708 = shl i64 1, i32 %R3707
+  %R3707 = shl i64 1, i32 %R3706
 Call parameter type does not match function signature!
   %load_target = load { [184 x i8] }*, { [184 x i8] }** %5
  { [56 x i8] }*  call void @traverseclosure(%struct.global_State* %ARG1, { [184 x i8] }* %load_target)
@@ -274,13 +266,13 @@ Call parameter type does not match function signature!
   %load_target = load { [184 x i8] }*, { [184 x i8] }** %5
  %struct.Proto*  call void @traverseproto(%struct.global_State* %ARG1, { [184 x i8] }* %load_target)
 Both operands to a binary operator are not of the same type!
-  %R3873 = shl i64 1, i32 %R3872
+  %R3872 = shl i64 1, i32 %R3871
 Call parameter type does not match function signature!
   %38 = bitcast i8* %37 to %struct.Node*
- %struct.lua_TValue*  %R3889 = call i32 @iscleared(%struct.Node* %38, i32 1)
+ %struct.lua_TValue*  %R3888 = call i32 @iscleared(%struct.Node* %38, i32 1)
 Call parameter type does not match function signature!
   %31 = bitcast i8* %30 to %struct.Node*
- %struct.lua_TValue*  %R3892 = call i32 @iscleared(%struct.Node* %31, i32 0)
+ %struct.lua_TValue*  %R3891 = call i32 @iscleared(%struct.Node* %31, i32 0)
 Switch constants must all be same type as switch value!
   switch i8 %load_target, label %L675 [
     i32 4, label %L673
@@ -308,14 +300,14 @@ Call parameter type does not match function signature!
  %struct.lua_State*  call void @luaE_freethread(%struct.lua_State* %ARG1, { [184 x i8] }* %ARG2)
 Call parameter type does not match function signature!
   %17 = bitcast i8* %16 to { [184 x i8] }*
- { [184 x i8] }**  %R3954 = call { [184 x i8] }** @sweeplist(%struct.lua_State* %ARG1, { [184 x i8] }* %17, i64 -3)
+ { [184 x i8] }**  %R3953 = call { [184 x i8] }** @sweeplist(%struct.lua_State* %ARG1, { [184 x i8] }* %17, i64 -3)
 Stored value type does not match pointer operand type!
   store { [184 x i8] }* %load_target2, { [184 x i8] }*** %0
  { [184 x i8] }**Call parameter type does not match function signature!
   %9 = bitcast i8* %8 to %struct.global_State*
- { [184 x i8] }**  %R4138 = call { [184 x i8] }** @sweeplist(%struct.lua_State* %ARG1, %struct.global_State* %9, i64 -3)
+ { [184 x i8] }**  %R4137 = call { [184 x i8] }** @sweeplist(%struct.lua_State* %ARG1, %struct.global_State* %9, i64 -3)
 Both operands to ICmp instruction are not of the same type!
-  %R4234 = icmp ne %struct.UpVal* %5, %struct.global_State* %8
+  %R4233 = icmp ne %struct.UpVal* %5, %struct.global_State* %8
 Stored value type does not match pointer operand type!
   store %struct.global_State* %44, { [184 x i8] }*** %48
  { [184 x i8] }**Switch constants must all be same type as switch value!
@@ -327,26 +319,26 @@ Stored value type does not match pointer operand type!
     i32 4, label %L751
   ]
 Stored value type does not match pointer operand type!
-  store i32 %R4490, i8* %19
+  store i32 %R4489, i8* %19
  i8Call parameter type does not match function signature!
   %4 = bitcast i8* %3 to %struct.LG*
- %struct.global_State*  call void @preinit_state(%struct.lua_State* %R4740, %struct.LG* %4)
+ %struct.global_State*  call void @preinit_state(%struct.lua_State* %R4739, %struct.LG* %4)
 Stored value type does not match pointer operand type!
   store %struct.LG* %29, %struct.UpVal** %33
  %struct.UpVal*Stored value type does not match pointer operand type!
   store %struct.LG* %29, %struct.UpVal** %37
  %struct.UpVal*Stored value type does not match pointer operand type!
-  store %struct.LG* %R4742, { [184 x i8] }** %79
+  store %struct.LG* %R4741, { [184 x i8] }** %79
  { [184 x i8] }*Stored value type does not match pointer operand type!
   store %struct.LG* %86, { [184 x i8] }*** %90
  { [184 x i8] }**Integer arithmetic operators only work with integral types!
-  %R4862 = sub i32* %load_target10, %load_target13
+  %R4861 = sub i32* %load_target10, %load_target13
 Both operands to a binary operator are not of the same type!
-  %R4863 = sdiv i32* %R4862, i64 4
+  %R4862 = sdiv i32* %R4861, i64 4
 Integer arithmetic operators only work with integral types!
-  %R4919 = sub %struct.CallInfo* %31, %load_target11
+  %R4918 = sub %struct.CallInfo* %31, %load_target11
 Both operands to a binary operator are not of the same type!
-  %R4920 = sdiv %struct.CallInfo* %R4919, i64 40
+  %R4919 = sdiv %struct.CallInfo* %R4918, i64 40
 Call parameter type does not match function signature!
   %64 = bitcast i8* %63 to %struct.lua_Debug*
  i8*  call void @luaO_chunkid(%struct.lua_Debug* %64, i8* %65, i64 60)
@@ -354,9 +346,9 @@ Call parameter type does not match function signature!
   %30 = bitcast i8* %29 to %struct.lua_Debug*
  i8*  call void @luaO_chunkid(%struct.lua_Debug* %30, i8* getelementptr inbounds ([13 x i8], [13 x i8]* @.str.42, i64 0, i64 0), i64 60)
 Integer arithmetic operators only work with integral types!
-  %R5032 = sub i8* %R5028, %R5031
+  %R5031 = sub i8* %R5027, %R5030
 Both operands to ICmp instruction are not of the same type!
-  %R5033 = icmp sle i8* %R5032, i64 16
+  %R5032 = icmp sle i8* %R5031, i64 16
 Switch constants must all be same type as switch value!
   switch i8 %load_target, label %L862 [
     i32 76, label %L863
@@ -371,38 +363,38 @@ Stored value type does not match pointer operand type!
  { [56 x i8] }*Stored value type does not match pointer operand type!
   store { [184 x i8] }* %load_target8, { [56 x i8] }** %1
  { [56 x i8] }*Integer arithmetic operators only work with integral types!
-  %R5126 = sub i8* %R5122, %R5125
+  %R5125 = sub i8* %R5121, %R5124
 Both operands to ICmp instruction are not of the same type!
-  %R5127 = icmp sle i8* %R5126, i64 16
+  %R5126 = icmp sle i8* %R5125, i64 16
 Incorrect number of arguments passed to called function!
-  %R5244 = call i8* @luaO_pushfstring(%struct.lua_State* %ARG1, i8* getelementptr inbounds ([10 x i8], [10 x i8]* @.str.51, i64 0, i64 0), i8* %R5233, i32 %R5232, i8* %ARG2)
+  %R5243 = call i8* @luaO_pushfstring(%struct.lua_State* %ARG1, i8* getelementptr inbounds ([10 x i8], [10 x i8]* @.str.51, i64 0, i64 0), i8* %R5232, i32 %R5231, i8* %ARG2)
 Integer arithmetic operators only work with integral types!
-  %R5288 = sub i8* %R5284, %R5287
+  %R5287 = sub i8* %R5283, %R5286
 Both operands to ICmp instruction are not of the same type!
-  %R5289 = icmp sle i8* %R5288, i64 16
+  %R5288 = icmp sle i8* %R5287, i64 16
 Incorrect number of arguments passed to called function!
-  %R5464 = call i8* @luaO_pushfstring(%struct.lua_State* %load_target4, i8* getelementptr inbounds ([9 x i8], [9 x i8]* @.str.56, i64 0, i64 0), i32 %ARG2)
+  %R5463 = call i8* @luaO_pushfstring(%struct.lua_State* %load_target4, i8* getelementptr inbounds ([9 x i8], [9 x i8]* @.str.56, i64 0, i64 0), i32 %ARG2)
 Incorrect number of arguments passed to called function!
-  %R5469 = call i8* @luaO_pushfstring(%struct.lua_State* %load_target5, i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.str.57, i64 0, i64 0), i32 %ARG2)
+  %R5468 = call i8* @luaO_pushfstring(%struct.lua_State* %load_target5, i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.str.57, i64 0, i64 0), i32 %ARG2)
 Incorrect number of arguments passed to called function!
-  %R5500 = call i8* @luaO_pushfstring(%struct.lua_State* %load_target1, i8* getelementptr inbounds ([10 x i8], [10 x i8]* @.str.59, i64 0, i64 0), i8* %R5488, i32 %load_target2, i8* %ARG2)
+  %R5499 = call i8* @luaO_pushfstring(%struct.lua_State* %load_target1, i8* getelementptr inbounds ([10 x i8], [10 x i8]* @.str.59, i64 0, i64 0), i8* %R5487, i32 %load_target2, i8* %ARG2)
 Incorrect number of arguments passed to called function!
-  %R5509 = call i8* @luaO_pushfstring(%struct.lua_State* %load_target3, i8* getelementptr inbounds ([13 x i8], [13 x i8]* @.str.60, i64 0, i64 0), i8* %R5500, i8* %R5508)
+  %R5508 = call i8* @luaO_pushfstring(%struct.lua_State* %load_target3, i8* getelementptr inbounds ([13 x i8], [13 x i8]* @.str.60, i64 0, i64 0), i8* %R5499, i8* %R5507)
 Call parameter type does not match function signature!
 { [8 x i8] }* %ARG2
- double*  %R5768 = call i32 @luaO_str2d(i8* %load_target31, { [8 x i8] }* %ARG2)
+ double*  %R5767 = call i32 @luaO_str2d(i8* %load_target31, { [8 x i8] }* %ARG2)
 Call parameter type does not match function signature!
   %26 = bitcast i8* %25 to %struct.LexState*
- { [8 x i8] }*  %R6570 = call i32 @llex(%struct.LexState* %ARG1, %struct.LexState* %26)
+ { [8 x i8] }*  %R6569 = call i32 @llex(%struct.LexState* %ARG1, %struct.LexState* %26)
 Call parameter type does not match function signature!
   %2 = bitcast i8* %1 to %struct.LexState*
- { [8 x i8] }*  %R6576 = call i32 @llex(%struct.LexState* %ARG1, %struct.LexState* %2)
+ { [8 x i8] }*  %R6575 = call i32 @llex(%struct.LexState* %ARG1, %struct.LexState* %2)
 Call parameter type does not match function signature!
   %2 = bitcast i8* %1 to %struct.FuncState*
  i32*  call void @luaK_concat(%struct.FuncState* %ARG1, %struct.FuncState* %2, i32 %ARG2)
 Call parameter type does not match function signature!
   %52 = bitcast i8* %51 to %struct.Proto*
- i32*  %R6973 = call i8* @luaM_growaux_(%struct.lua_State* %load_target, i8* %R6969, %struct.Proto* %52, i64 16, i32 262143, i8* getelementptr inbounds ([24 x i8], [24 x i8]* @.str.77, i64 0, i64 0))
+ i32*  %R6972 = call i8* @luaM_growaux_(%struct.lua_State* %load_target, i8* %R6968, %struct.Proto* %52, i64 16, i32 262143, i8* getelementptr inbounds ([24 x i8], [24 x i8]* @.str.77, i64 0, i64 0))
 Call parameter type does not match function signature!
   %9 = bitcast i8* %8 to %struct.expdesc*
  i32*  call void @luaK_concat(%struct.FuncState* %ARG1, %struct.expdesc* %9, i32 %load_target2)
@@ -420,35 +412,35 @@ Call parameter type does not match function signature!
  i32*  call void @luaK_concat(%struct.FuncState* %ARG1, %struct.expdesc* %15, i32 %load_target2)
 Call parameter type does not match function signature!
   %22 = bitcast i8* %21 to %struct.Proto*
- i32*  %R7912 = call i8* @luaM_growaux_(%struct.lua_State* %load_target4, i8* %R7908, %struct.Proto* %22, i64 4, i32 2147483645, i8* getelementptr inbounds ([19 x i8], [19 x i8]* @.str.78, i64 0, i64 0))
+ i32*  %R7911 = call i8* @luaM_growaux_(%struct.lua_State* %load_target4, i8* %R7907, %struct.Proto* %22, i64 4, i32 2147483645, i8* getelementptr inbounds ([19 x i8], [19 x i8]* @.str.78, i64 0, i64 0))
 Call parameter type does not match function signature!
   %59 = bitcast i8* %58 to %struct.Proto*
- i32*  %R7937 = call i8* @luaM_growaux_(%struct.lua_State* %load_target12, i8* %R7933, %struct.Proto* %59, i64 4, i32 2147483645, i8* getelementptr inbounds ([19 x i8], [19 x i8]* @.str.79, i64 0, i64 0))
+ i32*  %R7936 = call i8* @luaM_growaux_(%struct.lua_State* %load_target12, i8* %R7932, %struct.Proto* %59, i64 4, i32 2147483645, i8* getelementptr inbounds ([19 x i8], [19 x i8]* @.str.79, i64 0, i64 0))
 Incorrect number of arguments passed to called function!
-  %R8041 = call i8* @luaO_pushfstring(%struct.lua_State* %load_target, i8* getelementptr inbounds ([14 x i8], [14 x i8]* @.str.82, i64 0, i64 0), i8* %R8040)
+  %R8040 = call i8* @luaO_pushfstring(%struct.lua_State* %load_target, i8* getelementptr inbounds ([14 x i8], [14 x i8]* @.str.82, i64 0, i64 0), i8* %R8039)
 Incorrect number of arguments passed to called function!
-  %R8051 = call i8* @luaO_pushfstring(%struct.lua_State* %load_target2, i8* getelementptr inbounds ([34 x i8], [34 x i8]* @.str.83, i64 0, i64 0), i32 %ARG2, i8* %ARG3)
+  %R8050 = call i8* @luaO_pushfstring(%struct.lua_State* %load_target2, i8* getelementptr inbounds ([34 x i8], [34 x i8]* @.str.83, i64 0, i64 0), i32 %ARG2, i8* %ARG3)
 Incorrect number of arguments passed to called function!
-  %R8060 = call i8* @luaO_pushfstring(%struct.lua_State* %load_target3, i8* getelementptr inbounds ([40 x i8], [40 x i8]* @.str.84, i64 0, i64 0), i32 %load_target1, i32 %ARG2, i8* %ARG3)
+  %R8059 = call i8* @luaO_pushfstring(%struct.lua_State* %load_target3, i8* getelementptr inbounds ([40 x i8], [40 x i8]* @.str.84, i64 0, i64 0), i32 %load_target1, i32 %ARG2, i8* %ARG3)
 Incorrect number of arguments passed to called function!
-  %R8100 = call i8* @luaO_pushfstring(%struct.lua_State* %load_target3, i8* getelementptr inbounds ([41 x i8], [41 x i8]* @.str.85, i64 0, i64 0), i8* %R8095, i8* %R8098, i32 %ARG4)
+  %R8099 = call i8* @luaO_pushfstring(%struct.lua_State* %load_target3, i8* getelementptr inbounds ([41 x i8], [41 x i8]* @.str.85, i64 0, i64 0), i8* %R8094, i8* %R8097, i32 %ARG4)
 Call parameter type does not match function signature!
   %27 = bitcast i8* %26 to %struct.Proto*
- i32*  %R8143 = call i8* @luaM_growaux_(%struct.lua_State* %load_target5, i8* %R8139, %struct.Proto* %27, i64 16, i32 32767, i8* getelementptr inbounds ([25 x i8], [25 x i8]* @.str.86, i64 0, i64 0))
+ i32*  %R8142 = call i8* @luaM_growaux_(%struct.lua_State* %load_target5, i8* %R8138, %struct.Proto* %27, i64 16, i32 32767, i8* getelementptr inbounds ([25 x i8], [25 x i8]* @.str.86, i64 0, i64 0))
 Call parameter type does not match function signature!
   %48 = bitcast i8* %47 to %struct.Proto*
- i32*  %R8324 = call i8* @luaM_growaux_(%struct.lua_State* %load_target18, i8* %R8320, %struct.Proto* %48, i64 8, i32 2147483645, i8* getelementptr inbounds ([1 x i8], [1 x i8]* @.str.89, i64 0, i64 0))
+ i32*  %R8323 = call i8* @luaM_growaux_(%struct.lua_State* %load_target18, i8* %R8319, %struct.Proto* %48, i64 8, i32 2147483645, i8* getelementptr inbounds ([1 x i8], [1 x i8]* @.str.89, i64 0, i64 0))
 Call parameter type does not match function signature!
   %28 = bitcast i8* %27 to %struct.Proto*
- i32*  %R8567 = call i8* @luaM_growaux_(%struct.lua_State* %load_target5, i8* %R8563, %struct.Proto* %28, i64 8, i32 262143, i8* getelementptr inbounds ([24 x i8], [24 x i8]* @.str.91, i64 0, i64 0))
+ i32*  %R8566 = call i8* @luaM_growaux_(%struct.lua_State* %load_target5, i8* %R8562, %struct.Proto* %28, i64 8, i32 262143, i8* getelementptr inbounds ([24 x i8], [24 x i8]* @.str.91, i64 0, i64 0))
 Integer arithmetic operators only work with integral types!
-  %R8690 = sub i8* %R8686, %R8689
+  %R8689 = sub i8* %R8685, %R8688
 Both operands to ICmp instruction are not of the same type!
-  %R8691 = icmp sle i8* %R8690, i64 16
+  %R8690 = icmp sle i8* %R8689, i64 16
 Integer arithmetic operators only work with integral types!
-  %R8708 = sub i8* %R8704, %R8707
+  %R8707 = sub i8* %R8703, %R8706
 Both operands to ICmp instruction are not of the same type!
-  %R8709 = icmp sle i8* %R8708, i64 16
+  %R8708 = icmp sle i8* %R8707, i64 16
 Call parameter type does not match function signature!
 %struct.ConsControl* %ARG2
  %struct.expdesc*  call void @luaK_exp2nextreg(%struct.FuncState* %ARG1, %struct.ConsControl* %ARG2)
@@ -462,35 +454,35 @@ Call parameter type does not match function signature!
 %struct.ConsControl* %ARG2
  %struct.expdesc*  call void @expr(%struct.LexState* %ARG1, %struct.ConsControl* %ARG2)
 Call parameter type does not match function signature!
-  %R9053 = bitcast %struct.ConsControl* %cc_0x62d000bc3638 to i8*
- %struct.expdesc*  call void @init_exp(i8* %R9053, i32 0, i32 0)
+  %R9052 = bitcast %struct.ConsControl* %cc_0x62d000bc3638 to i8*
+ %struct.expdesc*  call void @init_exp(i8* %R9052, i32 0, i32 0)
 Call parameter type does not match function signature!
-  %R9053 = bitcast %struct.ConsControl* %cc_0x62d000bc3638 to i8*
- %struct.ConsControl*  call void @closelistfield(%struct.FuncState* %load_target, i8* %R9053)
+  %R9052 = bitcast %struct.ConsControl* %cc_0x62d000bc3638 to i8*
+ %struct.ConsControl*  call void @closelistfield(%struct.FuncState* %load_target, i8* %R9052)
 Call parameter type does not match function signature!
-  %R9053 = bitcast %struct.ConsControl* %cc_0x62d000bc3638 to i8*
- %struct.ConsControl*  call void @listfield(%struct.LexState* %ARG1, i8* %R9053)
+  %R9052 = bitcast %struct.ConsControl* %cc_0x62d000bc3638 to i8*
+ %struct.ConsControl*  call void @listfield(%struct.LexState* %ARG1, i8* %R9052)
 Call parameter type does not match function signature!
-  %R9053 = bitcast %struct.ConsControl* %cc_0x62d000bc3638 to i8*
- %struct.ConsControl*  call void @recfield(%struct.LexState* %ARG1, i8* %R9053)
+  %R9052 = bitcast %struct.ConsControl* %cc_0x62d000bc3638 to i8*
+ %struct.ConsControl*  call void @recfield(%struct.LexState* %ARG1, i8* %R9052)
 Call parameter type does not match function signature!
-  %R9053 = bitcast %struct.ConsControl* %cc_0x62d000bc3638 to i8*
- %struct.ConsControl*  call void @recfield(%struct.LexState* %ARG1, i8* %R9053)
+  %R9052 = bitcast %struct.ConsControl* %cc_0x62d000bc3638 to i8*
+ %struct.ConsControl*  call void @recfield(%struct.LexState* %ARG1, i8* %R9052)
 Call parameter type does not match function signature!
-  %R9053 = bitcast %struct.ConsControl* %cc_0x62d000bc3638 to i8*
- %struct.ConsControl*  call void @listfield(%struct.LexState* %ARG1, i8* %R9053)
+  %R9052 = bitcast %struct.ConsControl* %cc_0x62d000bc3638 to i8*
+ %struct.ConsControl*  call void @listfield(%struct.LexState* %ARG1, i8* %R9052)
 Call parameter type does not match function signature!
-  %R9053 = bitcast %struct.ConsControl* %cc_0x62d000bc3638 to i8*
- %struct.ConsControl*  call void @lastlistfield(%struct.FuncState* %load_target, i8* %R9053)
+  %R9052 = bitcast %struct.ConsControl* %cc_0x62d000bc3638 to i8*
+ %struct.ConsControl*  call void @lastlistfield(%struct.FuncState* %load_target, i8* %R9052)
 Call parameter type does not match function signature!
-  %8 = getelementptr inbounds i8, i8* %R9477, i32 8
+  %8 = getelementptr inbounds i8, i8* %R9476, i32 8
  %struct.expdesc*  call void @primaryexp(%struct.LexState* %ARG1, i8* %8)
 Call parameter type does not match function signature!
-  %8 = getelementptr inbounds i8, i8* %R9477, i32 8
+  %8 = getelementptr inbounds i8, i8* %R9476, i32 8
  %struct.expdesc*  call void @check_conflict(%struct.LexState* %ARG1, %struct.LHS_assign* %ARG2, i8* %8)
 Call parameter type does not match function signature!
-  %R9477 = bitcast %struct.LHS_assign* %nv_0x62d000bfaa80 to i8*
- %struct.LHS_assign*  call void @assignment(%struct.LexState* %ARG1, i8* %R9477, i32 %R9504)
+  %R9476 = bitcast %struct.LHS_assign* %nv_0x62d000bfaa80 to i8*
+ %struct.LHS_assign*  call void @assignment(%struct.LexState* %ARG1, i8* %R9476, i32 %R9503)
 Call parameter type does not match function signature!
   %47 = bitcast i8* %46 to %struct.LHS_assign*
  %struct.expdesc*  call void @luaK_storevar(%struct.FuncState* %load_target20, %struct.LHS_assign* %47, %struct.expdesc* %e_0x62d000bfa998)
@@ -499,83 +491,83 @@ Call parameter type does not match function signature!
  %struct.expdesc*  call void @luaK_storevar(%struct.FuncState* %load_target23, %struct.LHS_assign* %62, %struct.expdesc* %e_0x62d000bfa998)
 Call parameter type does not match function signature!
   %26 = bitcast i8* %25 to %struct.BlockCnt*
- i32*  call void @luaK_concat(%struct.FuncState* %load_target, %struct.BlockCnt* %26, i32 %R9585)
+ i32*  call void @luaK_concat(%struct.FuncState* %load_target, %struct.BlockCnt* %26, i32 %R9584)
 Invalid bitcast
 i32 addrspace(32)* bitcast (i32 -1 to i32 addrspace(32)*)
 Invalid bitcast
 i32* bitcast (i32 -1 to i32*)
 Call parameter type does not match function signature!
-  %4 = getelementptr inbounds i8, i8* %R9916, i32 8
+  %4 = getelementptr inbounds i8, i8* %R9915, i32 8
  %struct.expdesc*  call void @primaryexp(%struct.LexState* %ARG1, i8* %4)
 Call parameter type does not match function signature!
-  %R9916 = bitcast %struct.LHS_assign* %v_0x62d000c58a70 to i8*
- %struct.LHS_assign*  call void @assignment(%struct.LexState* %ARG1, i8* %R9916, i32 1)
+  %R9915 = bitcast %struct.LHS_assign* %v_0x62d000c58a70 to i8*
+ %struct.LHS_assign*  call void @assignment(%struct.LexState* %ARG1, i8* %R9915, i32 1)
 Integer arithmetic operators only work with integral types!
-  %R10093 = sub i8* %R10089, %R10092
+  %R10092 = sub i8* %R10088, %R10091
 Integer arithmetic operators only work with integral types!
-  %R10132 = sub i8* %R10128, %R10131
+  %R10131 = sub i8* %R10127, %R10130
 Both operands to ICmp instruction are not of the same type!
-  %R10133 = icmp sle i8* %R10132, i64 48
+  %R10132 = icmp sle i8* %R10131, i64 48
 Integer arithmetic operators only work with integral types!
-  %R10212 = sub i8* %R10208, %R10211
+  %R10211 = sub i8* %R10207, %R10210
 Both operands to ICmp instruction are not of the same type!
-  %R10213 = icmp sle i8* %R10212, i64 64
+  %R10212 = icmp sle i8* %R10211, i64 64
 Call parameter type does not match function signature!
   %load_target4 = load { [184 x i8] }*, { [184 x i8] }** %12
- %struct.Table*  %R10235 = call %struct.lua_TValue* @luaH_get({ [184 x i8] }* %load_target4, %struct.lua_TValue* %ARG3)
+ %struct.Table*  %R10234 = call %struct.lua_TValue* @luaH_get({ [184 x i8] }* %load_target4, %struct.lua_TValue* %ARG3)
 Call parameter type does not match function signature!
   %load_target4 = load { [184 x i8] }*, { [184 x i8] }** %12
- %struct.Table*  %R10301 = call %struct.lua_TValue* @luaH_set(%struct.lua_State* %ARG1, { [184 x i8] }* %load_target4, %struct.lua_TValue* %ARG3)
+ %struct.Table*  %R10300 = call %struct.lua_TValue* @luaH_set(%struct.lua_State* %ARG1, { [184 x i8] }* %load_target4, %struct.lua_TValue* %ARG3)
 Call parameter type does not match function signature!
   %load_target4 = load { [184 x i8] }*, { [184 x i8] }** %12
  %struct.Table*  call void @luaC_barrierback(%struct.lua_State* %ARG1, { [184 x i8] }* %load_target4)
 Call parameter type does not match function signature!
   %load_target10 = load { [184 x i8] }*, { [184 x i8] }** %20
- { [24 x i8] }*  %R10581 = call i32 @l_strcmp({ [184 x i8] }* %load_target10, { [184 x i8] }* %load_target11)
+ { [24 x i8] }*  %R10580 = call i32 @l_strcmp({ [184 x i8] }* %load_target10, { [184 x i8] }* %load_target11)
 Call parameter type does not match function signature!
   %load_target10 = load { [184 x i8] }*, { [184 x i8] }** %20
- { [24 x i8] }*  %R10626 = call i32 @l_strcmp({ [184 x i8] }* %load_target10, { [184 x i8] }* %load_target11)
+ { [24 x i8] }*  %R10625 = call i32 @l_strcmp({ [184 x i8] }* %load_target10, { [184 x i8] }* %load_target11)
 Both operands to a binary operator are not of the same type!
-  %R10788 = sub %struct.lua_TValue* %19, i64 %R10787
+  %R10787 = sub %struct.lua_TValue* %19, i64 %R10786
 Call parameter type does not match function signature!
   %79 = bitcast i8* %78 to %struct.global_State*
- %struct.Mbuffer*  %R10826 = call i8* @luaZ_openspace(%struct.lua_State* %ARG1, %struct.global_State* %79, i64 %80)
+ %struct.Mbuffer*  %R10825 = call i8* @luaZ_openspace(%struct.lua_State* %ARG1, %struct.global_State* %79, i64 %80)
 Both operands to a binary operator are not of the same type!
-  %R10834 = sub %struct.lua_TValue* %19, i64 %R10833
+  %R10833 = sub %struct.lua_TValue* %19, i64 %R10832
 Both operands to a binary operator are not of the same type!
-  %R10864 = sub %struct.lua_TValue* %19, i64 %R10863
+  %R10863 = sub %struct.lua_TValue* %19, i64 %R10862
 Call parameter type does not match function signature!
   %load_target128 = load { [184 x i8] }*, { [184 x i8] }** %712
- %struct.Table*  %R11911 = call i32 @luaH_getn({ [184 x i8] }* %load_target128)
+ %struct.Table*  %R11910 = call i32 @luaH_getn({ [184 x i8] }* %load_target128)
 Integer arithmetic operators only work with integral types!
-  %R12404 = sub %struct.lua_TValue* %load_target197, %load_target192
+  %R12403 = sub %struct.lua_TValue* %load_target197, %load_target192
 Both operands to a binary operator are not of the same type!
-  %R12405 = sdiv %struct.lua_TValue* %R12404, i64 16
+  %R12404 = sdiv %struct.lua_TValue* %R12403, i64 16
 Both operands to a binary operator are not of the same type!
-  %R12406 = mul %struct.lua_TValue* %R12405, i64 16
+  %R12405 = mul %struct.lua_TValue* %R12404, i64 16
 Integer arithmetic operators only work with integral types!
-  %R12689 = sub %struct.lua_TValue* %load_target250, %90
+  %R12688 = sub %struct.lua_TValue* %load_target250, %90
 Both operands to a binary operator are not of the same type!
-  %R12690 = sdiv %struct.lua_TValue* %R12689, i64 16
+  %R12689 = sdiv %struct.lua_TValue* %R12688, i64 16
 Call parameter type does not match function signature!
   %load_target258 = load { [184 x i8] }*, { [184 x i8] }** %1311
- %struct.Table*  call void @luaH_resizearray(%struct.lua_State* %ARG1, { [184 x i8] }* %load_target258, i32 %R12713)
+ %struct.Table*  call void @luaH_resizearray(%struct.lua_State* %ARG1, { [184 x i8] }* %load_target258, i32 %R12712)
 Call parameter type does not match function signature!
   %load_target258 = load { [184 x i8] }*, { [184 x i8] }** %1311
- %struct.Table*  %R12733 = call %struct.lua_TValue* @luaH_setnum(%struct.lua_State* %ARG1, { [184 x i8] }* %load_target258, i32 %1322)
+ %struct.Table*  %R12732 = call %struct.lua_TValue* @luaH_setnum(%struct.lua_State* %ARG1, { [184 x i8] }* %load_target258, i32 %1322)
 Call parameter type does not match function signature!
   %load_target258 = load { [184 x i8] }*, { [184 x i8] }** %1311
  %struct.Table*  call void @luaC_barrierback(%struct.lua_State* %ARG1, { [184 x i8] }* %load_target258)
 Integer arithmetic operators only work with integral types!
-  %R12864 = sub %struct.lua_TValue* %load_target292, %load_target293
+  %R12863 = sub %struct.lua_TValue* %load_target292, %load_target293
 Both operands to a binary operator are not of the same type!
-  %R12865 = sdiv %struct.lua_TValue* %R12864, i64 16
+  %R12864 = sdiv %struct.lua_TValue* %R12863, i64 16
 Integer arithmetic operators only work with integral types!
-  %R12883 = sub i8* %R12879, %R12882
+  %R12882 = sub i8* %R12878, %R12881
 Both operands to ICmp instruction are not of the same type!
-  %R12887 = icmp sle i8* %R12883, i64 %R12886
+  %R12886 = icmp sle i8* %R12882, i64 %R12885
 Both operands to a binary operator are not of the same type!
-  %R12919 = sub %struct.lua_TValue* %load_target307, i64 %R12918
+  %R12918 = sub %struct.lua_TValue* %load_target307, i64 %R12917
 Stored value type does not match pointer operand type!
   store %struct.global_State* %25, %struct.lua_TValue** %0
  %struct.lua_TValue*Stored value type does not match pointer operand type!
@@ -589,19 +581,19 @@ Stored value type does not match pointer operand type!
  %struct.lua_TValue*Stored value type does not match pointer operand type!
   store { [184 x i8] }* %load_target3, %struct.Table** %0
  %struct.Table*Integer arithmetic operators only work with integral types!
-  %R13036 = sub %struct.lua_TValue* %load_target, %load_target2
+  %R13035 = sub %struct.lua_TValue* %load_target, %load_target2
 Both operands to a binary operator are not of the same type!
-  %R13037 = sdiv %struct.lua_TValue* %R13036, i64 16
+  %R13036 = sdiv %struct.lua_TValue* %R13035, i64 16
 Both operands to ICmp instruction are not of the same type!
-  %R13041 = icmp sgt %struct.lua_TValue* %11, i64 8000
+  %R13040 = icmp sgt %struct.lua_TValue* %11, i64 8000
 Integer arithmetic operators only work with integral types!
-  %R13050 = sub i8* %R13046, %R13049
+  %R13049 = sub i8* %R13045, %R13048
 Both operands to ICmp instruction are not of the same type!
-  %R13054 = icmp sle i8* %R13050, i64 %R13053
+  %R13053 = icmp sle i8* %R13049, i64 %R13052
 Integer arithmetic operators only work with integral types!
-  %R13089 = sub %struct.lua_TValue* %load_target, %load_target1
+  %R13088 = sub %struct.lua_TValue* %load_target, %load_target1
 Both operands to a binary operator are not of the same type!
-  %R13090 = sdiv %struct.lua_TValue* %R13089, i64 16
+  %R13089 = sdiv %struct.lua_TValue* %R13088, i64 16
 Stored value type does not match pointer operand type!
   store { [184 x i8] }* %load_target10, %struct.Table** %31
  %struct.Table*Stored value type does not match pointer operand type!
@@ -610,22 +602,22 @@ Stored value type does not match pointer operand type!
   store double %load_target3, i64* %1
  i64Call parameter type does not match function signature!
   %load_target5 = load { [184 x i8] }*, { [184 x i8] }** %25
- %struct.Table*  %R13492 = call i32 @luaH_getn({ [184 x i8] }* %load_target5)
+ %struct.Table*  %R13491 = call i32 @luaH_getn({ [184 x i8] }* %load_target5)
 Call parameter type does not match function signature!
   %load_target = load { [184 x i8] }*, { [184 x i8] }** %3
- %struct.Table*  %R13738 = call %struct.lua_TValue* @luaH_get({ [184 x i8] }* %load_target, %struct.lua_TValue* %10)
+ %struct.Table*  %R13737 = call %struct.lua_TValue* @luaH_get({ [184 x i8] }* %load_target, %struct.lua_TValue* %10)
 Call parameter type does not match function signature!
   %load_target = load { [184 x i8] }*, { [184 x i8] }** %3
- %struct.Table*  %R13757 = call %struct.lua_TValue* @luaH_getnum({ [184 x i8] }* %load_target, i32 %ARG3)
+ %struct.Table*  %R13756 = call %struct.lua_TValue* @luaH_getnum({ [184 x i8] }* %load_target, i32 %ARG3)
 Call parameter type does not match function signature!
   %load_target1 = load { [184 x i8] }*, { [184 x i8] }** %7
- %struct.Table*  %R13923 = call %struct.lua_TValue* @luaH_set(%struct.lua_State* %ARG1, { [184 x i8] }* %load_target1, %struct.lua_TValue* %10)
+ %struct.Table*  %R13922 = call %struct.lua_TValue* @luaH_set(%struct.lua_State* %ARG1, { [184 x i8] }* %load_target1, %struct.lua_TValue* %10)
 Call parameter type does not match function signature!
   %load_target10 = load { [184 x i8] }*, { [184 x i8] }** %44
  %struct.Table*  call void @luaC_barrierback(%struct.lua_State* %ARG1, { [184 x i8] }* %load_target10)
 Call parameter type does not match function signature!
   %load_target1 = load { [184 x i8] }*, { [184 x i8] }** %7
- %struct.Table*  %R13972 = call %struct.lua_TValue* @luaH_setnum(%struct.lua_State* %ARG1, { [184 x i8] }* %load_target1, i32 %ARG3)
+ %struct.Table*  %R13971 = call %struct.lua_TValue* @luaH_setnum(%struct.lua_State* %ARG1, { [184 x i8] }* %load_target1, i32 %ARG3)
 Call parameter type does not match function signature!
   %load_target10 = load { [184 x i8] }*, { [184 x i8] }** %41
  %struct.Table*  call void @luaC_barrierback(%struct.lua_State* %ARG1, { [184 x i8] }* %load_target10)
@@ -639,54 +631,54 @@ Stored value type does not match pointer operand type!
  %struct.Table*Stored value type does not match pointer operand type!
   store { [184 x i8] }* %load_target5, %struct.Table** %35
  %struct.Table*Both operands to a binary operator are not of the same type!
-  %R14153 = sub %struct.lua_TValue* %load_target, i64 %R14152
+  %R14152 = sub %struct.lua_TValue* %load_target, i64 %R14151
 Integer arithmetic operators only work with integral types!
-  %R14189 = sub i8* %R14185, %R14188
+  %R14188 = sub i8* %R14184, %R14187
 Stored value type does not match pointer operand type!
-  store i8* %R14189, i64* %0
+  store i8* %R14188, i64* %0
  i64Both operands to a binary operator are not of the same type!
-  %R14196 = sub %struct.lua_TValue* %load_target1, i64 %R14195
+  %R14195 = sub %struct.lua_TValue* %load_target1, i64 %R14194
 Integer arithmetic operators only work with integral types!
-  %R14207 = sub i8* %R14203, %R14206
+  %R14206 = sub i8* %R14202, %R14205
 Call parameter type does not match function signature!
-  %R14207 = sub i8* %R14203, %R14206
- i64  %R14209 = call i32 @luaD_pcall(%struct.lua_State* %ARG1, void (%struct.lua_State*, i8*)* @f_call, i8* %R14201, i8* %R14207, i64 %21)
+  %R14206 = sub i8* %R14202, %R14205
+ i64  %R14208 = call i32 @luaD_pcall(%struct.lua_State* %ARG1, void (%struct.lua_State*, i8*)* @f_call, i8* %R14200, i8* %R14206, i64 %21)
 Call parameter type does not match function signature!
   %load_target = load { [184 x i8] }*, { [184 x i8] }** %3
- %struct.Table*  %R14250 = call i32 @luaH_next(%struct.lua_State* %ARG1, { [184 x i8] }* %load_target, %struct.lua_TValue* %10)
+ %struct.Table*  %R14249 = call i32 @luaH_next(%struct.lua_State* %ARG1, { [184 x i8] }* %load_target, %struct.lua_TValue* %10)
 Integer arithmetic operators only work with integral types!
-  %R14280 = sub %struct.lua_TValue* %load_target6, %load_target7
+  %R14279 = sub %struct.lua_TValue* %load_target6, %load_target7
 Both operands to a binary operator are not of the same type!
-  %R14281 = sdiv %struct.lua_TValue* %R14280, i64 16
+  %R14280 = sdiv %struct.lua_TValue* %R14279, i64 16
 Incorrect number of arguments passed to called function!
-  %R14377 = call i8* @lua_pushfstring(%struct.lua_State* %ARG1, i8* getelementptr inbounds ([20 x i8], [20 x i8]* @.str.136, i64 0, i64 0), i8* %ARG3, i8* %R14376)
+  %R14376 = call i8* @lua_pushfstring(%struct.lua_State* %ARG1, i8* getelementptr inbounds ([20 x i8], [20 x i8]* @.str.136, i64 0, i64 0), i8* %ARG3, i8* %R14375)
 Incorrect number of arguments passed to called function!
-  %R14404 = call i8* @lua_pushfstring(%struct.lua_State* %ARG1, i8* getelementptr inbounds ([8 x i8], [8 x i8]* @.str.138, i64 0, i64 0), %struct.lua_Debug* %6, i32 %load_target)
+  %R14403 = call i8* @lua_pushfstring(%struct.lua_State* %ARG1, i8* getelementptr inbounds ([8 x i8], [8 x i8]* @.str.138, i64 0, i64 0), %struct.lua_Debug* %6, i32 %load_target)
 Integer arithmetic operators only work with integral types!
-  %R14623 = sub i8* %5, %3
+  %R14622 = sub i8* %5, %3
 Call parameter type does not match function signature!
-  %R14623 = sub i8* %5, %3
- i64  call void @lua_pushlstring(%struct.lua_State* %ARG1, i8* %3, i8* %R14623)
+  %R14622 = sub i8* %5, %3
+ i64  call void @lua_pushlstring(%struct.lua_State* %ARG1, i8* %3, i8* %R14622)
 Call parameter type does not match function signature!
-  %R14623 = sub i8* %5, %3
- i64  call void @lua_pushlstring(%struct.lua_State* %ARG1, i8* %3, i8* %R14623)
+  %R14622 = sub i8* %5, %3
+ i64  call void @lua_pushlstring(%struct.lua_State* %ARG1, i8* %3, i8* %R14622)
 Both operands to a binary operator are not of the same type!
-  %R14662 = sub i8* %load_target, %struct.luaL_Buffer* %6
+  %R14661 = sub i8* %load_target, %struct.luaL_Buffer* %6
 Both operands to ICmp instruction are not of the same type!
-  %R14666 = icmp ne i8* %R14662, i64 0
+  %R14665 = icmp ne i8* %R14661, i64 0
 Call parameter type does not match function signature!
   %6 = bitcast i8* %5 to %struct.luaL_Buffer*
- i8*  call void @lua_pushlstring(%struct.lua_State* %load_target2, %struct.luaL_Buffer* %6, i8* %R14662)
+ i8*  call void @lua_pushlstring(%struct.lua_State* %load_target2, %struct.luaL_Buffer* %6, i8* %R14661)
 Stored value type does not match pointer operand type!
   store %struct.luaL_Buffer* %6, i8** %14
  i8*Function return type does not match operand type of return inst!
   ret %struct.luaL_Buffer* %2
  i8*Both operands to ICmp instruction are not of the same type!
-  %R14732 = icmp ult i8* %load_target, %struct.luaL_Buffer* %9
+  %R14731 = icmp ult i8* %load_target, %struct.luaL_Buffer* %9
 Both operands to a binary operator are not of the same type!
-  %R14760 = sub i8* %load_target2, %struct.luaL_Buffer* %13
+  %R14759 = sub i8* %load_target2, %struct.luaL_Buffer* %13
 Both operands to a binary operator are not of the same type!
-  %R14761 = sub i64 8192, i8* %R14760
+  %R14760 = sub i64 8192, i8* %R14759
 Stored value type does not match pointer operand type!
   store %struct.luaL_Buffer* %6, i8** %10
  i8*Invalid operands for select instruction!
@@ -694,15 +686,15 @@ Stored value type does not match pointer operand type!
 Stored value type does not match pointer operand type!
   store %struct.LoadF* %select, i8** %0
  i8*Incorrect number of arguments passed to called function!
-  %R14828 = call i8* @lua_pushfstring(%struct.lua_State* %ARG1, i8* getelementptr inbounds ([17 x i8], [17 x i8]* @.str.148, i64 0, i64 0), i8* %ARG2, i8* %3, i8* %R14818)
+  %R14827 = call i8* @lua_pushfstring(%struct.lua_State* %ARG1, i8* getelementptr inbounds ([17 x i8], [17 x i8]* @.str.148, i64 0, i64 0), i8* %ARG2, i8* %3, i8* %R14817)
 Incorrect number of arguments passed to called function!
-  %R14843 = call i8* @lua_pushfstring(%struct.lua_State* %ARG1, i8* getelementptr inbounds ([4 x i8], [4 x i8]* @.str.150, i64 0, i64 0), i8* %ARG2)
+  %R14842 = call i8* @lua_pushfstring(%struct.lua_State* %ARG1, i8* getelementptr inbounds ([4 x i8], [4 x i8]* @.str.150, i64 0, i64 0), i8* %ARG2)
 Incorrect number of arguments passed to called function!
-  %R15600 = call i8* @lua_pushfstring(%struct.lua_State* %ARG1, i8* getelementptr inbounds ([7 x i8], [7 x i8]* @.str.188, i64 0, i64 0), i8* %ARG3, i8* %R15599)
+  %R15599 = call i8* @lua_pushfstring(%struct.lua_State* %ARG1, i8* getelementptr inbounds ([7 x i8], [7 x i8]* @.str.188, i64 0, i64 0), i8* %ARG3, i8* %R15598)
 Incorrect number of arguments passed to called function!
-  %R15605 = call i8* @lua_pushfstring(%struct.lua_State* %ARG1, i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.str.189, i64 0, i64 0), i8* %R15604)
+  %R15604 = call i8* @lua_pushfstring(%struct.lua_State* %ARG1, i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.str.189, i64 0, i64 0), i8* %R15603)
 Incorrect number of arguments passed to called function!
-  %R15615 = call i8* @lua_pushfstring(%struct.lua_State* %ARG1, i8* getelementptr inbounds ([7 x i8], [7 x i8]* @.str.190, i64 0, i64 0), i8* %ARG3, i8* %R15614)
+  %R15614 = call i8* @lua_pushfstring(%struct.lua_State* %ARG1, i8* getelementptr inbounds ([7 x i8], [7 x i8]* @.str.190, i64 0, i64 0), i8* %ARG3, i8* %R15613)
 Switch constants must all be same type as switch value!
   switch i8 %load_target9, label %L2886 [
     i32 97, label %L2885
@@ -710,15 +702,15 @@ Switch constants must all be same type as switch value!
     i32 110, label %L2883
   ]
 Incorrect number of arguments passed to called function!
-  %R16160 = call i8* @lua_pushfstring(%struct.lua_State* %ARG1, i8* getelementptr inbounds ([7 x i8], [7 x i8]* @.str.223, i64 0, i64 0), i8* %ARG3, i8* %R16159)
+  %R16159 = call i8* @lua_pushfstring(%struct.lua_State* %ARG1, i8* getelementptr inbounds ([7 x i8], [7 x i8]* @.str.223, i64 0, i64 0), i8* %ARG3, i8* %R16158)
 Function return type does not match operand type of return inst!
   ret void
  i32Both operands to ICmp instruction are not of the same type!
-  %R16241 = icmp ult i8* %load_target2, %struct.luaL_Buffer* %11
+  %R16240 = icmp ult i8* %load_target2, %struct.luaL_Buffer* %11
 Both operands to ICmp instruction are not of the same type!
-  %R16271 = icmp ult i8* %load_target2, %struct.luaL_Buffer* %11
+  %R16270 = icmp ult i8* %load_target2, %struct.luaL_Buffer* %11
 Both operands to ICmp instruction are not of the same type!
-  %R16388 = icmp ult i8* %load_target, %struct.luaL_Buffer* %8
+  %R16387 = icmp ult i8* %load_target, %struct.luaL_Buffer* %8
 Switch constants must all be same type as switch value!
   switch i8 %load_target, label %L3002 [
     i32 37, label %L2990
@@ -731,13 +723,13 @@ Switch constants must all be same type as switch value!
     i32 91, label %L3035
   ]
 Integer arithmetic operators only work with integral types!
-  %R16832 = sub i8* %ARG2, %load_target
+  %R16831 = sub i8* %ARG2, %load_target
 Stored value type does not match pointer operand type!
-  store i8* %R16832, i64* %13
+  store i8* %R16831, i64* %13
  i64Integer arithmetic operators only work with integral types!
-  %R16866 = sub i8* %load_target1, %ARG2
+  %R16865 = sub i8* %load_target1, %ARG2
 Both operands to ICmp instruction are not of the same type!
-  %R16869 = icmp uge i8* %R16866, i64 %load_target
+  %R16868 = icmp uge i8* %R16865, i64 %load_target
 Switch constants must all be same type as switch value!
   switch i8 %load_target, label %L3108 [
     i32 0, label %L3105
@@ -759,66 +751,66 @@ Switch constants must all be same type as switch value!
     i32 63, label %L3112
   ]
 Integer arithmetic operators only work with integral types!
-  %R17087 = sub i8* %6, %4
+  %R17086 = sub i8* %6, %4
 Both operands to a binary operator are not of the same type!
-  %R17091 = sub i64 %3, i8* %R17087
+  %R17090 = sub i64 %3, i8* %R17086
 Integer arithmetic operators only work with integral types!
-  %R17105 = sub i8* %ARG4, %ARG3
+  %R17104 = sub i8* %ARG4, %ARG3
 Call parameter type does not match function signature!
-  %R17105 = sub i8* %ARG4, %ARG3
- i64  call void @lua_pushlstring(%struct.lua_State* %load_target3, i8* %ARG3, i8* %R17105)
+  %R17104 = sub i8* %ARG4, %ARG3
+ i64  call void @lua_pushlstring(%struct.lua_State* %load_target3, i8* %ARG3, i8* %R17104)
 Integer arithmetic operators only work with integral types!
-  %R17137 = sub i8* %load_target12, %load_target13
+  %R17136 = sub i8* %load_target12, %load_target13
 Call parameter type does not match function signature!
-  %38 = getelementptr inbounds i8, i8* %R17137, i64 1
+  %38 = getelementptr inbounds i8, i8* %R17136, i64 1
  i64  call void @lua_pushinteger(%struct.lua_State* %load_target11, i8* %38)
 Integer arithmetic operators only work with integral types!
-  %R17214 = sub i8* %R17209, %R17175
+  %R17213 = sub i8* %R17208, %R17174
 Call parameter type does not match function signature!
-  %21 = getelementptr inbounds i8, i8* %R17214, i64 1
+  %21 = getelementptr inbounds i8, i8* %R17213, i64 1
  i64  call void @lua_pushinteger(%struct.lua_State* %ARG1, i8* %21)
 Call parameter type does not match function signature!
-  %25 = getelementptr inbounds i8, i8* %R17214, i64 %load_target12
+  %25 = getelementptr inbounds i8, i8* %R17213, i64 %load_target12
  i64  call void @lua_pushinteger(%struct.lua_State* %ARG1, i8* %25)
 Integer arithmetic operators only work with integral types!
-  %R17249 = sub i8* %50, %R17175
+  %R17248 = sub i8* %50, %R17174
 Call parameter type does not match function signature!
-  %52 = getelementptr inbounds i8, i8* %R17249, i64 1
+  %52 = getelementptr inbounds i8, i8* %R17248, i64 1
  i64  call void @lua_pushinteger(%struct.lua_State* %ARG1, i8* %52)
 Integer arithmetic operators only work with integral types!
-  %R17254 = sub i8* %R17243, %R17175
+  %R17253 = sub i8* %R17242, %R17174
 Call parameter type does not match function signature!
-  %R17254 = sub i8* %R17243, %R17175
- i64  call void @lua_pushinteger(%struct.lua_State* %ARG1, i8* %R17254)
+  %R17253 = sub i8* %R17242, %R17174
+ i64  call void @lua_pushinteger(%struct.lua_State* %ARG1, i8* %R17253)
 Integer arithmetic operators only work with integral types!
-  %R17301 = sub i8* %R17297, %R17278
+  %R17300 = sub i8* %R17296, %R17277
 Stored value type does not match pointer operand type!
-  store i8* %R17301, i64* %1
+  store i8* %R17300, i64* %1
  i64Stored value type does not match pointer operand type!
   store i8* %29, i64* %1
  i64Both operands to ICmp instruction are not of the same type!
-  %R17344 = icmp ult i8* %load_target6, %struct.luaL_Buffer* %18
+  %R17343 = icmp ult i8* %load_target6, %struct.luaL_Buffer* %18
 Both operands to ICmp instruction are not of the same type!
-  %R17377 = icmp ult i8* %load_target15, %struct.luaL_Buffer* %47
+  %R17376 = icmp ult i8* %load_target15, %struct.luaL_Buffer* %47
 Integer arithmetic operators only work with integral types!
-  %R17399 = sub i8* %ARG4, %ARG3
+  %R17398 = sub i8* %ARG4, %ARG3
 Call parameter type does not match function signature!
-  %R17399 = sub i8* %ARG4, %ARG3
- i64  call void @luaL_addlstring(%struct.luaL_Buffer* %ARG2, i8* %ARG3, i8* %R17399)
+  %R17398 = sub i8* %ARG4, %ARG3
+ i64  call void @luaL_addlstring(%struct.luaL_Buffer* %ARG2, i8* %ARG3, i8* %R17398)
 Integer arithmetic operators only work with integral types!
-  %R17439 = sub i8* %ARG4, %ARG3
+  %R17438 = sub i8* %ARG4, %ARG3
 Call parameter type does not match function signature!
-  %R17439 = sub i8* %ARG4, %ARG3
- i64  call void @lua_pushlstring(%struct.lua_State* %load_target, i8* %ARG3, i8* %R17439)
+  %R17438 = sub i8* %ARG4, %ARG3
+ i64  call void @lua_pushlstring(%struct.lua_State* %load_target, i8* %ARG3, i8* %R17438)
 Both operands to ICmp instruction are not of the same type!
-  %R17520 = icmp ult i8* %load_target21, %struct.luaL_Buffer* %51
+  %R17519 = icmp ult i8* %load_target21, %struct.luaL_Buffer* %51
 Integer arithmetic operators only work with integral types!
-  %R17535 = sub i8* %load_target27, %64
+  %R17534 = sub i8* %load_target27, %64
 Call parameter type does not match function signature!
-  %R17535 = sub i8* %load_target27, %64
- i64  call void @luaL_addlstring(%struct.luaL_Buffer* %b_0x62d000fd7120, i8* %64, i8* %R17535)
+  %R17534 = sub i8* %load_target27, %64
+ i64  call void @luaL_addlstring(%struct.luaL_Buffer* %b_0x62d000fd7120, i8* %64, i8* %R17534)
 Both operands to ICmp instruction are not of the same type!
-  %R17551 = icmp ult i8* %load_target, %struct.luaL_Buffer* %7
+  %R17550 = icmp ult i8* %load_target, %struct.luaL_Buffer* %7
 Switch constants must all be same type as switch value!
   switch i8 %load_target5, label %L3235 [
     i32 0, label %L3234
@@ -828,26 +820,26 @@ Switch constants must all be same type as switch value!
     i32 92, label %L3228
   ]
 Both operands to ICmp instruction are not of the same type!
-  %R17567 = icmp ult i8* %load_target6, %struct.luaL_Buffer* %7
+  %R17566 = icmp ult i8* %load_target6, %struct.luaL_Buffer* %7
 Both operands to ICmp instruction are not of the same type!
-  %R17579 = icmp ult i8* %load_target10, %struct.luaL_Buffer* %7
+  %R17578 = icmp ult i8* %load_target10, %struct.luaL_Buffer* %7
 Both operands to ICmp instruction are not of the same type!
-  %R17598 = icmp ult i8* %load_target15, %struct.luaL_Buffer* %7
+  %R17597 = icmp ult i8* %load_target15, %struct.luaL_Buffer* %7
 Both operands to ICmp instruction are not of the same type!
-  %R17615 = icmp ult i8* %load_target20, %struct.luaL_Buffer* %7
+  %R17614 = icmp ult i8* %load_target20, %struct.luaL_Buffer* %7
 Integer arithmetic operators only work with integral types!
-  %R17638 = sub i8* %5, %ARG2
+  %R17637 = sub i8* %5, %ARG2
 Both operands to ICmp instruction are not of the same type!
-  %R17640 = icmp uge i8* %R17638, i64 6
+  %R17639 = icmp uge i8* %R17637, i64 6
 Integer arithmetic operators only work with integral types!
-  %R17727 = sub i8* %62, %ARG2
+  %R17726 = sub i8* %62, %ARG2
 Call parameter type does not match function signature!
-  %72 = getelementptr inbounds i8, i8* %R17727, i64 1
- i64  %R17730 = call i8* @strncpy(i8* %70, i8* %ARG2, i8* %72)
+  %72 = getelementptr inbounds i8, i8* %R17726, i64 1
+ i64  %R17729 = call i8* @strncpy(i8* %70, i8* %ARG2, i8* %72)
 Both operands to ICmp instruction are not of the same type!
-  %R17788 = icmp ult i8* %load_target5, %struct.luaL_Buffer* %15
+  %R17787 = icmp ult i8* %load_target5, %struct.luaL_Buffer* %15
 Both operands to ICmp instruction are not of the same type!
-  %R17807 = icmp ult i8* %load_target13, %struct.luaL_Buffer* %36
+  %R17806 = icmp ult i8* %load_target13, %struct.luaL_Buffer* %36
 Switch constants must all be same type as switch value!
   switch i8 %load_target20, label %L3281 [
     i32 69, label %L3276
@@ -865,27 +857,19 @@ Switch constants must all be same type as switch value!
     i32 117, label %L3275
     i32 120, label %L3275
   ]
-loading unsized types is not allowed
-  %load_target3 = load i8* (i8*, i8*, i64, i64), i8* (i8*, i8*, i64, i64)* %14
-Called function must be a pointer!
-  %R57 = call i8 %load_target3(i8* %load_target1, i8* %ARG2, i64 %ARG3, i64 %ARG4)
-Both operands to ICmp instruction are not of the same type!
-  %R59 = icmp eq i8 %R57, i8* null
-Function return type does not match operand type of return inst!
-  ret i8 %R57
- i8*Integer arithmetic operators only work with integral types!
-  %R217 = sub i8* %R213, %R216
-Both operands to ICmp instruction are not of the same type!
-  %R218 = icmp sle i8* %R217, i64 16
 Integer arithmetic operators only work with integral types!
-  %R235 = sub i8* %R226, %5
+  %R216 = sub i8* %R212, %R215
+Both operands to ICmp instruction are not of the same type!
+  %R217 = icmp sle i8* %R216, i64 16
+Integer arithmetic operators only work with integral types!
+  %R234 = sub i8* %R225, %5
 Call parameter type does not match function signature!
-  %R235 = sub i8* %R226, %5
- i64  %R237 = call { [24 x i8] }* @luaS_newlstr(%struct.lua_State* %ARG1, i8* %5, i8* %R235)
+  %R234 = sub i8* %R225, %5
+ i64  %R236 = call { [24 x i8] }* @luaS_newlstr(%struct.lua_State* %ARG1, i8* %5, i8* %R234)
 Integer arithmetic operators only work with integral types!
-  %R247 = sub i8* %R243, %R246
+  %R246 = sub i8* %R242, %R245
 Both operands to ICmp instruction are not of the same type!
-  %R248 = icmp sle i8* %R247, i64 16
+  %R247 = icmp sle i8* %R246, i64 16
 Switch constants must all be same type as switch value!
   switch i8 %load_target6, label %L71 [
     i32 37, label %L70
@@ -896,17 +880,17 @@ Switch constants must all be same type as switch value!
     i32 115, label %L59
   ]
 Integer arithmetic operators only work with integral types!
-  %R298 = sub i8* %R294, %R297
+  %R297 = sub i8* %R293, %R296
 Both operands to ICmp instruction are not of the same type!
-  %R299 = icmp sle i8* %R298, i64 16
+  %R298 = icmp sle i8* %R297, i64 16
 Integer arithmetic operators only work with integral types!
-  %R323 = sub i8* %R319, %R322
+  %R322 = sub i8* %R318, %R321
 Both operands to ICmp instruction are not of the same type!
-  %R324 = icmp sle i8* %R323, i64 16
+  %R323 = icmp sle i8* %R322, i64 16
 Integer arithmetic operators only work with integral types!
-  %R364 = sub %struct.lua_TValue* %load_target23, %load_target24
+  %R363 = sub %struct.lua_TValue* %load_target23, %load_target24
 Both operands to a binary operator are not of the same type!
-  %R365 = sdiv %struct.lua_TValue* %R364, i64 16
+  %R364 = sdiv %struct.lua_TValue* %R363, i64 16
 Stored value type does not match pointer operand type!
   store %struct.UpVal* %2, %struct.lua_TValue** %6
  %struct.lua_TValue*Stored value type does not match pointer operand type!
@@ -916,11 +900,11 @@ Stored value type does not match pointer operand type!
  %struct.UpVal*Stored value type does not match pointer operand type!
   store { [184 x i8] }* %load_target1, { [184 x i8] }*** %0
  { [184 x i8] }**Stored value type does not match pointer operand type!
-  store i32 %R667, i8* %28
+  store i32 %R666, i8* %28
  i8Stored value type does not match pointer operand type!
   store %struct.global_State* %45, %struct.UpVal** %49
  %struct.UpVal*Both operands to ICmp instruction are not of the same type!
-  %R703 = icmp ne %struct.lua_TValue* %load_target, %struct.UpVal* %6
+  %R702 = icmp ne %struct.lua_TValue* %load_target, %struct.UpVal* %6
 Call parameter type does not match function signature!
   %load_target1 = load { [184 x i8] }*, { [184 x i8] }** %7
  %struct.UpVal*  call void @luaF_freeupval(%struct.lua_State* %ARG1, { [184 x i8] }* %load_target1)
@@ -933,162 +917,162 @@ Stored value type does not match pointer operand type!
   %load_target1 = load { [184 x i8] }*, { [184 x i8] }** %7
  %struct.UpVal*  call void @luaC_linkupval(%struct.lua_State* %ARG1, { [184 x i8] }* %load_target1)
 Integer arithmetic operators only work with integral types!
-  %R901 = sub %struct.CallInfo* %load_target2, %load_target3
+  %R900 = sub %struct.CallInfo* %load_target2, %load_target3
 Both operands to a binary operator are not of the same type!
-  %R902 = sdiv %struct.CallInfo* %R901, i64 40
+  %R901 = sdiv %struct.CallInfo* %R900, i64 40
 Call parameter type does not match function signature!
   %14 = bitcast i8* %13 to %struct.lua_longjmp*
  %struct.__jmp_buf_tag*  call void @longjmp(%struct.lua_longjmp* %14, i32 1)
 Call parameter type does not match function signature!
   %18 = bitcast i8* %17 to %struct.lua_longjmp*
- %struct.__jmp_buf_tag*  %R957 = call i32 @_setjmp(%struct.lua_longjmp* %18)
+ %struct.__jmp_buf_tag*  %R956 = call i32 @_setjmp(%struct.lua_longjmp* %18)
 Integer arithmetic operators only work with integral types!
-  %R972 = sub %struct.lua_TValue* %load_target1, %ARG2
+  %R971 = sub %struct.lua_TValue* %load_target1, %ARG2
 Both operands to a binary operator are not of the same type!
-  %R973 = sdiv %struct.lua_TValue* %R972, i64 16
+  %R972 = sdiv %struct.lua_TValue* %R971, i64 16
 Both operands to a binary operator are not of the same type!
-  %R974 = mul %struct.lua_TValue* %R973, i64 16
+  %R973 = mul %struct.lua_TValue* %R972, i64 16
 Integer arithmetic operators only work with integral types!
-  %R986 = sub %struct.lua_TValue* %load_target4, %ARG2
+  %R985 = sub %struct.lua_TValue* %load_target4, %ARG2
 Both operands to a binary operator are not of the same type!
-  %R987 = sdiv %struct.lua_TValue* %R986, i64 16
+  %R986 = sdiv %struct.lua_TValue* %R985, i64 16
 Both operands to a binary operator are not of the same type!
-  %R988 = mul %struct.lua_TValue* %R987, i64 16
+  %R987 = mul %struct.lua_TValue* %R986, i64 16
 Integer arithmetic operators only work with integral types!
-  %R1004 = sub %struct.lua_TValue* %load_target11, %ARG2
+  %R1003 = sub %struct.lua_TValue* %load_target11, %ARG2
 Both operands to a binary operator are not of the same type!
-  %R1005 = sdiv %struct.lua_TValue* %R1004, i64 16
+  %R1004 = sdiv %struct.lua_TValue* %R1003, i64 16
 Both operands to a binary operator are not of the same type!
-  %R1006 = mul %struct.lua_TValue* %R1005, i64 16
+  %R1005 = mul %struct.lua_TValue* %R1004, i64 16
 Integer arithmetic operators only work with integral types!
-  %R1014 = sub %struct.lua_TValue* %load_target13, %ARG2
+  %R1013 = sub %struct.lua_TValue* %load_target13, %ARG2
 Both operands to a binary operator are not of the same type!
-  %R1015 = sdiv %struct.lua_TValue* %R1014, i64 16
+  %R1014 = sdiv %struct.lua_TValue* %R1013, i64 16
 Both operands to a binary operator are not of the same type!
-  %R1016 = mul %struct.lua_TValue* %R1015, i64 16
+  %R1015 = mul %struct.lua_TValue* %R1014, i64 16
 Integer arithmetic operators only work with integral types!
-  %R1024 = sub %struct.lua_TValue* %load_target15, %ARG2
+  %R1023 = sub %struct.lua_TValue* %load_target15, %ARG2
 Both operands to a binary operator are not of the same type!
-  %R1025 = sdiv %struct.lua_TValue* %R1024, i64 16
+  %R1024 = sdiv %struct.lua_TValue* %R1023, i64 16
 Both operands to a binary operator are not of the same type!
-  %R1026 = mul %struct.lua_TValue* %R1025, i64 16
+  %R1025 = mul %struct.lua_TValue* %R1024, i64 16
 Integer arithmetic operators only work with integral types!
-  %R1036 = sub %struct.lua_TValue* %load_target17, %ARG2
+  %R1035 = sub %struct.lua_TValue* %load_target17, %ARG2
 Both operands to a binary operator are not of the same type!
-  %R1037 = sdiv %struct.lua_TValue* %R1036, i64 16
+  %R1036 = sdiv %struct.lua_TValue* %R1035, i64 16
 Both operands to a binary operator are not of the same type!
-  %R1038 = mul %struct.lua_TValue* %R1037, i64 16
+  %R1037 = mul %struct.lua_TValue* %R1036, i64 16
 Integer arithmetic operators only work with integral types!
-  %R1110 = sub %struct.CallInfo* %load_target3, %load_target
+  %R1109 = sub %struct.CallInfo* %load_target3, %load_target
 Both operands to a binary operator are not of the same type!
-  %R1111 = sdiv %struct.CallInfo* %R1110, i64 40
+  %R1110 = sdiv %struct.CallInfo* %R1109, i64 40
 Both operands to a binary operator are not of the same type!
-  %R1112 = mul %struct.CallInfo* %R1111, i64 40
+  %R1111 = mul %struct.CallInfo* %R1110, i64 40
 Both operands to a binary operator are not of the same type!
-  %R1170 = sub %struct.lua_TValue* %load_target3, i64 %R1169
+  %R1169 = sub %struct.lua_TValue* %load_target3, i64 %R1168
 Integer arithmetic operators only work with integral types!
-  %R1213 = sub i8* %R1209, %R1212
+  %R1212 = sub i8* %R1208, %R1211
 Integer arithmetic operators only work with integral types!
-  %R1244 = sub i8* %R1240, %R1243
+  %R1243 = sub i8* %R1239, %R1242
 Both operands to ICmp instruction are not of the same type!
-  %R1245 = icmp sle i8* %R1244, i64 16
+  %R1244 = icmp sle i8* %R1243, i64 16
 Integer arithmetic operators only work with integral types!
-  %R1278 = sub i8* %R1274, %R1277
+  %R1277 = sub i8* %R1273, %R1276
 Integer arithmetic operators only work with integral types!
-  %R1297 = sub i8* %R1293, %R1296
+  %R1296 = sub i8* %R1292, %R1295
 Both operands to ICmp instruction are not of the same type!
-  %R1303 = icmp sle i8* %R1297, i64 %R1302
+  %R1302 = icmp sle i8* %R1296, i64 %R1301
 Integer arithmetic operators only work with integral types!
-  %R1337 = sub %struct.lua_TValue* %load_target21, %R1313
+  %R1336 = sub %struct.lua_TValue* %load_target21, %R1312
 Both operands to a binary operator are not of the same type!
-  %R1338 = sdiv %struct.lua_TValue* %R1337, i64 16
+  %R1337 = sdiv %struct.lua_TValue* %R1336, i64 16
 Integer arithmetic operators only work with integral types!
-  %R1401 = sub i8* %R1397, %R1400
+  %R1400 = sub i8* %R1396, %R1399
 Both operands to ICmp instruction are not of the same type!
-  %R1402 = icmp sle i8* %R1401, i64 320
+  %R1401 = icmp sle i8* %R1400, i64 320
 Both operands to a binary operator are not of the same type!
-  %R1449 = sub %struct.lua_TValue* %load_target49, i64 %R1448
+  %R1448 = sub %struct.lua_TValue* %load_target49, i64 %R1447
 Integer arithmetic operators only work with integral types!
-  %R1537 = sub i8* %R1533, %R1536
+  %R1536 = sub i8* %R1532, %R1535
 Call parameter type does not match function signature!
   %19 = bitcast i8* %18 to %struct.SParser*
- %struct.Mbuffer*  %R1602 = call %struct.Proto* @luaY_parser(%struct.lua_State* %ARG1, %struct.Zio* %load_target4, %struct.SParser* %19, i8* %load_target5)
+ %struct.Mbuffer*  %R1601 = call %struct.Proto* @luaY_parser(%struct.lua_State* %ARG1, %struct.Zio* %load_target4, %struct.SParser* %19, i8* %load_target5)
 Call parameter type does not match function signature!
   %load_target7 = load { [184 x i8] }*, { [184 x i8] }** %29
- %struct.Table*  %R1610 = call { [56 x i8] }* @luaF_newLclosure(%struct.lua_State* %ARG1, i32 %R1606, { [184 x i8] }* %load_target7)
+ %struct.Table*  %R1609 = call { [56 x i8] }* @luaF_newLclosure(%struct.lua_State* %ARG1, i32 %R1605, { [184 x i8] }* %load_target7)
 Integer arithmetic operators only work with integral types!
-  %R1641 = sub i8* %R1637, %R1640
+  %R1640 = sub i8* %R1636, %R1639
 Both operands to ICmp instruction are not of the same type!
-  %R1642 = icmp sle i8* %R1641, i64 16
+  %R1641 = icmp sle i8* %R1640, i64 16
 Integer arithmetic operators only work with integral types!
-  %R1659 = sub i8* %R1655, %R1658
+  %R1658 = sub i8* %R1654, %R1657
 Call parameter type does not match function signature!
-  %R1659 = sub i8* %R1655, %R1658
- i64  %R1662 = call i32 @luaD_pcall(%struct.lua_State* %ARG1, void (%struct.lua_State*, i8*)* @f_parser, i8* %R1652, i8* %R1659, i64 %load_target2)
+  %R1658 = sub i8* %R1654, %R1657
+ i64  %R1661 = call i32 @luaD_pcall(%struct.lua_State* %ARG1, void (%struct.lua_State*, i8*)* @f_parser, i8* %R1651, i8* %R1658, i64 %load_target2)
 Stored value type does not match pointer operand type!
-  store i32 %R1775, i8* %15
+  store i32 %R1774, i8* %15
  i8Both operands to a binary operator are not of the same type!
-  %R1841 = lshr i64 %ARG3, i32 5
+  %R1840 = lshr i64 %ARG3, i32 5
 Stored value type does not match pointer operand type!
   store { [184 x i8] }* %26, { [24 x i8] }** %3
  { [24 x i8] }*Stored value type does not match pointer operand type!
-  store i32 %R1937, i8* %7
+  store i32 %R1936, i8* %7
  i8Both operands to a binary operator are not of the same type!
-  %R1991 = shl i64 1, i32 %R1990
+  %R1990 = shl i64 1, i32 %R1989
 Both operands to a binary operator are not of the same type!
-  %R2014 = shl i64 1, i32 %R2013
+  %R2013 = shl i64 1, i32 %R2012
 Both operands to a binary operator are not of the same type!
-  %R2029 = shl i64 1, i32 %R2028
+  %R2028 = shl i64 1, i32 %R2027
 Both operands to a binary operator are not of the same type!
-  %R2046 = shl i64 1, i32 %R2045
+  %R2045 = shl i64 1, i32 %R2044
 Both operands to a binary operator are not of the same type!
-  %R2062 = shl i64 1, i32 %R2061
+  %R2061 = shl i64 1, i32 %R2060
 Call parameter type does not match function signature!
   %13 = bitcast i8* %12 to %struct.Node*
- %struct.lua_TValue*  %R2104 = call i32 @luaO_rawequalObj(%struct.Node* %13, %struct.lua_TValue* %ARG3)
+ %struct.lua_TValue*  %R2103 = call i32 @luaO_rawequalObj(%struct.Node* %13, %struct.lua_TValue* %ARG3)
 Integer arithmetic operators only work with integral types!
-  %R2120 = sub %struct.Node* %10, %load_target17
+  %R2119 = sub %struct.Node* %10, %load_target17
 Both operands to a binary operator are not of the same type!
-  %R2121 = sdiv %struct.Node* %R2120, i64 40
+  %R2120 = sdiv %struct.Node* %R2119, i64 40
 Both operands to a binary operator are not of the same type!
-  %R2184 = shl i64 1, i32 %R2183
+  %R2183 = shl i64 1, i32 %R2182
 Both operands to a binary operator are not of the same type!
-  %R2346 = shl i64 1, i32 %R2345
+  %R2345 = shl i64 1, i32 %R2344
 Call parameter type does not match function signature!
   %21 = bitcast i8* %20 to %struct.Node*
- %struct.lua_TValue*  %R2363 = call i32 @countint(%struct.Node* %21, i32* %ARG2)
+ %struct.lua_TValue*  %R2362 = call i32 @countint(%struct.Node* %21, i32* %ARG2)
 Both operands to a binary operator are not of the same type!
-  %R2430 = shl i64 1, i32 %R2424
+  %R2429 = shl i64 1, i32 %R2423
 Both operands to a binary operator are not of the same type!
-  %R2546 = shl i64 1, i32 %R2475
+  %R2545 = shl i64 1, i32 %R2474
 Call parameter type does not match function signature!
   %64 = bitcast i8* %63 to %struct.Node*
- %struct.lua_TValue*  %R2566 = call %struct.lua_TValue* @luaH_set(%struct.lua_State* %ARG1, %struct.Table* %ARG2, %struct.Node* %64)
+ %struct.lua_TValue*  %R2565 = call %struct.lua_TValue* @luaH_set(%struct.lua_State* %ARG1, %struct.Table* %ARG2, %struct.Node* %64)
 Both operands to a binary operator are not of the same type!
-  %R2583 = shl i64 1, i32 %R2475
+  %R2582 = shl i64 1, i32 %R2474
 Both operands to a binary operator are not of the same type!
-  %R2593 = shl i64 1, i32 %R2592
+  %R2592 = shl i64 1, i32 %R2591
 Both operands to a binary operator are not of the same type!
-  %R2672 = shl i64 1, i32 %R2671
+  %R2671 = shl i64 1, i32 %R2670
 Call parameter type does not match function signature!
   %11 = bitcast i8* %10 to %struct.Node*
- %struct.lua_TValue*  %R2728 = call %struct.Node* @mainposition(%struct.Table* %ARG2, %struct.Node* %11)
+ %struct.lua_TValue*  %R2727 = call %struct.Node* @mainposition(%struct.Table* %ARG2, %struct.Node* %11)
 Stored value type does not match pointer operand type!
   store %struct.Node* %51, %struct.lua_TValue** %2
  %struct.lua_TValue*Stored value type does not match pointer operand type!
   store %struct.Node* %13, %struct.lua_TValue** %1
  %struct.lua_TValue*Both operands to a binary operator are not of the same type!
-  %R2817 = shl i64 1, i32 %R2816
+  %R2816 = shl i64 1, i32 %R2815
 Both operands to ICmp instruction are not of the same type!
-  %R2831 = icmp eq { [184 x i8] }* %load_target5, { [24 x i8] }* %ARG2
+  %R2830 = icmp eq { [184 x i8] }* %load_target5, { [24 x i8] }* %ARG2
 Stored value type does not match pointer operand type!
   store %struct.Node* %15, %struct.lua_TValue** %1
  %struct.lua_TValue*Call parameter type does not match function signature!
   %load_target1 = load { [184 x i8] }*, { [184 x i8] }** %9
- { [24 x i8] }*  %R2847 = call %struct.lua_TValue* @luaH_getstr(%struct.Table* %ARG1, { [184 x i8] }* %load_target1)
+ { [24 x i8] }*  %R2846 = call %struct.lua_TValue* @luaH_getstr(%struct.Table* %ARG1, { [184 x i8] }* %load_target1)
 Call parameter type does not match function signature!
   %17 = bitcast i8* %16 to %struct.Node*
- %struct.lua_TValue*  %R2869 = call i32 @luaO_rawequalObj(%struct.Node* %17, %struct.lua_TValue* %ARG2)
+ %struct.lua_TValue*  %R2868 = call i32 @luaO_rawequalObj(%struct.Node* %17, %struct.lua_TValue* %ARG2)
 Stored value type does not match pointer operand type!
   store %struct.Node* %14, %struct.lua_TValue** %1
  %struct.lua_TValue*Switch constants must all be same type as switch value!
@@ -1102,7 +1086,7 @@ Stored value type does not match pointer operand type!
     i32 10, label %L498
   ]
 Both operands to ICmp instruction are not of the same type!
-  %R3097 = icmp eq %struct.lua_TValue* %load_target15, { [184 x i8] }* %40
+  %R3096 = icmp eq %struct.lua_TValue* %load_target15, { [184 x i8] }* %40
 Stored value type does not match pointer operand type!
   store %struct.lua_State* %load_target1, { [184 x i8] }*** %0
  { [184 x i8] }**Stored value type does not match pointer operand type!
@@ -1110,15 +1094,15 @@ Stored value type does not match pointer operand type!
  { [184 x i8] }**Stored value type does not match pointer operand type!
   store { [184 x i8] }* %load_target2, { [184 x i8] }*** %0
  { [184 x i8] }**Both operands to a binary operator are not of the same type!
-  %R3335 = shl i64 1, i32 %R3334
+  %R3334 = shl i64 1, i32 %R3333
 Integer arithmetic operators only work with integral types!
-  %R3588 = sub %struct.CallInfo* %load_target, %load_target1
+  %R3587 = sub %struct.CallInfo* %load_target, %load_target1
 Both operands to a binary operator are not of the same type!
-  %R3589 = sdiv %struct.CallInfo* %R3588, i64 40
+  %R3588 = sdiv %struct.CallInfo* %R3587, i64 40
 Integer arithmetic operators only work with integral types!
-  %R3594 = sub %struct.lua_TValue* %ARG2, %load_target2
+  %R3593 = sub %struct.lua_TValue* %ARG2, %load_target2
 Both operands to a binary operator are not of the same type!
-  %R3595 = sdiv %struct.lua_TValue* %R3594, i64 16
+  %R3594 = sdiv %struct.lua_TValue* %R3593, i64 16
 Switch constants must all be same type as switch value!
   switch i8 %load_target2, label %L632 [
     i32 5, label %L623
@@ -1128,9 +1112,9 @@ Switch constants must all be same type as switch value!
   ]
 Call parameter type does not match function signature!
   %load_target = load { [184 x i8] }*, { [184 x i8] }** %5
- %struct.Table*  %R3694 = call i32 @traversetable(%struct.global_State* %ARG1, { [184 x i8] }* %load_target)
+ %struct.Table*  %R3693 = call i32 @traversetable(%struct.global_State* %ARG1, { [184 x i8] }* %load_target)
 Both operands to a binary operator are not of the same type!
-  %R3708 = shl i64 1, i32 %R3707
+  %R3707 = shl i64 1, i32 %R3706
 Call parameter type does not match function signature!
   %load_target = load { [184 x i8] }*, { [184 x i8] }** %5
  { [56 x i8] }*  call void @traverseclosure(%struct.global_State* %ARG1, { [184 x i8] }* %load_target)
@@ -1141,13 +1125,13 @@ Call parameter type does not match function signature!
   %load_target = load { [184 x i8] }*, { [184 x i8] }** %5
  %struct.Proto*  call void @traverseproto(%struct.global_State* %ARG1, { [184 x i8] }* %load_target)
 Both operands to a binary operator are not of the same type!
-  %R3873 = shl i64 1, i32 %R3872
+  %R3872 = shl i64 1, i32 %R3871
 Call parameter type does not match function signature!
   %38 = bitcast i8* %37 to %struct.Node*
- %struct.lua_TValue*  %R3889 = call i32 @iscleared(%struct.Node* %38, i32 1)
+ %struct.lua_TValue*  %R3888 = call i32 @iscleared(%struct.Node* %38, i32 1)
 Call parameter type does not match function signature!
   %31 = bitcast i8* %30 to %struct.Node*
- %struct.lua_TValue*  %R3892 = call i32 @iscleared(%struct.Node* %31, i32 0)
+ %struct.lua_TValue*  %R3891 = call i32 @iscleared(%struct.Node* %31, i32 0)
 Switch constants must all be same type as switch value!
   switch i8 %load_target, label %L675 [
     i32 4, label %L673
@@ -1175,14 +1159,14 @@ Call parameter type does not match function signature!
  %struct.lua_State*  call void @luaE_freethread(%struct.lua_State* %ARG1, { [184 x i8] }* %ARG2)
 Call parameter type does not match function signature!
   %17 = bitcast i8* %16 to { [184 x i8] }*
- { [184 x i8] }**  %R3954 = call { [184 x i8] }** @sweeplist(%struct.lua_State* %ARG1, { [184 x i8] }* %17, i64 -3)
+ { [184 x i8] }**  %R3953 = call { [184 x i8] }** @sweeplist(%struct.lua_State* %ARG1, { [184 x i8] }* %17, i64 -3)
 Stored value type does not match pointer operand type!
   store { [184 x i8] }* %load_target2, { [184 x i8] }*** %0
  { [184 x i8] }**Call parameter type does not match function signature!
   %9 = bitcast i8* %8 to %struct.global_State*
- { [184 x i8] }**  %R4138 = call { [184 x i8] }** @sweeplist(%struct.lua_State* %ARG1, %struct.global_State* %9, i64 -3)
+ { [184 x i8] }**  %R4137 = call { [184 x i8] }** @sweeplist(%struct.lua_State* %ARG1, %struct.global_State* %9, i64 -3)
 Both operands to ICmp instruction are not of the same type!
-  %R4234 = icmp ne %struct.UpVal* %5, %struct.global_State* %8
+  %R4233 = icmp ne %struct.UpVal* %5, %struct.global_State* %8
 Stored value type does not match pointer operand type!
   store %struct.global_State* %44, { [184 x i8] }*** %48
  { [184 x i8] }**Switch constants must all be same type as switch value!
@@ -1194,26 +1178,26 @@ Stored value type does not match pointer operand type!
     i32 4, label %L751
   ]
 Stored value type does not match pointer operand type!
-  store i32 %R4490, i8* %19
+  store i32 %R4489, i8* %19
  i8Call parameter type does not match function signature!
   %4 = bitcast i8* %3 to %struct.LG*
- %struct.global_State*  call void @preinit_state(%struct.lua_State* %R4740, %struct.LG* %4)
+ %struct.global_State*  call void @preinit_state(%struct.lua_State* %R4739, %struct.LG* %4)
 Stored value type does not match pointer operand type!
   store %struct.LG* %29, %struct.UpVal** %33
  %struct.UpVal*Stored value type does not match pointer operand type!
   store %struct.LG* %29, %struct.UpVal** %37
  %struct.UpVal*Stored value type does not match pointer operand type!
-  store %struct.LG* %R4742, { [184 x i8] }** %79
+  store %struct.LG* %R4741, { [184 x i8] }** %79
  { [184 x i8] }*Stored value type does not match pointer operand type!
   store %struct.LG* %86, { [184 x i8] }*** %90
  { [184 x i8] }**Integer arithmetic operators only work with integral types!
-  %R4862 = sub i32* %load_target10, %load_target13
+  %R4861 = sub i32* %load_target10, %load_target13
 Both operands to a binary operator are not of the same type!
-  %R4863 = sdiv i32* %R4862, i64 4
+  %R4862 = sdiv i32* %R4861, i64 4
 Integer arithmetic operators only work with integral types!
-  %R4919 = sub %struct.CallInfo* %31, %load_target11
+  %R4918 = sub %struct.CallInfo* %31, %load_target11
 Both operands to a binary operator are not of the same type!
-  %R4920 = sdiv %struct.CallInfo* %R4919, i64 40
+  %R4919 = sdiv %struct.CallInfo* %R4918, i64 40
 Call parameter type does not match function signature!
   %64 = bitcast i8* %63 to %struct.lua_Debug*
  i8*  call void @luaO_chunkid(%struct.lua_Debug* %64, i8* %65, i64 60)
@@ -1221,9 +1205,9 @@ Call parameter type does not match function signature!
   %30 = bitcast i8* %29 to %struct.lua_Debug*
  i8*  call void @luaO_chunkid(%struct.lua_Debug* %30, i8* getelementptr inbounds ([13 x i8], [13 x i8]* @.str.42, i64 0, i64 0), i64 60)
 Integer arithmetic operators only work with integral types!
-  %R5032 = sub i8* %R5028, %R5031
+  %R5031 = sub i8* %R5027, %R5030
 Both operands to ICmp instruction are not of the same type!
-  %R5033 = icmp sle i8* %R5032, i64 16
+  %R5032 = icmp sle i8* %R5031, i64 16
 Switch constants must all be same type as switch value!
   switch i8 %load_target, label %L862 [
     i32 76, label %L863
@@ -1238,38 +1222,38 @@ Stored value type does not match pointer operand type!
  { [56 x i8] }*Stored value type does not match pointer operand type!
   store { [184 x i8] }* %load_target8, { [56 x i8] }** %1
  { [56 x i8] }*Integer arithmetic operators only work with integral types!
-  %R5126 = sub i8* %R5122, %R5125
+  %R5125 = sub i8* %R5121, %R5124
 Both operands to ICmp instruction are not of the same type!
-  %R5127 = icmp sle i8* %R5126, i64 16
+  %R5126 = icmp sle i8* %R5125, i64 16
 Incorrect number of arguments passed to called function!
-  %R5244 = call i8* @luaO_pushfstring(%struct.lua_State* %ARG1, i8* getelementptr inbounds ([10 x i8], [10 x i8]* @.str.51, i64 0, i64 0), i8* %R5233, i32 %R5232, i8* %ARG2)
+  %R5243 = call i8* @luaO_pushfstring(%struct.lua_State* %ARG1, i8* getelementptr inbounds ([10 x i8], [10 x i8]* @.str.51, i64 0, i64 0), i8* %R5232, i32 %R5231, i8* %ARG2)
 Integer arithmetic operators only work with integral types!
-  %R5288 = sub i8* %R5284, %R5287
+  %R5287 = sub i8* %R5283, %R5286
 Both operands to ICmp instruction are not of the same type!
-  %R5289 = icmp sle i8* %R5288, i64 16
+  %R5288 = icmp sle i8* %R5287, i64 16
 Incorrect number of arguments passed to called function!
-  %R5464 = call i8* @luaO_pushfstring(%struct.lua_State* %load_target4, i8* getelementptr inbounds ([9 x i8], [9 x i8]* @.str.56, i64 0, i64 0), i32 %ARG2)
+  %R5463 = call i8* @luaO_pushfstring(%struct.lua_State* %load_target4, i8* getelementptr inbounds ([9 x i8], [9 x i8]* @.str.56, i64 0, i64 0), i32 %ARG2)
 Incorrect number of arguments passed to called function!
-  %R5469 = call i8* @luaO_pushfstring(%struct.lua_State* %load_target5, i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.str.57, i64 0, i64 0), i32 %ARG2)
+  %R5468 = call i8* @luaO_pushfstring(%struct.lua_State* %load_target5, i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.str.57, i64 0, i64 0), i32 %ARG2)
 Incorrect number of arguments passed to called function!
-  %R5500 = call i8* @luaO_pushfstring(%struct.lua_State* %load_target1, i8* getelementptr inbounds ([10 x i8], [10 x i8]* @.str.59, i64 0, i64 0), i8* %R5488, i32 %load_target2, i8* %ARG2)
+  %R5499 = call i8* @luaO_pushfstring(%struct.lua_State* %load_target1, i8* getelementptr inbounds ([10 x i8], [10 x i8]* @.str.59, i64 0, i64 0), i8* %R5487, i32 %load_target2, i8* %ARG2)
 Incorrect number of arguments passed to called function!
-  %R5509 = call i8* @luaO_pushfstring(%struct.lua_State* %load_target3, i8* getelementptr inbounds ([13 x i8], [13 x i8]* @.str.60, i64 0, i64 0), i8* %R5500, i8* %R5508)
+  %R5508 = call i8* @luaO_pushfstring(%struct.lua_State* %load_target3, i8* getelementptr inbounds ([13 x i8], [13 x i8]* @.str.60, i64 0, i64 0), i8* %R5499, i8* %R5507)
 Call parameter type does not match function signature!
 { [8 x i8] }* %ARG2
- double*  %R5768 = call i32 @luaO_str2d(i8* %load_target31, { [8 x i8] }* %ARG2)
+ double*  %R5767 = call i32 @luaO_str2d(i8* %load_target31, { [8 x i8] }* %ARG2)
 Call parameter type does not match function signature!
   %26 = bitcast i8* %25 to %struct.LexState*
- { [8 x i8] }*  %R6570 = call i32 @llex(%struct.LexState* %ARG1, %struct.LexState* %26)
+ { [8 x i8] }*  %R6569 = call i32 @llex(%struct.LexState* %ARG1, %struct.LexState* %26)
 Call parameter type does not match function signature!
   %2 = bitcast i8* %1 to %struct.LexState*
- { [8 x i8] }*  %R6576 = call i32 @llex(%struct.LexState* %ARG1, %struct.LexState* %2)
+ { [8 x i8] }*  %R6575 = call i32 @llex(%struct.LexState* %ARG1, %struct.LexState* %2)
 Call parameter type does not match function signature!
   %2 = bitcast i8* %1 to %struct.FuncState*
  i32*  call void @luaK_concat(%struct.FuncState* %ARG1, %struct.FuncState* %2, i32 %ARG2)
 Call parameter type does not match function signature!
   %52 = bitcast i8* %51 to %struct.Proto*
- i32*  %R6973 = call i8* @luaM_growaux_(%struct.lua_State* %load_target, i8* %R6969, %struct.Proto* %52, i64 16, i32 262143, i8* getelementptr inbounds ([24 x i8], [24 x i8]* @.str.77, i64 0, i64 0))
+ i32*  %R6972 = call i8* @luaM_growaux_(%struct.lua_State* %load_target, i8* %R6968, %struct.Proto* %52, i64 16, i32 262143, i8* getelementptr inbounds ([24 x i8], [24 x i8]* @.str.77, i64 0, i64 0))
 Call parameter type does not match function signature!
   %9 = bitcast i8* %8 to %struct.expdesc*
  i32*  call void @luaK_concat(%struct.FuncState* %ARG1, %struct.expdesc* %9, i32 %load_target2)
@@ -1287,35 +1271,35 @@ Call parameter type does not match function signature!
  i32*  call void @luaK_concat(%struct.FuncState* %ARG1, %struct.expdesc* %15, i32 %load_target2)
 Call parameter type does not match function signature!
   %22 = bitcast i8* %21 to %struct.Proto*
- i32*  %R7912 = call i8* @luaM_growaux_(%struct.lua_State* %load_target4, i8* %R7908, %struct.Proto* %22, i64 4, i32 2147483645, i8* getelementptr inbounds ([19 x i8], [19 x i8]* @.str.78, i64 0, i64 0))
+ i32*  %R7911 = call i8* @luaM_growaux_(%struct.lua_State* %load_target4, i8* %R7907, %struct.Proto* %22, i64 4, i32 2147483645, i8* getelementptr inbounds ([19 x i8], [19 x i8]* @.str.78, i64 0, i64 0))
 Call parameter type does not match function signature!
   %59 = bitcast i8* %58 to %struct.Proto*
- i32*  %R7937 = call i8* @luaM_growaux_(%struct.lua_State* %load_target12, i8* %R7933, %struct.Proto* %59, i64 4, i32 2147483645, i8* getelementptr inbounds ([19 x i8], [19 x i8]* @.str.79, i64 0, i64 0))
+ i32*  %R7936 = call i8* @luaM_growaux_(%struct.lua_State* %load_target12, i8* %R7932, %struct.Proto* %59, i64 4, i32 2147483645, i8* getelementptr inbounds ([19 x i8], [19 x i8]* @.str.79, i64 0, i64 0))
 Incorrect number of arguments passed to called function!
-  %R8041 = call i8* @luaO_pushfstring(%struct.lua_State* %load_target, i8* getelementptr inbounds ([14 x i8], [14 x i8]* @.str.82, i64 0, i64 0), i8* %R8040)
+  %R8040 = call i8* @luaO_pushfstring(%struct.lua_State* %load_target, i8* getelementptr inbounds ([14 x i8], [14 x i8]* @.str.82, i64 0, i64 0), i8* %R8039)
 Incorrect number of arguments passed to called function!
-  %R8051 = call i8* @luaO_pushfstring(%struct.lua_State* %load_target2, i8* getelementptr inbounds ([34 x i8], [34 x i8]* @.str.83, i64 0, i64 0), i32 %ARG2, i8* %ARG3)
+  %R8050 = call i8* @luaO_pushfstring(%struct.lua_State* %load_target2, i8* getelementptr inbounds ([34 x i8], [34 x i8]* @.str.83, i64 0, i64 0), i32 %ARG2, i8* %ARG3)
 Incorrect number of arguments passed to called function!
-  %R8060 = call i8* @luaO_pushfstring(%struct.lua_State* %load_target3, i8* getelementptr inbounds ([40 x i8], [40 x i8]* @.str.84, i64 0, i64 0), i32 %load_target1, i32 %ARG2, i8* %ARG3)
+  %R8059 = call i8* @luaO_pushfstring(%struct.lua_State* %load_target3, i8* getelementptr inbounds ([40 x i8], [40 x i8]* @.str.84, i64 0, i64 0), i32 %load_target1, i32 %ARG2, i8* %ARG3)
 Incorrect number of arguments passed to called function!
-  %R8100 = call i8* @luaO_pushfstring(%struct.lua_State* %load_target3, i8* getelementptr inbounds ([41 x i8], [41 x i8]* @.str.85, i64 0, i64 0), i8* %R8095, i8* %R8098, i32 %ARG4)
+  %R8099 = call i8* @luaO_pushfstring(%struct.lua_State* %load_target3, i8* getelementptr inbounds ([41 x i8], [41 x i8]* @.str.85, i64 0, i64 0), i8* %R8094, i8* %R8097, i32 %ARG4)
 Call parameter type does not match function signature!
   %27 = bitcast i8* %26 to %struct.Proto*
- i32*  %R8143 = call i8* @luaM_growaux_(%struct.lua_State* %load_target5, i8* %R8139, %struct.Proto* %27, i64 16, i32 32767, i8* getelementptr inbounds ([25 x i8], [25 x i8]* @.str.86, i64 0, i64 0))
+ i32*  %R8142 = call i8* @luaM_growaux_(%struct.lua_State* %load_target5, i8* %R8138, %struct.Proto* %27, i64 16, i32 32767, i8* getelementptr inbounds ([25 x i8], [25 x i8]* @.str.86, i64 0, i64 0))
 Call parameter type does not match function signature!
   %48 = bitcast i8* %47 to %struct.Proto*
- i32*  %R8324 = call i8* @luaM_growaux_(%struct.lua_State* %load_target18, i8* %R8320, %struct.Proto* %48, i64 8, i32 2147483645, i8* getelementptr inbounds ([1 x i8], [1 x i8]* @.str.89, i64 0, i64 0))
+ i32*  %R8323 = call i8* @luaM_growaux_(%struct.lua_State* %load_target18, i8* %R8319, %struct.Proto* %48, i64 8, i32 2147483645, i8* getelementptr inbounds ([1 x i8], [1 x i8]* @.str.89, i64 0, i64 0))
 Call parameter type does not match function signature!
   %28 = bitcast i8* %27 to %struct.Proto*
- i32*  %R8567 = call i8* @luaM_growaux_(%struct.lua_State* %load_target5, i8* %R8563, %struct.Proto* %28, i64 8, i32 262143, i8* getelementptr inbounds ([24 x i8], [24 x i8]* @.str.91, i64 0, i64 0))
+ i32*  %R8566 = call i8* @luaM_growaux_(%struct.lua_State* %load_target5, i8* %R8562, %struct.Proto* %28, i64 8, i32 262143, i8* getelementptr inbounds ([24 x i8], [24 x i8]* @.str.91, i64 0, i64 0))
 Integer arithmetic operators only work with integral types!
-  %R8690 = sub i8* %R8686, %R8689
+  %R8689 = sub i8* %R8685, %R8688
 Both operands to ICmp instruction are not of the same type!
-  %R8691 = icmp sle i8* %R8690, i64 16
+  %R8690 = icmp sle i8* %R8689, i64 16
 Integer arithmetic operators only work with integral types!
-  %R8708 = sub i8* %R8704, %R8707
+  %R8707 = sub i8* %R8703, %R8706
 Both operands to ICmp instruction are not of the same type!
-  %R8709 = icmp sle i8* %R8708, i64 16
+  %R8708 = icmp sle i8* %R8707, i64 16
 Call parameter type does not match function signature!
 %struct.ConsControl* %ARG2
  %struct.expdesc*  call void @luaK_exp2nextreg(%struct.FuncState* %ARG1, %struct.ConsControl* %ARG2)
@@ -1329,35 +1313,35 @@ Call parameter type does not match function signature!
 %struct.ConsControl* %ARG2
  %struct.expdesc*  call void @expr(%struct.LexState* %ARG1, %struct.ConsControl* %ARG2)
 Call parameter type does not match function signature!
-  %R9053 = bitcast %struct.ConsControl* %cc_0x62d000bc3638 to i8*
- %struct.expdesc*  call void @init_exp(i8* %R9053, i32 0, i32 0)
+  %R9052 = bitcast %struct.ConsControl* %cc_0x62d000bc3638 to i8*
+ %struct.expdesc*  call void @init_exp(i8* %R9052, i32 0, i32 0)
 Call parameter type does not match function signature!
-  %R9053 = bitcast %struct.ConsControl* %cc_0x62d000bc3638 to i8*
- %struct.ConsControl*  call void @closelistfield(%struct.FuncState* %load_target, i8* %R9053)
+  %R9052 = bitcast %struct.ConsControl* %cc_0x62d000bc3638 to i8*
+ %struct.ConsControl*  call void @closelistfield(%struct.FuncState* %load_target, i8* %R9052)
 Call parameter type does not match function signature!
-  %R9053 = bitcast %struct.ConsControl* %cc_0x62d000bc3638 to i8*
- %struct.ConsControl*  call void @listfield(%struct.LexState* %ARG1, i8* %R9053)
+  %R9052 = bitcast %struct.ConsControl* %cc_0x62d000bc3638 to i8*
+ %struct.ConsControl*  call void @listfield(%struct.LexState* %ARG1, i8* %R9052)
 Call parameter type does not match function signature!
-  %R9053 = bitcast %struct.ConsControl* %cc_0x62d000bc3638 to i8*
- %struct.ConsControl*  call void @recfield(%struct.LexState* %ARG1, i8* %R9053)
+  %R9052 = bitcast %struct.ConsControl* %cc_0x62d000bc3638 to i8*
+ %struct.ConsControl*  call void @recfield(%struct.LexState* %ARG1, i8* %R9052)
 Call parameter type does not match function signature!
-  %R9053 = bitcast %struct.ConsControl* %cc_0x62d000bc3638 to i8*
- %struct.ConsControl*  call void @recfield(%struct.LexState* %ARG1, i8* %R9053)
+  %R9052 = bitcast %struct.ConsControl* %cc_0x62d000bc3638 to i8*
+ %struct.ConsControl*  call void @recfield(%struct.LexState* %ARG1, i8* %R9052)
 Call parameter type does not match function signature!
-  %R9053 = bitcast %struct.ConsControl* %cc_0x62d000bc3638 to i8*
- %struct.ConsControl*  call void @listfield(%struct.LexState* %ARG1, i8* %R9053)
+  %R9052 = bitcast %struct.ConsControl* %cc_0x62d000bc3638 to i8*
+ %struct.ConsControl*  call void @listfield(%struct.LexState* %ARG1, i8* %R9052)
 Call parameter type does not match function signature!
-  %R9053 = bitcast %struct.ConsControl* %cc_0x62d000bc3638 to i8*
- %struct.ConsControl*  call void @lastlistfield(%struct.FuncState* %load_target, i8* %R9053)
+  %R9052 = bitcast %struct.ConsControl* %cc_0x62d000bc3638 to i8*
+ %struct.ConsControl*  call void @lastlistfield(%struct.FuncState* %load_target, i8* %R9052)
 Call parameter type does not match function signature!
-  %8 = getelementptr inbounds i8, i8* %R9477, i32 8
+  %8 = getelementptr inbounds i8, i8* %R9476, i32 8
  %struct.expdesc*  call void @primaryexp(%struct.LexState* %ARG1, i8* %8)
 Call parameter type does not match function signature!
-  %8 = getelementptr inbounds i8, i8* %R9477, i32 8
+  %8 = getelementptr inbounds i8, i8* %R9476, i32 8
  %struct.expdesc*  call void @check_conflict(%struct.LexState* %ARG1, %struct.LHS_assign* %ARG2, i8* %8)
 Call parameter type does not match function signature!
-  %R9477 = bitcast %struct.LHS_assign* %nv_0x62d000bfaa80 to i8*
- %struct.LHS_assign*  call void @assignment(%struct.LexState* %ARG1, i8* %R9477, i32 %R9504)
+  %R9476 = bitcast %struct.LHS_assign* %nv_0x62d000bfaa80 to i8*
+ %struct.LHS_assign*  call void @assignment(%struct.LexState* %ARG1, i8* %R9476, i32 %R9503)
 Call parameter type does not match function signature!
   %47 = bitcast i8* %46 to %struct.LHS_assign*
  %struct.expdesc*  call void @luaK_storevar(%struct.FuncState* %load_target20, %struct.LHS_assign* %47, %struct.expdesc* %e_0x62d000bfa998)
@@ -1366,83 +1350,83 @@ Call parameter type does not match function signature!
  %struct.expdesc*  call void @luaK_storevar(%struct.FuncState* %load_target23, %struct.LHS_assign* %62, %struct.expdesc* %e_0x62d000bfa998)
 Call parameter type does not match function signature!
   %26 = bitcast i8* %25 to %struct.BlockCnt*
- i32*  call void @luaK_concat(%struct.FuncState* %load_target, %struct.BlockCnt* %26, i32 %R9585)
+ i32*  call void @luaK_concat(%struct.FuncState* %load_target, %struct.BlockCnt* %26, i32 %R9584)
 Invalid bitcast
 i32 addrspace(32)* bitcast (i32 -1 to i32 addrspace(32)*)
 Invalid bitcast
 i32* bitcast (i32 -1 to i32*)
 Call parameter type does not match function signature!
-  %4 = getelementptr inbounds i8, i8* %R9916, i32 8
+  %4 = getelementptr inbounds i8, i8* %R9915, i32 8
  %struct.expdesc*  call void @primaryexp(%struct.LexState* %ARG1, i8* %4)
 Call parameter type does not match function signature!
-  %R9916 = bitcast %struct.LHS_assign* %v_0x62d000c58a70 to i8*
- %struct.LHS_assign*  call void @assignment(%struct.LexState* %ARG1, i8* %R9916, i32 1)
+  %R9915 = bitcast %struct.LHS_assign* %v_0x62d000c58a70 to i8*
+ %struct.LHS_assign*  call void @assignment(%struct.LexState* %ARG1, i8* %R9915, i32 1)
 Integer arithmetic operators only work with integral types!
-  %R10093 = sub i8* %R10089, %R10092
+  %R10092 = sub i8* %R10088, %R10091
 Integer arithmetic operators only work with integral types!
-  %R10132 = sub i8* %R10128, %R10131
+  %R10131 = sub i8* %R10127, %R10130
 Both operands to ICmp instruction are not of the same type!
-  %R10133 = icmp sle i8* %R10132, i64 48
+  %R10132 = icmp sle i8* %R10131, i64 48
 Integer arithmetic operators only work with integral types!
-  %R10212 = sub i8* %R10208, %R10211
+  %R10211 = sub i8* %R10207, %R10210
 Both operands to ICmp instruction are not of the same type!
-  %R10213 = icmp sle i8* %R10212, i64 64
+  %R10212 = icmp sle i8* %R10211, i64 64
 Call parameter type does not match function signature!
   %load_target4 = load { [184 x i8] }*, { [184 x i8] }** %12
- %struct.Table*  %R10235 = call %struct.lua_TValue* @luaH_get({ [184 x i8] }* %load_target4, %struct.lua_TValue* %ARG3)
+ %struct.Table*  %R10234 = call %struct.lua_TValue* @luaH_get({ [184 x i8] }* %load_target4, %struct.lua_TValue* %ARG3)
 Call parameter type does not match function signature!
   %load_target4 = load { [184 x i8] }*, { [184 x i8] }** %12
- %struct.Table*  %R10301 = call %struct.lua_TValue* @luaH_set(%struct.lua_State* %ARG1, { [184 x i8] }* %load_target4, %struct.lua_TValue* %ARG3)
+ %struct.Table*  %R10300 = call %struct.lua_TValue* @luaH_set(%struct.lua_State* %ARG1, { [184 x i8] }* %load_target4, %struct.lua_TValue* %ARG3)
 Call parameter type does not match function signature!
   %load_target4 = load { [184 x i8] }*, { [184 x i8] }** %12
  %struct.Table*  call void @luaC_barrierback(%struct.lua_State* %ARG1, { [184 x i8] }* %load_target4)
 Call parameter type does not match function signature!
   %load_target10 = load { [184 x i8] }*, { [184 x i8] }** %20
- { [24 x i8] }*  %R10581 = call i32 @l_strcmp({ [184 x i8] }* %load_target10, { [184 x i8] }* %load_target11)
+ { [24 x i8] }*  %R10580 = call i32 @l_strcmp({ [184 x i8] }* %load_target10, { [184 x i8] }* %load_target11)
 Call parameter type does not match function signature!
   %load_target10 = load { [184 x i8] }*, { [184 x i8] }** %20
- { [24 x i8] }*  %R10626 = call i32 @l_strcmp({ [184 x i8] }* %load_target10, { [184 x i8] }* %load_target11)
+ { [24 x i8] }*  %R10625 = call i32 @l_strcmp({ [184 x i8] }* %load_target10, { [184 x i8] }* %load_target11)
 Both operands to a binary operator are not of the same type!
-  %R10788 = sub %struct.lua_TValue* %19, i64 %R10787
+  %R10787 = sub %struct.lua_TValue* %19, i64 %R10786
 Call parameter type does not match function signature!
   %79 = bitcast i8* %78 to %struct.global_State*
- %struct.Mbuffer*  %R10826 = call i8* @luaZ_openspace(%struct.lua_State* %ARG1, %struct.global_State* %79, i64 %80)
+ %struct.Mbuffer*  %R10825 = call i8* @luaZ_openspace(%struct.lua_State* %ARG1, %struct.global_State* %79, i64 %80)
 Both operands to a binary operator are not of the same type!
-  %R10834 = sub %struct.lua_TValue* %19, i64 %R10833
+  %R10833 = sub %struct.lua_TValue* %19, i64 %R10832
 Both operands to a binary operator are not of the same type!
-  %R10864 = sub %struct.lua_TValue* %19, i64 %R10863
+  %R10863 = sub %struct.lua_TValue* %19, i64 %R10862
 Call parameter type does not match function signature!
   %load_target128 = load { [184 x i8] }*, { [184 x i8] }** %712
- %struct.Table*  %R11911 = call i32 @luaH_getn({ [184 x i8] }* %load_target128)
+ %struct.Table*  %R11910 = call i32 @luaH_getn({ [184 x i8] }* %load_target128)
 Integer arithmetic operators only work with integral types!
-  %R12404 = sub %struct.lua_TValue* %load_target197, %load_target192
+  %R12403 = sub %struct.lua_TValue* %load_target197, %load_target192
 Both operands to a binary operator are not of the same type!
-  %R12405 = sdiv %struct.lua_TValue* %R12404, i64 16
+  %R12404 = sdiv %struct.lua_TValue* %R12403, i64 16
 Both operands to a binary operator are not of the same type!
-  %R12406 = mul %struct.lua_TValue* %R12405, i64 16
+  %R12405 = mul %struct.lua_TValue* %R12404, i64 16
 Integer arithmetic operators only work with integral types!
-  %R12689 = sub %struct.lua_TValue* %load_target250, %90
+  %R12688 = sub %struct.lua_TValue* %load_target250, %90
 Both operands to a binary operator are not of the same type!
-  %R12690 = sdiv %struct.lua_TValue* %R12689, i64 16
+  %R12689 = sdiv %struct.lua_TValue* %R12688, i64 16
 Call parameter type does not match function signature!
   %load_target258 = load { [184 x i8] }*, { [184 x i8] }** %1311
- %struct.Table*  call void @luaH_resizearray(%struct.lua_State* %ARG1, { [184 x i8] }* %load_target258, i32 %R12713)
+ %struct.Table*  call void @luaH_resizearray(%struct.lua_State* %ARG1, { [184 x i8] }* %load_target258, i32 %R12712)
 Call parameter type does not match function signature!
   %load_target258 = load { [184 x i8] }*, { [184 x i8] }** %1311
- %struct.Table*  %R12733 = call %struct.lua_TValue* @luaH_setnum(%struct.lua_State* %ARG1, { [184 x i8] }* %load_target258, i32 %1322)
+ %struct.Table*  %R12732 = call %struct.lua_TValue* @luaH_setnum(%struct.lua_State* %ARG1, { [184 x i8] }* %load_target258, i32 %1322)
 Call parameter type does not match function signature!
   %load_target258 = load { [184 x i8] }*, { [184 x i8] }** %1311
  %struct.Table*  call void @luaC_barrierback(%struct.lua_State* %ARG1, { [184 x i8] }* %load_target258)
 Integer arithmetic operators only work with integral types!
-  %R12864 = sub %struct.lua_TValue* %load_target292, %load_target293
+  %R12863 = sub %struct.lua_TValue* %load_target292, %load_target293
 Both operands to a binary operator are not of the same type!
-  %R12865 = sdiv %struct.lua_TValue* %R12864, i64 16
+  %R12864 = sdiv %struct.lua_TValue* %R12863, i64 16
 Integer arithmetic operators only work with integral types!
-  %R12883 = sub i8* %R12879, %R12882
+  %R12882 = sub i8* %R12878, %R12881
 Both operands to ICmp instruction are not of the same type!
-  %R12887 = icmp sle i8* %R12883, i64 %R12886
+  %R12886 = icmp sle i8* %R12882, i64 %R12885
 Both operands to a binary operator are not of the same type!
-  %R12919 = sub %struct.lua_TValue* %load_target307, i64 %R12918
+  %R12918 = sub %struct.lua_TValue* %load_target307, i64 %R12917
 Stored value type does not match pointer operand type!
   store %struct.global_State* %25, %struct.lua_TValue** %0
  %struct.lua_TValue*Stored value type does not match pointer operand type!
@@ -1456,19 +1440,19 @@ Stored value type does not match pointer operand type!
  %struct.lua_TValue*Stored value type does not match pointer operand type!
   store { [184 x i8] }* %load_target3, %struct.Table** %0
  %struct.Table*Integer arithmetic operators only work with integral types!
-  %R13036 = sub %struct.lua_TValue* %load_target, %load_target2
+  %R13035 = sub %struct.lua_TValue* %load_target, %load_target2
 Both operands to a binary operator are not of the same type!
-  %R13037 = sdiv %struct.lua_TValue* %R13036, i64 16
+  %R13036 = sdiv %struct.lua_TValue* %R13035, i64 16
 Both operands to ICmp instruction are not of the same type!
-  %R13041 = icmp sgt %struct.lua_TValue* %11, i64 8000
+  %R13040 = icmp sgt %struct.lua_TValue* %11, i64 8000
 Integer arithmetic operators only work with integral types!
-  %R13050 = sub i8* %R13046, %R13049
+  %R13049 = sub i8* %R13045, %R13048
 Both operands to ICmp instruction are not of the same type!
-  %R13054 = icmp sle i8* %R13050, i64 %R13053
+  %R13053 = icmp sle i8* %R13049, i64 %R13052
 Integer arithmetic operators only work with integral types!
-  %R13089 = sub %struct.lua_TValue* %load_target, %load_target1
+  %R13088 = sub %struct.lua_TValue* %load_target, %load_target1
 Both operands to a binary operator are not of the same type!
-  %R13090 = sdiv %struct.lua_TValue* %R13089, i64 16
+  %R13089 = sdiv %struct.lua_TValue* %R13088, i64 16
 Stored value type does not match pointer operand type!
   store { [184 x i8] }* %load_target10, %struct.Table** %31
  %struct.Table*Stored value type does not match pointer operand type!
@@ -1477,22 +1461,22 @@ Stored value type does not match pointer operand type!
   store double %load_target3, i64* %1
  i64Call parameter type does not match function signature!
   %load_target5 = load { [184 x i8] }*, { [184 x i8] }** %25
- %struct.Table*  %R13492 = call i32 @luaH_getn({ [184 x i8] }* %load_target5)
+ %struct.Table*  %R13491 = call i32 @luaH_getn({ [184 x i8] }* %load_target5)
 Call parameter type does not match function signature!
   %load_target = load { [184 x i8] }*, { [184 x i8] }** %3
- %struct.Table*  %R13738 = call %struct.lua_TValue* @luaH_get({ [184 x i8] }* %load_target, %struct.lua_TValue* %10)
+ %struct.Table*  %R13737 = call %struct.lua_TValue* @luaH_get({ [184 x i8] }* %load_target, %struct.lua_TValue* %10)
 Call parameter type does not match function signature!
   %load_target = load { [184 x i8] }*, { [184 x i8] }** %3
- %struct.Table*  %R13757 = call %struct.lua_TValue* @luaH_getnum({ [184 x i8] }* %load_target, i32 %ARG3)
+ %struct.Table*  %R13756 = call %struct.lua_TValue* @luaH_getnum({ [184 x i8] }* %load_target, i32 %ARG3)
 Call parameter type does not match function signature!
   %load_target1 = load { [184 x i8] }*, { [184 x i8] }** %7
- %struct.Table*  %R13923 = call %struct.lua_TValue* @luaH_set(%struct.lua_State* %ARG1, { [184 x i8] }* %load_target1, %struct.lua_TValue* %10)
+ %struct.Table*  %R13922 = call %struct.lua_TValue* @luaH_set(%struct.lua_State* %ARG1, { [184 x i8] }* %load_target1, %struct.lua_TValue* %10)
 Call parameter type does not match function signature!
   %load_target10 = load { [184 x i8] }*, { [184 x i8] }** %44
  %struct.Table*  call void @luaC_barrierback(%struct.lua_State* %ARG1, { [184 x i8] }* %load_target10)
 Call parameter type does not match function signature!
   %load_target1 = load { [184 x i8] }*, { [184 x i8] }** %7
- %struct.Table*  %R13972 = call %struct.lua_TValue* @luaH_setnum(%struct.lua_State* %ARG1, { [184 x i8] }* %load_target1, i32 %ARG3)
+ %struct.Table*  %R13971 = call %struct.lua_TValue* @luaH_setnum(%struct.lua_State* %ARG1, { [184 x i8] }* %load_target1, i32 %ARG3)
 Call parameter type does not match function signature!
   %load_target10 = load { [184 x i8] }*, { [184 x i8] }** %41
  %struct.Table*  call void @luaC_barrierback(%struct.lua_State* %ARG1, { [184 x i8] }* %load_target10)
@@ -1506,54 +1490,54 @@ Stored value type does not match pointer operand type!
  %struct.Table*Stored value type does not match pointer operand type!
   store { [184 x i8] }* %load_target5, %struct.Table** %35
  %struct.Table*Both operands to a binary operator are not of the same type!
-  %R14153 = sub %struct.lua_TValue* %load_target, i64 %R14152
+  %R14152 = sub %struct.lua_TValue* %load_target, i64 %R14151
 Integer arithmetic operators only work with integral types!
-  %R14189 = sub i8* %R14185, %R14188
+  %R14188 = sub i8* %R14184, %R14187
 Stored value type does not match pointer operand type!
-  store i8* %R14189, i64* %0
+  store i8* %R14188, i64* %0
  i64Both operands to a binary operator are not of the same type!
-  %R14196 = sub %struct.lua_TValue* %load_target1, i64 %R14195
+  %R14195 = sub %struct.lua_TValue* %load_target1, i64 %R14194
 Integer arithmetic operators only work with integral types!
-  %R14207 = sub i8* %R14203, %R14206
+  %R14206 = sub i8* %R14202, %R14205
 Call parameter type does not match function signature!
-  %R14207 = sub i8* %R14203, %R14206
- i64  %R14209 = call i32 @luaD_pcall(%struct.lua_State* %ARG1, void (%struct.lua_State*, i8*)* @f_call, i8* %R14201, i8* %R14207, i64 %21)
+  %R14206 = sub i8* %R14202, %R14205
+ i64  %R14208 = call i32 @luaD_pcall(%struct.lua_State* %ARG1, void (%struct.lua_State*, i8*)* @f_call, i8* %R14200, i8* %R14206, i64 %21)
 Call parameter type does not match function signature!
   %load_target = load { [184 x i8] }*, { [184 x i8] }** %3
- %struct.Table*  %R14250 = call i32 @luaH_next(%struct.lua_State* %ARG1, { [184 x i8] }* %load_target, %struct.lua_TValue* %10)
+ %struct.Table*  %R14249 = call i32 @luaH_next(%struct.lua_State* %ARG1, { [184 x i8] }* %load_target, %struct.lua_TValue* %10)
 Integer arithmetic operators only work with integral types!
-  %R14280 = sub %struct.lua_TValue* %load_target6, %load_target7
+  %R14279 = sub %struct.lua_TValue* %load_target6, %load_target7
 Both operands to a binary operator are not of the same type!
-  %R14281 = sdiv %struct.lua_TValue* %R14280, i64 16
+  %R14280 = sdiv %struct.lua_TValue* %R14279, i64 16
 Incorrect number of arguments passed to called function!
-  %R14377 = call i8* @lua_pushfstring(%struct.lua_State* %ARG1, i8* getelementptr inbounds ([20 x i8], [20 x i8]* @.str.136, i64 0, i64 0), i8* %ARG3, i8* %R14376)
+  %R14376 = call i8* @lua_pushfstring(%struct.lua_State* %ARG1, i8* getelementptr inbounds ([20 x i8], [20 x i8]* @.str.136, i64 0, i64 0), i8* %ARG3, i8* %R14375)
 Incorrect number of arguments passed to called function!
-  %R14404 = call i8* @lua_pushfstring(%struct.lua_State* %ARG1, i8* getelementptr inbounds ([8 x i8], [8 x i8]* @.str.138, i64 0, i64 0), %struct.lua_Debug* %6, i32 %load_target)
+  %R14403 = call i8* @lua_pushfstring(%struct.lua_State* %ARG1, i8* getelementptr inbounds ([8 x i8], [8 x i8]* @.str.138, i64 0, i64 0), %struct.lua_Debug* %6, i32 %load_target)
 Integer arithmetic operators only work with integral types!
-  %R14623 = sub i8* %5, %3
+  %R14622 = sub i8* %5, %3
 Call parameter type does not match function signature!
-  %R14623 = sub i8* %5, %3
- i64  call void @lua_pushlstring(%struct.lua_State* %ARG1, i8* %3, i8* %R14623)
+  %R14622 = sub i8* %5, %3
+ i64  call void @lua_pushlstring(%struct.lua_State* %ARG1, i8* %3, i8* %R14622)
 Call parameter type does not match function signature!
-  %R14623 = sub i8* %5, %3
- i64  call void @lua_pushlstring(%struct.lua_State* %ARG1, i8* %3, i8* %R14623)
+  %R14622 = sub i8* %5, %3
+ i64  call void @lua_pushlstring(%struct.lua_State* %ARG1, i8* %3, i8* %R14622)
 Both operands to a binary operator are not of the same type!
-  %R14662 = sub i8* %load_target, %struct.luaL_Buffer* %6
+  %R14661 = sub i8* %load_target, %struct.luaL_Buffer* %6
 Both operands to ICmp instruction are not of the same type!
-  %R14666 = icmp ne i8* %R14662, i64 0
+  %R14665 = icmp ne i8* %R14661, i64 0
 Call parameter type does not match function signature!
   %6 = bitcast i8* %5 to %struct.luaL_Buffer*
- i8*  call void @lua_pushlstring(%struct.lua_State* %load_target2, %struct.luaL_Buffer* %6, i8* %R14662)
+ i8*  call void @lua_pushlstring(%struct.lua_State* %load_target2, %struct.luaL_Buffer* %6, i8* %R14661)
 Stored value type does not match pointer operand type!
   store %struct.luaL_Buffer* %6, i8** %14
  i8*Function return type does not match operand type of return inst!
   ret %struct.luaL_Buffer* %2
  i8*Both operands to ICmp instruction are not of the same type!
-  %R14732 = icmp ult i8* %load_target, %struct.luaL_Buffer* %9
+  %R14731 = icmp ult i8* %load_target, %struct.luaL_Buffer* %9
 Both operands to a binary operator are not of the same type!
-  %R14760 = sub i8* %load_target2, %struct.luaL_Buffer* %13
+  %R14759 = sub i8* %load_target2, %struct.luaL_Buffer* %13
 Both operands to a binary operator are not of the same type!
-  %R14761 = sub i64 8192, i8* %R14760
+  %R14760 = sub i64 8192, i8* %R14759
 Stored value type does not match pointer operand type!
   store %struct.luaL_Buffer* %6, i8** %10
  i8*Invalid operands for select instruction!
@@ -1561,15 +1545,15 @@ Stored value type does not match pointer operand type!
 Stored value type does not match pointer operand type!
   store %struct.LoadF* %select, i8** %0
  i8*Incorrect number of arguments passed to called function!
-  %R14828 = call i8* @lua_pushfstring(%struct.lua_State* %ARG1, i8* getelementptr inbounds ([17 x i8], [17 x i8]* @.str.148, i64 0, i64 0), i8* %ARG2, i8* %3, i8* %R14818)
+  %R14827 = call i8* @lua_pushfstring(%struct.lua_State* %ARG1, i8* getelementptr inbounds ([17 x i8], [17 x i8]* @.str.148, i64 0, i64 0), i8* %ARG2, i8* %3, i8* %R14817)
 Incorrect number of arguments passed to called function!
-  %R14843 = call i8* @lua_pushfstring(%struct.lua_State* %ARG1, i8* getelementptr inbounds ([4 x i8], [4 x i8]* @.str.150, i64 0, i64 0), i8* %ARG2)
+  %R14842 = call i8* @lua_pushfstring(%struct.lua_State* %ARG1, i8* getelementptr inbounds ([4 x i8], [4 x i8]* @.str.150, i64 0, i64 0), i8* %ARG2)
 Incorrect number of arguments passed to called function!
-  %R15600 = call i8* @lua_pushfstring(%struct.lua_State* %ARG1, i8* getelementptr inbounds ([7 x i8], [7 x i8]* @.str.188, i64 0, i64 0), i8* %ARG3, i8* %R15599)
+  %R15599 = call i8* @lua_pushfstring(%struct.lua_State* %ARG1, i8* getelementptr inbounds ([7 x i8], [7 x i8]* @.str.188, i64 0, i64 0), i8* %ARG3, i8* %R15598)
 Incorrect number of arguments passed to called function!
-  %R15605 = call i8* @lua_pushfstring(%struct.lua_State* %ARG1, i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.str.189, i64 0, i64 0), i8* %R15604)
+  %R15604 = call i8* @lua_pushfstring(%struct.lua_State* %ARG1, i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.str.189, i64 0, i64 0), i8* %R15603)
 Incorrect number of arguments passed to called function!
-  %R15615 = call i8* @lua_pushfstring(%struct.lua_State* %ARG1, i8* getelementptr inbounds ([7 x i8], [7 x i8]* @.str.190, i64 0, i64 0), i8* %ARG3, i8* %R15614)
+  %R15614 = call i8* @lua_pushfstring(%struct.lua_State* %ARG1, i8* getelementptr inbounds ([7 x i8], [7 x i8]* @.str.190, i64 0, i64 0), i8* %ARG3, i8* %R15613)
 Switch constants must all be same type as switch value!
   switch i8 %load_target9, label %L2886 [
     i32 97, label %L2885
@@ -1577,15 +1561,15 @@ Switch constants must all be same type as switch value!
     i32 110, label %L2883
   ]
 Incorrect number of arguments passed to called function!
-  %R16160 = call i8* @lua_pushfstring(%struct.lua_State* %ARG1, i8* getelementptr inbounds ([7 x i8], [7 x i8]* @.str.223, i64 0, i64 0), i8* %ARG3, i8* %R16159)
+  %R16159 = call i8* @lua_pushfstring(%struct.lua_State* %ARG1, i8* getelementptr inbounds ([7 x i8], [7 x i8]* @.str.223, i64 0, i64 0), i8* %ARG3, i8* %R16158)
 Function return type does not match operand type of return inst!
   ret void
  i32Both operands to ICmp instruction are not of the same type!
-  %R16241 = icmp ult i8* %load_target2, %struct.luaL_Buffer* %11
+  %R16240 = icmp ult i8* %load_target2, %struct.luaL_Buffer* %11
 Both operands to ICmp instruction are not of the same type!
-  %R16271 = icmp ult i8* %load_target2, %struct.luaL_Buffer* %11
+  %R16270 = icmp ult i8* %load_target2, %struct.luaL_Buffer* %11
 Both operands to ICmp instruction are not of the same type!
-  %R16388 = icmp ult i8* %load_target, %struct.luaL_Buffer* %8
+  %R16387 = icmp ult i8* %load_target, %struct.luaL_Buffer* %8
 Switch constants must all be same type as switch value!
   switch i8 %load_target, label %L3002 [
     i32 37, label %L2990
@@ -1598,13 +1582,13 @@ Switch constants must all be same type as switch value!
     i32 91, label %L3035
   ]
 Integer arithmetic operators only work with integral types!
-  %R16832 = sub i8* %ARG2, %load_target
+  %R16831 = sub i8* %ARG2, %load_target
 Stored value type does not match pointer operand type!
-  store i8* %R16832, i64* %13
+  store i8* %R16831, i64* %13
  i64Integer arithmetic operators only work with integral types!
-  %R16866 = sub i8* %load_target1, %ARG2
+  %R16865 = sub i8* %load_target1, %ARG2
 Both operands to ICmp instruction are not of the same type!
-  %R16869 = icmp uge i8* %R16866, i64 %load_target
+  %R16868 = icmp uge i8* %R16865, i64 %load_target
 Switch constants must all be same type as switch value!
   switch i8 %load_target, label %L3108 [
     i32 0, label %L3105
@@ -1626,66 +1610,66 @@ Switch constants must all be same type as switch value!
     i32 63, label %L3112
   ]
 Integer arithmetic operators only work with integral types!
-  %R17087 = sub i8* %6, %4
+  %R17086 = sub i8* %6, %4
 Both operands to a binary operator are not of the same type!
-  %R17091 = sub i64 %3, i8* %R17087
+  %R17090 = sub i64 %3, i8* %R17086
 Integer arithmetic operators only work with integral types!
-  %R17105 = sub i8* %ARG4, %ARG3
+  %R17104 = sub i8* %ARG4, %ARG3
 Call parameter type does not match function signature!
-  %R17105 = sub i8* %ARG4, %ARG3
- i64  call void @lua_pushlstring(%struct.lua_State* %load_target3, i8* %ARG3, i8* %R17105)
+  %R17104 = sub i8* %ARG4, %ARG3
+ i64  call void @lua_pushlstring(%struct.lua_State* %load_target3, i8* %ARG3, i8* %R17104)
 Integer arithmetic operators only work with integral types!
-  %R17137 = sub i8* %load_target12, %load_target13
+  %R17136 = sub i8* %load_target12, %load_target13
 Call parameter type does not match function signature!
-  %38 = getelementptr inbounds i8, i8* %R17137, i64 1
+  %38 = getelementptr inbounds i8, i8* %R17136, i64 1
  i64  call void @lua_pushinteger(%struct.lua_State* %load_target11, i8* %38)
 Integer arithmetic operators only work with integral types!
-  %R17214 = sub i8* %R17209, %R17175
+  %R17213 = sub i8* %R17208, %R17174
 Call parameter type does not match function signature!
-  %21 = getelementptr inbounds i8, i8* %R17214, i64 1
+  %21 = getelementptr inbounds i8, i8* %R17213, i64 1
  i64  call void @lua_pushinteger(%struct.lua_State* %ARG1, i8* %21)
 Call parameter type does not match function signature!
-  %25 = getelementptr inbounds i8, i8* %R17214, i64 %load_target12
+  %25 = getelementptr inbounds i8, i8* %R17213, i64 %load_target12
  i64  call void @lua_pushinteger(%struct.lua_State* %ARG1, i8* %25)
 Integer arithmetic operators only work with integral types!
-  %R17249 = sub i8* %50, %R17175
+  %R17248 = sub i8* %50, %R17174
 Call parameter type does not match function signature!
-  %52 = getelementptr inbounds i8, i8* %R17249, i64 1
+  %52 = getelementptr inbounds i8, i8* %R17248, i64 1
  i64  call void @lua_pushinteger(%struct.lua_State* %ARG1, i8* %52)
 Integer arithmetic operators only work with integral types!
-  %R17254 = sub i8* %R17243, %R17175
+  %R17253 = sub i8* %R17242, %R17174
 Call parameter type does not match function signature!
-  %R17254 = sub i8* %R17243, %R17175
- i64  call void @lua_pushinteger(%struct.lua_State* %ARG1, i8* %R17254)
+  %R17253 = sub i8* %R17242, %R17174
+ i64  call void @lua_pushinteger(%struct.lua_State* %ARG1, i8* %R17253)
 Integer arithmetic operators only work with integral types!
-  %R17301 = sub i8* %R17297, %R17278
+  %R17300 = sub i8* %R17296, %R17277
 Stored value type does not match pointer operand type!
-  store i8* %R17301, i64* %1
+  store i8* %R17300, i64* %1
  i64Stored value type does not match pointer operand type!
   store i8* %29, i64* %1
  i64Both operands to ICmp instruction are not of the same type!
-  %R17344 = icmp ult i8* %load_target6, %struct.luaL_Buffer* %18
+  %R17343 = icmp ult i8* %load_target6, %struct.luaL_Buffer* %18
 Both operands to ICmp instruction are not of the same type!
-  %R17377 = icmp ult i8* %load_target15, %struct.luaL_Buffer* %47
+  %R17376 = icmp ult i8* %load_target15, %struct.luaL_Buffer* %47
 Integer arithmetic operators only work with integral types!
-  %R17399 = sub i8* %ARG4, %ARG3
+  %R17398 = sub i8* %ARG4, %ARG3
 Call parameter type does not match function signature!
-  %R17399 = sub i8* %ARG4, %ARG3
- i64  call void @luaL_addlstring(%struct.luaL_Buffer* %ARG2, i8* %ARG3, i8* %R17399)
+  %R17398 = sub i8* %ARG4, %ARG3
+ i64  call void @luaL_addlstring(%struct.luaL_Buffer* %ARG2, i8* %ARG3, i8* %R17398)
 Integer arithmetic operators only work with integral types!
-  %R17439 = sub i8* %ARG4, %ARG3
+  %R17438 = sub i8* %ARG4, %ARG3
 Call parameter type does not match function signature!
-  %R17439 = sub i8* %ARG4, %ARG3
- i64  call void @lua_pushlstring(%struct.lua_State* %load_target, i8* %ARG3, i8* %R17439)
+  %R17438 = sub i8* %ARG4, %ARG3
+ i64  call void @lua_pushlstring(%struct.lua_State* %load_target, i8* %ARG3, i8* %R17438)
 Both operands to ICmp instruction are not of the same type!
-  %R17520 = icmp ult i8* %load_target21, %struct.luaL_Buffer* %51
+  %R17519 = icmp ult i8* %load_target21, %struct.luaL_Buffer* %51
 Integer arithmetic operators only work with integral types!
-  %R17535 = sub i8* %load_target27, %64
+  %R17534 = sub i8* %load_target27, %64
 Call parameter type does not match function signature!
-  %R17535 = sub i8* %load_target27, %64
- i64  call void @luaL_addlstring(%struct.luaL_Buffer* %b_0x62d000fd7120, i8* %64, i8* %R17535)
+  %R17534 = sub i8* %load_target27, %64
+ i64  call void @luaL_addlstring(%struct.luaL_Buffer* %b_0x62d000fd7120, i8* %64, i8* %R17534)
 Both operands to ICmp instruction are not of the same type!
-  %R17551 = icmp ult i8* %load_target, %struct.luaL_Buffer* %7
+  %R17550 = icmp ult i8* %load_target, %struct.luaL_Buffer* %7
 Switch constants must all be same type as switch value!
   switch i8 %load_target5, label %L3235 [
     i32 0, label %L3234
@@ -1695,26 +1679,26 @@ Switch constants must all be same type as switch value!
     i32 92, label %L3228
   ]
 Both operands to ICmp instruction are not of the same type!
-  %R17567 = icmp ult i8* %load_target6, %struct.luaL_Buffer* %7
+  %R17566 = icmp ult i8* %load_target6, %struct.luaL_Buffer* %7
 Both operands to ICmp instruction are not of the same type!
-  %R17579 = icmp ult i8* %load_target10, %struct.luaL_Buffer* %7
+  %R17578 = icmp ult i8* %load_target10, %struct.luaL_Buffer* %7
 Both operands to ICmp instruction are not of the same type!
-  %R17598 = icmp ult i8* %load_target15, %struct.luaL_Buffer* %7
+  %R17597 = icmp ult i8* %load_target15, %struct.luaL_Buffer* %7
 Both operands to ICmp instruction are not of the same type!
-  %R17615 = icmp ult i8* %load_target20, %struct.luaL_Buffer* %7
+  %R17614 = icmp ult i8* %load_target20, %struct.luaL_Buffer* %7
 Integer arithmetic operators only work with integral types!
-  %R17638 = sub i8* %5, %ARG2
+  %R17637 = sub i8* %5, %ARG2
 Both operands to ICmp instruction are not of the same type!
-  %R17640 = icmp uge i8* %R17638, i64 6
+  %R17639 = icmp uge i8* %R17637, i64 6
 Integer arithmetic operators only work with integral types!
-  %R17727 = sub i8* %62, %ARG2
+  %R17726 = sub i8* %62, %ARG2
 Call parameter type does not match function signature!
-  %72 = getelementptr inbounds i8, i8* %R17727, i64 1
- i64  %R17730 = call i8* @strncpy(i8* %70, i8* %ARG2, i8* %72)
+  %72 = getelementptr inbounds i8, i8* %R17726, i64 1
+ i64  %R17729 = call i8* @strncpy(i8* %70, i8* %ARG2, i8* %72)
 Both operands to ICmp instruction are not of the same type!
-  %R17788 = icmp ult i8* %load_target5, %struct.luaL_Buffer* %15
+  %R17787 = icmp ult i8* %load_target5, %struct.luaL_Buffer* %15
 Both operands to ICmp instruction are not of the same type!
-  %R17807 = icmp ult i8* %load_target13, %struct.luaL_Buffer* %36
+  %R17806 = icmp ult i8* %load_target13, %struct.luaL_Buffer* %36
 Switch constants must all be same type as switch value!
   switch i8 %load_target20, label %L3281 [
     i32 69, label %L3276

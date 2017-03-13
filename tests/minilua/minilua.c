@@ -787,8 +787,10 @@ static const char*const luaT_typenames[] = {
 };
 #else
 static const char*const luaT_typenames[11];
+static const char*const luaT_eventname[17];
 #endif
 static void luaT_init(lua_State*L) {
+#if INITIALIZER_SUPPORTED
 	static const char*const luaT_eventname[] = {
 	"__index","__newindex",
 	"__gc","__mode","__eq",
@@ -796,6 +798,7 @@ static void luaT_init(lua_State*L) {
 	"__pow","__unm","__len","__lt","__le",
 	"__concat","__call"
 	};
+#endif
 	int i;
 	for (i = 0; i < TM_N; i++) {
 		G(L)->tmname[i] = luaS_new(L, luaT_eventname[i]);
@@ -1354,10 +1357,14 @@ static Udata*luaS_newudata(lua_State*L, size_t s, Table*e) {
 #define hashboolean(t,p)hashpow2(t,p)
 #define hashmod(t,n)(gnode(t,((n)%((sizenode(t)-1)|1))))
 #define hashpointer(t,p)hashmod(t,IntPoint(p))
+#if INITIALIZER_SUPPORTED
 static const Node dummynode_ = {
 {{NULL},0},
 {{{NULL},0,NULL}}
 };
+#else
+static const Node dummynode_;
+#endif
 static Node*hashnum(const Table*t, lua_Number n) {
 	unsigned int a[cast_int(sizeof(lua_Number) / sizeof(int))];
 	int i;
@@ -7818,6 +7825,22 @@ static void init_globals() {
 	luaT_typenames[i++] = "number"; luaT_typenames[i++] = "string"; luaT_typenames[i++] = "table";
 	luaT_typenames[i++] = "function"; luaT_typenames[i++] = "userdata"; luaT_typenames[i++] = "thread";
 	luaT_typenames[i++] = "proto"; luaT_typenames[i++] = "upval";
+
+	i = 0;
+	luaT_eventname[i++] = "__index"; luaT_eventname[i++] = "__newindex"; 
+	luaT_eventname[i++] = "__gc"; luaT_eventname[i++] =  "__mode"; luaT_eventname[i++] =  "__eq"; 
+	luaT_eventname[i++] = "__add"; luaT_eventname[i++] =  "__sub"; luaT_eventname[i++] =  "__mul"; 
+	luaT_eventname[i++] =  "__div"; luaT_eventname[i++] =  "__mod"; luaT_eventname[i++] = "__pow"; 
+	luaT_eventname[i++] =  "__unm"; luaT_eventname[i++] =  "__len"; luaT_eventname[i++] =  "__lt"; 
+	luaT_eventname[i++] =  "__le"; luaT_eventname[i++] = "__concat"; luaT_eventname[i++] =  "__call";
+
+	dummynode_.i_key.nk.next = NULL;
+	dummynode_.i_key.nk.tt = 0;
+	dummynode_.i_key.nk.value.p = NULL;
+	dummynode_.i_key.nk.value.tt = 0;
+	dummynode_.i_val.value.p = NULL;
+	dummynode_.i_val.tt = 0;
+
 
 }
 #endif

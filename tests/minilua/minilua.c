@@ -964,7 +964,7 @@ static void luaF_freeclosure(lua_State*L, Closure*c) {
 #define ISK(x)((x)&(1<<(9-1)))
 #define INDEXK(r)((int)(r)&~(1<<(9-1)))
 #define RKASK(x)((x)|(1<<(9-1)))
-static const lu_byte luaP_opmodes[(cast(int, OP_VARARG) + 1)];
+static lu_byte luaP_opmodes[(cast(int, OP_VARARG) + 1)];
 #define getBMode(m)(cast(enum OpArgMask,(luaP_opmodes[m]>>4)&3))
 #define getCMode(m)(cast(enum OpArgMask,(luaP_opmodes[m]>>2)&3))
 #define testTMode(m)(luaP_opmodes[m]&(1<<7))
@@ -7836,7 +7836,7 @@ static struct luaL_Reg bitlib[13];
 static void init_globals(void) {
 
 	luaO_nilobject_.value.p = NULL;
-	luaO_nilobject_.value.tt = 0;
+	luaO_nilobject_.tt = 0;
 	int i = 0;
 	log_2[i++] = 0; log_2[i++] = 1; log_2[i++] = 2; log_2[i++] = 2; log_2[i++] = 3; log_2[i++] = 3; log_2[i++] = 3; log_2[i++] = 3; 
 	log_2[i++] = 4; log_2[i++] = 4; log_2[i++] = 4; log_2[i++] = 4; log_2[i++] = 4; log_2[i++] = 4; log_2[i++] = 4; log_2[i++] = 4; 
@@ -7888,7 +7888,6 @@ static void init_globals(void) {
 	dummynode_.i_key.nk.next = NULL;
 	dummynode_.i_key.nk.tt = 0;
 	dummynode_.i_key.nk.value.p = NULL;
-	dummynode_.i_key.nk.value.tt = 0;
 	dummynode_.i_val.value.p = NULL;
 	dummynode_.i_val.tt = 0;
 

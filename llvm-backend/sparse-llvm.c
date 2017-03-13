@@ -654,10 +654,17 @@ static void output_op_compare(struct dmr_C *C, struct function *fn, struct instr
 	LLVMTypeRef dst_type = insn_symbol_type(C, fn->module, insn);
 
 	switch  (LLVMGetTypeKind(LLVMTypeOf(lhs))) {
-	case LLVMPointerTypeKind:
+	case LLVMPointerTypeKind: {
+		lhs = LLVMBuildPtrToInt(fn->builder, lhs, LLVMIntType(C->target->bits_in_pointer), "");
+		if (LLVMGetTypeKind(LLVMTypeOf(rhs)) == LLVMPointerTypeKind) {
+			rhs = LLVMBuildPtrToInt(fn->builder, rhs, LLVMIntType(C->target->bits_in_pointer), "");
+		}
+		LLVMIntPredicate op = translate_op(insn->opcode);
+		target = LLVMBuildICmp(fn->builder, op, lhs, rhs, target_name);
+		break;
+	}
 	case LLVMIntegerTypeKind: {
 		LLVMIntPredicate op = translate_op(insn->opcode);
-
 		target = LLVMBuildICmp(fn->builder, op, lhs, rhs, target_name);
 		break;
 	}
@@ -730,10 +737,15 @@ static void output_op_load(struct dmr_C *C, struct function *fn, struct instruct
 static void output_op_store(struct dmr_C *C, struct function *fn, struct instruction *insn)
 {
 	LLVMValueRef addr, target_in;
+	LLVMTypeRef desttype;
 
 	addr = calc_memop_addr(C, fn, insn);
 
 	target_in = pseudo_to_value(C, fn, insn, insn->target);
+	desttype = insn_symbol_type(C, fn->module, insn);
+	
+	/* Cast to the right type - to resolve issue with union types */
+	target_in = LLVMBuildBitCast(fn->builder, target_in, desttype, "");
 
 	/* perform store */
 	LLVMBuildStore(fn->builder, target_in, addr);

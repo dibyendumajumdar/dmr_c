@@ -26,14 +26,16 @@ typedef struct UpVal {
 	} u;
 } UpVal;
 
-static void close(UpVal *uv) 
+static int close(UpVal *uv) 
 {
 	uv->v = &uv->u.value;
+	return uv->u.value.tt;
 }
 
 int main(void)
 {
 	UpVal uv;
-	close(&uv);
-	return uv.v == &uv.u.value ? 0 : 1;
+	uv.u.value.tt = 5;
+	int tt = close(&uv);
+	return uv.v == &uv.u.value && tt == 5 ? 0 : 1;
 }

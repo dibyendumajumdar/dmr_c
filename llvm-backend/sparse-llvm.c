@@ -945,6 +945,10 @@ static void output_op_cast(struct dmr_C *C, struct function *fn, struct instruct
 			else if (insn->size == width)
 				op = LLVMBitCast;
 			break;
+		case LLVMFloatTypeKind:
+		case LLVMDoubleTypeKind:
+			op = LLVMFPToSI;
+			break;
 		default: {
 			fprintf(stderr, "unsupported op_cast instruction %s: type %d\n", show_instruction(C, insn), (int)LLVMGetTypeKind(LLVMTypeOf(src)));
 			exit(1);

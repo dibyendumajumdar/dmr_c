@@ -393,7 +393,9 @@ static LLVMValueRef pseudo_to_value(struct dmr_C *C, struct function *fn, struct
 				sym->priv = result;
 				break;
 			default:
-				assert(0);
+				fprintf(stderr, "Unsupported expr type in initializer: %d\n", expr->type);
+				show_expression(C, expr);
+				exit(1);
 			}
 		}
 		else {

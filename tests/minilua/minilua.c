@@ -2639,6 +2639,7 @@ static char*luaZ_openspace(lua_State*L, Mbuffer*buff, size_t n) {
 	return buff->buffer;
 }
 #define opmode(t,a,b,c,m)(((t)<<7)|((a)<<6)|((b)<<4)|((c)<<2)|(m))
+#if INITIALIZER_SUPPORTED
 static const lu_byte luaP_opmodes[(cast(int, OP_VARARG) + 1)] = {
 opmode(0,1,OpArgR,OpArgN,iABC)
 ,opmode(0,1,OpArgK,OpArgN,iABx)
@@ -2679,6 +2680,9 @@ opmode(0,1,OpArgR,OpArgN,iABC)
 ,opmode(0,1,OpArgU,OpArgN,iABx)
 ,opmode(0,1,OpArgU,OpArgN,iABC)
 };
+#else
+static const lu_byte luaP_opmodes[(cast(int, OP_VARARG) + 1)];
+#endif
 #define next(ls)(ls->current=zgetc(ls->z))
 #define currIsNewline(ls)(ls->current=='\n'||ls->current=='\r')
 static const char*const luaX_tokens[] = {
@@ -7840,6 +7844,46 @@ static void init_globals() {
 	dummynode_.i_key.nk.value.tt = 0;
 	dummynode_.i_val.value.p = NULL;
 	dummynode_.i_val.tt = 0;
+
+	i = 0;
+	luaP_opmodes[i++] = opmode(0, 1, OpArgR, OpArgN, iABC); 
+	luaP_opmodes[i++] = opmode(0, 1, OpArgK, OpArgN, iABx); 
+	luaP_opmodes[i++] = opmode(0, 1, OpArgU, OpArgU, iABC); 
+	luaP_opmodes[i++] = opmode(0, 1, OpArgR, OpArgN, iABC); 
+	luaP_opmodes[i++] = opmode(0, 1, OpArgU, OpArgN, iABC); 
+	luaP_opmodes[i++] = opmode(0, 1, OpArgK, OpArgN, iABx); 
+	luaP_opmodes[i++] = opmode(0, 1, OpArgR, OpArgK, iABC); 
+	luaP_opmodes[i++] = opmode(0, 0, OpArgK, OpArgN, iABx); 
+	luaP_opmodes[i++] = opmode(0, 0, OpArgU, OpArgN, iABC); 
+	luaP_opmodes[i++] = opmode(0, 0, OpArgK, OpArgK, iABC);
+	luaP_opmodes[i++] = opmode(0, 1, OpArgU, OpArgU, iABC)
+		; luaP_opmodes[i++] = opmode(0, 1, OpArgR, OpArgK, iABC)
+		; luaP_opmodes[i++] = opmode(0, 1, OpArgK, OpArgK, iABC)
+		; luaP_opmodes[i++] = opmode(0, 1, OpArgK, OpArgK, iABC)
+		; luaP_opmodes[i++] = opmode(0, 1, OpArgK, OpArgK, iABC)
+		; luaP_opmodes[i++] = opmode(0, 1, OpArgK, OpArgK, iABC)
+		; luaP_opmodes[i++] = opmode(0, 1, OpArgK, OpArgK, iABC)
+		; luaP_opmodes[i++] = opmode(0, 1, OpArgK, OpArgK, iABC)
+		; luaP_opmodes[i++] = opmode(0, 1, OpArgR, OpArgN, iABC)
+		; luaP_opmodes[i++] = opmode(0, 1, OpArgR, OpArgN, iABC)
+		; luaP_opmodes[i++] = opmode(0, 1, OpArgR, OpArgN, iABC)
+		; luaP_opmodes[i++] = opmode(0, 1, OpArgR, OpArgR, iABC)
+		; luaP_opmodes[i++] = opmode(0, 0, OpArgR, OpArgN, iAsBx)
+		; luaP_opmodes[i++] = opmode(1, 0, OpArgK, OpArgK, iABC)
+		; luaP_opmodes[i++] = opmode(1, 0, OpArgK, OpArgK, iABC)
+		; luaP_opmodes[i++] = opmode(1, 0, OpArgK, OpArgK, iABC)
+		; luaP_opmodes[i++] = opmode(1, 1, OpArgR, OpArgU, iABC)
+		; luaP_opmodes[i++] = opmode(1, 1, OpArgR, OpArgU, iABC)
+		; luaP_opmodes[i++] = opmode(0, 1, OpArgU, OpArgU, iABC)
+		; luaP_opmodes[i++] = opmode(0, 1, OpArgU, OpArgU, iABC)
+		; luaP_opmodes[i++] = opmode(0, 0, OpArgU, OpArgN, iABC)
+		; luaP_opmodes[i++] = opmode(0, 1, OpArgR, OpArgN, iAsBx)
+		; luaP_opmodes[i++] = opmode(0, 1, OpArgR, OpArgN, iAsBx)
+		; luaP_opmodes[i++] = opmode(1, 0, OpArgN, OpArgU, iABC)
+		; luaP_opmodes[i++] = opmode(0, 0, OpArgU, OpArgU, iABC)
+		; luaP_opmodes[i++] = opmode(0, 0, OpArgN, OpArgN, iABC)
+		; luaP_opmodes[i++] = opmode(0, 1, OpArgU, OpArgN, iABx)
+		; luaP_opmodes[i++] = opmode(0, 1, OpArgU, OpArgN, iABC);
 
 
 }

@@ -32,6 +32,8 @@ running matmul.c
 running pseudoval1.c
 running ptraddassign1.c
 running ptraddassign2.c
+running symaddr.c
+value -1
 running union1.c
 running varargs1.c
 Hello world!, from Sparse

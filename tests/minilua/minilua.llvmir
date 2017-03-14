@@ -28417,6 +28417,7 @@ L1795:
 
 define internal void @ifstat(%struct.LexState* %ARG1, i32 %ARG2) {
 L1796:
+  %escapelist_0x62d000c17eb8 = alloca i32
   %0 = alloca i32
   %1 = alloca i32
   %2 = alloca i32
@@ -28425,7 +28426,11 @@ L1796:
   %5 = getelementptr inbounds i8, i8* %4, i64 48
   %6 = bitcast i8* %5 to %struct.FuncState**
   %load_target = load %struct.FuncState*, %struct.FuncState** %6
-  store i32 -1, i32 addrspace(32)* bitcast (i32 -1 to i32 addrspace(32)*)
+  store i32 -1, i32* %escapelist_0x62d000c17eb8
+  %7 = bitcast i32* %escapelist_0x62d000c17eb8 to i8*
+  %8 = getelementptr inbounds i8, i8* %7, i64 0
+  %9 = bitcast i8* %8 to i32*
+  store i32 -1, i32* %9
   %R9800 = call i32 @test_then_block(%struct.LexState* %ARG1)
   store i32 %R9800, i32* %2
   store i32 %R9800, i32* %1
@@ -28433,11 +28438,11 @@ L1796:
   br label %L1797
 
 L1797:                                            ; preds = %L1798, %L1796
-  %7 = bitcast %struct.LexState* %ARG1 to i32*
-  %8 = bitcast i32* %7 to i8*
-  %9 = getelementptr inbounds i8, i8* %8, i64 16
-  %10 = bitcast i8* %9 to i32*
-  %load_target1 = load i32, i32* %10
+  %10 = bitcast %struct.LexState* %ARG1 to i32*
+  %11 = bitcast i32* %10 to i8*
+  %12 = getelementptr inbounds i8, i8* %11, i64 16
+  %13 = bitcast i8* %12 to i32*
+  %load_target1 = load i32, i32* %13
   %R9803 = icmp eq i32 %load_target1, 261
   %R98032 = zext i1 %R9803 to i32
   %cond = icmp ne i32 %R98032, 0
@@ -28445,9 +28450,9 @@ L1797:                                            ; preds = %L1798, %L1796
 
 L1798:                                            ; preds = %L1797
   %R9807 = call i32 @luaK_jump(%struct.FuncState* %load_target)
-  call void @luaK_concat(%struct.FuncState* %load_target, i32* bitcast (i32 -1 to i32*), i32 %R9807)
-  %11 = load i32, i32* %0
-  call void @luaK_patchtohere(%struct.FuncState* %load_target, i32 %11)
+  call void @luaK_concat(%struct.FuncState* %load_target, i32* %escapelist_0x62d000c17eb8, i32 %R9807)
+  %14 = load i32, i32* %0
+  call void @luaK_patchtohere(%struct.FuncState* %load_target, i32 %14)
   %R9811 = call i32 @test_then_block(%struct.LexState* %ARG1)
   store i32 %R9811, i32* %2
   store i32 %R9811, i32* %1
@@ -28462,20 +28467,23 @@ L1799:                                            ; preds = %L1797
 
 L1800:                                            ; preds = %L1799
   %R9818 = call i32 @luaK_jump(%struct.FuncState* %load_target)
-  call void @luaK_concat(%struct.FuncState* %load_target, i32* bitcast (i32 -1 to i32*), i32 %R9818)
-  %12 = load i32, i32* %1
-  call void @luaK_patchtohere(%struct.FuncState* %load_target, i32 %12)
+  call void @luaK_concat(%struct.FuncState* %load_target, i32* %escapelist_0x62d000c17eb8, i32 %R9818)
+  %15 = load i32, i32* %1
+  call void @luaK_patchtohere(%struct.FuncState* %load_target, i32 %15)
   call void @luaX_next(%struct.LexState* %ARG1)
   call void @block(%struct.LexState* %ARG1)
   br label %L1802
 
 L1801:                                            ; preds = %L1799
-  %13 = load i32, i32* %2
-  call void @luaK_concat(%struct.FuncState* %load_target, i32* bitcast (i32 -1 to i32*), i32 %13)
+  %16 = load i32, i32* %2
+  call void @luaK_concat(%struct.FuncState* %load_target, i32* %escapelist_0x62d000c17eb8, i32 %16)
   br label %L1802
 
 L1802:                                            ; preds = %L1801, %L1800
-  %load_target5 = load i32, i32 addrspace(32)* bitcast (i32 -1 to i32 addrspace(32)*)
+  %17 = bitcast i32* %escapelist_0x62d000c17eb8 to i8*
+  %18 = getelementptr inbounds i8, i8* %17, i64 0
+  %19 = bitcast i8* %18 to i32*
+  %load_target5 = load i32, i32* %19
   call void @luaK_patchtohere(%struct.FuncState* %load_target, i32 %load_target5)
   call void @check_match(%struct.LexState* %ARG1, i32 262, i32 266, i32 %ARG2)
   ret void

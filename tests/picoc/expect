@@ -217,7 +217,6 @@ a 98 99.000000
 running 25_quicksort.c
 62 83 4 89 36 21 74 37 65 33 96 38 53 16 74 55 
 4 16 21 33 36 37 38 53 55 62 65 74 74 83 89 96 
-25_quicksort.c failed to run
 running 26_character_constants.c
 1
 8

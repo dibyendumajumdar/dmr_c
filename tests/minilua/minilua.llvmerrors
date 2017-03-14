@@ -1,7 +1,3 @@
-Invalid bitcast
-i32 addrspace(32)* bitcast (i32 -1 to i32 addrspace(32)*)
-Invalid bitcast
-i32* bitcast (i32 -1 to i32*)
 Invalid operands for select instruction!
   %select = select i1 %cond18, %union.GCObject* %78, %struct.lua_TValue* @luaO_nilobject_.1
 Function return type does not match operand type of return inst!
@@ -10,11 +6,7 @@ Function return type does not match operand type of return inst!
   %select = select i1 %cond5, %struct.LoadF* %18, i8* null
 Function return type does not match operand type of return inst!
   ret void
- i32Invalid bitcast
-i32 addrspace(32)* bitcast (i32 -1 to i32 addrspace(32)*)
-Invalid bitcast
-i32* bitcast (i32 -1 to i32*)
-Invalid operands for select instruction!
+ i32Invalid operands for select instruction!
   %select = select i1 %cond18, %union.GCObject* %78, %struct.lua_TValue* @luaO_nilobject_.1
 Function return type does not match operand type of return inst!
   ret %struct.luaL_Buffer* %2

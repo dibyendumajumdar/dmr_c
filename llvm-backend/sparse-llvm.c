@@ -743,7 +743,10 @@ static void output_op_store(struct dmr_C *C, struct function *fn, struct instruc
 
 	target_in = pseudo_to_value(C, fn, insn, insn->target);
 	desttype = insn_symbol_type(C, fn->module, insn);
-	
+
+	//LLVMDumpType(desttype);
+	//LLVMDumpValue(target_in);
+	//LLVMDumpModule(fn->module);
 	/* Cast to the right type - to resolve issue with union types */
 	target_in = LLVMBuildBitCast(fn->builder, target_in, desttype, "");
 
@@ -886,6 +889,9 @@ static void output_op_phisrc(struct dmr_C *C, struct function *fn, struct instru
 		assert(LLVMGetInstructionOpcode(load) == LLVMLoad);
 		ptr = LLVMGetOperand(load, 0);
 		/* store v to alloca */
+		LLVMTypeRef phi_type = insn_symbol_type(C, fn->module, phi);
+		//LLVMDumpType(phi_type);
+		v = LLVMBuildBitCast(fn->builder, v, phi_type, "");
 		LLVMBuildStore(fn->builder, v, ptr);
 	} END_FOR_EACH_PTR(phi);
 }

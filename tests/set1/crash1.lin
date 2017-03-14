@@ -1,0 +1,27 @@
+main:
+.L0:
+	<entry-point>
+	phisrc.32   %phi4(i) <- $0
+	br          .L4
+
+.L4:
+	phi.32      %r1(i) <- %phi4(i), %phi5(i)
+	setlt.32    %r2 <- %r1(i), $20
+	br          %r2, .L1, .L5
+
+.L1:
+	load.64     %r3 <- 0[randomletters]
+	scast.64    %r5 <- (32) %r1(i)
+	add.64      %r6 <- %r3, %r5
+	load.8      %r7 <- 0[%r6]
+	scast.32    %r8 <- (8) %r7
+	symaddr.64  %r9 <- <anon symbol:000001BBF46820D8>
+	call.32     %r11 <- printf, %r9, %r8
+	add.32      %r13 <- %r1(i), $1
+	phisrc.32   %phi5(i) <- %r13
+	br          .L4
+
+.L5:
+	ret.32      $0
+
+

@@ -536,25 +536,7 @@ static LLVMValueRef pseudo_to_value(struct dmr_C *C, struct function *fn, struct
 				sym->priv = result;
 			}
 			else {
-				char localname[256] = { 0 };
-				/* insert alloca into entry block */
-				/* LLVM requires allocas to be at the start */
-				LLVMBasicBlockRef entrybbr = LLVMGetEntryBasicBlock(fn->fn);
-				/* Use temporary Builder as we don't want to mess the function builder */
-				LLVMBuilderRef tmp_builder = LLVMCreateBuilder();
-				LLVMValueRef firstins = LLVMGetFirstInstruction(entrybbr);
-				if (firstins)
-					LLVMPositionBuilderBefore(tmp_builder, firstins);
-				else
-					LLVMPositionBuilderAtEnd(tmp_builder, entrybbr);
-				/* Since multiple locals may have same name but in different scopes we
-				   append the symbol's address to make each variable unique */
-				snprintf(localname, sizeof localname, "%s_%p", name, sym);
-				result = LLVMBuildAlloca(tmp_builder, type, localname);
-				LLVMDisposeBuilder(tmp_builder);
-				/* Store the alloca instruction for references to the value later on.
-				   TODO - should we convert this to pointer here? */
-				sym->priv = result;
+				result = build_local(C, fn, sym);
 			}
 		}
 		break;
@@ -1534,21 +1516,29 @@ static LLVMValueRef output_data(struct dmr_C *C, LLVMModuleRef module, struct sy
 
 	name = show_ident(C, sym->ident);
 
-	data = LLVMAddGlobal(module, LLVMTypeOf(initial_value), name);
+	if (!sym->priv) {
+		data = LLVMGetNamedGlobal(module, name);
+		if (!data)
+			data = LLVMAddGlobal(module, LLVMTypeOf(initial_value), name);
 
-	LLVMSetLinkage(data, data_linkage(C, sym));
-	if (sym->ctype.modifiers & MOD_CONST)
-		LLVMSetGlobalConstant(data, 1);
-	if (sym->ctype.modifiers & MOD_TLS)
-		LLVMSetThreadLocal(data, 1);
-	if (sym->ctype.alignment)
-		LLVMSetAlignment(data, sym->ctype.alignment);
+		LLVMSetLinkage(data, data_linkage(C, sym));
+		if (sym->ctype.modifiers & MOD_CONST)
+			LLVMSetGlobalConstant(data, 1);
+		if (sym->ctype.modifiers & MOD_TLS)
+			LLVMSetThreadLocal(data, 1);
+		if (sym->ctype.alignment)
+			LLVMSetAlignment(data, sym->ctype.alignment);
 
-	if (!(sym->ctype.modifiers & MOD_EXTERN))
-		LLVMSetInitializer(data, initial_value);
+		if (!(sym->ctype.modifiers & MOD_EXTERN))
+			LLVMSetInitializer(data, initial_value);
 
-	sym->priv = data;
-
+		sym->priv = data;
+	}
+	else {
+		data = sym->priv;
+		if (!(sym->ctype.modifiers & MOD_EXTERN))
+			LLVMSetInitializer(data, initial_value);
+	}
 	return data;
 }
 

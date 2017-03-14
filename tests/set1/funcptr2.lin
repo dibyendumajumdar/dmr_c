@@ -1,0 +1,29 @@
+myfunc:
+.L0:
+	<entry-point>
+	symaddr.64  %r1 <- <anon symbol:00000163B07F2B38>
+	call.32     %r4 <- printf, %r1, %arg1, %arg2
+	ret.32      %arg2
+
+
+calling:
+.L2:
+	<entry-point>
+	load.64     %r7 <- 0[base_funcs]
+	load.64     %r9 <- 8[base_funcs]
+	call.32     %r10 <- %r9, %r7, %arg1
+	ret.32      %r10
+
+
+main:
+.L4:
+	<entry-point>
+	symaddr.64  %r12 <- <anon symbol:00000163B07F3698>
+	store.64    %r12 -> 0[base_funcs]
+	symaddr.64  %r13 <- myfunc
+	store.64    %r13 -> 8[base_funcs]
+	call.32     %r14 <- calling, $42
+	setne.32    %r16 <- %r14, $42
+	ret.32      %r16
+
+

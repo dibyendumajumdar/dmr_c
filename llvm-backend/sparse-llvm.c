@@ -379,8 +379,9 @@ static LLVMValueRef build_cast(struct dmr_C *C, struct function *fn, LLVMValueRe
 		break;
 	}
 	default:
-		fprintf(stderr, "unsupported target type %d in cast\n", dkind);
-		exit(1);
+		op = LLVMBitCast;
+		//fprintf(stderr, "unsupported target type %d in cast\n", dkind);
+		//exit(1);
 	}
 	return LLVMBuildCast(fn->builder, op, val, dtype, target_name);
 }

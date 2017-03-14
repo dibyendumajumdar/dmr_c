@@ -18,7 +18,7 @@ The code base is a fork of Sparse. The main changes are:
 
 * We are now able to build on Windows, Linux and Mac OSX.
 * Global state has been removed except for the way ptr_list nodes are allocated.
-* The LLVM backend has had many fixes but it still doesn't work correctly to be able to compile real programs.
+* The LLVM backend has had many fixes and is able to compile real programs. See the tests folder for what works, and what doesn't.
 
 ## Build instructions
 
@@ -51,7 +51,7 @@ Right now following pieces have been ported but testing is still ongoing so no g
 * Preprocesser
 * Parser and Semantic analyser
 * Linearizer
-* Sparse LLVM backend
+* LLVM backend
 
 Details of each of these is given below.
 
@@ -100,7 +100,12 @@ To follow.
 
 ## LLVM backend
 
-The Sparse project comes with an LLVM backend called sparse-llvm. This is included in dmr_C. Unfortunately the LLVM backend is not usable at present as it has some bugs. It will take a while to fix the issues because the backend - this is work in progress.
+The Sparse project comes with an LLVM backend called sparse-llvm. This is included in dmr_C. The LLVM backend is being developed to fix bugs and to define the subset of C that works. 
+
+### Unsupported features
+Currently following features are known to not work:
+
+* Initializers for arrays, structs and unions. Only simple scalar initializers work including strings.
 
 ## Samples 
 

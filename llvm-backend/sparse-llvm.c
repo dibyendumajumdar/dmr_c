@@ -93,7 +93,7 @@ static LLVMTypeRef sym_array_type(struct dmr_C *C, LLVMModuleRef module, struct 
 	return LLVMArrayType(elem_type, sym->bit_size / base_type->bit_size);
 }
 
-#define MAX_STRUCT_MEMBERS 64
+#define MAX_STRUCT_MEMBERS 256
 
 static LLVMTypeRef sym_struct_type(struct dmr_C *C, LLVMModuleRef module, struct symbol *sym)
 {
@@ -124,6 +124,7 @@ static LLVMTypeRef sym_struct_type(struct dmr_C *C, LLVMModuleRef module, struct
 
 static LLVMTypeRef sym_union_type(struct dmr_C *C, LLVMModuleRef module, struct symbol *sym)
 {
+#if 0
 	LLVMTypeRef elements;
 	unsigned union_size;
 
@@ -136,7 +137,29 @@ static LLVMTypeRef sym_union_type(struct dmr_C *C, LLVMModuleRef module, struct 
 
 	elements = LLVMArrayType(LLVMInt8Type(), union_size);
 
-	return LLVMStructType(&elements, 1, 0 /* packed? */);
+	LLVMTypeRef type = LLVMStructType(&elements, 1, 0 /* packed? */);
+
+#else
+	LLVMTypeRef elem_types[1];
+	char buffer[256];
+	LLVMTypeRef type;
+
+	snprintf(buffer, sizeof(buffer), "union.%s", sym->ident ? sym->ident->name : "anno");
+	type = LLVMStructCreateNamed(LLVMGetGlobalContext(), buffer);
+	unsigned union_size;
+
+	/*
+	* There's no union support in the LLVM API so we treat unions as
+	* opaque structs. The downside is that we lose type information on the
+	* members but as LLVM doesn't care, neither do we.
+	*/
+	union_size = sym->bit_size / 8;
+	elem_types[0] = LLVMArrayType(LLVMInt8Type(), union_size);
+
+	LLVMStructSetBody(type, elem_types, 1, 0 /* packed? */);
+#endif
+	//LLVMDumpType(type);
+	return type;
 }
 
 static LLVMTypeRef sym_ptr_type(struct dmr_C *C, LLVMModuleRef module, struct symbol *sym)
@@ -744,9 +767,6 @@ static void output_op_store(struct dmr_C *C, struct function *fn, struct instruc
 	target_in = pseudo_to_value(C, fn, insn, insn->target);
 	desttype = insn_symbol_type(C, fn->module, insn);
 
-	//LLVMDumpType(desttype);
-	//LLVMDumpValue(target_in);
-	//LLVMDumpModule(fn->module);
 	/* Cast to the right type - to resolve issue with union types */
 	target_in = LLVMBuildBitCast(fn->builder, target_in, desttype, "");
 
@@ -890,7 +910,6 @@ static void output_op_phisrc(struct dmr_C *C, struct function *fn, struct instru
 		ptr = LLVMGetOperand(load, 0);
 		/* store v to alloca */
 		LLVMTypeRef phi_type = insn_symbol_type(C, fn->module, phi);
-		//LLVMDumpType(phi_type);
 		v = LLVMBuildBitCast(fn->builder, v, phi_type, "");
 		LLVMBuildStore(fn->builder, v, ptr);
 	} END_FOR_EACH_PTR(phi);

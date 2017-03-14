@@ -652,6 +652,8 @@ static void output_op_binary(struct dmr_C *C, struct function *fn, struct instru
 		break;
 	case OP_MULS:
 		assert(!symbol_is_fp_type(C, insn->type));
+		if (LLVMGetTypeKind(LLVMTypeOf(lhs)) == LLVMPointerTypeKind)
+			lhs = LLVMBuildPtrToInt(fn->builder, lhs, LLVMIntType(C->target->bits_in_pointer), "");
 		target = LLVMBuildMul(fn->builder, lhs, rhs, target_name);
 		break;
 	case OP_DIVU:
@@ -662,6 +664,8 @@ static void output_op_binary(struct dmr_C *C, struct function *fn, struct instru
 		break;
 	case OP_DIVS:
 		assert(!symbol_is_fp_type(C, insn->type));
+		if (LLVMGetTypeKind(LLVMTypeOf(lhs)) == LLVMPointerTypeKind) 
+			lhs = LLVMBuildPtrToInt(fn->builder, lhs, LLVMIntType(C->target->bits_in_pointer), "");
 		target = LLVMBuildSDiv(fn->builder, lhs, rhs, target_name);
 		break;
 	case OP_MODU:

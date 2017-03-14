@@ -1,0 +1,15 @@
+variadic:
+.L0:
+	<entry-point>
+	symaddr.64  %r1 <- <anon symbol:0000019617841B18>
+	call.32     %r3 <- printf, %r1, %arg1
+	ret
+
+
+main:
+.L2:
+	<entry-point>
+	call        variadic, $1, $2, $3
+	ret.32      $0
+
+

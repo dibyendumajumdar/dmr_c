@@ -1,0 +1,24 @@
+close:
+.L0:
+	<entry-point>
+	add.64      %r2 <- %arg1, $24
+	store.64    %r2 -> 16[%arg1]
+	load.32     %r6 <- 32[%arg1]
+	ret.32      %r6
+
+
+main:
+.L2:
+	<entry-point>
+	store.32    $5 -> 32[uv]
+	symaddr.64  %r8 <- uv
+	call.32     %r9 <- close, %r8
+	load.64     %r10 <- 16[uv]
+	add.64      %r12 <- %r8, $24
+	seteq.32    %r14 <- %r10, %r12
+	seteq.32    %r16 <- %r9, $5
+	and-bool.32 %r17 <- %r14, %r16
+	seteq.32    %r18 <- %r17, $0
+	ret.32      %r18
+
+

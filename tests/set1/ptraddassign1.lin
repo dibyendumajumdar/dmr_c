@@ -1,0 +1,20 @@
+incr:
+.L0:
+	<entry-point>
+	cast.64     %r3 <- (64) %arg1
+	add.64      %r4 <- %r3, $4
+	ptrcast.64  %r5 <- (64) %r4
+	ret.64      %r5
+
+
+main:
+.L2:
+	<entry-point>
+	symaddr.64  %r8 <- <anon symbol:000001D84DF921B8>
+	call.64     %r10 <- incr, %r8
+	load.8      %r12 <- 0[%r10]
+	scast.32    %r13 <- (8) %r12
+	setne.32    %r15 <- %r13, $101
+	ret.32      %r15
+
+

@@ -1,0 +1,23 @@
+init:
+.L0:
+	<entry-point>
+	store.32    $5 -> 0[%arg1]
+	ret
+
+
+main:
+.L2:
+	<entry-point>
+	symaddr.64  %r2 <- x
+	ptrcast.64  %r3 <- (64) %r2
+	call        init, %r3
+	load.32     %r4 <- 0[x]
+	symaddr.64  %r9 <- x
+	ptrcast.64  %r10 <- (64) %r9
+	call        init, %r10
+	load.32     %r11 <- 0[x]
+	add.32      %r14 <- %r4, %r11
+	setne.32    %r18 <- %r14, $10
+	ret.32      %r18
+
+

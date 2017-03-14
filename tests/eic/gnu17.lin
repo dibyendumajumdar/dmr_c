@@ -1,0 +1,79 @@
+foo:
+.L0:
+	<entry-point>
+	phisrc.16   %phi7(r) <- %arg1
+	br          .L1
+
+.L1:
+	symaddr.64  %r1 <- mem
+	phi.16      %r2(r) <- %phi7(r), %phi8(r)
+	cast.64     %r3 <- (16) %r2(r)
+	muls.64     %r4 <- %r3, $4
+	add.64      %r5 <- %r1, %r4
+	load.8      %r6 <- 0[%r5]
+	cast.32     %r7 <- (8) %r6
+	setne.32    %r8 <- %r7, $2
+	br          %r8, .L6, .L5
+
+.L6:
+	cast.32     %r11 <- (16) %r2(r)
+	add.32      %r12 <- %r11, $2
+	scast.64    %r13 <- (32) %r12
+	muls.64     %r14 <- %r13, $4
+	add.64      %r15 <- %r1, %r14
+	load.32     %r16 <- 0[%r15]
+	load.32     %r18 <- 0[fewest_demerits]
+	setb.32     %r19 <- %r16, %r18
+	br          %r19, .L4, .L5
+
+.L4:
+	store.16    %r2(r) -> 0[best_bet]
+	br          .L5
+
+.L5:
+	load.16     %r26(r) <- 2[%r5]
+	phisrc.16   %phi8(r) <- %r26(r)
+	cast.32     %r28 <- (16) %r26(r)
+	setne.32    %r29 <- %r28, $0xffd6
+	br          %r29, .L1, .L3
+
+.L3:
+	load.16     %r31 <- 0[best_bet]
+	cast.32     %r32 <- (16) %r31
+	add.32      %r33 <- %r32, $1
+	scast.64    %r34 <- (32) %r33
+	muls.64     %r35 <- %r34, $4
+	add.64      %r36 <- %r1, %r35
+	load.16     %r37 <- 0[%r36]
+	store.16    %r37 -> 0[best_line]
+	ret
+
+
+main:
+.L8:
+	<entry-point>
+	store.8     $0 -> 0[mem]
+	store.16    $0xffd6 -> 2[mem]
+	store.16    $456 -> 4[mem]
+	store.32    $30 -> 8[mem]
+	call        foo, $0
+	load.16     %r38(best_line) <- 0[best_line]
+	cast.32     %r39 <- (16) %r38(best_line)
+	seteq.32    %r40 <- %r39, $456
+	setne.32    %r47 <- %r39, $456
+	br          %r40, .L9, .L10
+
+.L9:
+	symaddr.64  %r41 <- <anon symbol:000001A394B1D058>
+	call.32     %r42 <- printf, %r41
+	br          .L12
+
+.L10:
+	symaddr.64  %r43 <- <anon symbol:000001A394B1D3D8>
+	call.32     %r46 <- printf, %r43, %r39
+	br          .L12
+
+.L12:
+	ret.32      %r47
+
+

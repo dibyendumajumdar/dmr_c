@@ -1,0 +1,237 @@
+PrintAll:
+.L0:
+	<entry-point>
+	symaddr.64  %r1 <- <anon symbol:0000017D34B45A18>
+	call.32     %r2 <- printf, %r1
+	phisrc.32   %phi11(i) <- $0
+	br          .L4
+
+.L4:
+	phi.32      %r3(i) <- %phi11(i), %phi12(i)
+	setlt.32    %r4 <- %r3(i), $4
+	br          %r4, .L1, .L3
+
+.L1:
+	symaddr.64  %r5 <- <anon symbol:0000017D34B45D98>
+	symaddr.64  %r6 <- A
+	scast.64    %r8 <- (32) %r3(i)
+	muls.64     %r9 <- %r8, $4
+	add.64      %r10 <- %r6, %r9
+	load.32     %r11 <- 0[%r10]
+	call.32     %r12 <- printf, %r5, %r11
+	add.32      %r14 <- %r3(i), $1
+	phisrc.32   %phi12(i) <- %r14
+	br          .L4
+
+.L3:
+	symaddr.64  %r15 <- <anon symbol:0000017D34B463B8>
+	call.32     %r16 <- printf, %r15
+	symaddr.64  %r17 <- <anon symbol:0000017D34B46738>
+	call.32     %r18 <- printf, %r17
+	phisrc.32   %phi7(i) <- $0
+	br          .L8
+
+.L8:
+	phi.32      %r19(i) <- %phi7(i), %phi8(i)
+	setlt.32    %r20 <- %r19(i), $4
+	br          %r20, .L5, .L7
+
+.L5:
+	symaddr.64  %r21 <- <anon symbol:0000017D34B46AB8>
+	symaddr.64  %r22 <- B
+	scast.64    %r24 <- (32) %r19(i)
+	muls.64     %r25 <- %r24, $4
+	add.64      %r26 <- %r22, %r25
+	load.32     %r27 <- 0[%r26]
+	call.32     %r28 <- printf, %r21, %r27
+	add.32      %r30 <- %r19(i), $1
+	phisrc.32   %phi8(i) <- %r30
+	br          .L8
+
+.L7:
+	symaddr.64  %r31 <- <anon symbol:0000017D34B470D8>
+	call.32     %r32 <- printf, %r31
+	symaddr.64  %r33 <- <anon symbol:0000017D34B47458>
+	call.32     %r34 <- printf, %r33
+	phisrc.32   %phi3(i) <- $0
+	br          .L12
+
+.L12:
+	phi.32      %r35(i) <- %phi3(i), %phi4(i)
+	setlt.32    %r36 <- %r35(i), $4
+	br          %r36, .L9, .L11
+
+.L9:
+	symaddr.64  %r37 <- <anon symbol:0000017D34B477D8>
+	symaddr.64  %r38 <- C
+	scast.64    %r40 <- (32) %r35(i)
+	muls.64     %r41 <- %r40, $4
+	add.64      %r42 <- %r38, %r41
+	load.32     %r43 <- 0[%r42]
+	call.32     %r44 <- printf, %r37, %r43
+	add.32      %r46 <- %r35(i), $1
+	phisrc.32   %phi4(i) <- %r46
+	br          .L12
+
+.L11:
+	symaddr.64  %r47 <- <anon symbol:0000017D34B47DF8>
+	call.32     %r48 <- printf, %r47
+	symaddr.64  %r49 <- <anon symbol:0000017D34B48178>
+	call.32     %r50 <- printf, %r49
+	ret
+
+
+Move:
+.L14:
+	<entry-point>
+	phisrc.32   %phi18(i) <- $0
+	phisrc.32   %phi24(j) <- $0
+	br          .L18
+
+.L18:
+	phi.32      %r51(i) <- %phi18(i), %phi19(i)
+	setlt.32    %r52 <- %r51(i), $4
+	br          %r52, .L19, .L23
+
+.L19:
+	scast.64    %r55 <- (32) %r51(i)
+	muls.64     %r56 <- %r55, $4
+	add.64      %r57 <- %arg1, %r56
+	load.32     %r58 <- 0[%r57]
+	br          %r58, .L23, .L15
+
+.L15:
+	add.32      %r61 <- %r51(i), $1
+	phisrc.32   %phi19(i) <- %r61
+	br          .L18
+
+.L23:
+	phi.32      %r62(j) <- %phi24(j), %phi25(j)
+	setlt.32    %r63 <- %r62(j), $4
+	br          %r63, .L24, .L22
+
+.L24:
+	scast.64    %r66 <- (32) %r62(j)
+	muls.64     %r67 <- %r66, $4
+	add.64      %r68 <- %arg2, %r67
+	load.32     %r69 <- 0[%r68]
+	br          %r69, .L22, .L20
+
+.L20:
+	add.32      %r72 <- %r62(j), $1
+	phisrc.32   %phi25(j) <- %r72
+	br          .L23
+
+.L22:
+	scast.64    %r75 <- (32) %r51(i)
+	muls.64     %r76 <- %r75, $4
+	add.64      %r77 <- %arg1, %r76
+	load.32     %r78 <- 0[%r77]
+	add.32      %r81 <- %r62(j), $-1
+	scast.64    %r82 <- (32) %r81
+	muls.64     %r83 <- %r82, $4
+	add.64      %r84 <- %arg2, %r83
+	store.32    %r78 -> 0[%r84]
+	scast.64    %r87 <- (32) %r51(i)
+	muls.64     %r88 <- %r87, $4
+	add.64      %r89 <- %arg1, %r88
+	store.32    $0 -> 0[%r89]
+	call        PrintAll
+	load.32     %r96 <- 0[%r84]
+	ret.32      %r96
+
+
+Hanoi:
+.L26:
+	<entry-point>
+	seteq.32    %r99 <- %arg1, $1
+	br          %r99, .L27, .L28
+
+.L27:
+	call.32     %r102 <- Move, %arg2, %arg3
+	br          .L29
+
+.L28:
+	add.32      %r104 <- %arg1, $-1
+	call        Hanoi, %r104, %arg2, %arg4, %arg3
+	call.32     %r110 <- Move, %arg2, %arg3
+	call        Hanoi, %r104, %arg4, %arg3, %arg2
+	br          .L29
+
+.L29:
+	ret
+
+
+main:
+.L30:
+	<entry-point>
+	phisrc.32   %phi37(i) <- $0
+	br          .L34
+
+.L34:
+	phi.32      %r116(i) <- %phi37(i), %phi38(i)
+	setlt.32    %r117 <- %r116(i), $4
+	br          %r117, .L31, .L33
+
+.L31:
+	add.32      %r119 <- %r116(i), $1
+	symaddr.64  %r120 <- A
+	scast.64    %r122 <- (32) %r116(i)
+	muls.64     %r123 <- %r122, $4
+	add.64      %r124 <- %r120, %r123
+	store.32    %r119 -> 0[%r124]
+	phisrc.32   %phi38(i) <- %r119
+	br          .L34
+
+.L33:
+	phisrc.32   %phi33(i) <- $0
+	br          .L38
+
+.L38:
+	phi.32      %r127(i) <- %phi33(i), %phi34(i)
+	setlt.32    %r128 <- %r127(i), $4
+	br          %r128, .L35, .L37
+
+.L35:
+	symaddr.64  %r129 <- B
+	scast.64    %r131 <- (32) %r127(i)
+	muls.64     %r132 <- %r131, $4
+	add.64      %r133 <- %r129, %r132
+	store.32    $0 -> 0[%r133]
+	add.32      %r135 <- %r127(i), $1
+	phisrc.32   %phi34(i) <- %r135
+	br          .L38
+
+.L37:
+	phisrc.32   %phi29(i) <- $0
+	br          .L42
+
+.L42:
+	phi.32      %r136(i) <- %phi29(i), %phi30(i)
+	setlt.32    %r137 <- %r136(i), $4
+	symaddr.64  %r138 <- C
+	br          %r137, .L39, .L41
+
+.L39:
+	scast.64    %r140 <- (32) %r136(i)
+	muls.64     %r141 <- %r140, $4
+	add.64      %r142 <- %r138, %r141
+	store.32    $0 -> 0[%r142]
+	add.32      %r144 <- %r136(i), $1
+	phisrc.32   %phi30(i) <- %r144
+	br          .L42
+
+.L41:
+	symaddr.64  %r145 <- <anon symbol:0000017D34B49218>
+	call.32     %r146 <- printf, %r145, $4
+	symaddr.64  %r147 <- <anon symbol:0000017D34B49598>
+	call.32     %r148 <- printf, %r147
+	call        PrintAll
+	symaddr.64  %r149 <- <anon symbol:0000017D34B49918>
+	call.32     %r150 <- printf, %r149
+	symaddr.64  %r151 <- A
+	symaddr.64  %r152 <- B
+	call        Hanoi, $4, %r151, %r152, %r138
+	ret.32      $0
+
+

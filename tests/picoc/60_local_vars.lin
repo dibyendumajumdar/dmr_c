@@ -1,0 +1,117 @@
+foo:
+.L0:
+	<entry-point>
+	symaddr.64  %r1 <- <anon symbol:0000027F1F3430B8>
+	call.32     %r2 <- printf, %r1
+	phisrc.32   %phi3(i) <- $0
+	br          .L4
+
+.L4:
+	phi.32      %r3(i) <- %phi3(i), %phi4(i)
+	setlt.32    %r4 <- %r3(i), $3
+	br          %r4, .L1, .L5
+
+.L1:
+	symaddr.64  %r7 <- <anon symbol:0000027F1F343438>
+	call.32     %r9 <- printf, %r7, %r3(i)
+	add.32      %r11 <- %r3(i), $1
+	phisrc.32   %phi4(i) <- %r11
+	br          .L4
+
+.L5:
+	symaddr.64  %r12 <- <anon symbol:0000027F1F3437B8>
+	call.32     %r13 <- printf, %r12, $5
+	symaddr.64  %r14 <- <anon symbol:0000027F1F343B38>
+	call.32     %r15 <- printf, %r14
+	phisrc.32   %phi7(i) <- $0
+	br          .L14
+
+.L14:
+	phi.32      %r16(i) <- %phi7(i), %phi8(i)
+	setlt.32    %r17 <- %r16(i), $3
+	br          %r17, .L11, .L13
+
+.L11:
+	symaddr.64  %r18 <- <anon symbol:0000027F1F343EB8>
+	call.32     %r20 <- printf, %r18, %r16(i)
+	add.32      %r22 <- %r16(i), $1
+	phisrc.32   %phi8(i) <- %r22
+	br          .L14
+
+.L13:
+	phisrc.32   %phi11(i) <- $0
+	br          .L18
+
+.L18:
+	phi.32      %r23(i) <- %phi11(i), %phi12(i)
+	setlt.32    %r24 <- %r23(i), $0x186a0
+	br          %r24, .L16, .L17
+
+.L16:
+	add.32      %r28 <- %r23(i), $1
+	phisrc.32   %phi12(i) <- %r28
+	br          .L18
+
+.L17:
+	phisrc.32   %phi15(i) <- $0
+	br          .L22
+
+.L22:
+	phi.32      %r29(i) <- %phi15(i), %phi16(i)
+	setlt.32    %r30 <- %r29(i), $3
+	br          %r30, .L19, .L21
+
+.L19:
+	symaddr.64  %r32 <- <anon symbol:0000027F1F344238>
+	call.32     %r34 <- printf, %r32, %r29(i)
+	add.32      %r36 <- %r29(i), $1
+	phisrc.32   %phi16(i) <- %r36
+	br          .L22
+
+.L21:
+	ret
+
+
+main:
+.L23:
+	<entry-point>
+	symaddr.64  %r37 <- <anon symbol:0000027F1F3445B8>
+	call.32     %r38 <- printf, %r37
+	phisrc.32   %phi20(i) <- $0
+	br          .L27
+
+.L27:
+	phi.32      %r39(i) <- %phi20(i), %phi21(i)
+	setlt.32    %r40 <- %r39(i), $3
+	br          %r40, .L24, .L26
+
+.L24:
+	symaddr.64  %r43 <- <anon symbol:0000027F1F344938>
+	call.32     %r45 <- printf, %r43, %r39(i)
+	add.32      %r47 <- %r39(i), $1
+	phisrc.32   %phi21(i) <- %r47
+	br          .L27
+
+.L26:
+	symaddr.64  %r48 <- <anon symbol:0000027F1F344CB8>
+	call.32     %r49 <- printf, %r48
+	phisrc.32   %phi24(i) <- $0
+	br          .L31
+
+.L31:
+	phi.32      %r50(i) <- %phi24(i), %phi25(i)
+	setlt.32    %r51 <- %r50(i), $3
+	br          %r51, .L28, .L30
+
+.L28:
+	symaddr.64  %r52 <- <anon symbol:0000027F1F345038>
+	call.32     %r54 <- printf, %r52, %r50(i)
+	add.32      %r56 <- %r50(i), $1
+	phisrc.32   %phi25(i) <- %r56
+	br          .L31
+
+.L30:
+	call        foo
+	ret.32      $0
+
+

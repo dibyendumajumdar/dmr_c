@@ -1,0 +1,71 @@
+main:
+.L0:
+	<entry-point>
+	set.32      %r1 <- 69.120003
+	symaddr.64  %r2 <- <anon symbol:0000015ADBF61A78>
+	fpcast.64   %r4 <- (32) %r1
+	call.32     %r5 <- printf, %r2, %r4
+	symaddr.64  %r6 <- <anon symbol:0000015ADBF61DF8>
+	set.64      %r7 <- 69.120000
+	call.32     %r8 <- printf, %r6, %r7
+	symaddr.64  %r9 <- <anon symbol:0000015ADBF62178>
+	set.64      %r10 <- -44.440000
+	call.32     %r11 <- printf, %r9, %r10
+	symaddr.64  %r12 <- <anon symbol:0000015ADBF624F8>
+	set.64      %r13 <- 700.665200
+	call.32     %r14 <- printf, %r12, %r13
+	symaddr.64  %r15 <- <anon symbol:0000015ADBF62878>
+	set.64      %r16 <- 0.217330
+	call.32     %r17 <- printf, %r15, %r16
+	symaddr.64  %r18 <- <anon symbol:0000015ADBF62BF8>
+	call.32     %r19 <- printf, %r18, $1, $1, $0, $0, $0, $1
+	symaddr.64  %r20 <- <anon symbol:0000015ADBF62F78>
+	call.32     %r21 <- printf, %r20, $0, $1, $1, $1, $0, $0
+	symaddr.64  %r22 <- <anon symbol:0000015ADBF632F8>
+	call.32     %r23 <- printf, %r22, $0, $0, $0, $1, $1, $1
+	set.32      %r24 <- 12.340000
+	set.64      %r25 <- 56.780000
+	fpcast.64   %r27 <- (32) %r24
+	add.64      %r28 <- %r27, %r25
+	fpcast.32   %r29 <- (64) %r28
+	symaddr.64  %r30 <- <anon symbol:0000015ADBF63678>
+	fpcast.64   %r32 <- (32) %r29
+	call.32     %r33 <- printf, %r30, %r32
+	set.32      %r34 <- 12.340000
+	set.64      %r35 <- 56.780000
+	fpcast.64   %r37 <- (32) %r34
+	sub.64      %r38 <- %r37, %r35
+	fpcast.32   %r39 <- (64) %r38
+	symaddr.64  %r40 <- <anon symbol:0000015ADBF639F8>
+	fpcast.64   %r42 <- (32) %r39
+	call.32     %r43 <- printf, %r40, %r42
+	set.32      %r44 <- 12.340000
+	set.64      %r45 <- 56.780000
+	fpcast.64   %r47 <- (32) %r44
+	mulu.64     %r48 <- %r47, %r45
+	fpcast.32   %r49 <- (64) %r48
+	symaddr.64  %r50 <- <anon symbol:0000015ADBF63D78>
+	fpcast.64   %r52 <- (32) %r49
+	call.32     %r53 <- printf, %r50, %r52
+	set.32      %r54 <- 12.340000
+	set.64      %r55 <- 56.780000
+	fpcast.64   %r57 <- (32) %r54
+	divu.64     %r58 <- %r57, %r55
+	fpcast.32   %r59 <- (64) %r58
+	symaddr.64  %r60 <- <anon symbol:0000015ADBF640F8>
+	fpcast.64   %r62 <- (32) %r59
+	call.32     %r63 <- printf, %r60, %r62
+	symaddr.64  %r64 <- <anon symbol:0000015ADBF64478>
+	set.64      %r65 <- 12.340000
+	call.32     %r66 <- printf, %r64, %r65
+	symaddr.64  %r67 <- <anon symbol:0000015ADBF647F8>
+	set.64      %r68 <- -12.340000
+	call.32     %r69 <- printf, %r67, %r68
+	symaddr.64  %r70 <- <anon symbol:0000015ADBF64B78>
+	call.32     %r73 <- printf, %r70, $2
+	symaddr.64  %r74 <- <anon symbol:0000015ADBF64EF8>
+	call.64     %r75 <- sin, $2
+	call.32     %r76 <- printf, %r74, %r75
+	ret.32      $0
+
+

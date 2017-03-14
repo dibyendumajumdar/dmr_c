@@ -1,0 +1,37 @@
+myfunc:
+.L0:
+	<entry-point>
+	muls.32     %r3 <- %arg1, %arg1
+	ret.32      %r3
+
+
+vfunc:
+.L2:
+	<entry-point>
+	symaddr.64  %r5 <- <anon symbol:000002082EF521B8>
+	call.32     %r7 <- printf, %r5, %arg1
+	ret
+
+
+qfunc:
+.L4:
+	<entry-point>
+	symaddr.64  %r8 <- <anon symbol:000002082EF52538>
+	call.32     %r9 <- printf, %r8
+	ret
+
+
+main:
+.L6:
+	<entry-point>
+	symaddr.64  %r10 <- <anon symbol:000002082EF528B8>
+	call.32     %r11 <- myfunc, $3
+	call.32     %r12 <- printf, %r10, %r11
+	symaddr.64  %r13 <- <anon symbol:000002082EF52C38>
+	call.32     %r14 <- myfunc, $4
+	call.32     %r15 <- printf, %r13, %r14
+	call        vfunc, $0x4d2
+	call        qfunc
+	ret.32      $0
+
+

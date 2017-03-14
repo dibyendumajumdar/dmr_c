@@ -1,0 +1,25 @@
+main:
+.L0:
+	<entry-point>
+	symaddr.64  %r1 <- a
+	symaddr.64  %r2 <- b
+	store.32    $12 -> 0[a]
+	store.32    $34 -> 0[b]
+	symaddr.64  %r3 <- <anon symbol:000001873DE42D58>
+	call.32     %r6 <- printf, %r3, $12
+	symaddr.64  %r7 <- <anon symbol:000001873DE431B8>
+	load.32     %r9 <- 0[b]
+	call.32     %r10 <- printf, %r7, %r9
+	symaddr.64  %r11 <- <anon symbol:000001873DE43618>
+	seteq.32    %r14 <- %r1, %r2
+	call.32     %r15 <- printf, %r11, %r14
+	symaddr.64  %r16 <- <anon symbol:000001873DE43998>
+	setne.32    %r19 <- %r1, %r2
+	call.32     %r20 <- printf, %r16, %r19
+	symaddr.64  %r22 <- <anon symbol:000001873DE43D18>
+	call.32     %r26 <- printf, %r22, $1
+	symaddr.64  %r27 <- <anon symbol:000001873DE44098>
+	call.32     %r31 <- printf, %r27, $0
+	ret.32      $0
+
+

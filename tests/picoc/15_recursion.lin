@@ -1,0 +1,45 @@
+factorial:
+.L0:
+	<entry-point>
+	setlt.32    %r2 <- %arg1, $2
+	br          %r2, .L1, .L2
+
+.L1:
+	phisrc.32   %phi1(return) <- %arg1
+	br          .L3
+
+.L2:
+	add.32      %r7 <- %arg1, $-1
+	call.32     %r8 <- factorial, %r7
+	muls.32     %r9 <- %arg1, %r8
+	phisrc.32   %phi2(return) <- %r9
+	br          .L3
+
+.L3:
+	phi.32      %r4 <- %phi1(return), %phi2(return)
+	ret.32      %r4
+
+
+main:
+.L5:
+	<entry-point>
+	phisrc.32   %phi6(Count) <- $1
+	br          .L9
+
+.L9:
+	phi.32      %r10(Count) <- %phi6(Count), %phi7(Count)
+	setle.32    %r11 <- %r10(Count), $10
+	br          %r11, .L6, .L10
+
+.L6:
+	symaddr.64  %r12 <- <anon symbol:0000025C8F781E98>
+	call.32     %r14 <- factorial, %r10(Count)
+	call.32     %r15 <- printf, %r12, %r14
+	add.32      %r17 <- %r10(Count), $1
+	phisrc.32   %phi7(Count) <- %r17
+	br          .L9
+
+.L10:
+	ret.32      $0
+
+

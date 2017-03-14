@@ -1,0 +1,26 @@
+main:
+.L0:
+	<entry-point>
+	phisrc.32   %phi4(Count) <- $0
+	br          .L4
+
+.L4:
+	phi.32      %r1(Count) <- %phi4(Count), %phi5(Count)
+	setlt.32    %r2 <- %r1(Count), $10
+	br          %r2, .L1, .L5
+
+.L1:
+	symaddr.64  %r3 <- <anon symbol:000001BB0BF318E8>
+	muls.32     %r6 <- %r1(Count), %r1(Count)
+	muls.32     %r8 <- %r1(Count), $3
+	setlt.32    %r10 <- %r1(Count), $5
+	select.32   %r11 <- %r10, %r6, %r8
+	call.32     %r12 <- printf, %r3, %r11
+	add.32      %r14 <- %r1(Count), $1
+	phisrc.32   %phi5(Count) <- %r14
+	br          .L4
+
+.L5:
+	ret.32      $0
+
+

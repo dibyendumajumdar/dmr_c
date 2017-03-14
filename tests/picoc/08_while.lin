@@ -1,0 +1,25 @@
+main:
+.L0:
+	<entry-point>
+	phisrc.32   %phi3(a) <- $1
+	phisrc.32   %phi5(p) <- $0
+	br          .L4
+
+.L4:
+	phi.32      %r1(a) <- %phi3(a), %phi4(a)
+	setlt.32    %r2 <- %r1(a), $100
+	br          %r2, .L1, .L5
+
+.L1:
+	symaddr.64  %r3 <- <anon symbol:0000020A66E31B78>
+	call.32     %r5 <- printf, %r3, %r1(a)
+	phi.32      %r8 <- %phi5(p), %phi6(p)
+	add.32      %r9 <- %r1(a), %r8
+	phisrc.32   %phi4(a) <- %r9
+	phisrc.32   %phi6(p) <- %r1(a)
+	br          .L4
+
+.L5:
+	ret.32      $0
+
+

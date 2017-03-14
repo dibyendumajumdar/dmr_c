@@ -1,0 +1,55 @@
+charfunc:
+.L0:
+	<entry-point>
+	symaddr.64  %r1 <- <anon symbol:00000273A1D21C48>
+	scast.32    %r3 <- (8) %arg1
+	call.32     %r4 <- printf, %r1, %r3
+	ret
+
+
+intfunc:
+.L2:
+	<entry-point>
+	symaddr.64  %r5 <- <anon symbol:00000273A1D21FC8>
+	call.32     %r7 <- printf, %r5, %arg1
+	ret
+
+
+floatfunc:
+.L4:
+	<entry-point>
+	symaddr.64  %r8 <- <anon symbol:00000273A1D22348>
+	fpcast.64   %r10 <- (32) %arg1
+	call.32     %r11 <- printf, %r8, %r10
+	ret
+
+
+main:
+.L6:
+	<entry-point>
+	call        charfunc, $97
+	call        charfunc, $98
+	call        charfunc, $99
+	call        intfunc, $97
+	call        intfunc, $98
+	call        intfunc, $99
+	call        floatfunc, $97
+	call        floatfunc, $98
+	set.32      %r12 <- 99.000000
+	call        floatfunc, %r12
+	symaddr.64  %r13 <- <anon symbol:00000273A1D226C8>
+	call.32     %r14 <- printf, %r13, $97, $98, $99
+	symaddr.64  %r15 <- <anon symbol:00000273A1D22A48>
+	call.32     %r16 <- printf, %r15, $97, $98, $99
+	symaddr.64  %r17 <- <anon symbol:00000273A1D22DC8>
+	set.64      %r18 <- 99.000000
+	call.32     %r19 <- printf, %r17, $97, $98, %r18
+	symaddr.64  %r20 <- <anon symbol:00000273A1D23148>
+	call.32     %r21 <- printf, %r20, $97, $97
+	symaddr.64  %r22 <- <anon symbol:00000273A1D234C8>
+	call.32     %r23 <- printf, %r22, $97, $97
+	symaddr.64  %r24 <- <anon symbol:00000273A1D23848>
+	call.32     %r25 <- printf, %r24, $97, $97
+	ret.32      $0
+
+

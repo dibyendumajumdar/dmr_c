@@ -1,0 +1,50 @@
+main:
+.L0:
+	<entry-point>
+	symaddr.64  %r1(b) <- <anon symbol:0000025C98792758>
+	symaddr.64  %r2 <- <anon symbol:0000025C98792AD8>
+	call.32     %r4 <- printf, %r2, %r1(b)
+	phisrc.64   %phi4(b) <- %r1(b)
+	br          .L4
+
+.L4:
+	phi.64      %r9(b) <- %phi4(b), %phi5(b)
+	load.8      %r10 <- 0[%r9(b)]
+	br          %r10, .L1, .L3
+
+.L1:
+	symaddr.64  %r13 <- <anon symbol:0000025C98793018>
+	scast.32    %r16 <- (8) %r10
+	scast.32    %r19 <- (8) %r10
+	call.32     %r20 <- printf, %r13, %r16, %r19
+	add.64      %r22 <- %r9(b), $1
+	phisrc.64   %phi5(b) <- %r22
+	br          .L4
+
+.L3:
+	symaddr.64  %r23 <- destarray
+	phisrc.64   %phi8(dest) <- %r23
+	phisrc.64   %phi11(src) <- %r1(b)
+	br          .L8
+
+.L8:
+	phi.64      %r26(src) <- %phi11(src), %phi12(src)
+	load.8      %r27 <- 0[%r26(src)]
+	phi.64      %r33 <- %phi8(dest), %phi9(dest)
+	br          %r27, .L5, .L7
+
+.L5:
+	add.64      %r31 <- %r26(src), $1
+	add.64      %r34 <- %r33, $1
+	store.8     %r27 -> 0[%r33]
+	phisrc.64   %phi9(dest) <- %r34
+	phisrc.64   %phi12(src) <- %r31
+	br          .L8
+
+.L7:
+	store.8     $0 -> 0[%r33]
+	symaddr.64  %r36 <- <anon symbol:0000025C98793B78>
+	call.32     %r38 <- printf, %r36, %r23
+	ret.32      $0
+
+

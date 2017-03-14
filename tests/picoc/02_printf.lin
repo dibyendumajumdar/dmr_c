@@ -1,0 +1,32 @@
+main:
+.L0:
+	<entry-point>
+	symaddr.64  %r1 <- <anon symbol:0000015F654919D8>
+	call.32     %r2 <- printf, %r1
+	phisrc.32   %phi4(Count) <- $0xfffffffb
+	br          .L4
+
+.L4:
+	phi.32      %r3(Count) <- %phi4(Count), %phi5(Count)
+	setle.32    %r4 <- %r3(Count), $5
+	br          %r4, .L1, .L3
+
+.L1:
+	symaddr.64  %r5 <- <anon symbol:0000015F65491D58>
+	call.32     %r7 <- printf, %r5, %r3(Count)
+	add.32      %r9 <- %r3(Count), $1
+	phisrc.32   %phi5(Count) <- %r9
+	br          .L4
+
+.L3:
+	symaddr.64  %r10 <- <anon symbol:0000015F654920D8>
+	symaddr.64  %r11 <- <anon symbol:0000015F65492458>
+	symaddr.64  %r12 <- <anon symbol:0000015F654927D8>
+	call.32     %r13 <- printf, %r10, %r11, %r12
+	symaddr.64  %r14 <- <anon symbol:0000015F65492B58>
+	call.32     %r15 <- printf, %r14, $65
+	symaddr.64  %r16 <- <anon symbol:0000015F65492ED8>
+	call.32     %r17 <- printf, %r16, $97
+	ret.32      $0
+
+

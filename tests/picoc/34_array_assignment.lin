@@ -1,0 +1,14 @@
+main:
+.L0:
+	<entry-point>
+	store.32    $12 -> 0[a]
+	store.32    $23 -> 4[a]
+	store.32    $34 -> 8[a]
+	store.32    $45 -> 12[a]
+	symaddr.64  %r1 <- <anon symbol:000001674D9C24F8>
+	call.32     %r6 <- printf, %r1, $12, $23, $34, $45
+	symaddr.64  %r9 <- <anon symbol:000001674D9C3678>
+	call.32     %r18 <- printf, %r9, $12, $23, $34, $45
+	ret.32      $0
+
+

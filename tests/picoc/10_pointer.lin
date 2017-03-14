@@ -1,0 +1,29 @@
+main:
+.L0:
+	<entry-point>
+	store.32    $42 -> 0[a]
+	symaddr.64  %r2 <- <anon symbol:0000025EC1872298>
+	call.32     %r5 <- printf, %r2, $42
+	store.32    $12 -> 0[bolshevic]
+	store.32    $34 -> 4[bolshevic]
+	store.32    $56 -> 8[bolshevic]
+	symaddr.64  %r6 <- <anon symbol:0000025EC1872998>
+	call.32     %r8 <- printf, %r6, $12
+	symaddr.64  %r9 <- <anon symbol:0000025EC1872DF8>
+	load.32     %r10 <- 4[bolshevic]
+	call.32     %r11 <- printf, %r9, %r10
+	symaddr.64  %r12 <- <anon symbol:0000025EC1873258>
+	load.32     %r13 <- 8[bolshevic]
+	call.32     %r14 <- printf, %r12, %r13
+	symaddr.64  %r16 <- <anon symbol:0000025EC1873878>
+	load.32     %r18 <- 0[bolshevic]
+	call.32     %r19 <- printf, %r16, %r18
+	symaddr.64  %r20 <- <anon symbol:0000025EC1873CD8>
+	load.32     %r22 <- 4[bolshevic]
+	call.32     %r23 <- printf, %r20, %r22
+	symaddr.64  %r24 <- <anon symbol:0000025EC1874138>
+	load.32     %r26 <- 8[bolshevic]
+	call.32     %r27 <- printf, %r24, %r26
+	ret.32      $0
+
+

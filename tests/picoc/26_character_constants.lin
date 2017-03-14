@@ -1,0 +1,22 @@
+main:
+.L0:
+	<entry-point>
+	symaddr.64  %r1 <- <anon symbol:000002408F4A1628>
+	call.32     %r2 <- printf, %r1, $1
+	symaddr.64  %r3 <- <anon symbol:000002408F4A19A8>
+	call.32     %r4 <- printf, %r3, $8
+	symaddr.64  %r5 <- <anon symbol:000002408F4A1D28>
+	call.32     %r6 <- printf, %r5, $64
+	symaddr.64  %r7 <- <anon symbol:000002408F4A20A8>
+	call.32     %r8 <- printf, %r7, $1
+	symaddr.64  %r9 <- <anon symbol:000002408F4A2428>
+	call.32     %r10 <- printf, %r9, $14
+	symaddr.64  %r11 <- <anon symbol:000002408F4A27A8>
+	call.32     %r12 <- printf, %r11, $16
+	symaddr.64  %r13 <- <anon symbol:000002408F4A2B28>
+	call.32     %r14 <- printf, %r13, $64
+	symaddr.64  %r15 <- <anon symbol:000002408F4A2EA8>
+	call.32     %r16 <- printf, %r15
+	ret.32      $0
+
+

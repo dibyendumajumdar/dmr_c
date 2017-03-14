@@ -496,6 +496,7 @@ static LLVMValueRef pseudo_to_value(struct dmr_C *C, struct function *fn, struct
 			LLVMTypeRef type = symbol_type(C, fn->module, sym);
 			if (LLVMGetTypeKind(type) == LLVMFunctionTypeKind) {
 				result = LLVMGetNamedFunction(fn->module, name);
+				if (!result)
 					result = LLVMAddFunction(fn->module, name, type);
 				sym->priv = result;
 			}
@@ -1390,8 +1391,8 @@ static void output_fn(struct dmr_C *C, LLVMModuleRef module, struct entrypoint *
 	return_type = symbol_type(C, module, ret_type);
 
 	function.type = LLVMFunctionType(return_type, arg_types, nr_args, base_type->variadic);
-	if (sym->priv) {
-		LLVMDumpValue((LLVMValueRef)sym->priv);
+	if (base_type->priv) {
+		LLVMDumpValue((LLVMValueRef)base_type->priv);
 		exit(1);
 	}
 	function.fn = LLVMAddFunction(module, name, function.type);

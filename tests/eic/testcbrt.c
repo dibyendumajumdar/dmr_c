@@ -78,6 +78,7 @@ static double cbrtl (double x)
 
     lt = ut.t;
     lt -= (lt - (x/(lt*lt))) * 0.333333333333333333333;
+    printf("%f\n", lt);
     return lt;
 }
 

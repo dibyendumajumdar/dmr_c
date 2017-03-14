@@ -1,10 +1,4 @@
-Integer arithmetic operators only work with integral types!
-  %R60 = mul double %load_target8, %ARG1
-Integer arithmetic operators only work with integral types!
-  %R60 = mul double %load_target8, %ARG1
-
-
-; ModuleID = 'sparse'
+; ModuleID = 'out.bc'
 source_filename = "sparse"
 
 %union.anno = type { [8 x i8] }
@@ -21,27 +15,27 @@ source_filename = "sparse"
 
 define internal double @cbrtl(double %ARG1) {
 L0:
-  %ux_0x62d00008f420 = alloca %union.anno
-  %ut_0x62d00008f338 = alloca %union.anno
+  %ux_0000016A0F93AEB8 = alloca %union.anno
+  %ut_0000016A0F93ADD8 = alloca %union.anno
   %0 = alloca double
-  %1 = bitcast %union.anno* %ut_0x62d00008f338 to i32*
+  %1 = bitcast %union.anno* %ut_0000016A0F93ADD8 to i32*
   %2 = bitcast i32* %1 to i8*
   %3 = getelementptr inbounds i8, i8* %2, i64 0
   %4 = bitcast i8* %3 to i32*
   %load_target = load i32, i32* %4
   %R3 = icmp eq i32 %load_target, 0
   %R31 = zext i1 %R3 to i32
-  %5 = bitcast %union.anno* %ut_0x62d00008f338 to double*
+  %5 = bitcast %union.anno* %ut_0000016A0F93ADD8 to double*
   %6 = bitcast double* %5 to i8*
   %7 = getelementptr inbounds i8, i8* %6, i64 0
   %8 = bitcast i8* %7 to double*
   store double 0.000000e+00, double* %8
-  %9 = bitcast %union.anno* %ux_0x62d00008f420 to double*
+  %9 = bitcast %union.anno* %ux_0000016A0F93AEB8 to double*
   %10 = bitcast double* %9 to i8*
   %11 = getelementptr inbounds i8, i8* %10, i64 0
   %12 = bitcast i8* %11 to double*
   store double %ARG1, double* %12
-  %R6 = bitcast %union.anno* %ux_0x62d00008f420 to i8*
+  %R6 = bitcast %union.anno* %ux_0000016A0F93AEB8 to i8*
   %R9 = sext i32 %R31 to i64
   %R10 = mul i64 %R9, 4
   %13 = getelementptr inbounds i8, i8* %R6, i64 %R10
@@ -88,7 +82,7 @@ L4:                                               ; preds = %L2
   store i32 %R20, i32* %26
   %R50 = icmp slt i32 %R20, 1048576
   %R506 = zext i1 %R50 to i32
-  %R51 = bitcast %union.anno* %ut_0x62d00008f338 to i8*
+  %R51 = bitcast %union.anno* %ut_0000016A0F93ADD8 to i8*
   %27 = getelementptr inbounds i8, i8* %R51, i64 %R10
   %cond7 = icmp ne i32 %R506, 0
   br i1 %cond7, label %L5, label %L6
@@ -99,13 +93,13 @@ L5:                                               ; preds = %L4
   %30 = getelementptr inbounds i8, i8* %29, i64 0
   %31 = bitcast i8* %30 to i32*
   store i32 1129316352, i32* %31
-  %32 = bitcast %union.anno* %ut_0x62d00008f338 to double*
+  %32 = bitcast %union.anno* %ut_0000016A0F93ADD8 to double*
   %33 = bitcast double* %32 to i8*
   %34 = getelementptr inbounds i8, i8* %33, i64 0
   %35 = bitcast i8* %34 to double*
   %load_target8 = load double, double* %35
-  %R60 = mul double %load_target8, %ARG1
-  %36 = bitcast %union.anno* %ut_0x62d00008f338 to double*
+  %R60 = fmul double %load_target8, %ARG1
+  %36 = bitcast %union.anno* %ut_0000016A0F93ADD8 to double*
   %37 = bitcast double* %36 to i8*
   %38 = getelementptr inbounds i8, i8* %37, i64 0
   %39 = bitcast i8* %38 to double*
@@ -135,13 +129,13 @@ L6:                                               ; preds = %L4
   br label %L7
 
 L7:                                               ; preds = %L6, %L5
-  %52 = bitcast %union.anno* %ut_0x62d00008f338 to double*
+  %52 = bitcast %union.anno* %ut_0000016A0F93ADD8 to double*
   %53 = bitcast double* %52 to i8*
   %54 = getelementptr inbounds i8, i8* %53, i64 0
   %55 = bitcast i8* %54 to double*
   %load_target10 = load double, double* %55
   %R89 = fmul double %load_target10, %load_target10
-  %56 = bitcast %union.anno* %ux_0x62d00008f420 to double*
+  %56 = bitcast %union.anno* %ux_0000016A0F93AEB8 to double*
   %57 = bitcast double* %56 to i8*
   %58 = getelementptr inbounds i8, i8* %57, i64 0
   %59 = bitcast i8* %58 to double*
@@ -155,7 +149,7 @@ L7:                                               ; preds = %L6, %L5
   %R106 = fdiv double 0x3FF9B6DB60000000, %R105
   %R107 = fadd double 0x3FD6DB6DC0000000, %R106
   %R110 = fmul double %load_target10, %R107
-  %60 = bitcast %union.anno* %ut_0x62d00008f338 to double*
+  %60 = bitcast %union.anno* %ut_0000016A0F93ADD8 to double*
   %61 = bitcast double* %60 to i8*
   %62 = getelementptr inbounds i8, i8* %61, i64 0
   %63 = bitcast i8* %62 to double*
@@ -177,13 +171,13 @@ L7:                                               ; preds = %L6, %L5
   %75 = getelementptr inbounds i8, i8* %74, i64 0
   %76 = bitcast i8* %75 to i32*
   store i32 %R127, i32* %76
-  %77 = bitcast %union.anno* %ut_0x62d00008f338 to double*
+  %77 = bitcast %union.anno* %ut_0000016A0F93ADD8 to double*
   %78 = bitcast double* %77 to i8*
   %79 = getelementptr inbounds i8, i8* %78, i64 0
   %80 = bitcast i8* %79 to double*
   %load_target13 = load double, double* %80
   %R131 = fmul double %load_target13, %load_target13
-  %81 = bitcast %union.anno* %ux_0x62d00008f420 to double*
+  %81 = bitcast %union.anno* %ux_0000016A0F93AEB8 to double*
   %82 = bitcast double* %81 to i8*
   %83 = getelementptr inbounds i8, i8* %82, i64 0
   %84 = bitcast i8* %83 to double*
@@ -195,7 +189,7 @@ L7:                                               ; preds = %L6, %L5
   %R144 = fdiv double %R140, %R143
   %R148 = fmul double %load_target13, %R144
   %R149 = fadd double %load_target13, %R148
-  %85 = bitcast %union.anno* %ut_0x62d00008f338 to double*
+  %85 = bitcast %union.anno* %ut_0000016A0F93ADD8 to double*
   %86 = bitcast double* %85 to i8*
   %87 = getelementptr inbounds i8, i8* %86, i64 0
   %88 = bitcast i8* %87 to double*
@@ -211,7 +205,7 @@ L7:                                               ; preds = %L6, %L5
   %95 = getelementptr inbounds i8, i8* %94, i64 0
   %96 = bitcast i8* %95 to i32*
   store i32 %R159, i32* %96
-  %97 = bitcast %union.anno* %ut_0x62d00008f338 to double*
+  %97 = bitcast %union.anno* %ut_0000016A0F93ADD8 to double*
   %98 = bitcast double* %97 to i8*
   %99 = getelementptr inbounds i8, i8* %98, i64 0
   %100 = bitcast i8* %99 to double*

@@ -124,22 +124,6 @@ static LLVMTypeRef sym_struct_type(struct dmr_C *C, LLVMModuleRef module, struct
 
 static LLVMTypeRef sym_union_type(struct dmr_C *C, LLVMModuleRef module, struct symbol *sym)
 {
-#if 0
-	LLVMTypeRef elements;
-	unsigned union_size;
-
-	/*
-	 * There's no union support in the LLVM API so we treat unions as
-	 * opaque structs. The downside is that we lose type information on the
-	 * members but as LLVM doesn't care, neither do we.
-	 */
-	union_size = sym->bit_size / 8;
-
-	elements = LLVMArrayType(LLVMInt8Type(), union_size);
-
-	LLVMTypeRef type = LLVMStructType(&elements, 1, 0 /* packed? */);
-
-#else
 	LLVMTypeRef elem_types[1];
 	char buffer[256];
 	LLVMTypeRef type;
@@ -160,8 +144,6 @@ static LLVMTypeRef sym_union_type(struct dmr_C *C, LLVMModuleRef module, struct 
 	elem_types[0] = LLVMArrayType(LLVMInt8Type(), union_size);
 
 	LLVMStructSetBody(type, elem_types, 1, 0 /* packed? */);
-#endif
-	//LLVMDumpType(type);
 	return type;
 }
 
@@ -442,8 +424,8 @@ static LLVMValueRef val_to_value(struct dmr_C *C, struct function *fn, unsigned 
 		result = LLVMConstReal(dtype, (double)val);
 		break;
 	default:
-		printf("unsupported kind %d\n", kind);
-		assert(0);
+		fprintf(stderr, "unsupported pseudo value kind %d\n", kind);
+		exit(1);
 	}
 	return result;
 }
@@ -490,10 +472,9 @@ static LLVMValueRef pseudo_to_value(struct dmr_C *C, struct function *fn, struct
 				break;
 			}
 			case EXPR_SYMBOL: {
-				assert(0 && "unresolved symbol reference");
-				struct symbol *sym = expr->symbol;
-				result = LLVMGetNamedGlobal(fn->module, show_ident(C, sym->ident));
-				assert(result != NULL);
+				fprintf(stderr, "unresolved symbol reference in initializer\n");
+				show_expression(C, expr);
+				exit(1);
 				break;
 			}
 			case EXPR_VALUE:
@@ -505,7 +486,7 @@ static LLVMValueRef pseudo_to_value(struct dmr_C *C, struct function *fn, struct
 				sym->priv = result;
 				break;
 			default:
-				fprintf(stderr, "Unsupported expr type in initializer: %d\n", expr->type);
+				fprintf(stderr, "unsupported expr type in initializer: %d\n", expr->type);
 				show_expression(C, expr);
 				exit(1);
 			}
@@ -857,8 +838,6 @@ static void output_op_store(struct dmr_C *C, struct function *fn, struct instruc
 	desttype = insn_symbol_type(C, fn->module, insn);
 
 	/* Cast to the right type - to resolve issue with union types */
-	//LLVMDumpType(desttype);
-	//LLVMDumpType(LLVMGetElementType(desttype));
 	target_in = build_cast(C, fn, target_in, desttype, "");
 
 	/* perform store */
@@ -1492,9 +1471,9 @@ static LLVMValueRef output_data(struct dmr_C *C, LLVMModuleRef module, struct sy
 			break;
 		}
 		default:
-			fprintf(stderr, "Unsupported expr type in global data initializer: %d\n", initializer->type);
+			fprintf(stderr, "unsupported expr type in global data initializer: %d\n", initializer->type);
 			show_expression(C, initializer);
-			assert(0);
+			exit(1);
 		}
 	} else {
 		LLVMTypeRef type = symbol_type(C, module, sym);

@@ -32,6 +32,8 @@ running matmul.c
 running pseudoval1.c
 running ptraddassign1.c
 running ptraddassign2.c
+running ptraddassign3.c
+0x7ffef3e743e7 0x7ffef3e743e6
 running symaddr.c
 value -1
 running union1.c

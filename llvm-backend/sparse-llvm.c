@@ -680,10 +680,16 @@ static void output_op_binary(struct dmr_C *C, struct function *fn, struct instru
 		break;
 	case OP_SHL:
 		assert(!symbol_is_fp_type(C, insn->type));
+		if (LLVMGetIntTypeWidth(rhs) < LLVMGetIntTypeWidth(lhs)) {
+			rhs = build_cast(C, fn, rhs, typeof(lhs), "");
+		}
 		target = LLVMBuildShl(fn->builder, lhs, rhs, target_name);
 		break;
 	case OP_LSR:
 		assert(!symbol_is_fp_type(C, insn->type));
+		if (LLVMGetIntTypeWidth(rhs) < LLVMGetIntTypeWidth(lhs)) {
+			rhs = build_cast(C, fn, rhs, typeof(lhs), "");
+		}
 		target = LLVMBuildLShr(fn->builder, lhs, rhs, target_name);
 		break;
 	case OP_ASR:

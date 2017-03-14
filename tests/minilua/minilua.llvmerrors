@@ -1,17 +1,9 @@
-Invalid operands for select instruction!
-  %select = select i1 %cond18, %union.GCObject* %78, %struct.lua_TValue* @luaO_nilobject_.1
 Function return type does not match operand type of return inst!
   ret %struct.luaL_Buffer* %2
- i8*Invalid operands for select instruction!
-  %select = select i1 %cond5, %struct.LoadF* %18, i8* null
-Function return type does not match operand type of return inst!
+ i8*Function return type does not match operand type of return inst!
   ret void
- i32Invalid operands for select instruction!
-  %select = select i1 %cond18, %union.GCObject* %78, %struct.lua_TValue* @luaO_nilobject_.1
-Function return type does not match operand type of return inst!
+ i32Function return type does not match operand type of return inst!
   ret %struct.luaL_Buffer* %2
- i8*Invalid operands for select instruction!
-  %select = select i1 %cond5, %struct.LoadF* %18, i8* null
-Function return type does not match operand type of return inst!
+ i8*Function return type does not match operand type of return inst!
   ret void
  i32

@@ -30473,7 +30473,7 @@ L2265:                                            ; preds = %L2261
   %R13011 = icmp sle i32 %R12995, %R13010
   %R1301117 = zext i1 %R13011 to i32
   %cond18 = icmp ne i32 %R1301117, 0
-  %select = select i1 %cond18, %union.GCObject* %78, %struct.lua_TValue* @luaO_nilobject_.1
+  %select = select i1 %cond18, %union.GCObject* %78, %union.GCObject* bitcast (%struct.lua_TValue* @luaO_nilobject_.1 to %union.GCObject*)
   %81 = bitcast %union.GCObject* %select to %struct.lua_TValue*
   store %struct.lua_TValue* %81, %struct.lua_TValue** %0
   br label %L2266
@@ -34106,7 +34106,7 @@ L2612:                                            ; preds = %L2610
   %R14813 = icmp ugt i64 %R14807, 0
   %R148134 = zext i1 %R14813 to i32
   %cond5 = icmp ne i32 %R148134, 0
-  %select = select i1 %cond5, %struct.LoadF* %18, i8* null
+  %select = select i1 %cond5, %struct.LoadF* %18, %struct.LoadF* null
   %26 = bitcast %struct.LoadF* %select to i8*
   store i8* %26, i8** %0
   br label %L2613

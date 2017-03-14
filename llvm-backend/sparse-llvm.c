@@ -631,6 +631,8 @@ static void output_op_binary(struct dmr_C *C, struct function *fn, struct instru
 	case OP_SUB:
 		if (symbol_is_fp_type(C, insn->type))
 			target = LLVMBuildFSub(fn->builder, lhs, rhs, target_name);
+		else if (LLVMGetTypeKind(LLVMTypeOf(lhs)) == LLVMPointerTypeKind)
+			target = calc_gep(C, fn->builder, lhs, rhs);
 		else if (LLVMGetTypeKind(LLVMTypeOf(lhs)) == LLVMPointerTypeKind &&
 			LLVMGetTypeKind(LLVMTypeOf(rhs)) == LLVMPointerTypeKind) {
 			// Both arguments are pointer 
@@ -1171,7 +1173,9 @@ static void output_op_setval(struct dmr_C *C, struct function *fn, struct instru
 		target = LLVMConstReal(const_type, expr->fvalue);
 		break;
 	default:
-		assert(0 && "unsupported expression type in setval");
+		fprintf(stderr, "unsupported expression type %d in setval\n", expr->type);
+		show_expression(C, expr);
+		exit(1);
 	}
 
 	insn->target->priv = target;

@@ -1,0 +1,8 @@
+main:
+.L0:
+	<entry-point>
+	symaddr.64  %r1 <- <anon symbol:000001CD2BB20A18>
+	call.32     %r2 <- printf, %r1, $97
+	ret.32      $0
+
+

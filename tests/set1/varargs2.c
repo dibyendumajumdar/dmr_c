@@ -1,5 +1,7 @@
 extern int printf(const char *, ...);
 
+static void variadic(int argc, ...);
+
 static void variadic(int argc, ...)
 {	
 	printf("argc %d\n", argc);	

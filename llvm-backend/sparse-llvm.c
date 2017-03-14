@@ -498,7 +498,7 @@ static LLVMValueRef pseudo_to_value(struct dmr_C *C, struct function *fn, struct
 				result = LLVMGetNamedFunction(fn->module, name);
 				if (!result) {
 					result = LLVMAddFunction(fn->module, name, type);
-					LLVMSetLinkage(result, function_linkage(C, sym));
+					LLVMSetLinkage(result, function_linkage(C, sym->ctype.base_type));
 				}
 				sym->priv = result;
 			}

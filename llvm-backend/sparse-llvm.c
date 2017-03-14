@@ -430,6 +430,32 @@ static LLVMValueRef val_to_value(struct dmr_C *C, struct function *fn, unsigned 
 	return result;
 }
 
+static LLVMValueRef build_local(struct dmr_C *C, struct function *fn, struct symbol *sym) 
+{
+	const char *name = show_ident(C, sym->ident);
+	LLVMTypeRef type = symbol_type(C, fn->module, sym);
+	char localname[256] = { 0 };
+	/* insert alloca into entry block */
+	/* LLVM requires allocas to be at the start */
+	LLVMBasicBlockRef entrybbr = LLVMGetEntryBasicBlock(fn->fn);
+	/* Use temporary Builder as we don't want to mess the function builder */
+	LLVMBuilderRef tmp_builder = LLVMCreateBuilder();
+	LLVMValueRef firstins = LLVMGetFirstInstruction(entrybbr);
+	if (firstins)
+		LLVMPositionBuilderBefore(tmp_builder, firstins);
+	else
+		LLVMPositionBuilderAtEnd(tmp_builder, entrybbr);
+	/* Since multiple locals may have same name but in different scopes we
+	append the symbol's address to make each variable unique */
+	snprintf(localname, sizeof localname, "%s_%p", name, sym);
+	LLVMValueRef result = LLVMBuildAlloca(tmp_builder, type, localname);
+	LLVMDisposeBuilder(tmp_builder);
+	/* Store the alloca instruction for references to the value later on.
+	TODO - should we convert this to pointer here? */
+	sym->priv = result;
+	return result;
+}
+
 static LLVMValueRef pseudo_to_value(struct dmr_C *C, struct function *fn, struct instruction *insn, pseudo_t pseudo)
 {
 	LLVMValueRef result = NULL;
@@ -478,11 +504,13 @@ static LLVMValueRef pseudo_to_value(struct dmr_C *C, struct function *fn, struct
 				break;
 			}
 			case EXPR_VALUE:
-				result = LLVMConstInt(symbol_type(C, fn->module, sym), expr->value, 1);
+				result = build_local(C, fn, sym);
+				LLVMBuildStore(fn->builder, LLVMConstInt(symbol_type(C, fn->module, sym), expr->value, 1), result);
 				sym->priv = result;
 				break;
 			case EXPR_FVALUE:
-				result = LLVMConstReal(symbol_type(C, fn->module, sym), expr->fvalue);
+				result = build_local(C, fn, sym);
+				LLVMBuildStore(fn->builder, LLVMConstReal(symbol_type(C, fn->module, sym), expr->fvalue), result);
 				sym->priv = result;
 				break;
 			default:
@@ -1532,6 +1560,7 @@ static void output_prototype(struct dmr_C *C, LLVMModuleRef module, struct symbo
 	if (!result) {
 		result = LLVMAddFunction(module, name, ftype);
 		LLVMSetLinkage(result, function_linkage(C, sym));
+		//LLVMSetFunctionCallConv(result, LLVMCCallConv);
 	}
 	sym->priv = result;
 }

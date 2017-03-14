@@ -7974,7 +7974,7 @@ static int os_remove(lua_State *L)
 	const char *filename = luaL_checkstring(L, 1);
 	return os_pushresult(L, remove(filename) == 0, filename);
 }
-static int os_exit(lua_State *L) { exit(luaL_optint(L, 1, EXIT_SUCCESS)); }
+static int os_exit(lua_State *L) { exit(luaL_optint(L, 1, EXIT_SUCCESS)); return 0; }
 #if INITIALIZER_SUPPORTED
 static const luaL_Reg syslib[] = {
     {"exit", os_exit}, {"remove", os_remove}, {NULL, NULL}};

@@ -1,0 +1,364 @@
+running 00_assignment.c
+42
+64
+12, 34
+running 01_comment.c
+Hello
+Hello
+Hello
+Hello
+Hello
+running 02_printf.c
+Hello world
+Count = -5
+Count = -4
+Count = -3
+Count = -2
+Count = -1
+Count = 0
+Count = 1
+Count = 2
+Count = 3
+Count = 4
+Count = 5
+String 'hello', 'there' is 'hello', 'there'
+Character 'A' is 'A'
+Character 'a' is 'a'
+running 03_struct.c
+12
+34
+running 04_for.c
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+running 05_array.c
+1
+4
+9
+16
+25
+36
+49
+64
+81
+100
+running 06_case.c
+0
+0
+1
+1
+2
+2
+3
+0
+running 07_function.c
+9
+16
+a=1234
+qfunc()
+running 08_while.c
+1
+1
+2
+3
+5
+8
+13
+21
+34
+55
+89
+running 09_do_while.c
+1
+1
+2
+3
+5
+8
+13
+21
+34
+55
+89
+running 10_pointer.c
+a = 42
+bolshevic.a = 12
+bolshevic.b = 34
+bolshevic.c = 56
+tsar->a = 12
+tsar->b = 34
+tsar->c = 56
+running 11_precedence.c
+134
+134
+0
+1
+1
+1
+1
+46
+1, 0
+0, 1
+1
+1916
+1916
+64
+4
+running 12_hashdefine.c
+12
+12, 24, 36
+running 13_integer_literals.c
+24680
+342391
+2386092
+2386092
+1365
+running 14_if.c
+a is true
+b is false
+running 15_recursion.c
+1
+2
+6
+24
+120
+720
+5040
+40320
+362880
+3628800
+running 16_nesting.c
+0 0 0
+0 0 1
+0 0 2
+0 1 0
+0 1 1
+0 1 2
+0 2 0
+0 2 1
+0 2 2
+1 0 0
+1 0 1
+1 0 2
+1 1 0
+1 1 1
+1 1 2
+1 2 0
+1 2 1
+1 2 2
+running 17_enum.c
+0 1 2 3 54 73 74 75
+0
+12
+54
+running 18_include.c
+including
+included
+done
+running 19_pointer_arithmetic.c
+42
+b is not NULL
+c is NULL
+running 20_pointer_comparison.c
+12
+34
+0
+1
+1
+0
+running 21_char_array.c
+hello
+h: 104
+e: 101
+l: 108
+l: 108
+o: 111
+copied string is hello
+running 22_floating_point.c
+69.120003
+69.120000
+-44.440000
+700.665200
+0.217330
+1 1 0 0 0 1
+0 1 1 1 0 0
+0 0 0 1 1 1
+69.120003
+-44.439999
+700.665222
+0.217330
+12.340000
+-12.340000
+2.000000
+0.909297
+running 23_type_coercion.c
+char: a
+char: b
+char: c
+int: 97
+int: 98
+int: 99
+float: 97.000000
+float: 98.000000
+float: 99.000000
+a 98 99.000000
+a 98 99.000000
+a 98 99.000000
+97 97
+97 97
+97.000000 97.000000
+running 25_quicksort.c
+62 83 4 89 36 21 74 37 65 33 96 38 53 16 74 55 
+4 16 21 33 36 37 38 53 55 62 65 74 74 83 89 96 
+25_quicksort.c failed to run
+running 26_character_constants.c
+1
+8
+64
+1
+14
+16
+64
+test 
+running 27_sizeof.c
+1
+4
+8
+running 29_array_address.c
+bcdef
+running 30_hanoi.c
+Solution of Tower of Hanoi Problem with 4 Disks
+
+Starting state:
+A:  1  2  3  4 
+B:  0  0  0  0 
+C:  0  0  0  0 
+------------------------------------------
+
+
+Subsequent states:
+
+A:  0  2  3  4 
+B:  0  0  0  0 
+C:  0  0  0  1 
+------------------------------------------
+A:  0  0  3  4 
+B:  0  0  0  2 
+C:  0  0  0  1 
+------------------------------------------
+A:  0  0  3  4 
+B:  0  0  1  2 
+C:  0  0  0  0 
+------------------------------------------
+A:  0  0  0  4 
+B:  0  0  1  2 
+C:  0  0  0  3 
+------------------------------------------
+A:  0  0  1  4 
+B:  0  0  0  2 
+C:  0  0  0  3 
+------------------------------------------
+A:  0  0  1  4 
+B:  0  0  0  0 
+C:  0  0  2  3 
+------------------------------------------
+A:  0  0  0  4 
+B:  0  0  0  0 
+C:  0  1  2  3 
+------------------------------------------
+A:  0  0  0  0 
+B:  0  0  0  4 
+C:  0  1  2  3 
+------------------------------------------
+A:  0  0  0  0 
+B:  0  0  1  4 
+C:  0  0  2  3 
+------------------------------------------
+A:  0  0  0  2 
+B:  0  0  1  4 
+C:  0  0  0  3 
+------------------------------------------
+A:  0  0  1  2 
+B:  0  0  0  4 
+C:  0  0  0  3 
+------------------------------------------
+A:  0  0  1  2 
+B:  0  0  3  4 
+C:  0  0  0  0 
+------------------------------------------
+A:  0  0  0  2 
+B:  0  0  3  4 
+C:  0  0  0  1 
+------------------------------------------
+A:  0  0  0  0 
+B:  0  2  3  4 
+C:  0  0  0  1 
+------------------------------------------
+A:  0  0  0  0 
+B:  1  2  3  4 
+C:  0  0  0  0 
+------------------------------------------
+running 32_led.c
+     _   _       _       _  
+  |  _|  _| |_| |_  |_    | 
+  | |_   _|   |  _| |_|   | 
+
+running 33_ternary_op.c
+0
+1
+4
+9
+16
+15
+18
+21
+24
+27
+running 34_array_assignment.c
+12 23 34 45
+12 23 34 45
+running 35_sizeof.c
+1 1
+2 2
+running 38_multiple_array_index.c
+x=0: 1 2 3 4 
+x=1: 5 6 7 8 
+x=2: 9 10 11 12 
+x=3: 13 14 15 16 
+running 39_typedef.c
+1
+12,34
+12,34
+running 42_function_pointer.c
+yo 24
+42
+running 60_local_vars.c
+first for
+0
+1
+2
+second for
+0
+1
+2
+foo: first for
+foo: 0
+foo: 1
+foo: 2
+foo: while: 5
+foo: second for
+foo: 0
+foo: 1
+foo: 2
+foo: 0
+foo: 1
+foo: 2
+running 62_float.c
+3.140000 0.001000 100.000000 1.333333

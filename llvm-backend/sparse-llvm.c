@@ -496,8 +496,10 @@ static LLVMValueRef pseudo_to_value(struct dmr_C *C, struct function *fn, struct
 			LLVMTypeRef type = symbol_type(C, fn->module, sym);
 			if (LLVMGetTypeKind(type) == LLVMFunctionTypeKind) {
 				result = LLVMGetNamedFunction(fn->module, name);
-				if (!result)
+				if (!result) {
 					result = LLVMAddFunction(fn->module, name, type);
+					LLVMSetLinkage(result, function_linkage(C, sym));
+				}
 				sym->priv = result;
 			}
 			else if (is_extern(sym) || is_toplevel(sym)) {

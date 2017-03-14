@@ -22,6 +22,9 @@ Inserting 0
 running fpcast1.c
 97.000000
 running funcptr1.c
+running funcptr2.c
+myfunc called with 42
+running globals1.c
 running init1.c
 hello 55 1.500000 65.780000
 ocal string 6 4.200000 42.340000
@@ -33,7 +36,6 @@ running pseudoval1.c
 running ptraddassign1.c
 running ptraddassign2.c
 running ptraddassign3.c
-0x7ffef3e743e7 0x7ffef3e743e6
 running symaddr.c
 value -1
 running union1.c

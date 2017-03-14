@@ -1380,7 +1380,7 @@ static void output_fn(struct dmr_C *C, LLVMModuleRef module, struct entrypoint *
 
 	return_type = symbol_type(C, module, ret_type);
 
-	function.type = LLVMFunctionType(return_type, arg_types, nr_args, 0);
+	function.type = LLVMFunctionType(return_type, arg_types, nr_args, base_type->variadic);
 
 	function.fn = LLVMAddFunction(module, name, function.type);
 	LLVMSetFunctionCallConv(function.fn, LLVMCCallConv);

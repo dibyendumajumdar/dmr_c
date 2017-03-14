@@ -25,6 +25,7 @@ struct function {
 	LLVMTypeRef			type;
 	LLVMValueRef			fn;
 	LLVMModuleRef			module;
+	LLVMTypeRef			return_type;
 };
 
 static inline bool symbol_is_fp_type(struct dmr_C *C, struct symbol *sym)
@@ -828,7 +829,7 @@ static void output_op_ret(struct dmr_C *C, struct function *fn, struct instructi
 
 	if (pseudo && pseudo != VOID_PSEUDO(C)) {
 		LLVMValueRef result = pseudo_to_value(C, fn, insn, pseudo);
-
+		result = build_cast(C, fn, result, fn->return_type, "");
 		LLVMBuildRet(fn->builder, result);
 	} else
 		LLVMBuildRetVoid(fn->builder);
@@ -1424,7 +1425,7 @@ static void output_fn(struct dmr_C *C, LLVMModuleRef module, struct entrypoint *
 	name = show_ident(C, sym->ident);
 
 	return_type = symbol_type(C, module, ret_type);
-
+	function.return_type = return_type;
 	function.fn = LLVMGetNamedFunction(module, name);
 	if (!function.fn) {
 		function.type = LLVMFunctionType(return_type, arg_types, nr_args, base_type->variadic);
@@ -1435,6 +1436,7 @@ static void output_fn(struct dmr_C *C, LLVMModuleRef module, struct entrypoint *
 	else {
 		function.type = LLVMTypeOf(function.fn);
 	}
+	
 	LLVMSetFunctionCallConv(function.fn, LLVMCCallConv);
 
 	function.builder = LLVMCreateBuilder();

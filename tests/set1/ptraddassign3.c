@@ -7,7 +7,5 @@ int main(void)
 	char *p = &buf[4];
 	p--;
 
-	printf("%p %p\n", &buf[4], p);
-
 	return p != &buf[3] ? 1 : 0;
 }

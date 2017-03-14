@@ -3,11 +3,8 @@ main:
 	<entry-point>
 	symaddr.64  %r1 <- buf
 	add.64      %r4 <- %r1, $3
-	symaddr.64  %r5 <- <anon symbol:000001528E463B18>
-	add.64      %r7 <- %r1, $4
-	call.32     %r9 <- printf, %r5, %r7, %r4
-	add.64      %r12 <- %r1, $3
-	setne.32    %r14 <- %r4, %r12
-	ret.32      %r14
+	add.64      %r7 <- %r1, $3
+	setne.32    %r9 <- %r4, %r7
+	ret.32      %r9
 
 

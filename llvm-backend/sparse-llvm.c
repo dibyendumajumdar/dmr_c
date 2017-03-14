@@ -304,6 +304,88 @@ static LLVMLinkage function_linkage(struct dmr_C *C, struct symbol *sym)
 	return LLVMExternalLinkage;
 }
 
+static LLVMValueRef build_cast(struct dmr_C *C, struct function *fn, LLVMValueRef val, LLVMTypeRef dtype, const char *target_name)
+{
+	LLVMTypeRef valtype = LLVMTypeOf(val);
+	LLVMTypeKind valkind = LLVMGetTypeKind(valtype);
+	LLVMTypeKind dkind = LLVMGetTypeKind(dtype);
+	LLVMOpcode op;
+
+	switch (dkind) {
+	case LLVMIntegerTypeKind: {
+		switch (valkind) {
+		case LLVMPointerTypeKind:
+			op = LLVMPtrToInt;
+			break;
+		case LLVMIntegerTypeKind: {
+			unsigned val_width = LLVMGetIntTypeWidth(valtype);
+			unsigned target_width = LLVMGetIntTypeWidth(dtype);
+			if (target_width < val_width)
+				op = LLVMTrunc;
+			else if (target_width == val_width)
+				op = LLVMBitCast;
+			else
+				op = LLVMSExt;
+			break;
+		}
+		case LLVMFloatTypeKind:
+		case LLVMDoubleTypeKind:
+			op = LLVMFPToSI;
+			break;
+		default:
+			fprintf(stderr, "unsupported value type %d in cast to integer vale\n", valkind);
+			exit(1);
+		}
+		break;
+	}
+	case LLVMPointerTypeKind: {
+		switch (valkind) {
+		case LLVMPointerTypeKind:
+			op = LLVMBitCast;
+			break;
+		case LLVMIntegerTypeKind:
+			op = LLVMIntToPtr;
+			break;
+		default:
+			fprintf(stderr, "unsupported value type %d in cast to ptr\n", valkind);
+			exit(1);
+		}
+		break;
+	}
+	case LLVMFloatTypeKind:
+	case LLVMDoubleTypeKind: {
+		switch (valkind) {
+		case LLVMIntegerTypeKind:
+			op = LLVMSIToFP;
+			break;
+		case LLVMFloatTypeKind: {
+			if (dkind == LLVMFloatTypeKind)
+				op = LLVMBitCast;
+			else
+				op = LLVMFPExt;
+			break;
+		}
+		case LLVMDoubleTypeKind: {
+			if (dkind == LLVMFloatTypeKind)
+				op = LLVMFPTrunc;
+			else
+				op = LLVMBitCast;
+			break;
+		}
+		default:
+			fprintf(stderr, "unsupported value type %d in cast to floating point value\n", valkind);
+			exit(1);
+		}
+		break;
+	}
+	default:
+		fprintf(stderr, "unsupported target type %d in cast\n", dkind);
+		exit(1);
+	}
+	return LLVMBuildCast(fn->builder, op, val, dtype, target_name);
+}
+
+
 #define MAX_PSEUDO_NAME 64
 
 static void pseudo_name(struct dmr_C *C, pseudo_t pseudo, char *buf)
@@ -771,7 +853,9 @@ static void output_op_store(struct dmr_C *C, struct function *fn, struct instruc
 	desttype = insn_symbol_type(C, fn->module, insn);
 
 	/* Cast to the right type - to resolve issue with union types */
-	target_in = LLVMBuildBitCast(fn->builder, target_in, desttype, "");
+	//LLVMDumpType(desttype);
+	//LLVMDumpType(LLVMGetElementType(desttype));
+	target_in = build_cast(C, fn, target_in, desttype, "");
 
 	/* perform store */
 	LLVMBuildStore(fn->builder, target_in, addr);
@@ -869,9 +953,9 @@ static void output_op_call(struct dmr_C *C, struct function *fn, struct instruct
 	FOR_EACH_PTR(insn->arguments, arg) {
 		struct symbol *ftype = get_function_basetype(insn->fntype);
 		LLVMValueRef value;
+		struct symbol *atype;
+		atype = get_nth_symbol(ftype->arguments, i);
 		if (arg->type == PSEUDO_VAL) {
-			struct symbol *atype;
-			atype = get_nth_symbol(ftype->arguments, i);
 			/* Value pseudos do not have type information. */
 			/* Use the function prototype to get the type. */
 			if (atype)
@@ -881,6 +965,10 @@ static void output_op_call(struct dmr_C *C, struct function *fn, struct instruct
 		}
 		else {
 			value = pseudo_to_value(C, fn, insn, arg);
+			if (atype) {
+				LLVMTypeRef argtype = symbol_type(C, fn->module, atype);
+				value = build_cast(C, fn, value, argtype, "");
+			}
 		}
 		assert(value);
 		args[i++] = value;
@@ -913,7 +1001,7 @@ static void output_op_phisrc(struct dmr_C *C, struct function *fn, struct instru
 		ptr = LLVMGetOperand(load, 0);
 		/* store v to alloca */
 		LLVMTypeRef phi_type = insn_symbol_type(C, fn->module, phi);
-		v = LLVMBuildBitCast(fn->builder, v, phi_type, "");
+		v = build_cast(C, fn, v, phi_type, "");
 		LLVMBuildStore(fn->builder, v, ptr);
 	} END_FOR_EACH_PTR(phi);
 }
@@ -929,6 +1017,7 @@ static void output_op_phi(struct dmr_C *C, struct function *fn, struct instructi
 	/* finalize load in current block  */
 	LLVMInsertIntoBuilder(fn->builder, load);
 }
+
 
 static void output_op_ptrcast(struct dmr_C *C, struct function *fn, struct instruction *insn)
 {

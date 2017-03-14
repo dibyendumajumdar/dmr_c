@@ -1,37 +1,3 @@
-Both operands to a binary operator are not of the same type!
-  %R1840 = lshr i64 %ARG3, i32 5
-Both operands to a binary operator are not of the same type!
-  %R2816 = shl i64 1, i32 %R2815
-Both operands to a binary operator are not of the same type!
-  %R1990 = shl i64 1, i32 %R1989
-Both operands to a binary operator are not of the same type!
-  %R2013 = shl i64 1, i32 %R2012
-Both operands to a binary operator are not of the same type!
-  %R2028 = shl i64 1, i32 %R2027
-Both operands to a binary operator are not of the same type!
-  %R2045 = shl i64 1, i32 %R2044
-Both operands to a binary operator are not of the same type!
-  %R2061 = shl i64 1, i32 %R2060
-Both operands to a binary operator are not of the same type!
-  %R2183 = shl i64 1, i32 %R2182
-Both operands to a binary operator are not of the same type!
-  %R2345 = shl i64 1, i32 %R2344
-Both operands to a binary operator are not of the same type!
-  %R2429 = shl i64 1, i32 %R2423
-Both operands to a binary operator are not of the same type!
-  %R2545 = shl i64 1, i32 %R2474
-Both operands to a binary operator are not of the same type!
-  %R2582 = shl i64 1, i32 %R2474
-Both operands to a binary operator are not of the same type!
-  %R2592 = shl i64 1, i32 %R2591
-Both operands to a binary operator are not of the same type!
-  %R2671 = shl i64 1, i32 %R2670
-Both operands to a binary operator are not of the same type!
-  %R3334 = shl i64 1, i32 %R3333
-Both operands to a binary operator are not of the same type!
-  %R3707 = shl i64 1, i32 %R3706
-Both operands to a binary operator are not of the same type!
-  %R3872 = shl i64 1, i32 %R3871
 Invalid bitcast
 i32 addrspace(32)* bitcast (i32 -1 to i32 addrspace(32)*)
 Invalid bitcast
@@ -44,41 +10,7 @@ Function return type does not match operand type of return inst!
   %select = select i1 %cond5, %struct.LoadF* %18, i8* null
 Function return type does not match operand type of return inst!
   ret void
- i32Both operands to a binary operator are not of the same type!
-  %R1840 = lshr i64 %ARG3, i32 5
-Both operands to a binary operator are not of the same type!
-  %R2816 = shl i64 1, i32 %R2815
-Both operands to a binary operator are not of the same type!
-  %R1990 = shl i64 1, i32 %R1989
-Both operands to a binary operator are not of the same type!
-  %R2013 = shl i64 1, i32 %R2012
-Both operands to a binary operator are not of the same type!
-  %R2028 = shl i64 1, i32 %R2027
-Both operands to a binary operator are not of the same type!
-  %R2045 = shl i64 1, i32 %R2044
-Both operands to a binary operator are not of the same type!
-  %R2061 = shl i64 1, i32 %R2060
-Both operands to a binary operator are not of the same type!
-  %R2183 = shl i64 1, i32 %R2182
-Both operands to a binary operator are not of the same type!
-  %R2345 = shl i64 1, i32 %R2344
-Both operands to a binary operator are not of the same type!
-  %R2429 = shl i64 1, i32 %R2423
-Both operands to a binary operator are not of the same type!
-  %R2545 = shl i64 1, i32 %R2474
-Both operands to a binary operator are not of the same type!
-  %R2582 = shl i64 1, i32 %R2474
-Both operands to a binary operator are not of the same type!
-  %R2592 = shl i64 1, i32 %R2591
-Both operands to a binary operator are not of the same type!
-  %R2671 = shl i64 1, i32 %R2670
-Both operands to a binary operator are not of the same type!
-  %R3334 = shl i64 1, i32 %R3333
-Both operands to a binary operator are not of the same type!
-  %R3707 = shl i64 1, i32 %R3706
-Both operands to a binary operator are not of the same type!
-  %R3872 = shl i64 1, i32 %R3871
-Invalid bitcast
+ i32Invalid bitcast
 i32 addrspace(32)* bitcast (i32 -1 to i32 addrspace(32)*)
 Invalid bitcast
 i32* bitcast (i32 -1 to i32*)

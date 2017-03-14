@@ -1,8 +1,3 @@
-/*
- * Example usage:
- *	./sparse-llvm hello.c | llc | as -o hello.o
- */
-
 #include <llvm-c/Core.h>
 #include <llvm-c/BitWriter.h>
 #include <llvm-c/Analysis.h>
@@ -1385,7 +1380,7 @@ static void output_bb(struct dmr_C *C, struct function *fn, struct basic_block *
 
 #define MAX_ARGS	64
 
-static void output_fn(struct dmr_C *C, LLVMModuleRef module, struct entrypoint *ep)
+static LLVMValueRef output_fn(struct dmr_C *C, LLVMModuleRef module, struct entrypoint *ep)
 {
 	struct symbol *sym = ep->name;
 	struct symbol *base_type = sym->ctype.base_type;
@@ -1473,13 +1468,16 @@ static void output_fn(struct dmr_C *C, LLVMModuleRef module, struct entrypoint *
 	END_FOR_EACH_PTR(bb);
 
 	LLVMDisposeBuilder(function.builder);
+
+	return function.fn;
 }
 
+/* returns NULL on failure */
 static LLVMValueRef output_data(struct dmr_C *C, LLVMModuleRef module, struct symbol *sym)
 {
 	struct expression *initializer = sym->initializer;
-	LLVMValueRef initial_value;
-	LLVMValueRef data;
+	LLVMValueRef initial_value = NULL;
+	LLVMValueRef data = NULL;
 	const char *name;
 
 	if (initializer) {
@@ -1507,8 +1505,9 @@ static LLVMValueRef output_data(struct dmr_C *C, LLVMModuleRef module, struct sy
 		default:
 			fprintf(stderr, "unsupported expr type in global data initializer: %d\n", initializer->type);
 			show_expression(C, initializer);
-			exit(1);
 		}
+		if (!initial_value)
+			return NULL;
 	} else {
 		LLVMTypeRef type = symbol_type(C, module, sym);
 		initial_value = LLVMConstNull(type);
@@ -1565,6 +1564,7 @@ static int is_prototype(struct symbol *sym)
 	return sym && sym->type == SYM_FN && !sym->stmt;
 }
 
+/* returns 0 on success, != 0 on failure */
 static int compile(struct dmr_C *C, LLVMModuleRef module, struct ptr_list *list)
 {
 	struct symbol *sym;
@@ -1579,10 +1579,13 @@ static int compile(struct dmr_C *C, LLVMModuleRef module, struct ptr_list *list)
 		}
 
 		ep = linearize_symbol(C, sym);
+		LLVMValueRef result = NULL;
 		if (ep)
-			output_fn(C, module, ep);
+			result = output_fn(C, module, ep);
 		else
-			output_data(C, module, sym);
+			result = output_data(C, module, sym);
+		if (!result)
+			return 1;
 	}
 	END_FOR_EACH_PTR(sym);
 
@@ -1652,20 +1655,22 @@ int main(int argc, char **argv)
 	module = LLVMModuleCreateWithName("sparse");
 	set_target(C, module);
 
-	compile(C, module, symlist);
-
-	/* need ->phi_users */
-	C->dbg_dead = 1;
-	FOR_EACH_PTR(filelist, file) {
-		symlist = sparse(C, file);
-		if (C->die_if_error)
-			return 1;
-		compile(C, module, symlist);
-	} END_FOR_EACH_PTR(file);
-
+	int rc = compile(C, module, symlist);
+	if (rc == 0) {
+		C->dbg_dead = 1;
+		FOR_EACH_PTR(filelist, file) {
+			symlist = sparse(C, file);
+			if (C->die_if_error) {
+				rc = 1;
+				break;
+			}
+			rc = compile(C, module, symlist);
+			if (rc != 0)
+				break;
+		} END_FOR_EACH_PTR(file);
+	}
 	char *error_message = NULL;
-	int rc = 0;
-	if (LLVMVerifyModule(module, LLVMPrintMessageAction, &error_message)) {
+	if (rc == 0 && LLVMVerifyModule(module, LLVMPrintMessageAction, &error_message)) {
 		rc = 1;
 	}
 	if (error_message) {

@@ -1390,15 +1390,17 @@ static void output_fn(struct dmr_C *C, LLVMModuleRef module, struct entrypoint *
 
 	return_type = symbol_type(C, module, ret_type);
 
-	function.type = LLVMFunctionType(return_type, arg_types, nr_args, base_type->variadic);
-	if (base_type->priv) {
-		LLVMDumpValue((LLVMValueRef)base_type->priv);
-		exit(1);
+	function.fn = LLVMGetNamedFunction(module, name);
+	if (!function.fn) {
+		function.type = LLVMFunctionType(return_type, arg_types, nr_args, base_type->variadic);
+		function.fn = LLVMAddFunction(module, name, function.type);
+		LLVMSetLinkage(function.fn, function_linkage(C, sym));
+		sym->priv = function.fn;
 	}
-	function.fn = LLVMAddFunction(module, name, function.type);
+	else {
+		function.type = LLVMTypeOf(function.fn);
+	}
 	LLVMSetFunctionCallConv(function.fn, LLVMCCallConv);
-
-	LLVMSetLinkage(function.fn, function_linkage(C, sym));
 
 	function.builder = LLVMCreateBuilder();
 
@@ -1513,6 +1515,21 @@ static LLVMValueRef output_data(struct dmr_C *C, LLVMModuleRef module, struct sy
 	return data;
 }
 
+static void output_prototype(struct dmr_C *C, LLVMModuleRef module, struct symbol *sym)
+{
+	const char *name = show_ident(C, sym->ident);
+	struct symbol *base_type = sym;
+	if (sym->type == SYM_NODE)
+		base_type = sym->ctype.base_type;
+	LLVMTypeRef ftype = sym_func_type(C, module, base_type);
+	LLVMValueRef result = LLVMGetNamedFunction(module, name);
+	if (!result) {
+		result = LLVMAddFunction(module, name, ftype);
+		LLVMSetLinkage(result, function_linkage(C, sym));
+	}
+	sym->priv = result;
+}
+
 static int is_prototype(struct symbol *sym)
 {
 	if (sym->type == SYM_NODE)
@@ -1528,8 +1545,10 @@ static int compile(struct dmr_C *C, LLVMModuleRef module, struct ptr_list *list)
 		struct entrypoint *ep;
 		expand_symbol(C, sym);
 
-		if (is_prototype(sym))
+		if (is_prototype(sym)) {
+			output_prototype(C, module, sym);
 			continue;
+		}
 
 		ep = linearize_symbol(C, sym);
 		if (ep)

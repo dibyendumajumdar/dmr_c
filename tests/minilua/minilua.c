@@ -9516,6 +9516,7 @@ static void init_globals(void)
 #endif
 int main(int argc, char **argv)
 {
+	printf("In minilua\n");
 	init_globals();
 	lua_State *L = luaL_newstate();
 	int i;

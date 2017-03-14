@@ -1,9 +1,2 @@
-Function return type does not match operand type of return inst!
-  ret %struct.luaL_Buffer* %2
- i8*Function return type does not match operand type of return inst!
-  ret void
- i32Function return type does not match operand type of return inst!
-  ret %struct.luaL_Buffer* %2
- i8*Function return type does not match operand type of return inst!
-  ret void
- i32
+
+

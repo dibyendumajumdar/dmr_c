@@ -1,4 +1,4 @@
-; ModuleID = 'sparse'
+; ModuleID = 'out.bc'
 source_filename = "sparse"
 
 %struct.lua_TValue = type { %union.Value, i32 }
@@ -413,9 +413,10 @@ source_filename = "sparse"
 @.str.342 = private constant [4 x i8] c"ror\00"
 @.str.343 = private constant [6 x i8] c"bswap\00"
 @.str.344 = private constant [6 x i8] c"tohex\00"
-@.str.345 = private constant [4 x i8] c"bit\00"
-@.str.346 = private constant [4 x i8] c"arg\00"
-@.str.347 = private constant [11 x i8] c"Error: %s\0A\00"
+@.str.345 = private constant [12 x i8] c"In minilua\0A\00"
+@.str.346 = private constant [4 x i8] c"bit\00"
+@.str.347 = private constant [4 x i8] c"arg\00"
+@.str.348 = private constant [11 x i8] c"Error: %s\0A\00"
 
 define internal void @lua_settop(%struct.lua_State* %ARG1, i32 %ARG2) {
 L2282:
@@ -2708,7 +2709,6 @@ L2022:                                            ; preds = %L2249, %L2243, %L22
   store %struct.lua_TValue* %90, %struct.lua_TValue** %51
   store %struct.lua_TValue* %90, %struct.lua_TValue** %50
   %R11005 = lshr i32 %load_target7, 14
-  %R11149 = and i32 %R11005, 262143
   %91 = bitcast %union.GCObject* %load_target3 to i8*
   %92 = getelementptr inbounds i8, i8* %91, i32 40
   %93 = bitcast i8* %92 to %union.GCObject*
@@ -2717,6 +2717,7 @@ L2022:                                            ; preds = %L2249, %L2243, %L22
   %R11030 = and i32 %R11005, 511
   %R10989 = and i32 %R10988, 511
   %R11109 = and i32 %R11005, 256
+  %R11006 = and i32 %R11005, 262143
   switch i32 %R10983, label %L2022 [
     i32 0, label %L2023
     i32 1, label %L2024
@@ -2787,7 +2788,7 @@ L2023:                                            ; preds = %L2022
   br label %L2022
 
 L2024:                                            ; preds = %L2022
-  %R11008 = sext i32 %R11149 to i64
+  %R11008 = sext i32 %R11006 to i64
   %R11009 = mul i64 %R11008, 16
   %113 = bitcast %struct.lua_TValue* %load_target6 to i8*
   %114 = getelementptr inbounds i8, i8* %113, i64 %R11009
@@ -2901,7 +2902,7 @@ L2029:                                            ; preds = %L2022
   br label %L2022
 
 L2030:                                            ; preds = %L2022
-  %R11075 = sext i32 %R11149 to i64
+  %R11075 = sext i32 %R11006 to i64
   %R11076 = mul i64 %R11075, 16
   %183 = bitcast %struct.lua_TValue* %load_target6 to i8*
   %184 = getelementptr inbounds i8, i8* %183, i64 %R11076
@@ -3002,7 +3003,7 @@ L2035:                                            ; preds = %L2022
   %238 = getelementptr inbounds i8, i8* %237, i64 48
   %239 = bitcast i8* %238 to i32**
   store i32* %83, i32** %239
-  %R11151 = sext i32 %R11149 to i64
+  %R11151 = sext i32 %R11006 to i64
   %R11152 = mul i64 %R11151, 16
   %240 = bitcast %struct.lua_TValue* %load_target6 to i8*
   %241 = getelementptr inbounds i8, i8* %240, i64 %R11152
@@ -4207,7 +4208,7 @@ L2132:                                            ; preds = %L2131, %L2130
   br label %L2022
 
 L2133:                                            ; preds = %L2022
-  %R11987 = add i32 %R11149, -131071
+  %R11987 = add i32 %R11006, -131071
   %R11988 = sext i32 %R11987 to i64
   %R11989 = mul i64 %R11988, 4
   %R11991 = ptrtoint i32* %83 to i64
@@ -5044,7 +5045,7 @@ L2206:                                            ; preds = %L2022
   br i1 %cond221, label %L2207, label %L2022
 
 L2207:                                            ; preds = %L2206
-  %R12508 = add i32 %R11149, -131071
+  %R12508 = add i32 %R11006, -131071
   %R12509 = sext i32 %R12508 to i64
   %R12510 = mul i64 %R12509, 4
   %R12512 = ptrtoint i32* %83 to i64
@@ -5170,7 +5171,7 @@ L2217:                                            ; preds = %L2216, %L2215, %L22
   %1183 = getelementptr inbounds i8, i8* %1182, i64 8
   %1184 = bitcast i8* %1183 to i32*
   store i32 3, i32* %1184
-  %R12577 = add i32 %R11149, -131071
+  %R12577 = add i32 %R11006, -131071
   %R12578 = sext i32 %R12577 to i64
   %R12579 = mul i64 %R12578, 4
   %R12581 = ptrtoint i32* %83 to i64
@@ -5519,7 +5520,7 @@ L2235:                                            ; preds = %L2022
   %1369 = getelementptr inbounds i8, i8* %1368, i64 32
   %1370 = bitcast i8* %1369 to %struct.Proto***
   %load_target275 = load %struct.Proto**, %struct.Proto*** %1370
-  %R12767 = sext i32 %R11149 to i64
+  %R12767 = sext i32 %R11006 to i64
   %R12768 = mul i64 %R12767, 8
   %1371 = bitcast %struct.Proto** %load_target275 to i8*
   %1372 = getelementptr inbounds i8, i8* %1371, i64 %R12768
@@ -33486,7 +33487,8 @@ L2593:                                            ; preds = %L2592, %L2591
   %0 = bitcast %struct.luaL_Buffer* %ARG1 to i8*
   %1 = getelementptr inbounds i8, i8* %0, i32 24
   %2 = bitcast i8* %1 to %struct.luaL_Buffer*
-  ret %struct.luaL_Buffer* %2
+  %3 = bitcast %struct.luaL_Buffer* %2 to i8*
+  ret i8* %3
 }
 
 declare i32 @strcmp(i8*, i8*)
@@ -36544,7 +36546,7 @@ L2934:
   %R16173 = call i64 @luaL_optinteger(%struct.lua_State* %ARG1, i32 1, i64 0)
   %R16174 = trunc i64 %R16173 to i32
   call void @exit(i32 %R16174)
-  ret void
+  ret i32 0
 }
 
 define internal i32 @luaopen_os(%struct.lua_State* %ARG1) {
@@ -36556,23 +36558,23 @@ L2935:
 define internal i64 @posrelat(i64 %ARG1, i64 %ARG2) {
 L2936:
   %0 = alloca i64
-  %R16180 = icmp slt i64 %ARG1, 0
-  %R161801 = zext i1 %R16180 to i32
+  %R16181 = icmp slt i64 %ARG1, 0
+  %R161811 = zext i1 %R16181 to i32
   store i64 %ARG1, i64* %0
-  %cond = icmp ne i32 %R161801, 0
+  %cond = icmp ne i32 %R161811, 0
   br i1 %cond, label %L2937, label %L2938
 
 L2937:                                            ; preds = %L2936
-  %R16183 = add i64 %ARG2, 1
-  %R16186 = add i64 %ARG1, %R16183
-  store i64 %R16186, i64* %0
+  %R16184 = add i64 %ARG2, 1
+  %R16187 = add i64 %ARG1, %R16184
+  store i64 %R16187, i64* %0
   br label %L2938
 
 L2938:                                            ; preds = %L2937, %L2936
   %1 = load i64, i64* %0
-  %R16190 = icmp sge i64 %1, 0
-  %R161902 = zext i1 %R16190 to i32
-  %cond3 = icmp ne i32 %R161902, 0
+  %R16191 = icmp sge i64 %1, 0
+  %R161912 = zext i1 %R16191 to i32
+  %cond3 = icmp ne i32 %R161912, 0
   %select = select i1 %cond3, i64 %1, i64 0
   ret i64 %select
 }
@@ -36580,42 +36582,42 @@ L2938:                                            ; preds = %L2937, %L2936
 define internal i32 @str_sub(%struct.lua_State* %ARG1) {
 L2939:
   %l_0x62d000f692f0 = alloca i64
-  %R16195 = call i8* @luaL_checklstring(%struct.lua_State* %ARG1, i32 1, i64* %l_0x62d000f692f0)
-  %R16197 = call i64 @luaL_checkinteger(%struct.lua_State* %ARG1, i32 2)
+  %R16196 = call i8* @luaL_checklstring(%struct.lua_State* %ARG1, i32 1, i64* %l_0x62d000f692f0)
+  %R16198 = call i64 @luaL_checkinteger(%struct.lua_State* %ARG1, i32 2)
   %0 = bitcast i64* %l_0x62d000f692f0 to i8*
   %1 = getelementptr inbounds i8, i8* %0, i64 0
   %2 = bitcast i8* %1 to i64*
   %load_target = load i64, i64* %2
-  %R16199 = call i64 @posrelat(i64 %R16197, i64 %load_target)
-  %R16201 = call i64 @luaL_optinteger(%struct.lua_State* %ARG1, i32 3, i64 -1)
+  %R16200 = call i64 @posrelat(i64 %R16198, i64 %load_target)
+  %R16202 = call i64 @luaL_optinteger(%struct.lua_State* %ARG1, i32 3, i64 -1)
   %3 = bitcast i64* %l_0x62d000f692f0 to i8*
   %4 = getelementptr inbounds i8, i8* %3, i64 0
   %5 = bitcast i8* %4 to i64*
   %load_target1 = load i64, i64* %5
-  %R16203 = call i64 @posrelat(i64 %R16201, i64 %load_target1)
-  %R16205 = icmp slt i64 %R16199, 1
-  %R162052 = zext i1 %R16205 to i32
-  %cond = icmp ne i32 %R162052, 0
-  %select = select i1 %cond, i64 1, i64 %R16199
+  %R16204 = call i64 @posrelat(i64 %R16202, i64 %load_target1)
+  %R16206 = icmp slt i64 %R16200, 1
+  %R162062 = zext i1 %R16206 to i32
+  %cond = icmp ne i32 %R162062, 0
+  %select = select i1 %cond, i64 1, i64 %R16200
   %6 = bitcast i64* %l_0x62d000f692f0 to i8*
   %7 = getelementptr inbounds i8, i8* %6, i64 0
   %8 = bitcast i8* %7 to i64*
   %load_target3 = load i64, i64* %8
-  %R16209 = icmp sgt i64 %R16203, %load_target3
-  %R162094 = zext i1 %R16209 to i32
-  %cond5 = icmp ne i32 %R162094, 0
-  %select6 = select i1 %cond5, i64 %load_target3, i64 %R16203
-  %R16214 = icmp sle i64 %select, %select6
-  %R162147 = zext i1 %R16214 to i32
-  %cond8 = icmp ne i32 %R162147, 0
+  %R16210 = icmp sgt i64 %R16204, %load_target3
+  %R162104 = zext i1 %R16210 to i32
+  %cond5 = icmp ne i32 %R162104, 0
+  %select6 = select i1 %cond5, i64 %load_target3, i64 %R16204
+  %R16215 = icmp sle i64 %select, %select6
+  %R162157 = zext i1 %R16215 to i32
+  %cond8 = icmp ne i32 %R162157, 0
   br i1 %cond8, label %L2940, label %L2941
 
 L2940:                                            ; preds = %L2939
-  %9 = getelementptr inbounds i8, i8* %R16195, i64 %select
+  %9 = getelementptr inbounds i8, i8* %R16196, i64 %select
   %10 = getelementptr inbounds i8, i8* %9, i64 -1
-  %R16222 = sub i64 %select6, %select
-  %R16223 = add i64 %R16222, 1
-  call void @lua_pushlstring(%struct.lua_State* %ARG1, i8* %10, i64 %R16223)
+  %R16223 = sub i64 %select6, %select
+  %R16224 = add i64 %R16223, 1
+  call void @lua_pushlstring(%struct.lua_State* %ARG1, i8* %10, i64 %R16224)
   br label %L2942
 
 L2941:                                            ; preds = %L2939
@@ -36631,7 +36633,7 @@ L2943:
   %b_0x62d000f6a088 = alloca %struct.luaL_Buffer
   %l_0x62d000f69eb8 = alloca i64
   %0 = alloca i64
-  %R16230 = call i8* @luaL_checklstring(%struct.lua_State* %ARG1, i32 1, i64* %l_0x62d000f69eb8)
+  %R16231 = call i8* @luaL_checklstring(%struct.lua_State* %ARG1, i32 1, i64* %l_0x62d000f69eb8)
   call void @luaL_buffinit(%struct.lua_State* %ARG1, %struct.luaL_Buffer* %b_0x62d000f6a088)
   store i64 0, i64* %0
   br label %L2944
@@ -36642,9 +36644,9 @@ L2944:                                            ; preds = %L2947, %L2943
   %3 = getelementptr inbounds i8, i8* %2, i64 0
   %4 = bitcast i8* %3 to i64*
   %load_target = load i64, i64* %4
-  %R16235 = icmp ult i64 %1, %load_target
-  %R162351 = zext i1 %R16235 to i32
-  %cond = icmp ne i32 %R162351, 0
+  %R16236 = icmp ult i64 %1, %load_target
+  %R162361 = zext i1 %R16236 to i32
+  %cond = icmp ne i32 %R162361, 0
   br i1 %cond, label %L2945, label %L2948
 
 L2945:                                            ; preds = %L2944
@@ -36658,22 +36660,22 @@ L2945:                                            ; preds = %L2944
   %11 = bitcast i8* %10 to %struct.luaL_Buffer*
   %12 = ptrtoint i8* %load_target2 to i64
   %13 = ptrtoint %struct.luaL_Buffer* %11 to i64
-  %R16240 = icmp ult i64 %12, %13
-  %R162403 = zext i1 %R16240 to i32
-  %cond4 = icmp ne i32 %R162403, 0
+  %R16241 = icmp ult i64 %12, %13
+  %R162413 = zext i1 %R16241 to i32
+  %cond4 = icmp ne i32 %R162413, 0
   br i1 %cond4, label %L2947, label %L2946
 
 L2946:                                            ; preds = %L2945
-  %R16242 = call i8* @luaL_prepbuffer(%struct.luaL_Buffer* %b_0x62d000f6a088)
+  %R16243 = call i8* @luaL_prepbuffer(%struct.luaL_Buffer* %b_0x62d000f6a088)
   br label %L2947
 
 L2947:                                            ; preds = %L2946, %L2945
-  %14 = getelementptr inbounds i8, i8* %R16230, i64 %1
+  %14 = getelementptr inbounds i8, i8* %R16231, i64 %1
   %15 = getelementptr inbounds i8, i8* %14, i64 0
   %load_target5 = load i8, i8* %15
-  %R16249 = zext i8 %load_target5 to i32
-  %R16250 = call i32 @tolower(i32 %R16249)
-  %R16251 = trunc i32 %R16250 to i8
+  %R16250 = zext i8 %load_target5 to i32
+  %R16251 = call i32 @tolower(i32 %R16250)
+  %R16252 = trunc i32 %R16251 to i8
   %16 = bitcast %struct.luaL_Buffer* %b_0x62d000f6a088 to i8**
   %17 = bitcast i8** %16 to i8*
   %18 = getelementptr inbounds i8, i8* %17, i64 0
@@ -36686,9 +36688,9 @@ L2947:                                            ; preds = %L2946, %L2945
   %24 = bitcast i8* %23 to i8**
   store i8* %20, i8** %24
   %25 = getelementptr inbounds i8, i8* %load_target6, i64 0
-  store i8 %R16251, i8* %25
-  %R16255 = add i64 %1, 1
-  store i64 %R16255, i64* %0
+  store i8 %R16252, i8* %25
+  %R16256 = add i64 %1, 1
+  store i64 %R16256, i64* %0
   br label %L2944
 
 L2948:                                            ; preds = %L2944
@@ -36703,7 +36705,7 @@ L2949:
   %b_0x62d000f6ae20 = alloca %struct.luaL_Buffer
   %l_0x62d000f6ac50 = alloca i64
   %0 = alloca i64
-  %R16260 = call i8* @luaL_checklstring(%struct.lua_State* %ARG1, i32 1, i64* %l_0x62d000f6ac50)
+  %R16261 = call i8* @luaL_checklstring(%struct.lua_State* %ARG1, i32 1, i64* %l_0x62d000f6ac50)
   call void @luaL_buffinit(%struct.lua_State* %ARG1, %struct.luaL_Buffer* %b_0x62d000f6ae20)
   store i64 0, i64* %0
   br label %L2950
@@ -36714,9 +36716,9 @@ L2950:                                            ; preds = %L2953, %L2949
   %3 = getelementptr inbounds i8, i8* %2, i64 0
   %4 = bitcast i8* %3 to i64*
   %load_target = load i64, i64* %4
-  %R16265 = icmp ult i64 %1, %load_target
-  %R162651 = zext i1 %R16265 to i32
-  %cond = icmp ne i32 %R162651, 0
+  %R16266 = icmp ult i64 %1, %load_target
+  %R162661 = zext i1 %R16266 to i32
+  %cond = icmp ne i32 %R162661, 0
   br i1 %cond, label %L2951, label %L2954
 
 L2951:                                            ; preds = %L2950
@@ -36730,22 +36732,22 @@ L2951:                                            ; preds = %L2950
   %11 = bitcast i8* %10 to %struct.luaL_Buffer*
   %12 = ptrtoint i8* %load_target2 to i64
   %13 = ptrtoint %struct.luaL_Buffer* %11 to i64
-  %R16270 = icmp ult i64 %12, %13
-  %R162703 = zext i1 %R16270 to i32
-  %cond4 = icmp ne i32 %R162703, 0
+  %R16271 = icmp ult i64 %12, %13
+  %R162713 = zext i1 %R16271 to i32
+  %cond4 = icmp ne i32 %R162713, 0
   br i1 %cond4, label %L2953, label %L2952
 
 L2952:                                            ; preds = %L2951
-  %R16272 = call i8* @luaL_prepbuffer(%struct.luaL_Buffer* %b_0x62d000f6ae20)
+  %R16273 = call i8* @luaL_prepbuffer(%struct.luaL_Buffer* %b_0x62d000f6ae20)
   br label %L2953
 
 L2953:                                            ; preds = %L2952, %L2951
-  %14 = getelementptr inbounds i8, i8* %R16260, i64 %1
+  %14 = getelementptr inbounds i8, i8* %R16261, i64 %1
   %15 = getelementptr inbounds i8, i8* %14, i64 0
   %load_target5 = load i8, i8* %15
-  %R16279 = zext i8 %load_target5 to i32
-  %R16280 = call i32 @toupper(i32 %R16279)
-  %R16281 = trunc i32 %R16280 to i8
+  %R16280 = zext i8 %load_target5 to i32
+  %R16281 = call i32 @toupper(i32 %R16280)
+  %R16282 = trunc i32 %R16281 to i8
   %16 = bitcast %struct.luaL_Buffer* %b_0x62d000f6ae20 to i8**
   %17 = bitcast i8** %16 to i8*
   %18 = getelementptr inbounds i8, i8* %17, i64 0
@@ -36758,9 +36760,9 @@ L2953:                                            ; preds = %L2952, %L2951
   %24 = bitcast i8* %23 to i8**
   store i8* %20, i8** %24
   %25 = getelementptr inbounds i8, i8* %load_target6, i64 0
-  store i8 %R16281, i8* %25
-  %R16285 = add i64 %1, 1
-  store i64 %R16285, i64* %0
+  store i8 %R16282, i8* %25
+  %R16286 = add i64 %1, 1
+  store i64 %R16286, i64* %0
   br label %L2950
 
 L2954:                                            ; preds = %L2950
@@ -36775,20 +36777,20 @@ L2955:
   %b_0x62d000f6bad0 = alloca %struct.luaL_Buffer
   %l_0x62d000f6b9e8 = alloca i64
   %0 = alloca i32
-  %R16290 = call i8* @luaL_checklstring(%struct.lua_State* %ARG1, i32 1, i64* %l_0x62d000f6b9e8)
-  %R16292 = call i64 @luaL_checkinteger(%struct.lua_State* %ARG1, i32 2)
-  %R16293 = trunc i64 %R16292 to i32
+  %R16291 = call i8* @luaL_checklstring(%struct.lua_State* %ARG1, i32 1, i64* %l_0x62d000f6b9e8)
+  %R16293 = call i64 @luaL_checkinteger(%struct.lua_State* %ARG1, i32 2)
+  %R16294 = trunc i64 %R16293 to i32
   call void @luaL_buffinit(%struct.lua_State* %ARG1, %struct.luaL_Buffer* %b_0x62d000f6bad0)
-  store i32 %R16293, i32* %0
+  store i32 %R16294, i32* %0
   br label %L2956
 
 L2956:                                            ; preds = %L2957, %L2955
   %1 = load i32, i32* %0
-  %R16297 = add i32 %1, -1
-  %R16298 = icmp sgt i32 %1, 0
-  %R162981 = zext i1 %R16298 to i32
-  store i32 %R16297, i32* %0
-  %cond = icmp ne i32 %R162981, 0
+  %R16298 = add i32 %1, -1
+  %R16299 = icmp sgt i32 %1, 0
+  %R162991 = zext i1 %R16299 to i32
+  store i32 %R16298, i32* %0
+  %cond = icmp ne i32 %R162991, 0
   br i1 %cond, label %L2957, label %L2958
 
 L2957:                                            ; preds = %L2956
@@ -36796,7 +36798,7 @@ L2957:                                            ; preds = %L2956
   %3 = getelementptr inbounds i8, i8* %2, i64 0
   %4 = bitcast i8* %3 to i64*
   %load_target = load i64, i64* %4
-  call void @luaL_addlstring(%struct.luaL_Buffer* %b_0x62d000f6bad0, i8* %R16290, i64 %load_target)
+  call void @luaL_addlstring(%struct.luaL_Buffer* %b_0x62d000f6bad0, i8* %R16291, i64 %load_target)
   br label %L2956
 
 L2958:                                            ; preds = %L2956
@@ -36809,34 +36811,34 @@ L2959:
   %l_0x62d000f8c5e8 = alloca i64
   %0 = alloca i32
   %1 = alloca i32
-  %R16306 = call i8* @luaL_checklstring(%struct.lua_State* %ARG1, i32 1, i64* %l_0x62d000f8c5e8)
-  %R16308 = call i64 @luaL_optinteger(%struct.lua_State* %ARG1, i32 2, i64 1)
+  %R16307 = call i8* @luaL_checklstring(%struct.lua_State* %ARG1, i32 1, i64* %l_0x62d000f8c5e8)
+  %R16309 = call i64 @luaL_optinteger(%struct.lua_State* %ARG1, i32 2, i64 1)
   %2 = bitcast i64* %l_0x62d000f8c5e8 to i8*
   %3 = getelementptr inbounds i8, i8* %2, i64 0
   %4 = bitcast i8* %3 to i64*
   %load_target = load i64, i64* %4
-  %R16310 = call i64 @posrelat(i64 %R16308, i64 %load_target)
-  %R16313 = call i64 @luaL_optinteger(%struct.lua_State* %ARG1, i32 3, i64 %R16310)
+  %R16311 = call i64 @posrelat(i64 %R16309, i64 %load_target)
+  %R16314 = call i64 @luaL_optinteger(%struct.lua_State* %ARG1, i32 3, i64 %R16311)
   %5 = bitcast i64* %l_0x62d000f8c5e8 to i8*
   %6 = getelementptr inbounds i8, i8* %5, i64 0
   %7 = bitcast i8* %6 to i64*
   %load_target1 = load i64, i64* %7
-  %R16315 = call i64 @posrelat(i64 %R16313, i64 %load_target1)
-  %R16317 = icmp sle i64 %R16310, 0
-  %R163172 = zext i1 %R16317 to i32
-  %cond = icmp ne i32 %R163172, 0
-  %select = select i1 %cond, i64 1, i64 %R16310
+  %R16316 = call i64 @posrelat(i64 %R16314, i64 %load_target1)
+  %R16318 = icmp sle i64 %R16311, 0
+  %R163182 = zext i1 %R16318 to i32
+  %cond = icmp ne i32 %R163182, 0
+  %select = select i1 %cond, i64 1, i64 %R16311
   %8 = bitcast i64* %l_0x62d000f8c5e8 to i8*
   %9 = getelementptr inbounds i8, i8* %8, i64 0
   %10 = bitcast i8* %9 to i64*
   %load_target3 = load i64, i64* %10
-  %R16321 = icmp ugt i64 %R16315, %load_target3
-  %R163214 = zext i1 %R16321 to i32
-  %cond5 = icmp ne i32 %R163214, 0
-  %select6 = select i1 %cond5, i64 %load_target3, i64 %R16315
-  %R16326 = icmp sgt i64 %select, %select6
-  %R163267 = zext i1 %R16326 to i32
-  %cond8 = icmp ne i32 %R163267, 0
+  %R16322 = icmp ugt i64 %R16316, %load_target3
+  %R163224 = zext i1 %R16322 to i32
+  %cond5 = icmp ne i32 %R163224, 0
+  %select6 = select i1 %cond5, i64 %load_target3, i64 %R16316
+  %R16327 = icmp sgt i64 %select, %select6
+  %R163277 = zext i1 %R16327 to i32
+  %cond8 = icmp ne i32 %R163277, 0
   br i1 %cond8, label %L2960, label %L2961
 
 L2960:                                            ; preds = %L2959
@@ -36844,47 +36846,47 @@ L2960:                                            ; preds = %L2959
   br label %L2967
 
 L2961:                                            ; preds = %L2959
-  %R16330 = sub i64 %select6, %select
-  %R16331 = add i64 %R16330, 1
-  %R16332 = trunc i64 %R16331 to i32
-  %R16335 = sext i32 %R16332 to i64
-  %R16336 = add i64 %select, %R16335
-  %R16338 = icmp sle i64 %R16336, %select6
-  %R163389 = zext i1 %R16338 to i32
-  %cond10 = icmp ne i32 %R163389, 0
+  %R16331 = sub i64 %select6, %select
+  %R16332 = add i64 %R16331, 1
+  %R16333 = trunc i64 %R16332 to i32
+  %R16336 = sext i32 %R16333 to i64
+  %R16337 = add i64 %select, %R16336
+  %R16339 = icmp sle i64 %R16337, %select6
+  %R163399 = zext i1 %R16339 to i32
+  %cond10 = icmp ne i32 %R163399, 0
   br i1 %cond10, label %L2962, label %L2963
 
 L2962:                                            ; preds = %L2961
-  %R16341 = call i32 (%struct.lua_State*, i8*, ...) @luaL_error(%struct.lua_State* %ARG1, i8* getelementptr inbounds ([22 x i8], [22 x i8]* @.str.193, i64 0, i64 0))
+  %R16342 = call i32 (%struct.lua_State*, i8*, ...) @luaL_error(%struct.lua_State* %ARG1, i8* getelementptr inbounds ([22 x i8], [22 x i8]* @.str.193, i64 0, i64 0))
   br label %L2963
 
 L2963:                                            ; preds = %L2962, %L2961
-  call void @luaL_checkstack(%struct.lua_State* %ARG1, i32 %R16332, i8* getelementptr inbounds ([22 x i8], [22 x i8]* @.str.194, i64 0, i64 0))
+  call void @luaL_checkstack(%struct.lua_State* %ARG1, i32 %R16333, i8* getelementptr inbounds ([22 x i8], [22 x i8]* @.str.194, i64 0, i64 0))
   store i32 0, i32* %0
   br label %L2964
 
 L2964:                                            ; preds = %L2965, %L2963
   %11 = load i32, i32* %0
-  %R16347 = icmp slt i32 %11, %R16332
-  %R1634711 = zext i1 %R16347 to i32
-  %cond12 = icmp ne i32 %R1634711, 0
+  %R16348 = icmp slt i32 %11, %R16333
+  %R1634811 = zext i1 %R16348 to i32
+  %cond12 = icmp ne i32 %R1634811, 0
   br i1 %cond12, label %L2965, label %L2966
 
 L2965:                                            ; preds = %L2964
-  %R16352 = sext i32 %11 to i64
-  %R16353 = add i64 %select, %R16352
-  %R16354 = add i64 %R16353, -1
-  %12 = getelementptr inbounds i8, i8* %R16306, i64 %R16354
+  %R16353 = sext i32 %11 to i64
+  %R16354 = add i64 %select, %R16353
+  %R16355 = add i64 %R16354, -1
+  %12 = getelementptr inbounds i8, i8* %R16307, i64 %R16355
   %13 = getelementptr inbounds i8, i8* %12, i64 0
   %load_target13 = load i8, i8* %13
-  %R16358 = zext i8 %load_target13 to i64
-  call void @lua_pushinteger(%struct.lua_State* %ARG1, i64 %R16358)
-  %R16360 = add i32 %11, 1
-  store i32 %R16360, i32* %0
+  %R16359 = zext i8 %load_target13 to i64
+  call void @lua_pushinteger(%struct.lua_State* %ARG1, i64 %R16359)
+  %R16361 = add i32 %11, 1
+  store i32 %R16361, i32* %0
   br label %L2964
 
 L2966:                                            ; preds = %L2964
-  store i32 %R16332, i32* %1
+  store i32 %R16333, i32* %1
   br label %L2967
 
 L2967:                                            ; preds = %L2966, %L2960
@@ -36896,30 +36898,30 @@ define internal i32 @str_char(%struct.lua_State* %ARG1) {
 L2968:
   %b_0x62d000f8d720 = alloca %struct.luaL_Buffer
   %0 = alloca i32
-  %R16363 = call i32 @lua_gettop(%struct.lua_State* %ARG1)
+  %R16364 = call i32 @lua_gettop(%struct.lua_State* %ARG1)
   call void @luaL_buffinit(%struct.lua_State* %ARG1, %struct.luaL_Buffer* %b_0x62d000f8d720)
   store i32 1, i32* %0
   br label %L2969
 
 L2969:                                            ; preds = %L2974, %L2968
   %1 = load i32, i32* %0
-  %R16368 = icmp sle i32 %1, %R16363
-  %R163681 = zext i1 %R16368 to i32
-  %cond = icmp ne i32 %R163681, 0
+  %R16369 = icmp sle i32 %1, %R16364
+  %R163691 = zext i1 %R16369 to i32
+  %cond = icmp ne i32 %R163691, 0
   br i1 %cond, label %L2970, label %L2975
 
 L2970:                                            ; preds = %L2969
-  %R16371 = call i64 @luaL_checkinteger(%struct.lua_State* %ARG1, i32 %1)
-  %R16372 = trunc i64 %R16371 to i32
-  %R16374 = trunc i32 %R16372 to i8
-  %R16375 = zext i8 %R16374 to i32
-  %R16377 = icmp eq i32 %R16375, %R16372
-  %R163772 = zext i1 %R16377 to i32
-  %cond3 = icmp ne i32 %R163772, 0
+  %R16372 = call i64 @luaL_checkinteger(%struct.lua_State* %ARG1, i32 %1)
+  %R16373 = trunc i64 %R16372 to i32
+  %R16375 = trunc i32 %R16373 to i8
+  %R16376 = zext i8 %R16375 to i32
+  %R16378 = icmp eq i32 %R16376, %R16373
+  %R163782 = zext i1 %R16378 to i32
+  %cond3 = icmp ne i32 %R163782, 0
   br i1 %cond3, label %L2972, label %L2971
 
 L2971:                                            ; preds = %L2970
-  %R16381 = call i32 @luaL_argerror(%struct.lua_State* %ARG1, i32 %1, i8* getelementptr inbounds ([14 x i8], [14 x i8]* @.str.195, i64 0, i64 0))
+  %R16382 = call i32 @luaL_argerror(%struct.lua_State* %ARG1, i32 %1, i8* getelementptr inbounds ([14 x i8], [14 x i8]* @.str.195, i64 0, i64 0))
   br label %L2972
 
 L2972:                                            ; preds = %L2971, %L2970
@@ -36933,13 +36935,13 @@ L2972:                                            ; preds = %L2971, %L2970
   %8 = bitcast i8* %7 to %struct.luaL_Buffer*
   %9 = ptrtoint i8* %load_target to i64
   %10 = ptrtoint %struct.luaL_Buffer* %8 to i64
-  %R16387 = icmp ult i64 %9, %10
-  %R163874 = zext i1 %R16387 to i32
-  %cond5 = icmp ne i32 %R163874, 0
+  %R16388 = icmp ult i64 %9, %10
+  %R163884 = zext i1 %R16388 to i32
+  %cond5 = icmp ne i32 %R163884, 0
   br i1 %cond5, label %L2974, label %L2973
 
 L2973:                                            ; preds = %L2972
-  %R16389 = call i8* @luaL_prepbuffer(%struct.luaL_Buffer* %b_0x62d000f8d720)
+  %R16390 = call i8* @luaL_prepbuffer(%struct.luaL_Buffer* %b_0x62d000f8d720)
   br label %L2974
 
 L2974:                                            ; preds = %L2973, %L2972
@@ -36955,9 +36957,9 @@ L2974:                                            ; preds = %L2973, %L2972
   %19 = bitcast i8* %18 to i8**
   store i8* %15, i8** %19
   %20 = getelementptr inbounds i8, i8* %load_target6, i64 0
-  store i8 %R16374, i8* %20
-  %R16397 = add i32 %1, 1
-  store i32 %R16397, i32* %0
+  store i8 %R16375, i8* %20
+  %R16398 = add i32 %1, 1
+  store i32 %R16398, i32* %0
   br label %L2969
 
 L2975:                                            ; preds = %L2969
@@ -36968,10 +36970,10 @@ L2975:                                            ; preds = %L2969
 define internal i32 @check_capture(%struct.MatchState* %ARG1, i32 %ARG2) {
 L2976:
   %0 = alloca i32
-  %R16402 = add i32 %ARG2, -49
-  %R16405 = icmp slt i32 %R16402, 0
-  %R164051 = zext i1 %R16405 to i32
-  %cond = icmp ne i32 %R164051, 0
+  %R16403 = add i32 %ARG2, -49
+  %R16406 = icmp slt i32 %R16403, 0
+  %R164061 = zext i1 %R16406 to i32
+  %cond = icmp ne i32 %R164061, 0
   br i1 %cond, label %L2979, label %L2977
 
 L2977:                                            ; preds = %L2976
@@ -36980,28 +36982,28 @@ L2977:                                            ; preds = %L2976
   %3 = getelementptr inbounds i8, i8* %2, i64 24
   %4 = bitcast i8* %3 to i32*
   %load_target = load i32, i32* %4
-  %R16409 = icmp sge i32 %R16402, %load_target
-  %R164092 = zext i1 %R16409 to i32
-  %cond3 = icmp ne i32 %R164092, 0
+  %R16410 = icmp sge i32 %R16403, %load_target
+  %R164102 = zext i1 %R16410 to i32
+  %cond3 = icmp ne i32 %R164102, 0
   br i1 %cond3, label %L2979, label %L2978
 
 L2978:                                            ; preds = %L2977
   %5 = bitcast %struct.MatchState* %ARG1 to i8*
   %6 = getelementptr inbounds i8, i8* %5, i32 32
   %7 = bitcast i8* %6 to %struct.MatchState*
-  %R16413 = sext i32 %R16402 to i64
-  %R16414 = mul i64 %R16413, 16
+  %R16414 = sext i32 %R16403 to i64
+  %R16415 = mul i64 %R16414, 16
   %8 = bitcast %struct.MatchState* %7 to i8*
-  %9 = getelementptr inbounds i8, i8* %8, i64 %R16414
+  %9 = getelementptr inbounds i8, i8* %8, i64 %R16415
   %10 = bitcast i8* %9 to %struct.MatchState*
   %11 = bitcast %struct.MatchState* %10 to i64*
   %12 = bitcast i64* %11 to i8*
   %13 = getelementptr inbounds i8, i8* %12, i64 8
   %14 = bitcast i8* %13 to i64*
   %load_target4 = load i64, i64* %14
-  %R16417 = icmp eq i64 %load_target4, -1
-  %R164175 = zext i1 %R16417 to i32
-  %cond6 = icmp ne i32 %R164175, 0
+  %R16418 = icmp eq i64 %load_target4, -1
+  %R164185 = zext i1 %R16418 to i32
+  %cond6 = icmp ne i32 %R164185, 0
   br i1 %cond6, label %L2979, label %L2980
 
 L2979:                                            ; preds = %L2978, %L2977, %L2976
@@ -37010,12 +37012,12 @@ L2979:                                            ; preds = %L2978, %L2977, %L29
   %17 = getelementptr inbounds i8, i8* %16, i64 16
   %18 = bitcast i8* %17 to %struct.lua_State**
   %load_target7 = load %struct.lua_State*, %struct.lua_State** %18
-  %R16421 = call i32 (%struct.lua_State*, i8*, ...) @luaL_error(%struct.lua_State* %load_target7, i8* getelementptr inbounds ([22 x i8], [22 x i8]* @.str.196, i64 0, i64 0))
-  store i32 %R16421, i32* %0
+  %R16422 = call i32 (%struct.lua_State*, i8*, ...) @luaL_error(%struct.lua_State* %load_target7, i8* getelementptr inbounds ([22 x i8], [22 x i8]* @.str.196, i64 0, i64 0))
+  store i32 %R16422, i32* %0
   br label %L2981
 
 L2980:                                            ; preds = %L2978
-  store i32 %R16402, i32* %0
+  store i32 %R16403, i32* %0
   br label %L2981
 
 L2981:                                            ; preds = %L2980, %L2979
@@ -37032,34 +37034,34 @@ L2982:
   %4 = getelementptr inbounds i8, i8* %3, i64 24
   %5 = bitcast i8* %4 to i32*
   %load_target = load i32, i32* %5
-  %R16427 = add i32 %load_target, -1
-  store i32 %R16427, i32* %0
+  %R16428 = add i32 %load_target, -1
+  store i32 %R16428, i32* %0
   br label %L2983
 
 L2983:                                            ; preds = %L2986, %L2982
   %6 = load i32, i32* %0
-  %R16429 = icmp sge i32 %6, 0
-  %R164291 = zext i1 %R16429 to i32
-  %cond = icmp ne i32 %R164291, 0
+  %R16430 = icmp sge i32 %6, 0
+  %R164301 = zext i1 %R16430 to i32
+  %cond = icmp ne i32 %R164301, 0
   br i1 %cond, label %L2984, label %L2987
 
 L2984:                                            ; preds = %L2983
   %7 = bitcast %struct.MatchState* %ARG1 to i8*
   %8 = getelementptr inbounds i8, i8* %7, i32 32
   %9 = bitcast i8* %8 to %struct.MatchState*
-  %R16433 = sext i32 %6 to i64
-  %R16434 = mul i64 %R16433, 16
+  %R16434 = sext i32 %6 to i64
+  %R16435 = mul i64 %R16434, 16
   %10 = bitcast %struct.MatchState* %9 to i8*
-  %11 = getelementptr inbounds i8, i8* %10, i64 %R16434
+  %11 = getelementptr inbounds i8, i8* %10, i64 %R16435
   %12 = bitcast i8* %11 to %struct.MatchState*
   %13 = bitcast %struct.MatchState* %12 to i64*
   %14 = bitcast i64* %13 to i8*
   %15 = getelementptr inbounds i8, i8* %14, i64 8
   %16 = bitcast i8* %15 to i64*
   %load_target2 = load i64, i64* %16
-  %R16437 = icmp eq i64 %load_target2, -1
-  %R164373 = zext i1 %R16437 to i32
-  %cond4 = icmp ne i32 %R164373, 0
+  %R16438 = icmp eq i64 %load_target2, -1
+  %R164383 = zext i1 %R16438 to i32
+  %cond4 = icmp ne i32 %R164383, 0
   br i1 %cond4, label %L2985, label %L2986
 
 L2985:                                            ; preds = %L2984
@@ -37067,8 +37069,8 @@ L2985:                                            ; preds = %L2984
   br label %L2988
 
 L2986:                                            ; preds = %L2984
-  %R16441 = add i32 %6, -1
-  store i32 %R16441, i32* %0
+  %R16442 = add i32 %6, -1
+  store i32 %R16442, i32* %0
   br label %L2983
 
 L2987:                                            ; preds = %L2983
@@ -37077,8 +37079,8 @@ L2987:                                            ; preds = %L2983
   %19 = getelementptr inbounds i8, i8* %18, i64 16
   %20 = bitcast i8* %19 to %struct.lua_State**
   %load_target5 = load %struct.lua_State*, %struct.lua_State** %20
-  %R16445 = call i32 (%struct.lua_State*, i8*, ...) @luaL_error(%struct.lua_State* %load_target5, i8* getelementptr inbounds ([24 x i8], [24 x i8]* @.str.197, i64 0, i64 0))
-  store i32 %R16445, i32* %1
+  %R16446 = call i32 (%struct.lua_State*, i8*, ...) @luaL_error(%struct.lua_State* %load_target5, i8* getelementptr inbounds ([24 x i8], [24 x i8]* @.str.197, i64 0, i64 0))
+  store i32 %R16446, i32* %1
   br label %L2988
 
 L2988:                                            ; preds = %L2987, %L2985
@@ -37111,7 +37113,7 @@ L2991:                                            ; preds = %L2990
   %8 = getelementptr inbounds i8, i8* %7, i64 16
   %9 = bitcast i8* %8 to %struct.lua_State**
   %load_target2 = load %struct.lua_State*, %struct.lua_State** %9
-  %R16456 = call i32 (%struct.lua_State*, i8*, ...) @luaL_error(%struct.lua_State* %load_target2, i8* getelementptr inbounds ([35 x i8], [35 x i8]* @.str.198, i64 0, i64 0))
+  %R16457 = call i32 (%struct.lua_State*, i8*, ...) @luaL_error(%struct.lua_State* %load_target2, i8* getelementptr inbounds ([35 x i8], [35 x i8]* @.str.198, i64 0, i64 0))
   br label %L2992
 
 L2992:                                            ; preds = %L2991, %L2990
@@ -37122,11 +37124,11 @@ L2992:                                            ; preds = %L2991, %L2990
 L2993:                                            ; preds = %L2989
   %11 = getelementptr inbounds i8, i8* %ARG2, i64 1
   %load_target3 = load i8, i8* %11
-  %R16462 = sext i8 %load_target3 to i32
-  %R16463 = icmp eq i32 %R16462, 94
-  %R164634 = zext i1 %R16463 to i32
+  %R16463 = sext i8 %load_target3 to i32
+  %R16464 = icmp eq i32 %R16463, 94
+  %R164644 = zext i1 %R16464 to i32
   store i8* %3, i8** %0
-  %cond5 = icmp ne i32 %R164634, 0
+  %cond5 = icmp ne i32 %R164644, 0
   br i1 %cond5, label %L2994, label %L2995
 
 L2994:                                            ; preds = %L2993
@@ -37147,19 +37149,19 @@ L2996:                                            ; preds = %L2995
   %17 = getelementptr inbounds i8, i8* %16, i64 16
   %18 = bitcast i8* %17 to %struct.lua_State**
   %load_target8 = load %struct.lua_State*, %struct.lua_State** %18
-  %R16473 = call i32 (%struct.lua_State*, i8*, ...) @luaL_error(%struct.lua_State* %load_target8, i8* getelementptr inbounds ([32 x i8], [32 x i8]* @.str.199, i64 0, i64 0))
+  %R16474 = call i32 (%struct.lua_State*, i8*, ...) @luaL_error(%struct.lua_State* %load_target8, i8* getelementptr inbounds ([32 x i8], [32 x i8]* @.str.199, i64 0, i64 0))
   br label %L2997
 
 L2997:                                            ; preds = %L2996, %L2995
   %19 = getelementptr inbounds i8, i8* %13, inttoptr (i64 1 to i8*)
   %20 = getelementptr inbounds i8, i8* %13, i64 0
   %load_target9 = load i8, i8* %20
-  %R16477 = sext i8 %load_target9 to i32
-  %R16478 = icmp eq i32 %R16477, 37
-  %R1647810 = zext i1 %R16478 to i32
+  %R16478 = sext i8 %load_target9 to i32
+  %R16479 = icmp eq i32 %R16478, 37
+  %R1647910 = zext i1 %R16479 to i32
   store i8* %19, i8** %1
   store i8* %19, i8** %0
-  %cond11 = icmp ne i32 %R1647810, 0
+  %cond11 = icmp ne i32 %R1647910, 0
   br i1 %cond11, label %L2998, label %L3000
 
 L2998:                                            ; preds = %L2997
@@ -37179,10 +37181,10 @@ L3000:                                            ; preds = %L2999, %L2998, %L29
   %23 = load i8*, i8** %1
   %24 = getelementptr inbounds i8, i8* %23, i64 0
   %load_target14 = load i8, i8* %24
-  %R16487 = sext i8 %load_target14 to i32
-  %R16488 = icmp ne i32 %R16487, 93
-  %R1648815 = zext i1 %R16488 to i32
-  %cond16 = icmp ne i32 %R1648815, 0
+  %R16488 = sext i8 %load_target14 to i32
+  %R16489 = icmp ne i32 %R16488, 93
+  %R1648915 = zext i1 %R16489 to i32
+  %cond16 = icmp ne i32 %R1648915, 0
   br i1 %cond16, label %L2995, label %L3001
 
 L3001:                                            ; preds = %L3000
@@ -37203,8 +37205,8 @@ define internal i32 @match_class(i32 %ARG1, i32 %ARG2) {
 L3004:
   %0 = alloca i32
   %1 = alloca i32
-  %R16493 = call i32 @tolower(i32 %ARG2)
-  switch i32 %R16493, label %L3015 [
+  %R16494 = call i32 @tolower(i32 %ARG2)
+  switch i32 %R16494, label %L3015 [
     i32 97, label %L3005
     i32 99, label %L3006
     i32 100, label %L3007
@@ -37218,219 +37220,219 @@ L3004:
   ]
 
 L3005:                                            ; preds = %L3004
-  %R16494 = call i16** @__ctype_b_loc()
-  %2 = bitcast i16** %R16494 to i8*
+  %R16495 = call i16** @__ctype_b_loc()
+  %2 = bitcast i16** %R16495 to i8*
   %3 = getelementptr inbounds i8, i8* %2, i64 0
   %4 = bitcast i8* %3 to i16**
   %load_target = load i16*, i16** %4
-  %R16498 = sext i32 %ARG1 to i64
-  %R16499 = mul i64 %R16498, 2
+  %R16499 = sext i32 %ARG1 to i64
+  %R16500 = mul i64 %R16499, 2
   %5 = bitcast i16* %load_target to i8*
-  %6 = getelementptr inbounds i8, i8* %5, i64 %R16499
+  %6 = getelementptr inbounds i8, i8* %5, i64 %R16500
   %7 = bitcast i8* %6 to i16*
   %8 = bitcast i16* %7 to i8*
   %9 = getelementptr inbounds i8, i8* %8, i64 0
   %10 = bitcast i8* %9 to i16*
   %load_target1 = load i16, i16* %10
-  %R16502 = zext i16 %load_target1 to i32
-  %R16503 = and i32 %R16502, 1024
-  store i32 %R16503, i32* %0
+  %R16503 = zext i16 %load_target1 to i32
+  %R16504 = and i32 %R16503, 1024
+  store i32 %R16504, i32* %0
   br label %L3016
 
 L3006:                                            ; preds = %L3004
-  %R16504 = call i16** @__ctype_b_loc()
-  %11 = bitcast i16** %R16504 to i8*
+  %R16505 = call i16** @__ctype_b_loc()
+  %11 = bitcast i16** %R16505 to i8*
   %12 = getelementptr inbounds i8, i8* %11, i64 0
   %13 = bitcast i8* %12 to i16**
   %load_target2 = load i16*, i16** %13
-  %R16508 = sext i32 %ARG1 to i64
-  %R16509 = mul i64 %R16508, 2
+  %R16509 = sext i32 %ARG1 to i64
+  %R16510 = mul i64 %R16509, 2
   %14 = bitcast i16* %load_target2 to i8*
-  %15 = getelementptr inbounds i8, i8* %14, i64 %R16509
+  %15 = getelementptr inbounds i8, i8* %14, i64 %R16510
   %16 = bitcast i8* %15 to i16*
   %17 = bitcast i16* %16 to i8*
   %18 = getelementptr inbounds i8, i8* %17, i64 0
   %19 = bitcast i8* %18 to i16*
   %load_target3 = load i16, i16* %19
-  %R16512 = zext i16 %load_target3 to i32
-  %R16513 = and i32 %R16512, 2
-  store i32 %R16513, i32* %0
+  %R16513 = zext i16 %load_target3 to i32
+  %R16514 = and i32 %R16513, 2
+  store i32 %R16514, i32* %0
   br label %L3016
 
 L3007:                                            ; preds = %L3004
-  %R16514 = call i16** @__ctype_b_loc()
-  %20 = bitcast i16** %R16514 to i8*
+  %R16515 = call i16** @__ctype_b_loc()
+  %20 = bitcast i16** %R16515 to i8*
   %21 = getelementptr inbounds i8, i8* %20, i64 0
   %22 = bitcast i8* %21 to i16**
   %load_target4 = load i16*, i16** %22
-  %R16518 = sext i32 %ARG1 to i64
-  %R16519 = mul i64 %R16518, 2
+  %R16519 = sext i32 %ARG1 to i64
+  %R16520 = mul i64 %R16519, 2
   %23 = bitcast i16* %load_target4 to i8*
-  %24 = getelementptr inbounds i8, i8* %23, i64 %R16519
+  %24 = getelementptr inbounds i8, i8* %23, i64 %R16520
   %25 = bitcast i8* %24 to i16*
   %26 = bitcast i16* %25 to i8*
   %27 = getelementptr inbounds i8, i8* %26, i64 0
   %28 = bitcast i8* %27 to i16*
   %load_target5 = load i16, i16* %28
-  %R16522 = zext i16 %load_target5 to i32
-  %R16523 = and i32 %R16522, 2048
-  store i32 %R16523, i32* %0
+  %R16523 = zext i16 %load_target5 to i32
+  %R16524 = and i32 %R16523, 2048
+  store i32 %R16524, i32* %0
   br label %L3016
 
 L3008:                                            ; preds = %L3004
-  %R16524 = call i16** @__ctype_b_loc()
-  %29 = bitcast i16** %R16524 to i8*
+  %R16525 = call i16** @__ctype_b_loc()
+  %29 = bitcast i16** %R16525 to i8*
   %30 = getelementptr inbounds i8, i8* %29, i64 0
   %31 = bitcast i8* %30 to i16**
   %load_target6 = load i16*, i16** %31
-  %R16528 = sext i32 %ARG1 to i64
-  %R16529 = mul i64 %R16528, 2
+  %R16529 = sext i32 %ARG1 to i64
+  %R16530 = mul i64 %R16529, 2
   %32 = bitcast i16* %load_target6 to i8*
-  %33 = getelementptr inbounds i8, i8* %32, i64 %R16529
+  %33 = getelementptr inbounds i8, i8* %32, i64 %R16530
   %34 = bitcast i8* %33 to i16*
   %35 = bitcast i16* %34 to i8*
   %36 = getelementptr inbounds i8, i8* %35, i64 0
   %37 = bitcast i8* %36 to i16*
   %load_target7 = load i16, i16* %37
-  %R16532 = zext i16 %load_target7 to i32
-  %R16533 = and i32 %R16532, 512
-  store i32 %R16533, i32* %0
+  %R16533 = zext i16 %load_target7 to i32
+  %R16534 = and i32 %R16533, 512
+  store i32 %R16534, i32* %0
   br label %L3016
 
 L3009:                                            ; preds = %L3004
-  %R16534 = call i16** @__ctype_b_loc()
-  %38 = bitcast i16** %R16534 to i8*
+  %R16535 = call i16** @__ctype_b_loc()
+  %38 = bitcast i16** %R16535 to i8*
   %39 = getelementptr inbounds i8, i8* %38, i64 0
   %40 = bitcast i8* %39 to i16**
   %load_target8 = load i16*, i16** %40
-  %R16538 = sext i32 %ARG1 to i64
-  %R16539 = mul i64 %R16538, 2
+  %R16539 = sext i32 %ARG1 to i64
+  %R16540 = mul i64 %R16539, 2
   %41 = bitcast i16* %load_target8 to i8*
-  %42 = getelementptr inbounds i8, i8* %41, i64 %R16539
+  %42 = getelementptr inbounds i8, i8* %41, i64 %R16540
   %43 = bitcast i8* %42 to i16*
   %44 = bitcast i16* %43 to i8*
   %45 = getelementptr inbounds i8, i8* %44, i64 0
   %46 = bitcast i8* %45 to i16*
   %load_target9 = load i16, i16* %46
-  %R16542 = zext i16 %load_target9 to i32
-  %R16543 = and i32 %R16542, 4
-  store i32 %R16543, i32* %0
+  %R16543 = zext i16 %load_target9 to i32
+  %R16544 = and i32 %R16543, 4
+  store i32 %R16544, i32* %0
   br label %L3016
 
 L3010:                                            ; preds = %L3004
-  %R16544 = call i16** @__ctype_b_loc()
-  %47 = bitcast i16** %R16544 to i8*
+  %R16545 = call i16** @__ctype_b_loc()
+  %47 = bitcast i16** %R16545 to i8*
   %48 = getelementptr inbounds i8, i8* %47, i64 0
   %49 = bitcast i8* %48 to i16**
   %load_target10 = load i16*, i16** %49
-  %R16548 = sext i32 %ARG1 to i64
-  %R16549 = mul i64 %R16548, 2
+  %R16549 = sext i32 %ARG1 to i64
+  %R16550 = mul i64 %R16549, 2
   %50 = bitcast i16* %load_target10 to i8*
-  %51 = getelementptr inbounds i8, i8* %50, i64 %R16549
+  %51 = getelementptr inbounds i8, i8* %50, i64 %R16550
   %52 = bitcast i8* %51 to i16*
   %53 = bitcast i16* %52 to i8*
   %54 = getelementptr inbounds i8, i8* %53, i64 0
   %55 = bitcast i8* %54 to i16*
   %load_target11 = load i16, i16* %55
-  %R16552 = zext i16 %load_target11 to i32
-  %R16553 = and i32 %R16552, 8192
-  store i32 %R16553, i32* %0
+  %R16553 = zext i16 %load_target11 to i32
+  %R16554 = and i32 %R16553, 8192
+  store i32 %R16554, i32* %0
   br label %L3016
 
 L3011:                                            ; preds = %L3004
-  %R16554 = call i16** @__ctype_b_loc()
-  %56 = bitcast i16** %R16554 to i8*
+  %R16555 = call i16** @__ctype_b_loc()
+  %56 = bitcast i16** %R16555 to i8*
   %57 = getelementptr inbounds i8, i8* %56, i64 0
   %58 = bitcast i8* %57 to i16**
   %load_target12 = load i16*, i16** %58
-  %R16558 = sext i32 %ARG1 to i64
-  %R16559 = mul i64 %R16558, 2
+  %R16559 = sext i32 %ARG1 to i64
+  %R16560 = mul i64 %R16559, 2
   %59 = bitcast i16* %load_target12 to i8*
-  %60 = getelementptr inbounds i8, i8* %59, i64 %R16559
+  %60 = getelementptr inbounds i8, i8* %59, i64 %R16560
   %61 = bitcast i8* %60 to i16*
   %62 = bitcast i16* %61 to i8*
   %63 = getelementptr inbounds i8, i8* %62, i64 0
   %64 = bitcast i8* %63 to i16*
   %load_target13 = load i16, i16* %64
-  %R16562 = zext i16 %load_target13 to i32
-  %R16563 = and i32 %R16562, 256
-  store i32 %R16563, i32* %0
+  %R16563 = zext i16 %load_target13 to i32
+  %R16564 = and i32 %R16563, 256
+  store i32 %R16564, i32* %0
   br label %L3016
 
 L3012:                                            ; preds = %L3004
-  %R16564 = call i16** @__ctype_b_loc()
-  %65 = bitcast i16** %R16564 to i8*
+  %R16565 = call i16** @__ctype_b_loc()
+  %65 = bitcast i16** %R16565 to i8*
   %66 = getelementptr inbounds i8, i8* %65, i64 0
   %67 = bitcast i8* %66 to i16**
   %load_target14 = load i16*, i16** %67
-  %R16568 = sext i32 %ARG1 to i64
-  %R16569 = mul i64 %R16568, 2
+  %R16569 = sext i32 %ARG1 to i64
+  %R16570 = mul i64 %R16569, 2
   %68 = bitcast i16* %load_target14 to i8*
-  %69 = getelementptr inbounds i8, i8* %68, i64 %R16569
+  %69 = getelementptr inbounds i8, i8* %68, i64 %R16570
   %70 = bitcast i8* %69 to i16*
   %71 = bitcast i16* %70 to i8*
   %72 = getelementptr inbounds i8, i8* %71, i64 0
   %73 = bitcast i8* %72 to i16*
   %load_target15 = load i16, i16* %73
-  %R16572 = zext i16 %load_target15 to i32
-  %R16573 = and i32 %R16572, 8
-  store i32 %R16573, i32* %0
+  %R16573 = zext i16 %load_target15 to i32
+  %R16574 = and i32 %R16573, 8
+  store i32 %R16574, i32* %0
   br label %L3016
 
 L3013:                                            ; preds = %L3004
-  %R16574 = call i16** @__ctype_b_loc()
-  %74 = bitcast i16** %R16574 to i8*
+  %R16575 = call i16** @__ctype_b_loc()
+  %74 = bitcast i16** %R16575 to i8*
   %75 = getelementptr inbounds i8, i8* %74, i64 0
   %76 = bitcast i8* %75 to i16**
   %load_target16 = load i16*, i16** %76
-  %R16578 = sext i32 %ARG1 to i64
-  %R16579 = mul i64 %R16578, 2
+  %R16579 = sext i32 %ARG1 to i64
+  %R16580 = mul i64 %R16579, 2
   %77 = bitcast i16* %load_target16 to i8*
-  %78 = getelementptr inbounds i8, i8* %77, i64 %R16579
+  %78 = getelementptr inbounds i8, i8* %77, i64 %R16580
   %79 = bitcast i8* %78 to i16*
   %80 = bitcast i16* %79 to i8*
   %81 = getelementptr inbounds i8, i8* %80, i64 0
   %82 = bitcast i8* %81 to i16*
   %load_target17 = load i16, i16* %82
-  %R16582 = zext i16 %load_target17 to i32
-  %R16583 = and i32 %R16582, 4096
-  store i32 %R16583, i32* %0
+  %R16583 = zext i16 %load_target17 to i32
+  %R16584 = and i32 %R16583, 4096
+  store i32 %R16584, i32* %0
   br label %L3016
 
 L3014:                                            ; preds = %L3004
-  %R16585 = icmp eq i32 %ARG1, 0
-  %R1658518 = zext i1 %R16585 to i32
-  store i32 %R1658518, i32* %0
+  %R16586 = icmp eq i32 %ARG1, 0
+  %R1658618 = zext i1 %R16586 to i32
+  store i32 %R1658618, i32* %0
   br label %L3016
 
 L3015:                                            ; preds = %L3004
-  %R16588 = icmp eq i32 %ARG2, %ARG1
-  %R1658819 = zext i1 %R16588 to i32
-  store i32 %R1658819, i32* %1
+  %R16589 = icmp eq i32 %ARG2, %ARG1
+  %R1658919 = zext i1 %R16589 to i32
+  store i32 %R1658919, i32* %1
   br label %L3017
 
 L3016:                                            ; preds = %L3014, %L3013, %L3012, %L3011, %L3010, %L3009, %L3008, %L3007, %L3006, %L3005
   %83 = load i32, i32* %0
-  %R16592 = icmp eq i32 %83, 0
-  %R1659220 = zext i1 %R16592 to i32
-  %R16593 = call i16** @__ctype_b_loc()
-  %84 = bitcast i16** %R16593 to i8*
+  %R16593 = icmp eq i32 %83, 0
+  %R1659320 = zext i1 %R16593 to i32
+  %R16594 = call i16** @__ctype_b_loc()
+  %84 = bitcast i16** %R16594 to i8*
   %85 = getelementptr inbounds i8, i8* %84, i64 0
   %86 = bitcast i8* %85 to i16**
   %load_target21 = load i16*, i16** %86
-  %R16597 = sext i32 %ARG2 to i64
-  %R16598 = mul i64 %R16597, 2
+  %R16598 = sext i32 %ARG2 to i64
+  %R16599 = mul i64 %R16598, 2
   %87 = bitcast i16* %load_target21 to i8*
-  %88 = getelementptr inbounds i8, i8* %87, i64 %R16598
+  %88 = getelementptr inbounds i8, i8* %87, i64 %R16599
   %89 = bitcast i8* %88 to i16*
   %90 = bitcast i16* %89 to i8*
   %91 = getelementptr inbounds i8, i8* %90, i64 0
   %92 = bitcast i8* %91 to i16*
   %load_target22 = load i16, i16* %92
-  %R16601 = zext i16 %load_target22 to i32
-  %R16602 = and i32 %R16601, 512
-  %cond = icmp ne i32 %R16602, 0
-  %select = select i1 %cond, i32 %83, i32 %R1659220
+  %R16602 = zext i16 %load_target22 to i32
+  %R16603 = and i32 %R16602, 512
+  %cond = icmp ne i32 %R16603, 0
+  %select = select i1 %cond, i32 %83, i32 %R1659320
   store i32 %select, i32* %1
   br label %L3017
 
@@ -37449,15 +37451,15 @@ L3018:
   %5 = alloca i32
   %6 = getelementptr inbounds i8, i8* %ARG2, i64 1
   %load_target = load i8, i8* %6
-  %R16606 = sext i8 %load_target to i32
-  %R16607 = icmp eq i32 %R16606, 94
-  %R166071 = zext i1 %R16607 to i32
+  %R16607 = sext i8 %load_target to i32
+  %R16608 = icmp eq i32 %R16607, 94
+  %R166081 = zext i1 %R16608 to i32
   store i8* %ARG2, i8** %0
   store i32 1, i32* %4
   store i32 1, i32* %3
   store i32 1, i32* %2
   store i32 1, i32* %1
-  %cond = icmp ne i32 %R166071, 0
+  %cond = icmp ne i32 %R166081, 0
   br i1 %cond, label %L3019, label %L3020
 
 L3019:                                            ; preds = %L3018
@@ -37474,29 +37476,29 @@ L3020:                                            ; preds = %L3028, %L3026, %L30
   %9 = getelementptr inbounds i8, i8* %8, inttoptr (i64 1 to i8*)
   %10 = ptrtoint i8* %9 to i64
   %11 = ptrtoint i8* %ARG3 to i64
-  %R16613 = icmp ult i64 %10, %11
-  %R166132 = zext i1 %R16613 to i32
+  %R16614 = icmp ult i64 %10, %11
+  %R166142 = zext i1 %R16614 to i32
   store i8* %9, i8** %0
-  %cond3 = icmp ne i32 %R166132, 0
+  %cond3 = icmp ne i32 %R166142, 0
   br i1 %cond3, label %L3021, label %L3030
 
 L3021:                                            ; preds = %L3020
   %12 = getelementptr inbounds i8, i8* %8, i64 1
   %load_target4 = load i8, i8* %12
-  %R16616 = sext i8 %load_target4 to i32
-  %R16617 = icmp eq i32 %R16616, 37
-  %R166175 = zext i1 %R16617 to i32
-  %cond6 = icmp ne i32 %R166175, 0
+  %R16617 = sext i8 %load_target4 to i32
+  %R16618 = icmp eq i32 %R16617, 37
+  %R166185 = zext i1 %R16618 to i32
+  %cond6 = icmp ne i32 %R166185, 0
   br i1 %cond6, label %L3022, label %L3024
 
 L3022:                                            ; preds = %L3021
   %13 = getelementptr inbounds i8, i8* %9, inttoptr (i64 1 to i8*)
   %14 = getelementptr inbounds i8, i8* %8, i64 2
   %load_target7 = load i8, i8* %14
-  %R16624 = zext i8 %load_target7 to i32
-  %R16625 = call i32 @match_class(i32 %ARG1, i32 %R16624)
+  %R16625 = zext i8 %load_target7 to i32
+  %R16626 = call i32 @match_class(i32 %ARG1, i32 %R16625)
   store i8* %13, i8** %0
-  %cond8 = icmp ne i32 %R16625, 0
+  %cond8 = icmp ne i32 %R16626, 0
   br i1 %cond8, label %L3023, label %L3020
 
 L3023:                                            ; preds = %L3022
@@ -37507,41 +37509,41 @@ L3023:                                            ; preds = %L3022
 L3024:                                            ; preds = %L3021
   %16 = getelementptr inbounds i8, i8* %8, i64 2
   %load_target9 = load i8, i8* %16
-  %R16630 = sext i8 %load_target9 to i32
-  %R16631 = icmp eq i32 %R16630, 45
-  %R1663110 = zext i1 %R16631 to i32
+  %R16631 = sext i8 %load_target9 to i32
+  %R16632 = icmp eq i32 %R16631, 45
+  %R1663210 = zext i1 %R16632 to i32
   %17 = getelementptr inbounds i8, i8* %9, i64 2
   %18 = ptrtoint i8* %17 to i64
   %19 = ptrtoint i8* %ARG3 to i64
-  %R16635 = icmp ult i64 %18, %19
-  %R1663511 = zext i1 %R16635 to i32
-  %20 = icmp ne i32 %R1663110, 0
-  %21 = icmp ne i32 %R1663511, 0
-  %R16636 = and i1 %20, %21
-  %R1663612 = zext i1 %R16636 to i32
-  %cond13 = icmp ne i32 %R1663612, 0
+  %R16636 = icmp ult i64 %18, %19
+  %R1663611 = zext i1 %R16636 to i32
+  %20 = icmp ne i32 %R1663210, 0
+  %21 = icmp ne i32 %R1663611, 0
+  %R16637 = and i1 %20, %21
+  %R1663712 = zext i1 %R16637 to i32
+  %cond13 = icmp ne i32 %R1663712, 0
   br i1 %cond13, label %L3025, label %L3028
 
 L3025:                                            ; preds = %L3024
-  %R16638 = ptrtoint i8* %9 to i64
-  %R16639 = add i64 %R16638, 2
-  %R16640 = inttoptr i64 %R16639 to i8*
-  %22 = getelementptr inbounds i8, i8* %R16640, i64 -2
+  %R16639 = ptrtoint i8* %9 to i64
+  %R16640 = add i64 %R16639, 2
+  %R16641 = inttoptr i64 %R16640 to i8*
+  %22 = getelementptr inbounds i8, i8* %R16641, i64 -2
   %load_target14 = load i8, i8* %22
-  %R16645 = zext i8 %load_target14 to i32
-  %R16647 = icmp sle i32 %R16645, %ARG1
-  %R1664715 = zext i1 %R16647 to i32
-  store i8* %R16640, i8** %0
-  %cond16 = icmp ne i32 %R1664715, 0
+  %R16646 = zext i8 %load_target14 to i32
+  %R16648 = icmp sle i32 %R16646, %ARG1
+  %R1664815 = zext i1 %R16648 to i32
+  store i8* %R16641, i8** %0
+  %cond16 = icmp ne i32 %R1664815, 0
   br i1 %cond16, label %L3026, label %L3020
 
 L3026:                                            ; preds = %L3025
-  %23 = getelementptr inbounds i8, i8* %R16640, i64 0
+  %23 = getelementptr inbounds i8, i8* %R16641, i64 0
   %load_target17 = load i8, i8* %23
-  %R16652 = zext i8 %load_target17 to i32
-  %R16653 = icmp sle i32 %ARG1, %R16652
-  %R1665318 = zext i1 %R16653 to i32
-  %cond19 = icmp ne i32 %R1665318, 0
+  %R16653 = zext i8 %load_target17 to i32
+  %R16654 = icmp sle i32 %ARG1, %R16653
+  %R1665418 = zext i1 %R16654 to i32
+  %cond19 = icmp ne i32 %R1665418, 0
   br i1 %cond19, label %L3027, label %L3020
 
 L3027:                                            ; preds = %L3026
@@ -37550,10 +37552,10 @@ L3027:                                            ; preds = %L3026
   br label %L3031
 
 L3028:                                            ; preds = %L3024
-  %R16658 = zext i8 %load_target4 to i32
-  %R16660 = icmp eq i32 %R16658, %ARG1
-  %R1666020 = zext i1 %R16660 to i32
-  %cond21 = icmp ne i32 %R1666020, 0
+  %R16659 = zext i8 %load_target4 to i32
+  %R16661 = icmp eq i32 %R16659, %ARG1
+  %R1666120 = zext i1 %R16661 to i32
+  %cond21 = icmp ne i32 %R1666120, 0
   br i1 %cond21, label %L3029, label %L3020
 
 L3029:                                            ; preds = %L3028
@@ -37563,9 +37565,9 @@ L3029:                                            ; preds = %L3028
 
 L3030:                                            ; preds = %L3020
   %26 = load i32, i32* %4
-  %R16663 = icmp eq i32 %26, 0
-  %R1666322 = zext i1 %R16663 to i32
-  store i32 %R1666322, i32* %5
+  %R16664 = icmp eq i32 %26, 0
+  %R1666422 = zext i1 %R16664 to i32
+  store i32 %R1666422, i32* %5
   br label %L3031
 
 L3031:                                            ; preds = %L3030, %L3029, %L3027, %L3023
@@ -37591,22 +37593,22 @@ L3033:                                            ; preds = %L3032
 L3034:                                            ; preds = %L3032
   %2 = getelementptr inbounds i8, i8* %ARG2, i64 1
   %load_target1 = load i8, i8* %2
-  %R16671 = zext i8 %load_target1 to i32
-  %R16672 = call i32 @match_class(i32 %ARG1, i32 %R16671)
-  store i32 %R16672, i32* %0
+  %R16672 = zext i8 %load_target1 to i32
+  %R16673 = call i32 @match_class(i32 %ARG1, i32 %R16672)
+  store i32 %R16673, i32* %0
   br label %L3037
 
 L3035:                                            ; preds = %L3032
   %3 = getelementptr inbounds i8, i8* %ARG3, i64 -1
-  %R16677 = call i32 @matchbracketclass(i32 %ARG1, i8* %ARG2, i8* %3)
-  store i32 %R16677, i32* %0
+  %R16678 = call i32 @matchbracketclass(i32 %ARG1, i8* %ARG2, i8* %3)
+  store i32 %R16678, i32* %0
   br label %L3037
 
 L3036:                                            ; preds = %L3032
-  %R16681 = zext i8 %load_target to i32
-  %R16683 = icmp eq i32 %R16681, %ARG1
-  %R166832 = zext i1 %R16683 to i32
-  store i32 %R166832, i32* %0
+  %R16682 = zext i8 %load_target to i32
+  %R16684 = icmp eq i32 %R16682, %ARG1
+  %R166842 = zext i1 %R16684 to i32
+  store i32 %R166842, i32* %0
   br label %L3037
 
 L3037:                                            ; preds = %L3036, %L3035, %L3034, %L3033
@@ -37650,28 +37652,28 @@ L3083:                                            ; preds = %L3124, %L3115, %L31
 L3084:                                            ; preds = %L3083
   %13 = getelementptr inbounds i8, i8* %10, i64 1
   %load_target1 = load i8, i8* %13
-  %R16891 = sext i8 %load_target1 to i32
-  %R16892 = icmp eq i32 %R16891, 41
-  %R168922 = zext i1 %R16892 to i32
-  %cond = icmp ne i32 %R168922, 0
+  %R16892 = sext i8 %load_target1 to i32
+  %R16893 = icmp eq i32 %R16892, 41
+  %R168932 = zext i1 %R16893 to i32
+  %cond = icmp ne i32 %R168932, 0
   br i1 %cond, label %L3085, label %L3086
 
 L3085:                                            ; preds = %L3084
   %14 = getelementptr inbounds i8, i8* %10, i64 2
-  %R16897 = call i8* @start_capture(%struct.MatchState* %ARG1, i8* %12, i8* %14, i32 -2)
-  store i8* %R16897, i8** %9
+  %R16898 = call i8* @start_capture(%struct.MatchState* %ARG1, i8* %12, i8* %14, i32 -2)
+  store i8* %R16898, i8** %9
   br label %L3125
 
 L3086:                                            ; preds = %L3084
   %15 = getelementptr inbounds i8, i8* %10, i64 1
-  %R16903 = call i8* @start_capture(%struct.MatchState* %ARG1, i8* %12, i8* %15, i32 -1)
-  store i8* %R16903, i8** %9
+  %R16904 = call i8* @start_capture(%struct.MatchState* %ARG1, i8* %12, i8* %15, i32 -1)
+  store i8* %R16904, i8** %9
   br label %L3125
 
 L3087:                                            ; preds = %L3083
   %16 = getelementptr inbounds i8, i8* %10, i64 1
-  %R16908 = call i8* @end_capture(%struct.MatchState* %ARG1, i8* %12, i8* %16)
-  store i8* %R16908, i8** %9
+  %R16909 = call i8* @end_capture(%struct.MatchState* %ARG1, i8* %12, i8* %16)
+  store i8* %R16909, i8** %9
   br label %L3125
 
 L3088:                                            ; preds = %L3083
@@ -37684,13 +37686,13 @@ L3088:                                            ; preds = %L3083
 
 L3089:                                            ; preds = %L3088
   %18 = getelementptr inbounds i8, i8* %10, i64 2
-  %R16915 = call i8* @matchbalance(%struct.MatchState* %ARG1, i8* %12, i8* %18)
-  store i8* %R16915, i8** %6
-  store i8* %R16915, i8** %5
-  store i8* %R16915, i8** %4
-  store i8* %R16915, i8** %3
-  store i8* %R16915, i8** %1
-  %cond4 = icmp ne i8* %R16915, null
+  %R16916 = call i8* @matchbalance(%struct.MatchState* %ARG1, i8* %12, i8* %18)
+  store i8* %R16916, i8** %6
+  store i8* %R16916, i8** %5
+  store i8* %R16916, i8** %4
+  store i8* %R16916, i8** %3
+  store i8* %R16916, i8** %1
+  %cond4 = icmp ne i8* %R16916, null
   br i1 %cond4, label %L3091, label %L3090
 
 L3090:                                            ; preds = %L3089
@@ -37698,22 +37700,22 @@ L3090:                                            ; preds = %L3089
   br label %L3125
 
 L3091:                                            ; preds = %L3089
-  %R16919 = ptrtoint i8* %10 to i64
-  %R16920 = add i64 %R16919, 4
-  %R16921 = inttoptr i64 %R16920 to i8*
-  store i8* %R16921, i8** %0
+  %R16920 = ptrtoint i8* %10 to i64
+  %R16921 = add i64 %R16920, 4
+  %R16922 = inttoptr i64 %R16921 to i8*
+  store i8* %R16922, i8** %0
   br label %L3083
 
 L3092:                                            ; preds = %L3088
-  %R16923 = ptrtoint i8* %10 to i64
-  %R16924 = add i64 %R16923, 2
-  %R16925 = inttoptr i64 %R16924 to i8*
-  %19 = getelementptr inbounds i8, i8* %R16925, i64 0
+  %R16924 = ptrtoint i8* %10 to i64
+  %R16925 = add i64 %R16924, 2
+  %R16926 = inttoptr i64 %R16925 to i8*
+  %19 = getelementptr inbounds i8, i8* %R16926, i64 0
   %load_target5 = load i8, i8* %19
-  %R16928 = sext i8 %load_target5 to i32
-  %R16929 = icmp ne i32 %R16928, 91
-  %R169296 = zext i1 %R16929 to i32
-  %cond7 = icmp ne i32 %R169296, 0
+  %R16929 = sext i8 %load_target5 to i32
+  %R16930 = icmp ne i32 %R16929, 91
+  %R169306 = zext i1 %R16930 to i32
+  %cond7 = icmp ne i32 %R169306, 0
   br i1 %cond7, label %L3093, label %L3094
 
 L3093:                                            ; preds = %L3092
@@ -37722,11 +37724,11 @@ L3093:                                            ; preds = %L3092
   %22 = getelementptr inbounds i8, i8* %21, i64 16
   %23 = bitcast i8* %22 to %struct.lua_State**
   %load_target8 = load %struct.lua_State*, %struct.lua_State** %23
-  %R16933 = call i32 (%struct.lua_State*, i8*, ...) @luaL_error(%struct.lua_State* %load_target8, i8* getelementptr inbounds ([35 x i8], [35 x i8]* @.str.202, i64 0, i64 0))
+  %R16934 = call i32 (%struct.lua_State*, i8*, ...) @luaL_error(%struct.lua_State* %load_target8, i8* getelementptr inbounds ([35 x i8], [35 x i8]* @.str.202, i64 0, i64 0))
   br label %L3094
 
 L3094:                                            ; preds = %L3093, %L3092
-  %R16936 = call i8* @classend(%struct.MatchState* %ARG1, i8* %R16925)
+  %R16937 = call i8* @classend(%struct.MatchState* %ARG1, i8* %R16926)
   %24 = bitcast %struct.MatchState* %ARG1 to i8**
   %25 = bitcast i8** %24 to i8*
   %26 = getelementptr inbounds i8, i8* %25, i64 0
@@ -37734,9 +37736,9 @@ L3094:                                            ; preds = %L3093, %L3092
   %load_target9 = load i8*, i8** %27
   %28 = ptrtoint i8* %12 to i64
   %29 = ptrtoint i8* %load_target9 to i64
-  %R16940 = icmp eq i64 %28, %29
-  %R1694010 = zext i1 %R16940 to i32
-  %cond11 = icmp ne i32 %R1694010, 0
+  %R16941 = icmp eq i64 %28, %29
+  %R1694110 = zext i1 %R16941 to i32
+  %cond11 = icmp ne i32 %R1694110, 0
   br i1 %cond11, label %L3095, label %L3096
 
 L3095:                                            ; preds = %L3094
@@ -37746,29 +37748,29 @@ L3095:                                            ; preds = %L3094
 L3096:                                            ; preds = %L3094
   %30 = getelementptr inbounds i8, i8* %12, i64 -1
   %load_target12 = load i8, i8* %30
-  %R16944 = sext i8 %load_target12 to i32
-  store i32 %R16944, i32* %2
+  %R16945 = sext i8 %load_target12 to i32
+  store i32 %R16945, i32* %2
   br label %L3097
 
 L3097:                                            ; preds = %L3096, %L3095
   %31 = load i32, i32* %2
-  %R16946 = trunc i32 %31 to i8
-  %R16949 = zext i8 %R16946 to i32
-  %32 = getelementptr inbounds i8, i8* %R16936, i64 -1
-  %R16953 = call i32 @matchbracketclass(i32 %R16949, i8* %R16925, i8* %32)
-  %cond13 = icmp ne i32 %R16953, 0
+  %R16947 = trunc i32 %31 to i8
+  %R16950 = zext i8 %R16947 to i32
+  %32 = getelementptr inbounds i8, i8* %R16937, i64 -1
+  %R16954 = call i32 @matchbracketclass(i32 %R16950, i8* %R16926, i8* %32)
+  %cond13 = icmp ne i32 %R16954, 0
   br i1 %cond13, label %L3099, label %L3098
 
 L3098:                                            ; preds = %L3097
   %33 = getelementptr inbounds i8, i8* %12, i64 0
   %load_target14 = load i8, i8* %33
-  %R16957 = zext i8 %load_target14 to i32
-  %R16961 = call i32 @matchbracketclass(i32 %R16957, i8* %R16925, i8* %32)
+  %R16958 = zext i8 %load_target14 to i32
+  %R16962 = call i32 @matchbracketclass(i32 %R16958, i8* %R16926, i8* %32)
   store i8* %12, i8** %6
   store i8* %12, i8** %5
   store i8* %12, i8** %4
   store i8* %12, i8** %3
-  %cond15 = icmp ne i32 %R16961, 0
+  %cond15 = icmp ne i32 %R16962, 0
   br i1 %cond15, label %L3100, label %L3099
 
 L3099:                                            ; preds = %L3098, %L3097
@@ -37776,42 +37778,42 @@ L3099:                                            ; preds = %L3098, %L3097
   br label %L3125
 
 L3100:                                            ; preds = %L3098
-  store i8* %R16936, i8** %0
+  store i8* %R16937, i8** %0
   br label %L3083
 
 L3101:                                            ; preds = %L3088
-  %R16963 = call i16** @__ctype_b_loc()
-  %34 = bitcast i16** %R16963 to i8*
+  %R16964 = call i16** @__ctype_b_loc()
+  %34 = bitcast i16** %R16964 to i8*
   %35 = getelementptr inbounds i8, i8* %34, i64 0
   %36 = bitcast i8* %35 to i16**
   %load_target16 = load i16*, i16** %36
   %37 = getelementptr inbounds i8, i8* %10, i64 1
   %load_target17 = load i8, i8* %37
-  %R16968 = zext i8 %load_target17 to i32
-  %R16969 = sext i32 %R16968 to i64
-  %R16970 = mul i64 %R16969, 2
+  %R16969 = zext i8 %load_target17 to i32
+  %R16970 = sext i32 %R16969 to i64
+  %R16971 = mul i64 %R16970, 2
   %38 = bitcast i16* %load_target16 to i8*
-  %39 = getelementptr inbounds i8, i8* %38, i64 %R16970
+  %39 = getelementptr inbounds i8, i8* %38, i64 %R16971
   %40 = bitcast i8* %39 to i16*
   %41 = bitcast i16* %40 to i8*
   %42 = getelementptr inbounds i8, i8* %41, i64 0
   %43 = bitcast i8* %42 to i16*
   %load_target18 = load i16, i16* %43
-  %R16973 = zext i16 %load_target18 to i32
-  %R16974 = and i32 %R16973, 2048
-  %cond19 = icmp ne i32 %R16974, 0
+  %R16974 = zext i16 %load_target18 to i32
+  %R16975 = and i32 %R16974, 2048
+  %cond19 = icmp ne i32 %R16975, 0
   br i1 %cond19, label %L3102, label %L3108
 
 L3102:                                            ; preds = %L3101
   %44 = load i8*, i8** %3
-  %R16980 = zext i8 %load_target17 to i32
-  %R16981 = call i8* @match_capture(%struct.MatchState* %ARG1, i8* %44, i32 %R16980)
-  store i8* %R16981, i8** %6
-  store i8* %R16981, i8** %5
-  store i8* %R16981, i8** %4
-  store i8* %R16981, i8** %3
-  store i8* %R16981, i8** %1
-  %cond20 = icmp ne i8* %R16981, null
+  %R16981 = zext i8 %load_target17 to i32
+  %R16982 = call i8* @match_capture(%struct.MatchState* %ARG1, i8* %44, i32 %R16981)
+  store i8* %R16982, i8** %6
+  store i8* %R16982, i8** %5
+  store i8* %R16982, i8** %4
+  store i8* %R16982, i8** %3
+  store i8* %R16982, i8** %1
+  %cond20 = icmp ne i8* %R16982, null
   br i1 %cond20, label %L3104, label %L3103
 
 L3103:                                            ; preds = %L3102
@@ -37819,10 +37821,10 @@ L3103:                                            ; preds = %L3102
   br label %L3125
 
 L3104:                                            ; preds = %L3102
-  %R16985 = ptrtoint i8* %10 to i64
-  %R16986 = add i64 %R16985, 2
-  %R16987 = inttoptr i64 %R16986 to i8*
-  store i8* %R16987, i8** %0
+  %R16986 = ptrtoint i8* %10 to i64
+  %R16987 = add i64 %R16986, 2
+  %R16988 = inttoptr i64 %R16987 to i8*
+  store i8* %R16988, i8** %0
   br label %L3083
 
 L3105:                                            ; preds = %L3083
@@ -37845,15 +37847,15 @@ L3107:                                            ; preds = %L3106
   %load_target23 = load i8*, i8** %51
   %52 = ptrtoint i8* %47 to i64
   %53 = ptrtoint i8* %load_target23 to i64
-  %R16997 = icmp eq i64 %52, %53
-  %R1699724 = zext i1 %R16997 to i32
-  %cond25 = icmp ne i32 %R1699724, 0
+  %R16998 = icmp eq i64 %52, %53
+  %R1699824 = zext i1 %R16998 to i32
+  %cond25 = icmp ne i32 %R1699824, 0
   %select = select i1 %cond25, i8* %47, i8* null
   store i8* %select, i8** %9
   br label %L3125
 
 L3108:                                            ; preds = %L3106, %L3101, %L3083
-  %R17001 = call i8* @classend(%struct.MatchState* %ARG1, i8* %10)
+  %R17002 = call i8* @classend(%struct.MatchState* %ARG1, i8* %10)
   %54 = load i8*, i8** %6
   %55 = bitcast %struct.MatchState* %ARG1 to i8**
   %56 = bitcast i8** %55 to i8*
@@ -37862,17 +37864,17 @@ L3108:                                            ; preds = %L3106, %L3101, %L30
   %load_target26 = load i8*, i8** %58
   %59 = ptrtoint i8* %54 to i64
   %60 = ptrtoint i8* %load_target26 to i64
-  %R17005 = icmp ult i64 %59, %60
-  %R1700527 = zext i1 %R17005 to i32
-  %cond28 = icmp ne i32 %R1700527, 0
+  %R17006 = icmp ult i64 %59, %60
+  %R1700627 = zext i1 %R17006 to i32
+  %cond28 = icmp ne i32 %R1700627, 0
   br i1 %cond28, label %L3109, label %L3110
 
 L3109:                                            ; preds = %L3108
   %61 = getelementptr inbounds i8, i8* %54, i64 0
   %load_target29 = load i8, i8* %61
-  %R17009 = zext i8 %load_target29 to i32
-  %R17012 = call i32 @singlematch(i32 %R17009, i8* %10, i8* %R17001)
-  store i32 %R17012, i32* %7
+  %R17010 = zext i8 %load_target29 to i32
+  %R17013 = call i32 @singlematch(i32 %R17010, i8* %10, i8* %R17002)
+  store i32 %R17013, i32* %7
   br label %L3111
 
 L3110:                                            ; preds = %L3108
@@ -37881,7 +37883,7 @@ L3110:                                            ; preds = %L3108
 
 L3111:                                            ; preds = %L3110, %L3109
   %62 = load i32, i32* %7
-  %63 = getelementptr inbounds i8, i8* %R17001, i64 0
+  %63 = getelementptr inbounds i8, i8* %R17002, i64 0
   %load_target30 = load i8, i8* %63
   switch i8 %load_target30, label %L3122 [
     i8 42, label %L3116
@@ -37896,23 +37898,23 @@ L3112:                                            ; preds = %L3111
 
 L3113:                                            ; preds = %L3112
   %64 = getelementptr inbounds i8, i8* %54, i64 1
-  %65 = getelementptr inbounds i8, i8* %R17001, i64 1
-  %R17022 = call i8* @match(%struct.MatchState* %ARG1, i8* %64, i8* %65)
-  %cond32 = icmp ne i8* %R17022, null
+  %65 = getelementptr inbounds i8, i8* %R17002, i64 1
+  %R17023 = call i8* @match(%struct.MatchState* %ARG1, i8* %64, i8* %65)
+  %cond32 = icmp ne i8* %R17023, null
   br i1 %cond32, label %L3114, label %L3115
 
 L3114:                                            ; preds = %L3113
-  store i8* %R17022, i8** %9
+  store i8* %R17023, i8** %9
   br label %L3125
 
 L3115:                                            ; preds = %L3113, %L3112
-  %66 = getelementptr inbounds i8, i8* %R17001, i64 1
+  %66 = getelementptr inbounds i8, i8* %R17002, i64 1
   store i8* %66, i8** %0
   br label %L3083
 
 L3116:                                            ; preds = %L3111
-  %R17031 = call i8* @max_expand(%struct.MatchState* %ARG1, i8* %54, i8* %10, i8* %R17001)
-  store i8* %R17031, i8** %9
+  %R17032 = call i8* @max_expand(%struct.MatchState* %ARG1, i8* %54, i8* %10, i8* %R17002)
+  store i8* %R17032, i8** %9
   br label %L3125
 
 L3117:                                            ; preds = %L3111
@@ -37921,8 +37923,8 @@ L3117:                                            ; preds = %L3111
 
 L3118:                                            ; preds = %L3117
   %67 = getelementptr inbounds i8, i8* %54, i64 1
-  %R17038 = call i8* @max_expand(%struct.MatchState* %ARG1, i8* %67, i8* %10, i8* %R17001)
-  store i8* %R17038, i8** %8
+  %R17039 = call i8* @max_expand(%struct.MatchState* %ARG1, i8* %67, i8* %10, i8* %R17002)
+  store i8* %R17039, i8** %8
   br label %L3120
 
 L3119:                                            ; preds = %L3117
@@ -37935,8 +37937,8 @@ L3120:                                            ; preds = %L3119, %L3118
   br label %L3125
 
 L3121:                                            ; preds = %L3111
-  %R17044 = call i8* @min_expand(%struct.MatchState* %ARG1, i8* %54, i8* %10, i8* %R17001)
-  store i8* %R17044, i8** %9
+  %R17045 = call i8* @min_expand(%struct.MatchState* %ARG1, i8* %54, i8* %10, i8* %R17002)
+  store i8* %R17045, i8** %9
   br label %L3125
 
 L3122:                                            ; preds = %L3111
@@ -37954,7 +37956,7 @@ L3124:                                            ; preds = %L3122
   store i8* %69, i8** %4
   store i8* %69, i8** %3
   store i8* %69, i8** %1
-  store i8* %R17001, i8** %0
+  store i8* %R17002, i8** %0
   br label %L3083
 
 L3125:                                            ; preds = %L3123, %L3121, %L3120, %L3116, %L3114, %L3107, %L3105, %L3103, %L3099, %L3090, %L3087, %L3086, %L3085
@@ -37985,20 +37987,20 @@ L3040:                                            ; preds = %L3039, %L3038
   %8 = getelementptr inbounds i8, i8* %7, i64 16
   %9 = bitcast i8* %8 to %struct.lua_State**
   %load_target3 = load %struct.lua_State*, %struct.lua_State** %9
-  %R16695 = call i32 (%struct.lua_State*, i8*, ...) @luaL_error(%struct.lua_State* %load_target3, i8* getelementptr inbounds ([19 x i8], [19 x i8]* @.str.200, i64 0, i64 0))
+  %R16696 = call i32 (%struct.lua_State*, i8*, ...) @luaL_error(%struct.lua_State* %load_target3, i8* getelementptr inbounds ([19 x i8], [19 x i8]* @.str.200, i64 0, i64 0))
   br label %L3041
 
 L3041:                                            ; preds = %L3040, %L3039
   %10 = getelementptr inbounds i8, i8* %ARG2, i64 0
   %load_target4 = load i8, i8* %10
-  %R16698 = sext i8 %load_target4 to i32
+  %R16699 = sext i8 %load_target4 to i32
   %11 = getelementptr inbounds i8, i8* %ARG3, i64 0
   %load_target5 = load i8, i8* %11
-  %R16701 = sext i8 %load_target5 to i32
-  %R16702 = icmp ne i32 %R16698, %R16701
-  %R167026 = zext i1 %R16702 to i32
+  %R16702 = sext i8 %load_target5 to i32
+  %R16703 = icmp ne i32 %R16699, %R16702
+  %R167036 = zext i1 %R16703 to i32
   store i8* %ARG2, i8** %0
-  %cond7 = icmp ne i32 %R167026, 0
+  %cond7 = icmp ne i32 %R167036, 0
   br i1 %cond7, label %L3042, label %L3043
 
 L3042:                                            ; preds = %L3041
@@ -38006,10 +38008,10 @@ L3042:                                            ; preds = %L3041
   br label %L3051
 
 L3043:                                            ; preds = %L3041
-  %R16706 = sext i8 %load_target5 to i32
+  %R16707 = sext i8 %load_target5 to i32
   %12 = getelementptr inbounds i8, i8* %ARG3, i64 1
   %load_target8 = load i8, i8* %12
-  %R16709 = sext i8 %load_target8 to i32
+  %R16710 = sext i8 %load_target8 to i32
   store i32 1, i32* %2
   store i32 1, i32* %1
   br label %L3044
@@ -38024,27 +38026,27 @@ L3044:                                            ; preds = %L3049, %L3048, %L30
   %load_target9 = load i8*, i8** %18
   %19 = ptrtoint i8* %14 to i64
   %20 = ptrtoint i8* %load_target9 to i64
-  %R16714 = icmp ult i64 %19, %20
-  %R1671410 = zext i1 %R16714 to i32
+  %R16715 = icmp ult i64 %19, %20
+  %R1671510 = zext i1 %R16715 to i32
   store i8* %14, i8** %0
-  %cond11 = icmp ne i32 %R1671410, 0
+  %cond11 = icmp ne i32 %R1671510, 0
   br i1 %cond11, label %L3045, label %L3050
 
 L3045:                                            ; preds = %L3044
   %21 = getelementptr inbounds i8, i8* %13, i64 1
   %load_target12 = load i8, i8* %21
-  %R16717 = sext i8 %load_target12 to i32
-  %R16719 = icmp eq i32 %R16717, %R16709
-  %R1671913 = zext i1 %R16719 to i32
-  %cond14 = icmp ne i32 %R1671913, 0
+  %R16718 = sext i8 %load_target12 to i32
+  %R16720 = icmp eq i32 %R16718, %R16710
+  %R1672013 = zext i1 %R16720 to i32
+  %cond14 = icmp ne i32 %R1672013, 0
   br i1 %cond14, label %L3046, label %L3048
 
 L3046:                                            ; preds = %L3045
   %22 = load i32, i32* %1
-  %R16721 = add i32 %22, -1
-  store i32 %R16721, i32* %2
-  store i32 %R16721, i32* %1
-  %cond15 = icmp ne i32 %R16721, 0
+  %R16722 = add i32 %22, -1
+  store i32 %R16722, i32* %2
+  store i32 %R16722, i32* %1
+  %cond15 = icmp ne i32 %R16722, 0
   br i1 %cond15, label %L3044, label %L3047
 
 L3047:                                            ; preds = %L3046
@@ -38053,17 +38055,17 @@ L3047:                                            ; preds = %L3046
   br label %L3051
 
 L3048:                                            ; preds = %L3045
-  %R16727 = sext i8 %load_target12 to i32
-  %R16729 = icmp eq i32 %R16727, %R16706
-  %R1672916 = zext i1 %R16729 to i32
-  %cond17 = icmp ne i32 %R1672916, 0
+  %R16728 = sext i8 %load_target12 to i32
+  %R16730 = icmp eq i32 %R16728, %R16707
+  %R1673016 = zext i1 %R16730 to i32
+  %cond17 = icmp ne i32 %R1673016, 0
   br i1 %cond17, label %L3049, label %L3044
 
 L3049:                                            ; preds = %L3048
   %24 = load i32, i32* %2
-  %R16731 = add i32 %24, 1
-  store i32 %R16731, i32* %2
-  store i32 %R16731, i32* %1
+  %R16732 = add i32 %24, 1
+  store i32 %R16732, i32* %2
+  store i32 %R16732, i32* %1
   br label %L3044
 
 L3050:                                            ; preds = %L3044
@@ -38093,47 +38095,47 @@ L3053:                                            ; preds = %L3055, %L3052
   %load_target = load i8*, i8** %8
   %9 = ptrtoint i8* %4 to i64
   %10 = ptrtoint i8* %load_target to i64
-  %R16737 = icmp ult i64 %9, %10
-  %R167371 = zext i1 %R16737 to i32
+  %R16738 = icmp ult i64 %9, %10
+  %R167381 = zext i1 %R16738 to i32
   store i64 %3, i64* %1
-  %cond = icmp ne i32 %R167371, 0
+  %cond = icmp ne i32 %R167381, 0
   br i1 %cond, label %L3054, label %L3056
 
 L3054:                                            ; preds = %L3053
   %11 = getelementptr inbounds i8, i8* %4, i64 0
   %load_target2 = load i8, i8* %11
-  %R16743 = zext i8 %load_target2 to i32
-  %R16746 = call i32 @singlematch(i32 %R16743, i8* %ARG3, i8* %ARG4)
+  %R16744 = zext i8 %load_target2 to i32
+  %R16747 = call i32 @singlematch(i32 %R16744, i8* %ARG3, i8* %ARG4)
   store i64 %3, i64* %1
-  %cond3 = icmp ne i32 %R16746, 0
+  %cond3 = icmp ne i32 %R16747, 0
   br i1 %cond3, label %L3055, label %L3056
 
 L3055:                                            ; preds = %L3054
-  %R16748 = add i64 %3, 1
-  store i64 %R16748, i64* %0
+  %R16749 = add i64 %3, 1
+  store i64 %R16749, i64* %0
   br label %L3053
 
 L3056:                                            ; preds = %L3059, %L3054, %L3053
   %12 = load i64, i64* %1
-  %R16750 = icmp sge i64 %12, 0
-  %R167504 = zext i1 %R16750 to i32
-  %cond5 = icmp ne i32 %R167504, 0
+  %R16751 = icmp sge i64 %12, 0
+  %R167514 = zext i1 %R16751 to i32
+  %cond5 = icmp ne i32 %R167514, 0
   br i1 %cond5, label %L3057, label %L3060
 
 L3057:                                            ; preds = %L3056
   %13 = getelementptr inbounds i8, i8* %ARG2, i64 %12
   %14 = getelementptr inbounds i8, i8* %ARG4, i64 1
-  %R16757 = call i8* @match(%struct.MatchState* %ARG1, i8* %13, i8* %14)
-  %cond6 = icmp ne i8* %R16757, null
+  %R16758 = call i8* @match(%struct.MatchState* %ARG1, i8* %13, i8* %14)
+  %cond6 = icmp ne i8* %R16758, null
   br i1 %cond6, label %L3058, label %L3059
 
 L3058:                                            ; preds = %L3057
-  store i8* %R16757, i8** %2
+  store i8* %R16758, i8** %2
   br label %L3061
 
 L3059:                                            ; preds = %L3057
-  %R16762 = add i64 %12, -1
-  store i64 %R16762, i64* %1
+  %R16763 = add i64 %12, -1
+  store i64 %R16763, i64* %1
   br label %L3056
 
 L3060:                                            ; preds = %L3056
@@ -38155,12 +38157,12 @@ L3062:
 L3063:                                            ; preds = %L3067, %L3062
   %2 = load i8*, i8** %0
   %3 = getelementptr inbounds i8, i8* %ARG4, i64 1
-  %R16767 = call i8* @match(%struct.MatchState* %ARG1, i8* %2, i8* %3)
-  %cond = icmp ne i8* %R16767, null
+  %R16768 = call i8* @match(%struct.MatchState* %ARG1, i8* %2, i8* %3)
+  %cond = icmp ne i8* %R16768, null
   br i1 %cond, label %L3064, label %L3065
 
 L3064:                                            ; preds = %L3063
-  store i8* %R16767, i8** %1
+  store i8* %R16768, i8** %1
   br label %L3069
 
 L3065:                                            ; preds = %L3063
@@ -38171,17 +38173,17 @@ L3065:                                            ; preds = %L3063
   %load_target = load i8*, i8** %7
   %8 = ptrtoint i8* %2 to i64
   %9 = ptrtoint i8* %load_target to i64
-  %R16775 = icmp ult i64 %8, %9
-  %R167751 = zext i1 %R16775 to i32
-  %cond2 = icmp ne i32 %R167751, 0
+  %R16776 = icmp ult i64 %8, %9
+  %R167761 = zext i1 %R16776 to i32
+  %cond2 = icmp ne i32 %R167761, 0
   br i1 %cond2, label %L3066, label %L3068
 
 L3066:                                            ; preds = %L3065
   %10 = getelementptr inbounds i8, i8* %2, i64 0
   %load_target3 = load i8, i8* %10
-  %R16779 = zext i8 %load_target3 to i32
-  %R16782 = call i32 @singlematch(i32 %R16779, i8* %ARG3, i8* %ARG4)
-  %cond4 = icmp ne i32 %R16782, 0
+  %R16780 = zext i8 %load_target3 to i32
+  %R16783 = call i32 @singlematch(i32 %R16780, i8* %ARG3, i8* %ARG4)
+  %cond4 = icmp ne i32 %R16783, 0
   br i1 %cond4, label %L3067, label %L3068
 
 L3067:                                            ; preds = %L3066
@@ -38205,9 +38207,9 @@ L3070:
   %2 = getelementptr inbounds i8, i8* %1, i64 24
   %3 = bitcast i8* %2 to i32*
   %load_target = load i32, i32* %3
-  %R16788 = icmp sge i32 %load_target, 32
-  %R167881 = zext i1 %R16788 to i32
-  %cond = icmp ne i32 %R167881, 0
+  %R16789 = icmp sge i32 %load_target, 32
+  %R167891 = zext i1 %R16789 to i32
+  %cond = icmp ne i32 %R167891, 0
   br i1 %cond, label %L3071, label %L3072
 
 L3071:                                            ; preds = %L3070
@@ -38216,37 +38218,37 @@ L3071:                                            ; preds = %L3070
   %6 = getelementptr inbounds i8, i8* %5, i64 16
   %7 = bitcast i8* %6 to %struct.lua_State**
   %load_target2 = load %struct.lua_State*, %struct.lua_State** %7
-  %R16792 = call i32 (%struct.lua_State*, i8*, ...) @luaL_error(%struct.lua_State* %load_target2, i8* getelementptr inbounds ([18 x i8], [18 x i8]* @.str.201, i64 0, i64 0))
+  %R16793 = call i32 (%struct.lua_State*, i8*, ...) @luaL_error(%struct.lua_State* %load_target2, i8* getelementptr inbounds ([18 x i8], [18 x i8]* @.str.201, i64 0, i64 0))
   br label %L3072
 
 L3072:                                            ; preds = %L3071, %L3070
   %8 = bitcast %struct.MatchState* %ARG1 to i8*
   %9 = getelementptr inbounds i8, i8* %8, i32 32
   %10 = bitcast i8* %9 to %struct.MatchState*
-  %R16797 = sext i32 %load_target to i64
-  %R16798 = mul i64 %R16797, 16
+  %R16798 = sext i32 %load_target to i64
+  %R16799 = mul i64 %R16798, 16
   %11 = bitcast %struct.MatchState* %10 to i8*
-  %12 = getelementptr inbounds i8, i8* %11, i64 %R16798
+  %12 = getelementptr inbounds i8, i8* %11, i64 %R16799
   %13 = bitcast i8* %12 to %struct.MatchState*
   %14 = bitcast %struct.MatchState* %13 to i8**
   %15 = bitcast i8** %14 to i8*
   %16 = getelementptr inbounds i8, i8* %15, i64 0
   %17 = bitcast i8* %16 to i8**
   store i8* %ARG2, i8** %17
-  %R16801 = sext i32 %ARG4 to i64
+  %R16802 = sext i32 %ARG4 to i64
   %18 = bitcast %struct.MatchState* %13 to i64*
   %19 = bitcast i64* %18 to i8*
   %20 = getelementptr inbounds i8, i8* %19, i64 8
   %21 = bitcast i8* %20 to i64*
-  store i64 %R16801, i64* %21
-  %R16809 = add i32 %load_target, 1
+  store i64 %R16802, i64* %21
+  %R16810 = add i32 %load_target, 1
   %22 = bitcast %struct.MatchState* %ARG1 to i32*
   %23 = bitcast i32* %22 to i8*
   %24 = getelementptr inbounds i8, i8* %23, i64 24
   %25 = bitcast i8* %24 to i32*
-  store i32 %R16809, i32* %25
-  %R16814 = call i8* @match(%struct.MatchState* %ARG1, i8* %ARG2, i8* %ARG3)
-  %cond3 = icmp ne i8* %R16814, null
+  store i32 %R16810, i32* %25
+  %R16815 = call i8* @match(%struct.MatchState* %ARG1, i8* %ARG2, i8* %ARG3)
+  %cond3 = icmp ne i8* %R16815, null
   br i1 %cond3, label %L3074, label %L3073
 
 L3073:                                            ; preds = %L3072
@@ -38255,28 +38257,28 @@ L3073:                                            ; preds = %L3072
   %28 = getelementptr inbounds i8, i8* %27, i64 24
   %29 = bitcast i8* %28 to i32*
   %load_target4 = load i32, i32* %29
-  %R16818 = add i32 %load_target4, -1
+  %R16819 = add i32 %load_target4, -1
   %30 = bitcast %struct.MatchState* %ARG1 to i32*
   %31 = bitcast i32* %30 to i8*
   %32 = getelementptr inbounds i8, i8* %31, i64 24
   %33 = bitcast i8* %32 to i32*
-  store i32 %R16818, i32* %33
+  store i32 %R16819, i32* %33
   br label %L3074
 
 L3074:                                            ; preds = %L3073, %L3072
-  ret i8* %R16814
+  ret i8* %R16815
 }
 
 define internal i8* @end_capture(%struct.MatchState* %ARG1, i8* %ARG2, i8* %ARG3) {
 L3075:
-  %R16822 = call i32 @capture_to_close(%struct.MatchState* %ARG1)
+  %R16823 = call i32 @capture_to_close(%struct.MatchState* %ARG1)
   %0 = bitcast %struct.MatchState* %ARG1 to i8*
   %1 = getelementptr inbounds i8, i8* %0, i32 32
   %2 = bitcast i8* %1 to %struct.MatchState*
-  %R16827 = sext i32 %R16822 to i64
-  %R16828 = mul i64 %R16827, 16
+  %R16828 = sext i32 %R16823 to i64
+  %R16829 = mul i64 %R16828, 16
   %3 = bitcast %struct.MatchState* %2 to i8*
-  %4 = getelementptr inbounds i8, i8* %3, i64 %R16828
+  %4 = getelementptr inbounds i8, i8* %3, i64 %R16829
   %5 = bitcast i8* %4 to %struct.MatchState*
   %6 = bitcast %struct.MatchState* %5 to i8**
   %7 = bitcast i8** %6 to i8*
@@ -38285,14 +38287,14 @@ L3075:
   %load_target = load i8*, i8** %9
   %10 = ptrtoint i8* %ARG2 to i64
   %11 = ptrtoint i8* %load_target to i64
-  %R16831 = sub i64 %10, %11
+  %R16832 = sub i64 %10, %11
   %12 = bitcast %struct.MatchState* %5 to i64*
   %13 = bitcast i64* %12 to i8*
   %14 = getelementptr inbounds i8, i8* %13, i64 8
   %15 = bitcast i8* %14 to i64*
-  store i64 %R16831, i64* %15
-  %R16841 = call i8* @match(%struct.MatchState* %ARG1, i8* %ARG2, i8* %ARG3)
-  %cond = icmp ne i8* %R16841, null
+  store i64 %R16832, i64* %15
+  %R16842 = call i8* @match(%struct.MatchState* %ARG1, i8* %ARG2, i8* %ARG3)
+  %cond = icmp ne i8* %R16842, null
   br i1 %cond, label %L3077, label %L3076
 
 L3076:                                            ; preds = %L3075
@@ -38304,20 +38306,20 @@ L3076:                                            ; preds = %L3075
   br label %L3077
 
 L3077:                                            ; preds = %L3076, %L3075
-  ret i8* %R16841
+  ret i8* %R16842
 }
 
 define internal i8* @match_capture(%struct.MatchState* %ARG1, i8* %ARG2, i32 %ARG3) {
 L3078:
   %0 = alloca i8*
-  %R16853 = call i32 @check_capture(%struct.MatchState* %ARG1, i32 %ARG3)
+  %R16854 = call i32 @check_capture(%struct.MatchState* %ARG1, i32 %ARG3)
   %1 = bitcast %struct.MatchState* %ARG1 to i8*
   %2 = getelementptr inbounds i8, i8* %1, i32 32
   %3 = bitcast i8* %2 to %struct.MatchState*
-  %R16857 = sext i32 %R16853 to i64
-  %R16858 = mul i64 %R16857, 16
+  %R16858 = sext i32 %R16854 to i64
+  %R16859 = mul i64 %R16858, 16
   %4 = bitcast %struct.MatchState* %3 to i8*
-  %5 = getelementptr inbounds i8, i8* %4, i64 %R16858
+  %5 = getelementptr inbounds i8, i8* %4, i64 %R16859
   %6 = bitcast i8* %5 to %struct.MatchState*
   %7 = bitcast %struct.MatchState* %6 to i64*
   %8 = bitcast i64* %7 to i8*
@@ -38331,22 +38333,22 @@ L3078:
   %load_target1 = load i8*, i8** %14
   %15 = ptrtoint i8* %load_target1 to i64
   %16 = ptrtoint i8* %ARG2 to i64
-  %R16865 = sub i64 %15, %16
-  %R16868 = icmp uge i64 %R16865, %load_target
-  %R168682 = zext i1 %R16868 to i32
+  %R16866 = sub i64 %15, %16
+  %R16869 = icmp uge i64 %R16866, %load_target
+  %R168692 = zext i1 %R16869 to i32
   %17 = bitcast %struct.MatchState* %6 to i8**
   %18 = bitcast i8** %17 to i8*
   %19 = getelementptr inbounds i8, i8* %18, i64 0
   %20 = bitcast i8* %19 to i8**
   %load_target3 = load i8*, i8** %20
-  %R16880 = call i32 @memcmp(i8* %load_target3, i8* %ARG2, i64 %load_target)
-  %R16881 = icmp eq i32 %R16880, 0
-  %R168814 = zext i1 %R16881 to i32
-  %21 = icmp ne i32 %R168682, 0
-  %22 = icmp ne i32 %R168814, 0
-  %R16882 = and i1 %21, %22
-  %R168825 = zext i1 %R16882 to i32
-  %cond = icmp ne i32 %R168825, 0
+  %R16881 = call i32 @memcmp(i8* %load_target3, i8* %ARG2, i64 %load_target)
+  %R16882 = icmp eq i32 %R16881, 0
+  %R168824 = zext i1 %R16882 to i32
+  %21 = icmp ne i32 %R168692, 0
+  %22 = icmp ne i32 %R168824, 0
+  %R16883 = and i1 %21, %22
+  %R168835 = zext i1 %R16883 to i32
+  %cond = icmp ne i32 %R168835, 0
   br i1 %cond, label %L3079, label %L3080
 
 L3079:                                            ; preds = %L3078
@@ -38377,9 +38379,9 @@ L3127:                                            ; preds = %L3126
   br label %L3137
 
 L3128:                                            ; preds = %L3126
-  %R17055 = icmp ugt i64 %ARG4, %ARG2
-  %R170551 = zext i1 %R17055 to i32
-  %cond2 = icmp ne i32 %R170551, 0
+  %R17056 = icmp ugt i64 %ARG4, %ARG2
+  %R170561 = zext i1 %R17056 to i32
+  %cond2 = icmp ne i32 %R170561, 0
   br i1 %cond2, label %L3129, label %L3130
 
 L3129:                                            ; preds = %L3128
@@ -38387,32 +38389,32 @@ L3129:                                            ; preds = %L3128
   br label %L3137
 
 L3130:                                            ; preds = %L3128
-  %R17057 = add i64 %ARG4, -1
-  %R17060 = sub i64 %ARG2, %R17057
-  store i64 %R17060, i64* %0
+  %R17058 = add i64 %ARG4, -1
+  %R17061 = sub i64 %ARG2, %R17058
+  store i64 %R17061, i64* %0
   br label %L3131
 
 L3131:                                            ; preds = %L3135, %L3130
   %3 = load i64, i64* %0
-  %R17062 = icmp ugt i64 %3, 0
-  %R170623 = zext i1 %R17062 to i32
-  %cond4 = icmp ne i32 %R170623, 0
+  %R17063 = icmp ugt i64 %3, 0
+  %R170633 = zext i1 %R17063 to i32
+  %cond4 = icmp ne i32 %R170633, 0
   br i1 %cond4, label %L3132, label %L3136
 
 L3132:                                            ; preds = %L3131
   %4 = load i8*, i8** %1
   %5 = getelementptr inbounds i8, i8* %ARG3, i64 0
   %load_target = load i8, i8* %5
-  %R17067 = sext i8 %load_target to i32
-  %R17069 = call i8* @memchr(i8* %4, i32 %R17067, i64 %3)
-  %cond5 = icmp ne i8* %R17069, null
+  %R17068 = sext i8 %load_target to i32
+  %R17070 = call i8* @memchr(i8* %4, i32 %R17068, i64 %3)
+  %cond5 = icmp ne i8* %R17070, null
   br i1 %cond5, label %L3133, label %L3136
 
 L3133:                                            ; preds = %L3132
-  %6 = getelementptr inbounds i8, i8* %R17069, inttoptr (i64 1 to i8*)
+  %6 = getelementptr inbounds i8, i8* %R17070, inttoptr (i64 1 to i8*)
   %7 = getelementptr inbounds i8, i8* %ARG3, i64 1
-  %R17080 = call i32 @memcmp(i8* %6, i8* %7, i64 %R17057)
-  %cond6 = icmp ne i32 %R17080, 0
+  %R17081 = call i32 @memcmp(i8* %6, i8* %7, i64 %R17058)
+  %cond6 = icmp ne i32 %R17081, 0
   br i1 %cond6, label %L3135, label %L3134
 
 L3134:                                            ; preds = %L3133
@@ -38423,10 +38425,10 @@ L3134:                                            ; preds = %L3133
 L3135:                                            ; preds = %L3133
   %9 = ptrtoint i8* %6 to i64
   %10 = ptrtoint i8* %4 to i64
-  %R17086 = sub i64 %9, %10
-  %R17090 = sub i64 %3, %R17086
+  %R17087 = sub i64 %9, %10
+  %R17091 = sub i64 %3, %R17087
   store i8* %6, i8** %1
-  store i64 %R17090, i64* %0
+  store i64 %R17091, i64* %0
   br label %L3131
 
 L3136:                                            ; preds = %L3132, %L3131
@@ -38447,9 +38449,9 @@ L3138:
   %2 = getelementptr inbounds i8, i8* %1, i64 24
   %3 = bitcast i8* %2 to i32*
   %load_target = load i32, i32* %3
-  %R17096 = icmp sge i32 %ARG2, %load_target
-  %R170961 = zext i1 %R17096 to i32
-  %cond = icmp ne i32 %R170961, 0
+  %R17097 = icmp sge i32 %ARG2, %load_target
+  %R170971 = zext i1 %R17097 to i32
+  %cond = icmp ne i32 %R170971, 0
   br i1 %cond, label %L3139, label %L3142
 
 L3139:                                            ; preds = %L3138
@@ -38464,8 +38466,8 @@ L3140:                                            ; preds = %L3139
   %load_target3 = load %struct.lua_State*, %struct.lua_State** %7
   %8 = ptrtoint i8* %ARG4 to i64
   %9 = ptrtoint i8* %ARG3 to i64
-  %R17104 = sub i64 %8, %9
-  call void @lua_pushlstring(%struct.lua_State* %load_target3, i8* %ARG3, i64 %R17104)
+  %R17105 = sub i64 %8, %9
+  call void @lua_pushlstring(%struct.lua_State* %load_target3, i8* %ARG3, i64 %R17105)
   br label %L3147
 
 L3141:                                            ; preds = %L3139
@@ -38474,26 +38476,26 @@ L3141:                                            ; preds = %L3139
   %12 = getelementptr inbounds i8, i8* %11, i64 16
   %13 = bitcast i8* %12 to %struct.lua_State**
   %load_target4 = load %struct.lua_State*, %struct.lua_State** %13
-  %R17109 = call i32 (%struct.lua_State*, i8*, ...) @luaL_error(%struct.lua_State* %load_target4, i8* getelementptr inbounds ([22 x i8], [22 x i8]* @.str.203, i64 0, i64 0))
+  %R17110 = call i32 (%struct.lua_State*, i8*, ...) @luaL_error(%struct.lua_State* %load_target4, i8* getelementptr inbounds ([22 x i8], [22 x i8]* @.str.203, i64 0, i64 0))
   br label %L3147
 
 L3142:                                            ; preds = %L3138
   %14 = bitcast %struct.MatchState* %ARG1 to i8*
   %15 = getelementptr inbounds i8, i8* %14, i32 32
   %16 = bitcast i8* %15 to %struct.MatchState*
-  %R17113 = sext i32 %ARG2 to i64
-  %R17114 = mul i64 %R17113, 16
+  %R17114 = sext i32 %ARG2 to i64
+  %R17115 = mul i64 %R17114, 16
   %17 = bitcast %struct.MatchState* %16 to i8*
-  %18 = getelementptr inbounds i8, i8* %17, i64 %R17114
+  %18 = getelementptr inbounds i8, i8* %17, i64 %R17115
   %19 = bitcast i8* %18 to %struct.MatchState*
   %20 = bitcast %struct.MatchState* %19 to i64*
   %21 = bitcast i64* %20 to i8*
   %22 = getelementptr inbounds i8, i8* %21, i64 8
   %23 = bitcast i8* %22 to i64*
   %load_target5 = load i64, i64* %23
-  %R17118 = icmp eq i64 %load_target5, -1
-  %R171186 = zext i1 %R17118 to i32
-  %cond7 = icmp ne i32 %R171186, 0
+  %R17119 = icmp eq i64 %load_target5, -1
+  %R171196 = zext i1 %R17119 to i32
+  %cond7 = icmp ne i32 %R171196, 0
   br i1 %cond7, label %L3143, label %L3144
 
 L3143:                                            ; preds = %L3142
@@ -38502,13 +38504,13 @@ L3143:                                            ; preds = %L3142
   %26 = getelementptr inbounds i8, i8* %25, i64 16
   %27 = bitcast i8* %26 to %struct.lua_State**
   %load_target8 = load %struct.lua_State*, %struct.lua_State** %27
-  %R17122 = call i32 (%struct.lua_State*, i8*, ...) @luaL_error(%struct.lua_State* %load_target8, i8* getelementptr inbounds ([19 x i8], [19 x i8]* @.str.204, i64 0, i64 0))
+  %R17123 = call i32 (%struct.lua_State*, i8*, ...) @luaL_error(%struct.lua_State* %load_target8, i8* getelementptr inbounds ([19 x i8], [19 x i8]* @.str.204, i64 0, i64 0))
   br label %L3144
 
 L3144:                                            ; preds = %L3143, %L3142
-  %R17124 = icmp eq i64 %load_target5, -2
-  %R171249 = zext i1 %R17124 to i32
-  %cond10 = icmp ne i32 %R171249, 0
+  %R17125 = icmp eq i64 %load_target5, -2
+  %R171259 = zext i1 %R17125 to i32
+  %cond10 = icmp ne i32 %R171259, 0
   br i1 %cond10, label %L3145, label %L3146
 
 L3145:                                            ; preds = %L3144
@@ -38529,9 +38531,9 @@ L3145:                                            ; preds = %L3144
   %load_target13 = load i8*, i8** %39
   %40 = ptrtoint i8* %load_target12 to i64
   %41 = ptrtoint i8* %load_target13 to i64
-  %R17136 = sub i64 %40, %41
-  %R17137 = add i64 %R17136, 1
-  call void @lua_pushinteger(%struct.lua_State* %load_target11, i64 %R17137)
+  %R17137 = sub i64 %40, %41
+  %R17138 = add i64 %R17137, 1
+  call void @lua_pushinteger(%struct.lua_State* %load_target11, i64 %R17138)
   br label %L3147
 
 L3146:                                            ; preds = %L3144
@@ -38560,13 +38562,13 @@ L3148:
   %3 = getelementptr inbounds i8, i8* %2, i64 24
   %4 = bitcast i8* %3 to i32*
   %load_target = load i32, i32* %4
-  %R17151 = icmp eq i32 %load_target, 0
-  %R171511 = zext i1 %R17151 to i32
-  %5 = icmp ne i32 %R171511, 0
+  %R17152 = icmp eq i32 %load_target, 0
+  %R171521 = zext i1 %R17152 to i32
+  %5 = icmp ne i32 %R171521, 0
   %6 = icmp ne i8* %ARG2, null
-  %R17153 = and i1 %5, %6
-  %R171532 = zext i1 %R17153 to i32
-  %cond = icmp ne i32 %R171532, 0
+  %R17154 = and i1 %5, %6
+  %R171542 = zext i1 %R17154 to i32
+  %cond = icmp ne i32 %R171542, 0
   %select = select i1 %cond, i32 1, i32 %load_target
   %7 = bitcast %struct.MatchState* %ARG1 to %struct.lua_State**
   %8 = bitcast %struct.lua_State** %7 to i8*
@@ -38579,15 +38581,15 @@ L3148:
 
 L3149:                                            ; preds = %L3150, %L3148
   %11 = load i32, i32* %0
-  %R17163 = icmp slt i32 %11, %select
-  %R171634 = zext i1 %R17163 to i32
-  %cond5 = icmp ne i32 %R171634, 0
+  %R17164 = icmp slt i32 %11, %select
+  %R171644 = zext i1 %R17164 to i32
+  %cond5 = icmp ne i32 %R171644, 0
   br i1 %cond5, label %L3150, label %L3151
 
 L3150:                                            ; preds = %L3149
   call void @push_onecapture(%struct.MatchState* %ARG1, i32 %11, i8* %ARG2, i8* %ARG3)
-  %R17169 = add i32 %11, 1
-  store i32 %R17169, i32* %0
+  %R17170 = add i32 %11, 1
+  store i32 %R17170, i32* %0
   br label %L3149
 
 L3151:                                            ; preds = %L3149
@@ -38604,18 +38606,18 @@ L3152:
   %2 = alloca i8*
   %3 = alloca i8*
   %4 = alloca i32
-  %R17174 = call i8* @luaL_checklstring(%struct.lua_State* %ARG1, i32 1, i64* %l1_0x62d000fcda30)
-  %R17177 = call i8* @luaL_checklstring(%struct.lua_State* %ARG1, i32 2, i64* %l2_0x62d000fcdb18)
-  %R17179 = call i64 @luaL_optinteger(%struct.lua_State* %ARG1, i32 3, i64 1)
+  %R17175 = call i8* @luaL_checklstring(%struct.lua_State* %ARG1, i32 1, i64* %l1_0x62d000fcda30)
+  %R17178 = call i8* @luaL_checklstring(%struct.lua_State* %ARG1, i32 2, i64* %l2_0x62d000fcdb18)
+  %R17180 = call i64 @luaL_optinteger(%struct.lua_State* %ARG1, i32 3, i64 1)
   %5 = bitcast i64* %l1_0x62d000fcda30 to i8*
   %6 = getelementptr inbounds i8, i8* %5, i64 0
   %7 = bitcast i8* %6 to i64*
   %load_target = load i64, i64* %7
-  %R17181 = call i64 @posrelat(i64 %R17179, i64 %load_target)
-  %R17182 = add i64 %R17181, -1
-  %R17184 = icmp slt i64 %R17182, 0
-  %R171841 = zext i1 %R17184 to i32
-  %cond = icmp ne i32 %R171841, 0
+  %R17182 = call i64 @posrelat(i64 %R17180, i64 %load_target)
+  %R17183 = add i64 %R17182, -1
+  %R17185 = icmp slt i64 %R17183, 0
+  %R171851 = zext i1 %R17185 to i32
+  %cond = icmp ne i32 %R171851, 0
   br i1 %cond, label %L3153, label %L3154
 
 L3153:                                            ; preds = %L3152
@@ -38628,11 +38630,11 @@ L3154:                                            ; preds = %L3152
   %9 = getelementptr inbounds i8, i8* %8, i64 0
   %10 = bitcast i8* %9 to i64*
   %load_target2 = load i64, i64* %10
-  %R17188 = icmp ugt i64 %R17182, %load_target2
-  %R171883 = zext i1 %R17188 to i32
-  store i64 %R17182, i64* %1
-  store i64 %R17182, i64* %0
-  %cond4 = icmp ne i32 %R171883, 0
+  %R17189 = icmp ugt i64 %R17183, %load_target2
+  %R171893 = zext i1 %R17189 to i32
+  store i64 %R17183, i64* %1
+  store i64 %R17183, i64* %0
+  %cond4 = icmp ne i32 %R171893, 0
   br i1 %cond4, label %L3155, label %L3156
 
 L3155:                                            ; preds = %L3154
@@ -38645,67 +38647,67 @@ L3156:                                            ; preds = %L3155, %L3154, %L31
   br i1 %cond5, label %L3157, label %L3160
 
 L3157:                                            ; preds = %L3156
-  %R17193 = call i32 @lua_toboolean(%struct.lua_State* %ARG1, i32 4)
-  %R17196 = call i8* @strpbrk(i8* %R17177, i8* getelementptr inbounds ([11 x i8], [11 x i8]* @.str.206, i64 0, i64 0))
-  %11 = ptrtoint i8* %R17196 to i64
-  %R17197 = icmp eq i64 %11, 0
-  %R171976 = zext i1 %R17197 to i32
-  %12 = icmp ne i32 %R17193, 0
-  %13 = icmp ne i32 %R171976, 0
-  %R17198 = or i1 %12, %13
-  %R171987 = zext i1 %R17198 to i32
-  %cond8 = icmp ne i32 %R171987, 0
+  %R17194 = call i32 @lua_toboolean(%struct.lua_State* %ARG1, i32 4)
+  %R17197 = call i8* @strpbrk(i8* %R17178, i8* getelementptr inbounds ([11 x i8], [11 x i8]* @.str.206, i64 0, i64 0))
+  %11 = ptrtoint i8* %R17197 to i64
+  %R17198 = icmp eq i64 %11, 0
+  %R171986 = zext i1 %R17198 to i32
+  %12 = icmp ne i32 %R17194, 0
+  %13 = icmp ne i32 %R171986, 0
+  %R17199 = or i1 %12, %13
+  %R171997 = zext i1 %R17199 to i32
+  %cond8 = icmp ne i32 %R171997, 0
   br i1 %cond8, label %L3158, label %L3160
 
 L3158:                                            ; preds = %L3157
   %14 = load i64, i64* %0
-  %15 = getelementptr inbounds i8, i8* %R17174, i64 %14
+  %15 = getelementptr inbounds i8, i8* %R17175, i64 %14
   %16 = bitcast i64* %l1_0x62d000fcda30 to i8*
   %17 = getelementptr inbounds i8, i8* %16, i64 0
   %18 = bitcast i8* %17 to i64*
   %load_target9 = load i64, i64* %18
-  %R17205 = sub i64 %load_target9, %14
+  %R17206 = sub i64 %load_target9, %14
   %19 = bitcast i64* %l2_0x62d000fcdb18 to i8*
   %20 = getelementptr inbounds i8, i8* %19, i64 0
   %21 = bitcast i8* %20 to i64*
   %load_target10 = load i64, i64* %21
-  %R17208 = call i8* @lmemfind(i8* %15, i64 %R17205, i8* %R17177, i64 %load_target10)
-  %cond11 = icmp ne i8* %R17208, null
+  %R17209 = call i8* @lmemfind(i8* %15, i64 %R17206, i8* %R17178, i64 %load_target10)
+  %cond11 = icmp ne i8* %R17209, null
   br i1 %cond11, label %L3159, label %L3168
 
 L3159:                                            ; preds = %L3158
-  %22 = ptrtoint i8* %R17208 to i64
-  %23 = ptrtoint i8* %R17174 to i64
-  %R17213 = sub i64 %22, %23
-  %R17214 = add i64 %R17213, 1
-  call void @lua_pushinteger(%struct.lua_State* %ARG1, i64 %R17214)
+  %22 = ptrtoint i8* %R17209 to i64
+  %23 = ptrtoint i8* %R17175 to i64
+  %R17214 = sub i64 %22, %23
+  %R17215 = add i64 %R17214, 1
+  call void @lua_pushinteger(%struct.lua_State* %ARG1, i64 %R17215)
   %24 = bitcast i64* %l2_0x62d000fcdb18 to i8*
   %25 = getelementptr inbounds i8, i8* %24, i64 0
   %26 = bitcast i8* %25 to i64*
   %load_target12 = load i64, i64* %26
-  %R17221 = add i64 %R17213, %load_target12
-  call void @lua_pushinteger(%struct.lua_State* %ARG1, i64 %R17221)
+  %R17222 = add i64 %R17214, %load_target12
+  call void @lua_pushinteger(%struct.lua_State* %ARG1, i64 %R17222)
   store i32 2, i32* %4
   br label %L3169
 
 L3160:                                            ; preds = %L3157, %L3156
-  %27 = getelementptr inbounds i8, i8* %R17177, i64 0
+  %27 = getelementptr inbounds i8, i8* %R17178, i64 0
   %load_target13 = load i8, i8* %27
-  %R17226 = sext i8 %load_target13 to i32
-  %R17227 = icmp eq i32 %R17226, 94
-  %R1722714 = zext i1 %R17227 to i32
-  store i8* %R17177, i8** %3
-  %cond15 = icmp ne i32 %R1722714, 0
+  %R17227 = sext i8 %load_target13 to i32
+  %R17228 = icmp eq i32 %R17227, 94
+  %R1722814 = zext i1 %R17228 to i32
+  store i8* %R17178, i8** %3
+  %cond15 = icmp ne i32 %R1722814, 0
   br i1 %cond15, label %L3161, label %L3162
 
 L3161:                                            ; preds = %L3160
-  %28 = getelementptr inbounds i8, i8* %R17177, inttoptr (i64 1 to i8*)
+  %28 = getelementptr inbounds i8, i8* %R17178, inttoptr (i64 1 to i8*)
   store i8* %28, i8** %3
   br label %L3162
 
 L3162:                                            ; preds = %L3161, %L3160
   %29 = load i64, i64* %1
-  %30 = getelementptr inbounds i8, i8* %R17174, i64 %29
+  %30 = getelementptr inbounds i8, i8* %R17175, i64 %29
   %31 = bitcast %struct.MatchState* %ms_0x62d000fce5f8 to %struct.lua_State**
   %32 = bitcast %struct.lua_State** %31 to i8*
   %33 = getelementptr inbounds i8, i8* %32, i64 16
@@ -38715,12 +38717,12 @@ L3162:                                            ; preds = %L3161, %L3160
   %36 = bitcast i8** %35 to i8*
   %37 = getelementptr inbounds i8, i8* %36, i64 0
   %38 = bitcast i8* %37 to i8**
-  store i8* %R17174, i8** %38
+  store i8* %R17175, i8** %38
   %39 = bitcast i64* %l1_0x62d000fcda30 to i8*
   %40 = getelementptr inbounds i8, i8* %39, i64 0
   %41 = bitcast i8* %40 to i64*
   %load_target16 = load i64, i64* %41
-  %42 = getelementptr inbounds i8, i8* %R17174, i64 %load_target16
+  %42 = getelementptr inbounds i8, i8* %R17175, i64 %load_target16
   %43 = bitcast %struct.MatchState* %ms_0x62d000fce5f8 to i8**
   %44 = bitcast i8** %43 to i8*
   %45 = getelementptr inbounds i8, i8* %44, i64 8
@@ -38737,8 +38739,8 @@ L3163:                                            ; preds = %L3167, %L3162
   store i32 0, i32* %50
   %51 = load i8*, i8** %2
   %52 = load i8*, i8** %3
-  %R17242 = call i8* @match(%struct.MatchState* %ms_0x62d000fce5f8, i8* %51, i8* %52)
-  %cond17 = icmp ne i8* %R17242, null
+  %R17243 = call i8* @match(%struct.MatchState* %ms_0x62d000fce5f8, i8* %51, i8* %52)
+  %cond17 = icmp ne i8* %R17243, null
   br i1 %cond17, label %L3164, label %L3167
 
 L3164:                                            ; preds = %L3163
@@ -38747,22 +38749,22 @@ L3164:                                            ; preds = %L3163
 
 L3165:                                            ; preds = %L3164
   %53 = ptrtoint i8* %51 to i64
-  %54 = ptrtoint i8* %R17174 to i64
-  %R17248 = sub i64 %53, %54
-  %R17249 = add i64 %R17248, 1
-  call void @lua_pushinteger(%struct.lua_State* %ARG1, i64 %R17249)
-  %55 = ptrtoint i8* %R17242 to i64
-  %56 = ptrtoint i8* %R17174 to i64
-  %R17253 = sub i64 %55, %56
-  call void @lua_pushinteger(%struct.lua_State* %ARG1, i64 %R17253)
-  %R17255 = call i32 @push_captures(%struct.MatchState* %ms_0x62d000fce5f8, i8* null, i8* null)
-  %R17256 = add i32 %R17255, 2
-  store i32 %R17256, i32* %4
+  %54 = ptrtoint i8* %R17175 to i64
+  %R17249 = sub i64 %53, %54
+  %R17250 = add i64 %R17249, 1
+  call void @lua_pushinteger(%struct.lua_State* %ARG1, i64 %R17250)
+  %55 = ptrtoint i8* %R17243 to i64
+  %56 = ptrtoint i8* %R17175 to i64
+  %R17254 = sub i64 %55, %56
+  call void @lua_pushinteger(%struct.lua_State* %ARG1, i64 %R17254)
+  %R17256 = call i32 @push_captures(%struct.MatchState* %ms_0x62d000fce5f8, i8* null, i8* null)
+  %R17257 = add i32 %R17256, 2
+  store i32 %R17257, i32* %4
   br label %L3169
 
 L3166:                                            ; preds = %L3164
-  %R17260 = call i32 @push_captures(%struct.MatchState* %ms_0x62d000fce5f8, i8* %51, i8* %R17242)
-  store i32 %R17260, i32* %4
+  %R17261 = call i32 @push_captures(%struct.MatchState* %ms_0x62d000fce5f8, i8* %51, i8* %R17243)
+  store i32 %R17261, i32* %4
   br label %L3169
 
 L3167:                                            ; preds = %L3163
@@ -38774,16 +38776,16 @@ L3167:                                            ; preds = %L3163
   %load_target19 = load i8*, i8** %61
   %62 = ptrtoint i8* %51 to i64
   %63 = ptrtoint i8* %load_target19 to i64
-  %R17264 = icmp ult i64 %62, %63
-  %R1726420 = zext i1 %R17264 to i32
-  %R17266 = icmp ne i32 %R17226, 94
-  %R1726621 = zext i1 %R17266 to i32
-  %64 = icmp ne i32 %R1726420, 0
-  %65 = icmp ne i32 %R1726621, 0
-  %R17267 = and i1 %64, %65
-  %R1726722 = zext i1 %R17267 to i32
+  %R17265 = icmp ult i64 %62, %63
+  %R1726520 = zext i1 %R17265 to i32
+  %R17267 = icmp ne i32 %R17227, 94
+  %R1726721 = zext i1 %R17267 to i32
+  %64 = icmp ne i32 %R1726520, 0
+  %65 = icmp ne i32 %R1726721, 0
+  %R17268 = and i1 %64, %65
+  %R1726822 = zext i1 %R17268 to i32
   store i8* %57, i8** %2
-  %cond23 = icmp ne i32 %R1726722, 0
+  %cond23 = icmp ne i32 %R1726822, 0
   br i1 %cond23, label %L3163, label %L3168
 
 L3168:                                            ; preds = %L3167, %L3158
@@ -38800,14 +38802,14 @@ declare i8* @strpbrk(i8*, i8*)
 
 define internal i32 @str_find(%struct.lua_State* %ARG1) {
 L3170:
-  %R17270 = call i32 @str_find_aux(%struct.lua_State* %ARG1, i32 1)
-  ret i32 %R17270
+  %R17271 = call i32 @str_find_aux(%struct.lua_State* %ARG1, i32 1)
+  ret i32 %R17271
 }
 
 define internal i32 @str_match(%struct.lua_State* %ARG1) {
 L3171:
-  %R17273 = call i32 @str_find_aux(%struct.lua_State* %ARG1, i32 0)
-  ret i32 %R17273
+  %R17274 = call i32 @str_find_aux(%struct.lua_State* %ARG1, i32 0)
+  ret i32 %R17274
 }
 
 define internal i32 @gmatch_aux(%struct.lua_State* %ARG1) {
@@ -38817,8 +38819,8 @@ L3172:
   %0 = alloca i8*
   %1 = alloca i64
   %2 = alloca i32
-  %R17277 = call i8* @lua_tolstring(%struct.lua_State* %ARG1, i32 -10003, i64* %ls_0x62d000fd0128)
-  %R17279 = call i8* @lua_tolstring(%struct.lua_State* %ARG1, i32 -10004, i64* null)
+  %R17278 = call i8* @lua_tolstring(%struct.lua_State* %ARG1, i32 -10003, i64* %ls_0x62d000fd0128)
+  %R17280 = call i8* @lua_tolstring(%struct.lua_State* %ARG1, i32 -10004, i64* null)
   %3 = bitcast %struct.MatchState* %ms_0x62d000fd0040 to %struct.lua_State**
   %4 = bitcast %struct.lua_State** %3 to i8*
   %5 = getelementptr inbounds i8, i8* %4, i64 16
@@ -38828,19 +38830,19 @@ L3172:
   %8 = bitcast i8** %7 to i8*
   %9 = getelementptr inbounds i8, i8* %8, i64 0
   %10 = bitcast i8* %9 to i8**
-  store i8* %R17277, i8** %10
+  store i8* %R17278, i8** %10
   %11 = bitcast i64* %ls_0x62d000fd0128 to i8*
   %12 = getelementptr inbounds i8, i8* %11, i64 0
   %13 = bitcast i8* %12 to i64*
   %load_target = load i64, i64* %13
-  %14 = getelementptr inbounds i8, i8* %R17277, i64 %load_target
+  %14 = getelementptr inbounds i8, i8* %R17278, i64 %load_target
   %15 = bitcast %struct.MatchState* %ms_0x62d000fd0040 to i8**
   %16 = bitcast i8** %15 to i8*
   %17 = getelementptr inbounds i8, i8* %16, i64 8
   %18 = bitcast i8* %17 to i8**
   store i8* %14, i8** %18
-  %R17287 = call i64 @lua_tointeger(%struct.lua_State* %ARG1, i32 -10005)
-  %19 = getelementptr inbounds i8, i8* %R17277, i64 %R17287
+  %R17288 = call i64 @lua_tointeger(%struct.lua_State* %ARG1, i32 -10005)
+  %19 = getelementptr inbounds i8, i8* %R17278, i64 %R17288
   store i8* %19, i8** %0
   br label %L3173
 
@@ -38853,9 +38855,9 @@ L3173:                                            ; preds = %L3178, %L3172
   %load_target1 = load i8*, i8** %24
   %25 = ptrtoint i8* %20 to i64
   %26 = ptrtoint i8* %load_target1 to i64
-  %R17292 = icmp ule i64 %25, %26
-  %R172922 = zext i1 %R17292 to i32
-  %cond = icmp ne i32 %R172922, 0
+  %R17293 = icmp ule i64 %25, %26
+  %R172932 = zext i1 %R17293 to i32
+  %cond = icmp ne i32 %R172932, 0
   br i1 %cond, label %L3174, label %L3179
 
 L3174:                                            ; preds = %L3173
@@ -38864,33 +38866,33 @@ L3174:                                            ; preds = %L3173
   %29 = getelementptr inbounds i8, i8* %28, i64 24
   %30 = bitcast i8* %29 to i32*
   store i32 0, i32* %30
-  %R17296 = call i8* @match(%struct.MatchState* %ms_0x62d000fd0040, i8* %20, i8* %R17279)
-  %cond3 = icmp ne i8* %R17296, null
+  %R17297 = call i8* @match(%struct.MatchState* %ms_0x62d000fd0040, i8* %20, i8* %R17280)
+  %cond3 = icmp ne i8* %R17297, null
   br i1 %cond3, label %L3175, label %L3178
 
 L3175:                                            ; preds = %L3174
-  %31 = ptrtoint i8* %R17296 to i64
-  %32 = ptrtoint i8* %R17277 to i64
-  %R17300 = sub i64 %31, %32
-  %33 = ptrtoint i8* %R17296 to i64
+  %31 = ptrtoint i8* %R17297 to i64
+  %32 = ptrtoint i8* %R17278 to i64
+  %R17301 = sub i64 %31, %32
+  %33 = ptrtoint i8* %R17297 to i64
   %34 = ptrtoint i8* %20 to i64
-  %R17303 = icmp eq i64 %33, %34
-  %R173034 = zext i1 %R17303 to i32
-  store i64 %R17300, i64* %1
-  %cond5 = icmp ne i32 %R173034, 0
+  %R17304 = icmp eq i64 %33, %34
+  %R173044 = zext i1 %R17304 to i32
+  store i64 %R17301, i64* %1
+  %cond5 = icmp ne i32 %R173044, 0
   br i1 %cond5, label %L3176, label %L3177
 
 L3176:                                            ; preds = %L3175
-  %R17305 = add i64 %R17300, 1
-  store i64 %R17305, i64* %1
+  %R17306 = add i64 %R17301, 1
+  store i64 %R17306, i64* %1
   br label %L3177
 
 L3177:                                            ; preds = %L3176, %L3175
   %35 = load i64, i64* %1
   call void @lua_pushinteger(%struct.lua_State* %ARG1, i64 %35)
   call void @lua_replace(%struct.lua_State* %ARG1, i32 -10005)
-  %R17312 = call i32 @push_captures(%struct.MatchState* %ms_0x62d000fd0040, i8* %20, i8* %R17296)
-  store i32 %R17312, i32* %2
+  %R17313 = call i32 @push_captures(%struct.MatchState* %ms_0x62d000fd0040, i8* %20, i8* %R17297)
+  store i32 %R17313, i32* %2
   br label %L3180
 
 L3178:                                            ; preds = %L3174
@@ -38909,8 +38911,8 @@ L3180:                                            ; preds = %L3179, %L3177
 
 define internal i32 @gmatch(%struct.lua_State* %ARG1) {
 L3181:
-  %R17317 = call i8* @luaL_checklstring(%struct.lua_State* %ARG1, i32 1, i64* null)
-  %R17319 = call i8* @luaL_checklstring(%struct.lua_State* %ARG1, i32 2, i64* null)
+  %R17318 = call i8* @luaL_checklstring(%struct.lua_State* %ARG1, i32 1, i64* null)
+  %R17320 = call i8* @luaL_checklstring(%struct.lua_State* %ARG1, i32 2, i64* null)
   call void @lua_settop(%struct.lua_State* %ARG1, i32 2)
   call void @lua_pushinteger(%struct.lua_State* %ARG1, i64 0)
   call void @lua_pushcclosure(%struct.lua_State* %ARG1, i32 (%struct.lua_State*)* @gmatch_aux, i32 3)
@@ -38927,7 +38929,7 @@ L3182:
   %4 = getelementptr inbounds i8, i8* %3, i64 16
   %5 = bitcast i8* %4 to %struct.lua_State**
   %load_target = load %struct.lua_State*, %struct.lua_State** %5
-  %R17328 = call i8* @lua_tolstring(%struct.lua_State* %load_target, i32 3, i64* %l_0x62d000fd42e8)
+  %R17329 = call i8* @lua_tolstring(%struct.lua_State* %load_target, i32 3, i64* %l_0x62d000fd42e8)
   store i64 0, i64* %0
   br label %L3183
 
@@ -38937,19 +38939,19 @@ L3183:                                            ; preds = %L3195, %L3182
   %8 = getelementptr inbounds i8, i8* %7, i64 0
   %9 = bitcast i8* %8 to i64*
   %load_target1 = load i64, i64* %9
-  %R17331 = icmp ult i64 %6, %load_target1
-  %R173312 = zext i1 %R17331 to i32
-  %cond = icmp ne i32 %R173312, 0
+  %R17332 = icmp ult i64 %6, %load_target1
+  %R173322 = zext i1 %R17332 to i32
+  %cond = icmp ne i32 %R173322, 0
   br i1 %cond, label %L3184, label %L3196
 
 L3184:                                            ; preds = %L3183
-  %10 = getelementptr inbounds i8, i8* %R17328, i64 %6
+  %10 = getelementptr inbounds i8, i8* %R17329, i64 %6
   %11 = getelementptr inbounds i8, i8* %10, i64 0
   %load_target3 = load i8, i8* %11
-  %R17336 = sext i8 %load_target3 to i32
-  %R17337 = icmp ne i32 %R17336, 37
-  %R173374 = zext i1 %R17337 to i32
-  %cond5 = icmp ne i32 %R173374, 0
+  %R17337 = sext i8 %load_target3 to i32
+  %R17338 = icmp ne i32 %R17337, 37
+  %R173384 = zext i1 %R17338 to i32
+  %cond5 = icmp ne i32 %R173384, 0
   br i1 %cond5, label %L3185, label %L3188
 
 L3185:                                            ; preds = %L3184
@@ -38963,13 +38965,13 @@ L3185:                                            ; preds = %L3184
   %18 = bitcast i8* %17 to %struct.luaL_Buffer*
   %19 = ptrtoint i8* %load_target6 to i64
   %20 = ptrtoint %struct.luaL_Buffer* %18 to i64
-  %R17343 = icmp ult i64 %19, %20
-  %R173437 = zext i1 %R17343 to i32
-  %cond8 = icmp ne i32 %R173437, 0
+  %R17344 = icmp ult i64 %19, %20
+  %R173447 = zext i1 %R17344 to i32
+  %cond8 = icmp ne i32 %R173447, 0
   br i1 %cond8, label %L3187, label %L3186
 
 L3186:                                            ; preds = %L3185
-  %R17345 = call i8* @luaL_prepbuffer(%struct.luaL_Buffer* %ARG2)
+  %R17346 = call i8* @luaL_prepbuffer(%struct.luaL_Buffer* %ARG2)
   br label %L3187
 
 L3187:                                            ; preds = %L3186, %L3185
@@ -38992,28 +38994,28 @@ L3187:                                            ; preds = %L3186, %L3185
   br label %L3195
 
 L3188:                                            ; preds = %L3184
-  %R17356 = add i64 %6, 1
-  %R17357 = call i16** @__ctype_b_loc()
-  %32 = bitcast i16** %R17357 to i8*
+  %R17357 = add i64 %6, 1
+  %R17358 = call i16** @__ctype_b_loc()
+  %32 = bitcast i16** %R17358 to i8*
   %33 = getelementptr inbounds i8, i8* %32, i64 0
   %34 = bitcast i8* %33 to i16**
   %load_target11 = load i16*, i16** %34
-  %35 = getelementptr inbounds i8, i8* %R17328, i64 %R17356
+  %35 = getelementptr inbounds i8, i8* %R17329, i64 %R17357
   %36 = getelementptr inbounds i8, i8* %35, i64 0
   %load_target12 = load i8, i8* %36
-  %R17364 = zext i8 %load_target12 to i32
-  %R17365 = sext i32 %R17364 to i64
-  %R17366 = mul i64 %R17365, 2
+  %R17365 = zext i8 %load_target12 to i32
+  %R17366 = sext i32 %R17365 to i64
+  %R17367 = mul i64 %R17366, 2
   %37 = bitcast i16* %load_target11 to i8*
-  %38 = getelementptr inbounds i8, i8* %37, i64 %R17366
+  %38 = getelementptr inbounds i8, i8* %37, i64 %R17367
   %39 = bitcast i8* %38 to i16*
   %40 = bitcast i16* %39 to i8*
   %41 = getelementptr inbounds i8, i8* %40, i64 0
   %42 = bitcast i8* %41 to i16*
   %load_target13 = load i16, i16* %42
-  %R17369 = zext i16 %load_target13 to i32
-  %R17370 = and i32 %R17369, 2048
-  %cond14 = icmp ne i32 %R17370, 0
+  %R17370 = zext i16 %load_target13 to i32
+  %R17371 = and i32 %R17370, 2048
+  %cond14 = icmp ne i32 %R17371, 0
   br i1 %cond14, label %L3192, label %L3189
 
 L3189:                                            ; preds = %L3188
@@ -39027,13 +39029,13 @@ L3189:                                            ; preds = %L3188
   %49 = bitcast i8* %48 to %struct.luaL_Buffer*
   %50 = ptrtoint i8* %load_target15 to i64
   %51 = ptrtoint %struct.luaL_Buffer* %49 to i64
-  %R17376 = icmp ult i64 %50, %51
-  %R1737616 = zext i1 %R17376 to i32
-  %cond17 = icmp ne i32 %R1737616, 0
+  %R17377 = icmp ult i64 %50, %51
+  %R1737716 = zext i1 %R17377 to i32
+  %cond17 = icmp ne i32 %R1737716, 0
   br i1 %cond17, label %L3191, label %L3190
 
 L3190:                                            ; preds = %L3189
-  %R17378 = call i8* @luaL_prepbuffer(%struct.luaL_Buffer* %ARG2)
+  %R17379 = call i8* @luaL_prepbuffer(%struct.luaL_Buffer* %ARG2)
   br label %L3191
 
 L3191:                                            ; preds = %L3190, %L3189
@@ -39052,36 +39054,36 @@ L3191:                                            ; preds = %L3190, %L3189
   store i8* %57, i8** %61
   %62 = getelementptr inbounds i8, i8* %load_target19, i64 0
   store i8 %load_target18, i8* %62
-  store i64 %R17356, i64* %1
+  store i64 %R17357, i64* %1
   br label %L3195
 
 L3192:                                            ; preds = %L3188
-  %R17392 = sext i8 %load_target12 to i32
-  %R17393 = icmp eq i32 %R17392, 48
-  %R1739320 = zext i1 %R17393 to i32
-  store i64 %R17356, i64* %1
-  %cond21 = icmp ne i32 %R1739320, 0
+  %R17393 = sext i8 %load_target12 to i32
+  %R17394 = icmp eq i32 %R17393, 48
+  %R1739420 = zext i1 %R17394 to i32
+  store i64 %R17357, i64* %1
+  %cond21 = icmp ne i32 %R1739420, 0
   br i1 %cond21, label %L3193, label %L3194
 
 L3193:                                            ; preds = %L3192
   %63 = ptrtoint i8* %ARG4 to i64
   %64 = ptrtoint i8* %ARG3 to i64
-  %R17398 = sub i64 %63, %64
-  call void @luaL_addlstring(%struct.luaL_Buffer* %ARG2, i8* %ARG3, i64 %R17398)
+  %R17399 = sub i64 %63, %64
+  call void @luaL_addlstring(%struct.luaL_Buffer* %ARG2, i8* %ARG3, i64 %R17399)
   br label %L3195
 
 L3194:                                            ; preds = %L3192
-  %R17405 = sext i8 %load_target12 to i32
-  %R17406 = add i32 %R17405, -49
-  call void @push_onecapture(%struct.MatchState* %ARG1, i32 %R17406, i8* %ARG3, i8* %ARG4)
+  %R17406 = sext i8 %load_target12 to i32
+  %R17407 = add i32 %R17406, -49
+  call void @push_onecapture(%struct.MatchState* %ARG1, i32 %R17407, i8* %ARG3, i8* %ARG4)
   call void @luaL_addvalue(%struct.luaL_Buffer* %ARG2)
-  store i64 %R17356, i64* %1
+  store i64 %R17357, i64* %1
   br label %L3195
 
 L3195:                                            ; preds = %L3194, %L3193, %L3191, %L3187
   %65 = load i64, i64* %1
-  %R17411 = add i64 %65, 1
-  store i64 %R17411, i64* %0
+  %R17412 = add i64 %65, 1
+  store i64 %R17412, i64* %0
   br label %L3183
 
 L3196:                                            ; preds = %L3183
@@ -39095,8 +39097,8 @@ L3197:
   %2 = getelementptr inbounds i8, i8* %1, i64 16
   %3 = bitcast i8* %2 to %struct.lua_State**
   %load_target = load %struct.lua_State*, %struct.lua_State** %3
-  %R17415 = call i32 @lua_type(%struct.lua_State* %load_target, i32 3)
-  switch i32 %R17415, label %L3201 [
+  %R17416 = call i32 @lua_type(%struct.lua_State* %load_target, i32 3)
+  switch i32 %R17416, label %L3201 [
     i32 3, label %L3198
     i32 4, label %L3198
     i32 5, label %L3200
@@ -39109,8 +39111,8 @@ L3198:                                            ; preds = %L3197, %L3197
 
 L3199:                                            ; preds = %L3197
   call void @lua_pushvalue(%struct.lua_State* %load_target, i32 3)
-  %R17424 = call i32 @push_captures(%struct.MatchState* %ARG1, i8* %ARG3, i8* %ARG4)
-  call void @lua_call(%struct.lua_State* %load_target, i32 %R17424, i32 1)
+  %R17425 = call i32 @push_captures(%struct.MatchState* %ARG1, i8* %ARG3, i8* %ARG4)
+  call void @lua_call(%struct.lua_State* %load_target, i32 %R17425, i32 1)
   br label %L3201
 
 L3200:                                            ; preds = %L3197
@@ -39119,27 +39121,27 @@ L3200:                                            ; preds = %L3197
   br label %L3201
 
 L3201:                                            ; preds = %L3200, %L3199, %L3197
-  %R17432 = call i32 @lua_toboolean(%struct.lua_State* %load_target, i32 -1)
-  %cond = icmp ne i32 %R17432, 0
+  %R17433 = call i32 @lua_toboolean(%struct.lua_State* %load_target, i32 -1)
+  %cond = icmp ne i32 %R17433, 0
   br i1 %cond, label %L3203, label %L3202
 
 L3202:                                            ; preds = %L3201
   call void @lua_settop(%struct.lua_State* %load_target, i32 -2)
   %4 = ptrtoint i8* %ARG4 to i64
   %5 = ptrtoint i8* %ARG3 to i64
-  %R17438 = sub i64 %4, %5
-  call void @lua_pushlstring(%struct.lua_State* %load_target, i8* %ARG3, i64 %R17438)
+  %R17439 = sub i64 %4, %5
+  call void @lua_pushlstring(%struct.lua_State* %load_target, i8* %ARG3, i64 %R17439)
   br label %L3205
 
 L3203:                                            ; preds = %L3201
-  %R17441 = call i32 @lua_isstring(%struct.lua_State* %load_target, i32 -1)
-  %cond1 = icmp ne i32 %R17441, 0
+  %R17442 = call i32 @lua_isstring(%struct.lua_State* %load_target, i32 -1)
+  %cond1 = icmp ne i32 %R17442, 0
   br i1 %cond1, label %L3205, label %L3204
 
 L3204:                                            ; preds = %L3203
-  %R17446 = call i32 @lua_type(%struct.lua_State* %load_target, i32 -1)
-  %R17447 = call i8* @lua_typename(%struct.lua_State* %load_target, i32 %R17446)
-  %R17448 = call i32 (%struct.lua_State*, i8*, ...) @luaL_error(%struct.lua_State* %load_target, i8* getelementptr inbounds ([33 x i8], [33 x i8]* @.str.207, i64 0, i64 0), i8* %R17447)
+  %R17447 = call i32 @lua_type(%struct.lua_State* %load_target, i32 -1)
+  %R17448 = call i8* @lua_typename(%struct.lua_State* %load_target, i32 %R17447)
+  %R17449 = call i32 (%struct.lua_State*, i8*, ...) @luaL_error(%struct.lua_State* %load_target, i8* getelementptr inbounds ([33 x i8], [33 x i8]* @.str.207, i64 0, i64 0), i8* %R17448)
   br label %L3205
 
 L3205:                                            ; preds = %L3204, %L3203, %L3202
@@ -39160,57 +39162,57 @@ L3207:
   %2 = alloca i8*
   %3 = alloca i8*
   %4 = alloca i32
-  %R17452 = call i8* @luaL_checklstring(%struct.lua_State* %ARG1, i32 1, i64* %srcl_0x62d000fd6558)
-  %R17454 = call i8* @luaL_checklstring(%struct.lua_State* %ARG1, i32 2, i64* null)
-  %R17456 = call i32 @lua_type(%struct.lua_State* %ARG1, i32 3)
+  %R17453 = call i8* @luaL_checklstring(%struct.lua_State* %ARG1, i32 1, i64* %srcl_0x62d000fd6558)
+  %R17455 = call i8* @luaL_checklstring(%struct.lua_State* %ARG1, i32 2, i64* null)
+  %R17457 = call i32 @lua_type(%struct.lua_State* %ARG1, i32 3)
   %5 = bitcast i64* %srcl_0x62d000fd6558 to i8*
   %6 = getelementptr inbounds i8, i8* %5, i64 0
   %7 = bitcast i8* %6 to i64*
   %load_target = load i64, i64* %7
-  %R17459 = add i64 %load_target, 1
-  %R17461 = call i64 @luaL_optinteger(%struct.lua_State* %ARG1, i32 4, i64 %R17459)
-  %R17462 = trunc i64 %R17461 to i32
-  %8 = getelementptr inbounds i8, i8* %R17454, i64 0
+  %R17460 = add i64 %load_target, 1
+  %R17462 = call i64 @luaL_optinteger(%struct.lua_State* %ARG1, i32 4, i64 %R17460)
+  %R17463 = trunc i64 %R17462 to i32
+  %8 = getelementptr inbounds i8, i8* %R17455, i64 0
   %load_target1 = load i8, i8* %8
-  %R17465 = sext i8 %load_target1 to i32
-  %R17466 = icmp eq i32 %R17465, 94
-  %R174662 = zext i1 %R17466 to i32
-  store i8* %R17454, i8** %2
-  %cond = icmp ne i32 %R174662, 0
+  %R17466 = sext i8 %load_target1 to i32
+  %R17467 = icmp eq i32 %R17466, 94
+  %R174672 = zext i1 %R17467 to i32
+  store i8* %R17455, i8** %2
+  %cond = icmp ne i32 %R174672, 0
   br i1 %cond, label %L3208, label %L3209
 
 L3208:                                            ; preds = %L3207
-  %9 = getelementptr inbounds i8, i8* %R17454, inttoptr (i64 1 to i8*)
+  %9 = getelementptr inbounds i8, i8* %R17455, inttoptr (i64 1 to i8*)
   store i8* %9, i8** %2
   br label %L3209
 
 L3209:                                            ; preds = %L3208, %L3207
-  %R17471 = icmp eq i32 %R17456, 3
-  %R174713 = zext i1 %R17471 to i32
-  %R17473 = icmp eq i32 %R17456, 4
-  %R174734 = zext i1 %R17473 to i32
-  %10 = icmp ne i32 %R174713, 0
-  %11 = icmp ne i32 %R174734, 0
-  %R17474 = or i1 %10, %11
-  %R174745 = zext i1 %R17474 to i32
-  %R17476 = icmp eq i32 %R17456, 6
-  %R174766 = zext i1 %R17476 to i32
-  %12 = icmp ne i32 %R174745, 0
-  %13 = icmp ne i32 %R174766, 0
-  %R17477 = or i1 %12, %13
-  %R174777 = zext i1 %R17477 to i32
-  %R17479 = icmp eq i32 %R17456, 5
-  %R174798 = zext i1 %R17479 to i32
-  %14 = icmp ne i32 %R174777, 0
-  %15 = icmp ne i32 %R174798, 0
-  %R17480 = or i1 %14, %15
-  %R174809 = zext i1 %R17480 to i32
+  %R17472 = icmp eq i32 %R17457, 3
+  %R174723 = zext i1 %R17472 to i32
+  %R17474 = icmp eq i32 %R17457, 4
+  %R174744 = zext i1 %R17474 to i32
+  %10 = icmp ne i32 %R174723, 0
+  %11 = icmp ne i32 %R174744, 0
+  %R17475 = or i1 %10, %11
+  %R174755 = zext i1 %R17475 to i32
+  %R17477 = icmp eq i32 %R17457, 6
+  %R174776 = zext i1 %R17477 to i32
+  %12 = icmp ne i32 %R174755, 0
+  %13 = icmp ne i32 %R174776, 0
+  %R17478 = or i1 %12, %13
+  %R174787 = zext i1 %R17478 to i32
+  %R17480 = icmp eq i32 %R17457, 5
+  %R174808 = zext i1 %R17480 to i32
+  %14 = icmp ne i32 %R174787, 0
+  %15 = icmp ne i32 %R174808, 0
+  %R17481 = or i1 %14, %15
+  %R174819 = zext i1 %R17481 to i32
   store i32 0, i32* %0
-  %cond10 = icmp ne i32 %R174809, 0
+  %cond10 = icmp ne i32 %R174819, 0
   br i1 %cond10, label %L3211, label %L3210
 
 L3210:                                            ; preds = %L3209
-  %R17483 = call i32 @luaL_argerror(%struct.lua_State* %ARG1, i32 3, i8* getelementptr inbounds ([31 x i8], [31 x i8]* @.str.208, i64 0, i64 0))
+  %R17484 = call i32 @luaL_argerror(%struct.lua_State* %ARG1, i32 3, i8* getelementptr inbounds ([31 x i8], [31 x i8]* @.str.208, i64 0, i64 0))
   br label %L3211
 
 L3211:                                            ; preds = %L3210, %L3209
@@ -39224,27 +39226,27 @@ L3211:                                            ; preds = %L3210, %L3209
   %21 = bitcast i8** %20 to i8*
   %22 = getelementptr inbounds i8, i8* %21, i64 0
   %23 = bitcast i8* %22 to i8**
-  store i8* %R17452, i8** %23
+  store i8* %R17453, i8** %23
   %24 = bitcast i64* %srcl_0x62d000fd6558 to i8*
   %25 = getelementptr inbounds i8, i8* %24, i64 0
   %26 = bitcast i8* %25 to i64*
   %load_target11 = load i64, i64* %26
-  %27 = getelementptr inbounds i8, i8* %R17452, i64 %load_target11
+  %27 = getelementptr inbounds i8, i8* %R17453, i64 %load_target11
   %28 = bitcast %struct.MatchState* %ms_0x62d000fd7038 to i8**
   %29 = bitcast i8** %28 to i8*
   %30 = getelementptr inbounds i8, i8* %29, i64 8
   %31 = bitcast i8* %30 to i8**
   store i8* %27, i8** %31
-  store i8* %R17452, i8** %3
-  store i8* %R17452, i8** %1
+  store i8* %R17453, i8** %3
+  store i8* %R17453, i8** %1
   br label %L3212
 
 L3212:                                            ; preds = %L3221, %L3211
   %32 = load i32, i32* %0
-  %R17494 = icmp slt i32 %32, %R17462
-  %R1749412 = zext i1 %R17494 to i32
+  %R17495 = icmp slt i32 %32, %R17463
+  %R1749512 = zext i1 %R17495 to i32
   store i32 %32, i32* %4
-  %cond13 = icmp ne i32 %R1749412, 0
+  %cond13 = icmp ne i32 %R1749512, 0
   br i1 %cond13, label %L3213, label %L3222
 
 L3213:                                            ; preds = %L3212
@@ -39255,32 +39257,32 @@ L3213:                                            ; preds = %L3212
   store i32 0, i32* %36
   %37 = load i8*, i8** %1
   %38 = load i8*, i8** %2
-  %R17498 = call i8* @match(%struct.MatchState* %ms_0x62d000fd7038, i8* %37, i8* %38)
-  %cond14 = icmp ne i8* %R17498, null
+  %R17499 = call i8* @match(%struct.MatchState* %ms_0x62d000fd7038, i8* %37, i8* %38)
+  %cond14 = icmp ne i8* %R17499, null
   br i1 %cond14, label %L3214, label %L3215
 
 L3214:                                            ; preds = %L3213
-  %R17501 = add i32 %32, 1
-  call void @add_value(%struct.MatchState* %ms_0x62d000fd7038, %struct.luaL_Buffer* %b_0x62d000fd7120, i8* %37, i8* %R17498)
-  store i32 %R17501, i32* %4
-  store i32 %R17501, i32* %0
+  %R17502 = add i32 %32, 1
+  call void @add_value(%struct.MatchState* %ms_0x62d000fd7038, %struct.luaL_Buffer* %b_0x62d000fd7120, i8* %37, i8* %R17499)
+  store i32 %R17502, i32* %4
+  store i32 %R17502, i32* %0
   br label %L3215
 
 L3215:                                            ; preds = %L3214, %L3213
-  %39 = ptrtoint i8* %R17498 to i64
+  %39 = ptrtoint i8* %R17499 to i64
   %40 = ptrtoint i8* %37 to i64
-  %R17509 = icmp ugt i64 %39, %40
-  %R1750915 = zext i1 %R17509 to i32
-  %41 = icmp ne i8* %R17498, null
-  %42 = icmp ne i32 %R1750915, 0
-  %R17510 = and i1 %41, %42
-  %R1751016 = zext i1 %R17510 to i32
-  %cond17 = icmp ne i32 %R1751016, 0
+  %R17510 = icmp ugt i64 %39, %40
+  %R1751015 = zext i1 %R17510 to i32
+  %41 = icmp ne i8* %R17499, null
+  %42 = icmp ne i32 %R1751015, 0
+  %R17511 = and i1 %41, %42
+  %R1751116 = zext i1 %R17511 to i32
+  %cond17 = icmp ne i32 %R1751116, 0
   br i1 %cond17, label %L3216, label %L3217
 
 L3216:                                            ; preds = %L3215
-  store i8* %R17498, i8** %3
-  store i8* %R17498, i8** %1
+  store i8* %R17499, i8** %3
+  store i8* %R17499, i8** %1
   br label %L3221
 
 L3217:                                            ; preds = %L3215
@@ -39291,10 +39293,10 @@ L3217:                                            ; preds = %L3215
   %load_target18 = load i8*, i8** %46
   %47 = ptrtoint i8* %37 to i64
   %48 = ptrtoint i8* %load_target18 to i64
-  %R17514 = icmp ult i64 %47, %48
-  %R1751419 = zext i1 %R17514 to i32
+  %R17515 = icmp ult i64 %47, %48
+  %R1751519 = zext i1 %R17515 to i32
   store i8* %37, i8** %3
-  %cond20 = icmp ne i32 %R1751419, 0
+  %cond20 = icmp ne i32 %R1751519, 0
   br i1 %cond20, label %L3218, label %L3222
 
 L3218:                                            ; preds = %L3217
@@ -39308,13 +39310,13 @@ L3218:                                            ; preds = %L3217
   %55 = bitcast i8* %54 to %struct.luaL_Buffer*
   %56 = ptrtoint i8* %load_target21 to i64
   %57 = ptrtoint %struct.luaL_Buffer* %55 to i64
-  %R17519 = icmp ult i64 %56, %57
-  %R1751922 = zext i1 %R17519 to i32
-  %cond23 = icmp ne i32 %R1751922, 0
+  %R17520 = icmp ult i64 %56, %57
+  %R1752022 = zext i1 %R17520 to i32
+  %cond23 = icmp ne i32 %R1752022, 0
   br i1 %cond23, label %L3220, label %L3219
 
 L3219:                                            ; preds = %L3218
-  %R17521 = call i8* @luaL_prepbuffer(%struct.luaL_Buffer* %b_0x62d000fd7120)
+  %R17522 = call i8* @luaL_prepbuffer(%struct.luaL_Buffer* %b_0x62d000fd7120)
   br label %L3220
 
 L3220:                                            ; preds = %L3219, %L3218
@@ -39339,7 +39341,7 @@ L3220:                                            ; preds = %L3219, %L3218
   br label %L3221
 
 L3221:                                            ; preds = %L3220, %L3216
-  %cond26 = icmp ne i32 %R174662, 0
+  %cond26 = icmp ne i32 %R174672, 0
   br i1 %cond26, label %L3222, label %L3212
 
 L3222:                                            ; preds = %L3221, %L3217, %L3212
@@ -39351,12 +39353,12 @@ L3222:                                            ; preds = %L3221, %L3217, %L32
   %load_target27 = load i8*, i8** %74
   %75 = ptrtoint i8* %load_target27 to i64
   %76 = ptrtoint i8* %70 to i64
-  %R17534 = sub i64 %75, %76
-  call void @luaL_addlstring(%struct.luaL_Buffer* %b_0x62d000fd7120, i8* %70, i64 %R17534)
+  %R17535 = sub i64 %75, %76
+  call void @luaL_addlstring(%struct.luaL_Buffer* %b_0x62d000fd7120, i8* %70, i64 %R17535)
   call void @luaL_pushresult(%struct.luaL_Buffer* %b_0x62d000fd7120)
   %77 = load i32, i32* %4
-  %R17539 = sext i32 %77 to i64
-  call void @lua_pushinteger(%struct.lua_State* %ARG1, i64 %R17539)
+  %R17540 = sext i32 %77 to i64
+  call void @lua_pushinteger(%struct.lua_State* %ARG1, i64 %R17540)
   ret i32 2
 }
 
@@ -39364,7 +39366,7 @@ define internal void @addquoted(%struct.lua_State* %ARG1, %struct.luaL_Buffer* %
 L3223:
   %l_0x62d000fd7fa0 = alloca i64
   %0 = alloca i8*
-  %R17544 = call i8* @luaL_checklstring(%struct.lua_State* %ARG1, i32 %ARG3, i64* %l_0x62d000fd7fa0)
+  %R17545 = call i8* @luaL_checklstring(%struct.lua_State* %ARG1, i32 %ARG3, i64* %l_0x62d000fd7fa0)
   %1 = bitcast %struct.luaL_Buffer* %ARG2 to i8**
   %2 = bitcast i8** %1 to i8*
   %3 = getelementptr inbounds i8, i8* %2, i64 0
@@ -39375,14 +39377,14 @@ L3223:
   %7 = bitcast i8* %6 to %struct.luaL_Buffer*
   %8 = ptrtoint i8* %load_target to i64
   %9 = ptrtoint %struct.luaL_Buffer* %7 to i64
-  %R17550 = icmp ult i64 %8, %9
-  %R175501 = zext i1 %R17550 to i32
-  store i8* %R17544, i8** %0
-  %cond = icmp ne i32 %R175501, 0
+  %R17551 = icmp ult i64 %8, %9
+  %R175511 = zext i1 %R17551 to i32
+  store i8* %R17545, i8** %0
+  %cond = icmp ne i32 %R175511, 0
   br i1 %cond, label %L3225, label %L3224
 
 L3224:                                            ; preds = %L3223
-  %R17552 = call i8* @luaL_prepbuffer(%struct.luaL_Buffer* %ARG2)
+  %R17553 = call i8* @luaL_prepbuffer(%struct.luaL_Buffer* %ARG2)
   br label %L3225
 
 L3225:                                            ; preds = %L3224, %L3223
@@ -39406,11 +39408,11 @@ L3226:                                            ; preds = %L3238, %L3225
   %21 = getelementptr inbounds i8, i8* %20, i64 0
   %22 = bitcast i8* %21 to i64*
   %load_target3 = load i64, i64* %22
-  %R17558 = add i64 %load_target3, -1
+  %R17559 = add i64 %load_target3, -1
   %23 = bitcast i64* %l_0x62d000fd7fa0 to i8*
   %24 = getelementptr inbounds i8, i8* %23, i64 0
   %25 = bitcast i8* %24 to i64*
-  store i64 %R17558, i64* %25
+  store i64 %R17559, i64* %25
   %cond4 = icmp ne i64 %load_target3, 0
   br i1 %cond4, label %L3227, label %L3239
 
@@ -39434,13 +39436,13 @@ L3228:                                            ; preds = %L3227, %L3227, %L32
   %load_target6 = load i8*, i8** %31
   %32 = ptrtoint i8* %load_target6 to i64
   %33 = ptrtoint %struct.luaL_Buffer* %7 to i64
-  %R17566 = icmp ult i64 %32, %33
-  %R175667 = zext i1 %R17566 to i32
-  %cond8 = icmp ne i32 %R175667, 0
+  %R17567 = icmp ult i64 %32, %33
+  %R175677 = zext i1 %R17567 to i32
+  %cond8 = icmp ne i32 %R175677, 0
   br i1 %cond8, label %L3230, label %L3229
 
 L3229:                                            ; preds = %L3228
-  %R17568 = call i8* @luaL_prepbuffer(%struct.luaL_Buffer* %ARG2)
+  %R17569 = call i8* @luaL_prepbuffer(%struct.luaL_Buffer* %ARG2)
   br label %L3230
 
 L3230:                                            ; preds = %L3229, %L3228
@@ -39464,13 +39466,13 @@ L3230:                                            ; preds = %L3229, %L3228
   %load_target10 = load i8*, i8** %47
   %48 = ptrtoint i8* %load_target10 to i64
   %49 = ptrtoint %struct.luaL_Buffer* %7 to i64
-  %R17578 = icmp ult i64 %48, %49
-  %R1757811 = zext i1 %R17578 to i32
-  %cond12 = icmp ne i32 %R1757811, 0
+  %R17579 = icmp ult i64 %48, %49
+  %R1757911 = zext i1 %R17579 to i32
+  %cond12 = icmp ne i32 %R1757911, 0
   br i1 %cond12, label %L3232, label %L3231
 
 L3231:                                            ; preds = %L3230
-  %R17580 = call i8* @luaL_prepbuffer(%struct.luaL_Buffer* %ARG2)
+  %R17581 = call i8* @luaL_prepbuffer(%struct.luaL_Buffer* %ARG2)
   br label %L3232
 
 L3232:                                            ; preds = %L3231, %L3230
@@ -39507,13 +39509,13 @@ L3235:                                            ; preds = %L3227
   %load_target15 = load i8*, i8** %64
   %65 = ptrtoint i8* %load_target15 to i64
   %66 = ptrtoint %struct.luaL_Buffer* %7 to i64
-  %R17597 = icmp ult i64 %65, %66
-  %R1759716 = zext i1 %R17597 to i32
-  %cond17 = icmp ne i32 %R1759716, 0
+  %R17598 = icmp ult i64 %65, %66
+  %R1759816 = zext i1 %R17598 to i32
+  %cond17 = icmp ne i32 %R1759816, 0
   br i1 %cond17, label %L3237, label %L3236
 
 L3236:                                            ; preds = %L3235
-  %R17599 = call i8* @luaL_prepbuffer(%struct.luaL_Buffer* %ARG2)
+  %R17600 = call i8* @luaL_prepbuffer(%struct.luaL_Buffer* %ARG2)
   br label %L3237
 
 L3237:                                            ; preds = %L3236, %L3235
@@ -39547,13 +39549,13 @@ L3239:                                            ; preds = %L3226
   %load_target20 = load i8*, i8** %82
   %83 = ptrtoint i8* %load_target20 to i64
   %84 = ptrtoint %struct.luaL_Buffer* %7 to i64
-  %R17614 = icmp ult i64 %83, %84
-  %R1761421 = zext i1 %R17614 to i32
-  %cond22 = icmp ne i32 %R1761421, 0
+  %R17615 = icmp ult i64 %83, %84
+  %R1761521 = zext i1 %R17615 to i32
+  %cond22 = icmp ne i32 %R1761521, 0
   br i1 %cond22, label %L3241, label %L3240
 
 L3240:                                            ; preds = %L3239
-  %R17616 = call i8* @luaL_prepbuffer(%struct.luaL_Buffer* %ARG2)
+  %R17617 = call i8* @luaL_prepbuffer(%struct.luaL_Buffer* %ARG2)
   br label %L3241
 
 L3241:                                            ; preds = %L3240, %L3239
@@ -39587,19 +39589,19 @@ L3243:                                            ; preds = %L3244, %L3242
   %5 = load i8*, i8** %0
   %6 = getelementptr inbounds i8, i8* %5, i64 0
   %load_target = load i8, i8* %6
-  %R17624 = sext i8 %load_target to i32
-  %R17625 = icmp ne i32 %R17624, 0
-  %R176251 = zext i1 %R17625 to i32
-  %R17629 = sext i8 %load_target to i32
-  %R17630 = call i8* @strchr(i8* getelementptr inbounds ([6 x i8], [6 x i8]* @.str.211, i64 0, i64 0), i32 %R17629)
-  %7 = ptrtoint i8* %R17630 to i64
-  %R17631 = icmp ne i64 %7, 0
-  %R176312 = zext i1 %R17631 to i32
-  %8 = icmp ne i32 %R176251, 0
-  %9 = icmp ne i32 %R176312, 0
-  %R17632 = and i1 %8, %9
-  %R176323 = zext i1 %R17632 to i32
-  %cond = icmp ne i32 %R176323, 0
+  %R17625 = sext i8 %load_target to i32
+  %R17626 = icmp ne i32 %R17625, 0
+  %R176261 = zext i1 %R17626 to i32
+  %R17630 = sext i8 %load_target to i32
+  %R17631 = call i8* @strchr(i8* getelementptr inbounds ([6 x i8], [6 x i8]* @.str.211, i64 0, i64 0), i32 %R17630)
+  %7 = ptrtoint i8* %R17631 to i64
+  %R17632 = icmp ne i64 %7, 0
+  %R176322 = zext i1 %R17632 to i32
+  %8 = icmp ne i32 %R176261, 0
+  %9 = icmp ne i32 %R176322, 0
+  %R17633 = and i1 %8, %9
+  %R176333 = zext i1 %R17633 to i32
+  %cond = icmp ne i32 %R176333, 0
   br i1 %cond, label %L3244, label %L3245
 
 L3244:                                            ; preds = %L3243
@@ -39610,38 +39612,38 @@ L3244:                                            ; preds = %L3243
 L3245:                                            ; preds = %L3243
   %11 = ptrtoint i8* %5 to i64
   %12 = ptrtoint i8* %ARG2 to i64
-  %R17637 = sub i64 %11, %12
-  %R17639 = icmp uge i64 %R17637, 6
-  %R176394 = zext i1 %R17639 to i32
-  %cond5 = icmp ne i32 %R176394, 0
+  %R17638 = sub i64 %11, %12
+  %R17640 = icmp uge i64 %R17638, 6
+  %R176404 = zext i1 %R17640 to i32
+  %cond5 = icmp ne i32 %R176404, 0
   br i1 %cond5, label %L3246, label %L3247
 
 L3246:                                            ; preds = %L3245
-  %R17642 = call i32 (%struct.lua_State*, i8*, ...) @luaL_error(%struct.lua_State* %ARG1, i8* getelementptr inbounds ([32 x i8], [32 x i8]* @.str.212, i64 0, i64 0))
+  %R17643 = call i32 (%struct.lua_State*, i8*, ...) @luaL_error(%struct.lua_State* %ARG1, i8* getelementptr inbounds ([32 x i8], [32 x i8]* @.str.212, i64 0, i64 0))
   br label %L3247
 
 L3247:                                            ; preds = %L3246, %L3245
-  %R17643 = call i16** @__ctype_b_loc()
-  %13 = bitcast i16** %R17643 to i8*
+  %R17644 = call i16** @__ctype_b_loc()
+  %13 = bitcast i16** %R17644 to i8*
   %14 = getelementptr inbounds i8, i8* %13, i64 0
   %15 = bitcast i8* %14 to i16**
   %load_target6 = load i16*, i16** %15
   %16 = getelementptr inbounds i8, i8* %5, i64 0
   %load_target7 = load i8, i8* %16
-  %R17648 = zext i8 %load_target7 to i32
-  %R17649 = sext i32 %R17648 to i64
-  %R17650 = mul i64 %R17649, 2
+  %R17649 = zext i8 %load_target7 to i32
+  %R17650 = sext i32 %R17649 to i64
+  %R17651 = mul i64 %R17650, 2
   %17 = bitcast i16* %load_target6 to i8*
-  %18 = getelementptr inbounds i8, i8* %17, i64 %R17650
+  %18 = getelementptr inbounds i8, i8* %17, i64 %R17651
   %19 = bitcast i8* %18 to i16*
   %20 = bitcast i16* %19 to i8*
   %21 = getelementptr inbounds i8, i8* %20, i64 0
   %22 = bitcast i8* %21 to i16*
   %load_target8 = load i16, i16* %22
-  %R17653 = zext i16 %load_target8 to i32
-  %R17654 = and i32 %R17653, 2048
+  %R17654 = zext i16 %load_target8 to i32
+  %R17655 = and i32 %R17654, 2048
   store i8* %5, i8** %1
-  %cond9 = icmp ne i32 %R17654, 0
+  %cond9 = icmp ne i32 %R17655, 0
   br i1 %cond9, label %L3248, label %L3249
 
 L3248:                                            ; preds = %L3247
@@ -39650,28 +39652,28 @@ L3248:                                            ; preds = %L3247
   br label %L3249
 
 L3249:                                            ; preds = %L3248, %L3247
-  %R17657 = call i16** @__ctype_b_loc()
-  %24 = bitcast i16** %R17657 to i8*
+  %R17658 = call i16** @__ctype_b_loc()
+  %24 = bitcast i16** %R17658 to i8*
   %25 = getelementptr inbounds i8, i8* %24, i64 0
   %26 = bitcast i8* %25 to i16**
   %load_target10 = load i16*, i16** %26
   %27 = load i8*, i8** %1
   %28 = getelementptr inbounds i8, i8* %27, i64 0
   %load_target11 = load i8, i8* %28
-  %R17662 = zext i8 %load_target11 to i32
-  %R17663 = sext i32 %R17662 to i64
-  %R17664 = mul i64 %R17663, 2
+  %R17663 = zext i8 %load_target11 to i32
+  %R17664 = sext i32 %R17663 to i64
+  %R17665 = mul i64 %R17664, 2
   %29 = bitcast i16* %load_target10 to i8*
-  %30 = getelementptr inbounds i8, i8* %29, i64 %R17664
+  %30 = getelementptr inbounds i8, i8* %29, i64 %R17665
   %31 = bitcast i8* %30 to i16*
   %32 = bitcast i16* %31 to i8*
   %33 = getelementptr inbounds i8, i8* %32, i64 0
   %34 = bitcast i8* %33 to i16*
   %load_target12 = load i16, i16* %34
-  %R17667 = zext i16 %load_target12 to i32
-  %R17668 = and i32 %R17667, 2048
+  %R17668 = zext i16 %load_target12 to i32
+  %R17669 = and i32 %R17668, 2048
   store i8* %27, i8** %2
-  %cond13 = icmp ne i32 %R17668, 0
+  %cond13 = icmp ne i32 %R17669, 0
   br i1 %cond13, label %L3250, label %L3251
 
 L3250:                                            ; preds = %L3249
@@ -39683,36 +39685,36 @@ L3251:                                            ; preds = %L3250, %L3249
   %36 = load i8*, i8** %2
   %37 = getelementptr inbounds i8, i8* %36, i64 0
   %load_target14 = load i8, i8* %37
-  %R17673 = sext i8 %load_target14 to i32
-  %R17674 = icmp eq i32 %R17673, 46
-  %R1767415 = zext i1 %R17674 to i32
+  %R17674 = sext i8 %load_target14 to i32
+  %R17675 = icmp eq i32 %R17674, 46
+  %R1767515 = zext i1 %R17675 to i32
   store i8* %36, i8** %4
-  %cond16 = icmp ne i32 %R1767415, 0
+  %cond16 = icmp ne i32 %R1767515, 0
   br i1 %cond16, label %L3252, label %L3256
 
 L3252:                                            ; preds = %L3251
   %38 = getelementptr inbounds i8, i8* %36, inttoptr (i64 1 to i8*)
-  %R17677 = call i16** @__ctype_b_loc()
-  %39 = bitcast i16** %R17677 to i8*
+  %R17678 = call i16** @__ctype_b_loc()
+  %39 = bitcast i16** %R17678 to i8*
   %40 = getelementptr inbounds i8, i8* %39, i64 0
   %41 = bitcast i8* %40 to i16**
   %load_target17 = load i16*, i16** %41
   %42 = getelementptr inbounds i8, i8* %36, i64 1
   %load_target18 = load i8, i8* %42
-  %R17682 = zext i8 %load_target18 to i32
-  %R17683 = sext i32 %R17682 to i64
-  %R17684 = mul i64 %R17683, 2
+  %R17683 = zext i8 %load_target18 to i32
+  %R17684 = sext i32 %R17683 to i64
+  %R17685 = mul i64 %R17684, 2
   %43 = bitcast i16* %load_target17 to i8*
-  %44 = getelementptr inbounds i8, i8* %43, i64 %R17684
+  %44 = getelementptr inbounds i8, i8* %43, i64 %R17685
   %45 = bitcast i8* %44 to i16*
   %46 = bitcast i16* %45 to i8*
   %47 = getelementptr inbounds i8, i8* %46, i64 0
   %48 = bitcast i8* %47 to i16*
   %load_target19 = load i16, i16* %48
-  %R17687 = zext i16 %load_target19 to i32
-  %R17688 = and i32 %R17687, 2048
+  %R17688 = zext i16 %load_target19 to i32
+  %R17689 = and i32 %R17688, 2048
   store i8* %38, i8** %3
-  %cond20 = icmp ne i32 %R17688, 0
+  %cond20 = icmp ne i32 %R17689, 0
   br i1 %cond20, label %L3253, label %L3254
 
 L3253:                                            ; preds = %L3252
@@ -39721,28 +39723,28 @@ L3253:                                            ; preds = %L3252
   br label %L3254
 
 L3254:                                            ; preds = %L3253, %L3252
-  %R17691 = call i16** @__ctype_b_loc()
-  %50 = bitcast i16** %R17691 to i8*
+  %R17692 = call i16** @__ctype_b_loc()
+  %50 = bitcast i16** %R17692 to i8*
   %51 = getelementptr inbounds i8, i8* %50, i64 0
   %52 = bitcast i8* %51 to i16**
   %load_target21 = load i16*, i16** %52
   %53 = load i8*, i8** %3
   %54 = getelementptr inbounds i8, i8* %53, i64 0
   %load_target22 = load i8, i8* %54
-  %R17696 = zext i8 %load_target22 to i32
-  %R17697 = sext i32 %R17696 to i64
-  %R17698 = mul i64 %R17697, 2
+  %R17697 = zext i8 %load_target22 to i32
+  %R17698 = sext i32 %R17697 to i64
+  %R17699 = mul i64 %R17698, 2
   %55 = bitcast i16* %load_target21 to i8*
-  %56 = getelementptr inbounds i8, i8* %55, i64 %R17698
+  %56 = getelementptr inbounds i8, i8* %55, i64 %R17699
   %57 = bitcast i8* %56 to i16*
   %58 = bitcast i16* %57 to i8*
   %59 = getelementptr inbounds i8, i8* %58, i64 0
   %60 = bitcast i8* %59 to i16*
   %load_target23 = load i16, i16* %60
-  %R17701 = zext i16 %load_target23 to i32
-  %R17702 = and i32 %R17701, 2048
+  %R17702 = zext i16 %load_target23 to i32
+  %R17703 = and i32 %R17702, 2048
   store i8* %53, i8** %4
-  %cond24 = icmp ne i32 %R17702, 0
+  %cond24 = icmp ne i32 %R17703, 0
   br i1 %cond24, label %L3255, label %L3256
 
 L3255:                                            ; preds = %L3254
@@ -39751,31 +39753,31 @@ L3255:                                            ; preds = %L3254
   br label %L3256
 
 L3256:                                            ; preds = %L3255, %L3254, %L3251
-  %R17705 = call i16** @__ctype_b_loc()
-  %62 = bitcast i16** %R17705 to i8*
+  %R17706 = call i16** @__ctype_b_loc()
+  %62 = bitcast i16** %R17706 to i8*
   %63 = getelementptr inbounds i8, i8* %62, i64 0
   %64 = bitcast i8* %63 to i16**
   %load_target25 = load i16*, i16** %64
   %65 = load i8*, i8** %4
   %66 = getelementptr inbounds i8, i8* %65, i64 0
   %load_target26 = load i8, i8* %66
-  %R17710 = zext i8 %load_target26 to i32
-  %R17711 = sext i32 %R17710 to i64
-  %R17712 = mul i64 %R17711, 2
+  %R17711 = zext i8 %load_target26 to i32
+  %R17712 = sext i32 %R17711 to i64
+  %R17713 = mul i64 %R17712, 2
   %67 = bitcast i16* %load_target25 to i8*
-  %68 = getelementptr inbounds i8, i8* %67, i64 %R17712
+  %68 = getelementptr inbounds i8, i8* %67, i64 %R17713
   %69 = bitcast i8* %68 to i16*
   %70 = bitcast i16* %69 to i8*
   %71 = getelementptr inbounds i8, i8* %70, i64 0
   %72 = bitcast i8* %71 to i16*
   %load_target27 = load i16, i16* %72
-  %R17715 = zext i16 %load_target27 to i32
-  %R17716 = and i32 %R17715, 2048
-  %cond28 = icmp ne i32 %R17716, 0
+  %R17716 = zext i16 %load_target27 to i32
+  %R17717 = and i32 %R17716, 2048
+  %cond28 = icmp ne i32 %R17717, 0
   br i1 %cond28, label %L3257, label %L3258
 
 L3257:                                            ; preds = %L3256
-  %R17719 = call i32 (%struct.lua_State*, i8*, ...) @luaL_error(%struct.lua_State* %ARG1, i8* getelementptr inbounds ([45 x i8], [45 x i8]* @.str.213, i64 0, i64 0))
+  %R17720 = call i32 (%struct.lua_State*, i8*, ...) @luaL_error(%struct.lua_State* %ARG1, i8* getelementptr inbounds ([45 x i8], [45 x i8]* @.str.213, i64 0, i64 0))
   br label %L3258
 
 L3258:                                            ; preds = %L3257, %L3256
@@ -39784,34 +39786,34 @@ L3258:                                            ; preds = %L3257, %L3256
   store i8 37, i8* %74
   %75 = ptrtoint i8* %65 to i64
   %76 = ptrtoint i8* %ARG2 to i64
-  %R17726 = sub i64 %75, %76
-  %R17727 = add i64 %R17726, 1
-  %R17729 = call i8* @strncpy(i8* %73, i8* %ARG2, i64 %R17727)
-  %R17735 = ptrtoint i8* %73 to i64
-  %R17736 = add i64 %R17735, %R17727
-  %R17737 = inttoptr i64 %R17736 to i8*
-  %77 = getelementptr inbounds i8, i8* %R17737, i64 0
+  %R17727 = sub i64 %75, %76
+  %R17728 = add i64 %R17727, 1
+  %R17730 = call i8* @strncpy(i8* %73, i8* %ARG2, i64 %R17728)
+  %R17736 = ptrtoint i8* %73 to i64
+  %R17737 = add i64 %R17736, %R17728
+  %R17738 = inttoptr i64 %R17737 to i8*
+  %77 = getelementptr inbounds i8, i8* %R17738, i64 0
   store i8 0, i8* %77
   ret i8* %65
 }
 
 define internal void @addintlen(i8* %ARG1) {
 L3259:
-  %R17742 = call i64 @strlen(i8* %ARG1)
-  %R17745 = add i64 %R17742, -1
-  %0 = getelementptr inbounds i8, i8* %ARG1, i64 %R17745
+  %R17743 = call i64 @strlen(i8* %ARG1)
+  %R17746 = add i64 %R17743, -1
+  %0 = getelementptr inbounds i8, i8* %ARG1, i64 %R17746
   %1 = getelementptr inbounds i8, i8* %0, i64 0
   %load_target = load i8, i8* %1
-  %2 = getelementptr inbounds i8, i8* %ARG1, i64 %R17742
+  %2 = getelementptr inbounds i8, i8* %ARG1, i64 %R17743
   %3 = getelementptr inbounds i8, i8* %2, i64 -1
-  %R17753 = call i8* @strcpy(i8* %3, i8* getelementptr inbounds ([2 x i8], [2 x i8]* @.str.214, i64 0, i64 0))
-  %R17757 = add i64 %R17742, 2
-  %R17758 = add i64 %R17757, -2
-  %4 = getelementptr inbounds i8, i8* %ARG1, i64 %R17758
+  %R17754 = call i8* @strcpy(i8* %3, i8* getelementptr inbounds ([2 x i8], [2 x i8]* @.str.214, i64 0, i64 0))
+  %R17758 = add i64 %R17743, 2
+  %R17759 = add i64 %R17758, -2
+  %4 = getelementptr inbounds i8, i8* %ARG1, i64 %R17759
   %5 = getelementptr inbounds i8, i8* %4, i64 0
   store i8 %load_target, i8* %5
-  %R17763 = add i64 %R17757, -1
-  %6 = getelementptr inbounds i8, i8* %ARG1, i64 %R17763
+  %R17764 = add i64 %R17758, -1
+  %6 = getelementptr inbounds i8, i8* %ARG1, i64 %R17764
   %7 = getelementptr inbounds i8, i8* %6, i64 0
   store i8 0, i8* %7
   ret void
@@ -39827,34 +39829,34 @@ L3260:
   %0 = alloca i8*
   %1 = alloca i32
   %2 = alloca i32
-  %R17766 = call i32 @lua_gettop(%struct.lua_State* %ARG1)
-  %R17770 = call i8* @luaL_checklstring(%struct.lua_State* %ARG1, i32 1, i64* %sfl_0x62d000ff1e60)
+  %R17767 = call i32 @lua_gettop(%struct.lua_State* %ARG1)
+  %R17771 = call i8* @luaL_checklstring(%struct.lua_State* %ARG1, i32 1, i64* %sfl_0x62d000ff1e60)
   %3 = bitcast i64* %sfl_0x62d000ff1e60 to i8*
   %4 = getelementptr inbounds i8, i8* %3, i64 0
   %5 = bitcast i8* %4 to i64*
   %load_target = load i64, i64* %5
-  %6 = getelementptr inbounds i8, i8* %R17770, i64 %load_target
+  %6 = getelementptr inbounds i8, i8* %R17771, i64 %load_target
   call void @luaL_buffinit(%struct.lua_State* %ARG1, %struct.luaL_Buffer* %b_0x62d000ff22e8)
   store i32 1, i32* %1
-  store i8* %R17770, i8** %0
+  store i8* %R17771, i8** %0
   br label %L3261
 
 L3261:                                            ; preds = %L3282, %L3279, %L3277, %L3269, %L3265, %L3260
   %7 = load i8*, i8** %0
   %8 = ptrtoint i8* %7 to i64
   %9 = ptrtoint i8* %6 to i64
-  %R17778 = icmp ult i64 %8, %9
-  %R177781 = zext i1 %R17778 to i32
-  %cond = icmp ne i32 %R177781, 0
+  %R17779 = icmp ult i64 %8, %9
+  %R177791 = zext i1 %R17779 to i32
+  %cond = icmp ne i32 %R177791, 0
   br i1 %cond, label %L3262, label %L3283
 
 L3262:                                            ; preds = %L3261
   %10 = getelementptr inbounds i8, i8* %7, i64 0
   %load_target2 = load i8, i8* %10
-  %R17781 = sext i8 %load_target2 to i32
-  %R17782 = icmp ne i32 %R17781, 37
-  %R177823 = zext i1 %R17782 to i32
-  %cond4 = icmp ne i32 %R177823, 0
+  %R17782 = sext i8 %load_target2 to i32
+  %R17783 = icmp ne i32 %R17782, 37
+  %R177833 = zext i1 %R17783 to i32
+  %cond4 = icmp ne i32 %R177833, 0
   br i1 %cond4, label %L3263, label %L3266
 
 L3263:                                            ; preds = %L3262
@@ -39868,13 +39870,13 @@ L3263:                                            ; preds = %L3262
   %17 = bitcast i8* %16 to %struct.luaL_Buffer*
   %18 = ptrtoint i8* %load_target5 to i64
   %19 = ptrtoint %struct.luaL_Buffer* %17 to i64
-  %R17787 = icmp ult i64 %18, %19
-  %R177876 = zext i1 %R17787 to i32
-  %cond7 = icmp ne i32 %R177876, 0
+  %R17788 = icmp ult i64 %18, %19
+  %R177886 = zext i1 %R17788 to i32
+  %cond7 = icmp ne i32 %R177886, 0
   br i1 %cond7, label %L3265, label %L3264
 
 L3264:                                            ; preds = %L3263
-  %R17789 = call i8* @luaL_prepbuffer(%struct.luaL_Buffer* %b_0x62d000ff22e8)
+  %R17790 = call i8* @luaL_prepbuffer(%struct.luaL_Buffer* %b_0x62d000ff22e8)
   br label %L3265
 
 L3265:                                            ; preds = %L3264, %L3263
@@ -39901,10 +39903,10 @@ L3266:                                            ; preds = %L3262
   %32 = getelementptr inbounds i8, i8* %7, inttoptr (i64 1 to i8*)
   %33 = getelementptr inbounds i8, i8* %7, i64 1
   %load_target10 = load i8, i8* %33
-  %R17800 = sext i8 %load_target10 to i32
-  %R17801 = icmp eq i32 %R17800, 37
-  %R1780111 = zext i1 %R17801 to i32
-  %cond12 = icmp ne i32 %R1780111, 0
+  %R17801 = sext i8 %load_target10 to i32
+  %R17802 = icmp eq i32 %R17801, 37
+  %R1780211 = zext i1 %R17802 to i32
+  %cond12 = icmp ne i32 %R1780211, 0
   br i1 %cond12, label %L3267, label %L3270
 
 L3267:                                            ; preds = %L3266
@@ -39918,13 +39920,13 @@ L3267:                                            ; preds = %L3266
   %40 = bitcast i8* %39 to %struct.luaL_Buffer*
   %41 = ptrtoint i8* %load_target13 to i64
   %42 = ptrtoint %struct.luaL_Buffer* %40 to i64
-  %R17806 = icmp ult i64 %41, %42
-  %R1780614 = zext i1 %R17806 to i32
-  %cond15 = icmp ne i32 %R1780614, 0
+  %R17807 = icmp ult i64 %41, %42
+  %R1780714 = zext i1 %R17807 to i32
+  %cond15 = icmp ne i32 %R1780714, 0
   br i1 %cond15, label %L3269, label %L3268
 
 L3268:                                            ; preds = %L3267
-  %R17808 = call i8* @luaL_prepbuffer(%struct.luaL_Buffer* %b_0x62d000ff22e8)
+  %R17809 = call i8* @luaL_prepbuffer(%struct.luaL_Buffer* %b_0x62d000ff22e8)
   br label %L3269
 
 L3269:                                            ; preds = %L3268, %L3267
@@ -39949,22 +39951,22 @@ L3269:                                            ; preds = %L3268, %L3267
 
 L3270:                                            ; preds = %L3266
   %55 = load i32, i32* %1
-  %R17817 = add i32 %55, 1
-  %R17819 = icmp sgt i32 %R17817, %R17766
-  %R1781918 = zext i1 %R17819 to i32
-  store i32 %R17817, i32* %1
-  %cond19 = icmp ne i32 %R1781918, 0
+  %R17818 = add i32 %55, 1
+  %R17820 = icmp sgt i32 %R17818, %R17767
+  %R1782018 = zext i1 %R17820 to i32
+  store i32 %R17818, i32* %1
+  %cond19 = icmp ne i32 %R1782018, 0
   br i1 %cond19, label %L3271, label %L3272
 
 L3271:                                            ; preds = %L3270
-  %R17823 = call i32 @luaL_argerror(%struct.lua_State* %ARG1, i32 %R17817, i8* getelementptr inbounds ([9 x i8], [9 x i8]* @.str.215, i64 0, i64 0))
+  %R17824 = call i32 @luaL_argerror(%struct.lua_State* %ARG1, i32 %R17818, i8* getelementptr inbounds ([9 x i8], [9 x i8]* @.str.215, i64 0, i64 0))
   br label %L3272
 
 L3272:                                            ; preds = %L3271, %L3270
-  %R17826 = bitcast [18 x i8]* %form_0x62d000ff2940 to i8*
-  %R17827 = call i8* @scanformat(%struct.lua_State* %ARG1, i8* %32, i8* %R17826)
-  %56 = getelementptr inbounds i8, i8* %R17827, inttoptr (i64 1 to i8*)
-  %57 = getelementptr inbounds i8, i8* %R17827, i64 0
+  %R17827 = bitcast [18 x i8]* %form_0x62d000ff2940 to i8*
+  %R17828 = call i8* @scanformat(%struct.lua_State* %ARG1, i8* %32, i8* %R17827)
+  %56 = getelementptr inbounds i8, i8* %R17828, inttoptr (i64 1 to i8*)
+  %57 = getelementptr inbounds i8, i8* %R17828, i64 0
   %load_target20 = load i8, i8* %57
   store i8* %56, i8** %0
   switch i8 %load_target20, label %L3281 [
@@ -39985,76 +39987,76 @@ L3272:                                            ; preds = %L3271, %L3270
   ]
 
 L3273:                                            ; preds = %L3272
-  %R17831 = bitcast [512 x i8]* %buff_0x62d000ff2b10 to i8*
-  %R17835 = call double @luaL_checknumber(%struct.lua_State* %ARG1, i32 %R17817)
-  %R17836 = fptosi double %R17835 to i32
-  %R17837 = call i32 (i8*, i8*, ...) @sprintf(i8* %R17831, i8* %R17826, i32 %R17836)
+  %R17832 = bitcast [512 x i8]* %buff_0x62d000ff2b10 to i8*
+  %R17836 = call double @luaL_checknumber(%struct.lua_State* %ARG1, i32 %R17818)
+  %R17837 = fptosi double %R17836 to i32
+  %R17838 = call i32 (i8*, i8*, ...) @sprintf(i8* %R17832, i8* %R17827, i32 %R17837)
   br label %L3282
 
 L3274:                                            ; preds = %L3272, %L3272
-  call void @addintlen(i8* %R17826)
-  %R17839 = bitcast [512 x i8]* %buff_0x62d000ff2b10 to i8*
-  %R17843 = call double @luaL_checknumber(%struct.lua_State* %ARG1, i32 %R17817)
-  %R17845 = call i32 (i8*, i8*, ...) @sprintf(i8* %R17839, i8* %R17826, double %R17843)
+  call void @addintlen(i8* %R17827)
+  %R17840 = bitcast [512 x i8]* %buff_0x62d000ff2b10 to i8*
+  %R17844 = call double @luaL_checknumber(%struct.lua_State* %ARG1, i32 %R17818)
+  %R17846 = call i32 (i8*, i8*, ...) @sprintf(i8* %R17840, i8* %R17827, double %R17844)
   br label %L3282
 
 L3275:                                            ; preds = %L3272, %L3272, %L3272, %L3272
-  call void @addintlen(i8* %R17826)
-  %R17847 = bitcast [512 x i8]* %buff_0x62d000ff2b10 to i8*
-  %R17851 = call double @luaL_checknumber(%struct.lua_State* %ARG1, i32 %R17817)
-  %R17853 = call i32 (i8*, i8*, ...) @sprintf(i8* %R17847, i8* %R17826, double %R17851)
+  call void @addintlen(i8* %R17827)
+  %R17848 = bitcast [512 x i8]* %buff_0x62d000ff2b10 to i8*
+  %R17852 = call double @luaL_checknumber(%struct.lua_State* %ARG1, i32 %R17818)
+  %R17854 = call i32 (i8*, i8*, ...) @sprintf(i8* %R17848, i8* %R17827, double %R17852)
   br label %L3282
 
 L3276:                                            ; preds = %L3272, %L3272, %L3272, %L3272, %L3272
-  %R17854 = bitcast [512 x i8]* %buff_0x62d000ff2b10 to i8*
-  %R17858 = call double @luaL_checknumber(%struct.lua_State* %ARG1, i32 %R17817)
-  %R17860 = call i32 (i8*, i8*, ...) @sprintf(i8* %R17854, i8* %R17826, double %R17858)
+  %R17855 = bitcast [512 x i8]* %buff_0x62d000ff2b10 to i8*
+  %R17859 = call double @luaL_checknumber(%struct.lua_State* %ARG1, i32 %R17818)
+  %R17861 = call i32 (i8*, i8*, ...) @sprintf(i8* %R17855, i8* %R17827, double %R17859)
   br label %L3282
 
 L3277:                                            ; preds = %L3272
-  call void @addquoted(%struct.lua_State* %ARG1, %struct.luaL_Buffer* %b_0x62d000ff22e8, i32 %R17817)
+  call void @addquoted(%struct.lua_State* %ARG1, %struct.luaL_Buffer* %b_0x62d000ff22e8, i32 %R17818)
   br label %L3261
 
 L3278:                                            ; preds = %L3272
-  %R17867 = call i8* @luaL_checklstring(%struct.lua_State* %ARG1, i32 %R17817, i64* %l_0x62d000ff3f00)
-  %R17869 = call i8* @strchr(i8* %R17826, i32 46)
-  %58 = ptrtoint i8* %R17869 to i64
-  %R17870 = icmp eq i64 %58, 0
-  %R1787021 = zext i1 %R17870 to i32
+  %R17868 = call i8* @luaL_checklstring(%struct.lua_State* %ARG1, i32 %R17818, i64* %l_0x62d000ff3f00)
+  %R17870 = call i8* @strchr(i8* %R17827, i32 46)
+  %58 = ptrtoint i8* %R17870 to i64
+  %R17871 = icmp eq i64 %58, 0
+  %R1787121 = zext i1 %R17871 to i32
   %59 = bitcast i64* %l_0x62d000ff3f00 to i8*
   %60 = getelementptr inbounds i8, i8* %59, i64 0
   %61 = bitcast i8* %60 to i64*
   %load_target22 = load i64, i64* %61
-  %R17872 = icmp uge i64 %load_target22, 100
-  %R1787223 = zext i1 %R17872 to i32
-  %62 = icmp ne i32 %R1787021, 0
-  %63 = icmp ne i32 %R1787223, 0
-  %R17873 = and i1 %62, %63
-  %R1787324 = zext i1 %R17873 to i32
-  %cond25 = icmp ne i32 %R1787324, 0
+  %R17873 = icmp uge i64 %load_target22, 100
+  %R1787323 = zext i1 %R17873 to i32
+  %62 = icmp ne i32 %R1787121, 0
+  %63 = icmp ne i32 %R1787323, 0
+  %R17874 = and i1 %62, %63
+  %R1787424 = zext i1 %R17874 to i32
+  %cond25 = icmp ne i32 %R1787424, 0
   br i1 %cond25, label %L3279, label %L3280
 
 L3279:                                            ; preds = %L3278
-  call void @lua_pushvalue(%struct.lua_State* %ARG1, i32 %R17817)
+  call void @lua_pushvalue(%struct.lua_State* %ARG1, i32 %R17818)
   call void @luaL_addvalue(%struct.luaL_Buffer* %b_0x62d000ff22e8)
   br label %L3261
 
 L3280:                                            ; preds = %L3278
-  %R17877 = bitcast [512 x i8]* %buff_0x62d000ff2b10 to i8*
-  %R17880 = call i32 (i8*, i8*, ...) @sprintf(i8* %R17877, i8* %R17826, i8* %R17867)
+  %R17878 = bitcast [512 x i8]* %buff_0x62d000ff2b10 to i8*
+  %R17881 = call i32 (i8*, i8*, ...) @sprintf(i8* %R17878, i8* %R17827, i8* %R17868)
   br label %L3282
 
 L3281:                                            ; preds = %L3272
-  %R17886 = sext i8 %load_target20 to i32
-  %R17887 = call i32 (%struct.lua_State*, i8*, ...) @luaL_error(%struct.lua_State* %ARG1, i8* getelementptr inbounds ([34 x i8], [34 x i8]* @.str.216, i64 0, i64 0), i32 %R17886)
-  store i32 %R17887, i32* %2
+  %R17887 = sext i8 %load_target20 to i32
+  %R17888 = call i32 (%struct.lua_State*, i8*, ...) @luaL_error(%struct.lua_State* %ARG1, i8* getelementptr inbounds ([34 x i8], [34 x i8]* @.str.216, i64 0, i64 0), i32 %R17887)
+  store i32 %R17888, i32* %2
   br label %L3284
 
 L3282:                                            ; preds = %L3280, %L3276, %L3275, %L3274, %L3273
-  %R17890 = bitcast [512 x i8]* %buff_0x62d000ff2b10 to i8*
   %R17891 = bitcast [512 x i8]* %buff_0x62d000ff2b10 to i8*
-  %R17892 = call i64 @strlen(i8* %R17891)
-  call void @luaL_addlstring(%struct.luaL_Buffer* %b_0x62d000ff22e8, i8* %R17890, i64 %R17892)
+  %R17892 = bitcast [512 x i8]* %buff_0x62d000ff2b10 to i8*
+  %R17893 = call i64 @strlen(i8* %R17892)
+  call void @luaL_addlstring(%struct.luaL_Buffer* %b_0x62d000ff22e8, i8* %R17891, i64 %R17893)
   br label %L3261
 
 L3283:                                            ; preds = %L3261
@@ -40072,7 +40074,7 @@ L3285:
   call void @lua_createtable(%struct.lua_State* %ARG1, i32 0, i32 1)
   call void @lua_pushlstring(%struct.lua_State* %ARG1, i8* getelementptr inbounds ([1 x i8], [1 x i8]* @.str.217, i64 0, i64 0), i64 0)
   call void @lua_pushvalue(%struct.lua_State* %ARG1, i32 -2)
-  %R17899 = call i32 @lua_setmetatable(%struct.lua_State* %ARG1, i32 -2)
+  %R17900 = call i32 @lua_setmetatable(%struct.lua_State* %ARG1, i32 -2)
   call void @lua_settop(%struct.lua_State* %ARG1, i32 -2)
   call void @lua_pushvalue(%struct.lua_State* %ARG1, i32 -2)
   call void @lua_setfield(%struct.lua_State* %ARG1, i32 -2, i8* getelementptr inbounds ([8 x i8], [8 x i8]* @.str.218, i64 0, i64 0))
@@ -40124,41 +40126,41 @@ L3290:                                            ; preds = %L3288
 
 define internal i32 @barg(%struct.lua_State* %ARG1, i32 %ARG2) {
 L3291:
-  %R17924 = call double @lua_tonumber(%struct.lua_State* %ARG1, i32 %ARG2)
-  %R17926 = fadd double %R17924, 0x4338000000000000
-  %R17929 = fcmp oeq double %R17926, 0.000000e+00
-  %R179291 = zext i1 %R17929 to i32
-  %cond = icmp ne i32 %R179291, 0
+  %R17925 = call double @lua_tonumber(%struct.lua_State* %ARG1, i32 %ARG2)
+  %R17927 = fadd double %R17925, 0x4338000000000000
+  %R17930 = fcmp oeq double %R17927, 0.000000e+00
+  %R179301 = zext i1 %R17930 to i32
+  %cond = icmp ne i32 %R179301, 0
   br i1 %cond, label %L3292, label %L3294
 
 L3292:                                            ; preds = %L3291
-  %R17932 = call i32 @lua_isnumber(%struct.lua_State* %ARG1, i32 %ARG2)
-  %cond2 = icmp ne i32 %R17932, 0
+  %R17933 = call i32 @lua_isnumber(%struct.lua_State* %ARG1, i32 %ARG2)
+  %cond2 = icmp ne i32 %R17933, 0
   br i1 %cond2, label %L3294, label %L3293
 
 L3293:                                            ; preds = %L3292
-  %R17936 = call i32 @luaL_typerror(%struct.lua_State* %ARG1, i32 %ARG2, i8* getelementptr inbounds ([7 x i8], [7 x i8]* @.str.220, i64 0, i64 0))
+  %R17937 = call i32 @luaL_typerror(%struct.lua_State* %ARG1, i32 %ARG2, i8* getelementptr inbounds ([7 x i8], [7 x i8]* @.str.220, i64 0, i64 0))
   br label %L3294
 
 L3294:                                            ; preds = %L3293, %L3292, %L3291
-  %R17938 = fptosi double %R17926 to i32
-  ret i32 %R17938
+  %R17939 = fptosi double %R17927 to i32
+  ret i32 %R17939
 }
 
 define internal i32 @tobit(%struct.lua_State* %ARG1) {
 L3295:
-  %R17942 = call i32 @barg(%struct.lua_State* %ARG1, i32 1)
-  %R17944 = sitofp i32 %R17942 to double
-  call void @lua_pushnumber(%struct.lua_State* %ARG1, double %R17944)
+  %R17943 = call i32 @barg(%struct.lua_State* %ARG1, i32 1)
+  %R17945 = sitofp i32 %R17943 to double
+  call void @lua_pushnumber(%struct.lua_State* %ARG1, double %R17945)
   ret i32 1
 }
 
 define internal i32 @bnot(%struct.lua_State* %ARG1) {
 L3296:
-  %R17948 = call i32 @barg(%struct.lua_State* %ARG1, i32 1)
-  %R17949 = xor i32 %R17948, -1
-  %R17951 = sitofp i32 %R17949 to double
-  call void @lua_pushnumber(%struct.lua_State* %ARG1, double %R17951)
+  %R17949 = call i32 @barg(%struct.lua_State* %ARG1, i32 1)
+  %R17950 = xor i32 %R17949, -1
+  %R17952 = sitofp i32 %R17950 to double
+  call void @lua_pushnumber(%struct.lua_State* %ARG1, double %R17952)
   ret i32 1
 }
 
@@ -40166,31 +40168,31 @@ define internal i32 @band(%struct.lua_State* %ARG1) {
 L3297:
   %0 = alloca i32
   %1 = alloca i32
-  %R17954 = call i32 @barg(%struct.lua_State* %ARG1, i32 1)
-  %R17956 = call i32 @lua_gettop(%struct.lua_State* %ARG1)
-  store i32 %R17954, i32* %1
-  store i32 %R17956, i32* %0
+  %R17955 = call i32 @barg(%struct.lua_State* %ARG1, i32 1)
+  %R17957 = call i32 @lua_gettop(%struct.lua_State* %ARG1)
+  store i32 %R17955, i32* %1
+  store i32 %R17957, i32* %0
   br label %L3298
 
 L3298:                                            ; preds = %L3299, %L3297
   %2 = load i32, i32* %0
-  %R17958 = icmp sgt i32 %2, 1
-  %R179581 = zext i1 %R17958 to i32
+  %R17959 = icmp sgt i32 %2, 1
+  %R179591 = zext i1 %R17959 to i32
   %3 = load i32, i32* %1
-  %cond = icmp ne i32 %R179581, 0
+  %cond = icmp ne i32 %R179591, 0
   br i1 %cond, label %L3299, label %L3300
 
 L3299:                                            ; preds = %L3298
-  %R17961 = call i32 @barg(%struct.lua_State* %ARG1, i32 %2)
-  %R17964 = and i32 %3, %R17961
-  store i32 %R17964, i32* %1
-  %R17967 = add i32 %2, -1
-  store i32 %R17967, i32* %0
+  %R17962 = call i32 @barg(%struct.lua_State* %ARG1, i32 %2)
+  %R17965 = and i32 %3, %R17962
+  store i32 %R17965, i32* %1
+  %R17968 = add i32 %2, -1
+  store i32 %R17968, i32* %0
   br label %L3298
 
 L3300:                                            ; preds = %L3298
-  %R17971 = sitofp i32 %3 to double
-  call void @lua_pushnumber(%struct.lua_State* %ARG1, double %R17971)
+  %R17972 = sitofp i32 %3 to double
+  call void @lua_pushnumber(%struct.lua_State* %ARG1, double %R17972)
   ret i32 1
 }
 
@@ -40198,31 +40200,31 @@ define internal i32 @bor(%struct.lua_State* %ARG1) {
 L3301:
   %0 = alloca i32
   %1 = alloca i32
-  %R17974 = call i32 @barg(%struct.lua_State* %ARG1, i32 1)
-  %R17976 = call i32 @lua_gettop(%struct.lua_State* %ARG1)
-  store i32 %R17974, i32* %1
-  store i32 %R17976, i32* %0
+  %R17975 = call i32 @barg(%struct.lua_State* %ARG1, i32 1)
+  %R17977 = call i32 @lua_gettop(%struct.lua_State* %ARG1)
+  store i32 %R17975, i32* %1
+  store i32 %R17977, i32* %0
   br label %L3302
 
 L3302:                                            ; preds = %L3303, %L3301
   %2 = load i32, i32* %0
-  %R17978 = icmp sgt i32 %2, 1
-  %R179781 = zext i1 %R17978 to i32
+  %R17979 = icmp sgt i32 %2, 1
+  %R179791 = zext i1 %R17979 to i32
   %3 = load i32, i32* %1
-  %cond = icmp ne i32 %R179781, 0
+  %cond = icmp ne i32 %R179791, 0
   br i1 %cond, label %L3303, label %L3304
 
 L3303:                                            ; preds = %L3302
-  %R17981 = call i32 @barg(%struct.lua_State* %ARG1, i32 %2)
-  %R17984 = or i32 %3, %R17981
-  store i32 %R17984, i32* %1
-  %R17987 = add i32 %2, -1
-  store i32 %R17987, i32* %0
+  %R17982 = call i32 @barg(%struct.lua_State* %ARG1, i32 %2)
+  %R17985 = or i32 %3, %R17982
+  store i32 %R17985, i32* %1
+  %R17988 = add i32 %2, -1
+  store i32 %R17988, i32* %0
   br label %L3302
 
 L3304:                                            ; preds = %L3302
-  %R17991 = sitofp i32 %3 to double
-  call void @lua_pushnumber(%struct.lua_State* %ARG1, double %R17991)
+  %R17992 = sitofp i32 %3 to double
+  call void @lua_pushnumber(%struct.lua_State* %ARG1, double %R17992)
   ret i32 1
 }
 
@@ -40230,109 +40232,109 @@ define internal i32 @bxor(%struct.lua_State* %ARG1) {
 L3305:
   %0 = alloca i32
   %1 = alloca i32
-  %R17994 = call i32 @barg(%struct.lua_State* %ARG1, i32 1)
-  %R17996 = call i32 @lua_gettop(%struct.lua_State* %ARG1)
-  store i32 %R17994, i32* %1
-  store i32 %R17996, i32* %0
+  %R17995 = call i32 @barg(%struct.lua_State* %ARG1, i32 1)
+  %R17997 = call i32 @lua_gettop(%struct.lua_State* %ARG1)
+  store i32 %R17995, i32* %1
+  store i32 %R17997, i32* %0
   br label %L3306
 
 L3306:                                            ; preds = %L3307, %L3305
   %2 = load i32, i32* %0
-  %R17998 = icmp sgt i32 %2, 1
-  %R179981 = zext i1 %R17998 to i32
+  %R17999 = icmp sgt i32 %2, 1
+  %R179991 = zext i1 %R17999 to i32
   %3 = load i32, i32* %1
-  %cond = icmp ne i32 %R179981, 0
+  %cond = icmp ne i32 %R179991, 0
   br i1 %cond, label %L3307, label %L3308
 
 L3307:                                            ; preds = %L3306
-  %R18001 = call i32 @barg(%struct.lua_State* %ARG1, i32 %2)
-  %R18004 = xor i32 %3, %R18001
-  store i32 %R18004, i32* %1
-  %R18007 = add i32 %2, -1
-  store i32 %R18007, i32* %0
+  %R18002 = call i32 @barg(%struct.lua_State* %ARG1, i32 %2)
+  %R18005 = xor i32 %3, %R18002
+  store i32 %R18005, i32* %1
+  %R18008 = add i32 %2, -1
+  store i32 %R18008, i32* %0
   br label %L3306
 
 L3308:                                            ; preds = %L3306
-  %R18011 = sitofp i32 %3 to double
-  call void @lua_pushnumber(%struct.lua_State* %ARG1, double %R18011)
+  %R18012 = sitofp i32 %3 to double
+  call void @lua_pushnumber(%struct.lua_State* %ARG1, double %R18012)
   ret i32 1
 }
 
 define internal i32 @lshift(%struct.lua_State* %ARG1) {
 L3309:
-  %R18014 = call i32 @barg(%struct.lua_State* %ARG1, i32 1)
-  %R18016 = call i32 @barg(%struct.lua_State* %ARG1, i32 2)
-  %R18017 = and i32 %R18016, 31
-  %R18021 = shl i32 %R18014, %R18017
-  %R18023 = sitofp i32 %R18021 to double
-  call void @lua_pushnumber(%struct.lua_State* %ARG1, double %R18023)
+  %R18015 = call i32 @barg(%struct.lua_State* %ARG1, i32 1)
+  %R18017 = call i32 @barg(%struct.lua_State* %ARG1, i32 2)
+  %R18018 = and i32 %R18017, 31
+  %R18022 = shl i32 %R18015, %R18018
+  %R18024 = sitofp i32 %R18022 to double
+  call void @lua_pushnumber(%struct.lua_State* %ARG1, double %R18024)
   ret i32 1
 }
 
 define internal i32 @rshift(%struct.lua_State* %ARG1) {
 L3310:
-  %R18026 = call i32 @barg(%struct.lua_State* %ARG1, i32 1)
-  %R18028 = call i32 @barg(%struct.lua_State* %ARG1, i32 2)
-  %R18029 = and i32 %R18028, 31
-  %R18033 = lshr i32 %R18026, %R18029
-  %R18035 = sitofp i32 %R18033 to double
-  call void @lua_pushnumber(%struct.lua_State* %ARG1, double %R18035)
+  %R18027 = call i32 @barg(%struct.lua_State* %ARG1, i32 1)
+  %R18029 = call i32 @barg(%struct.lua_State* %ARG1, i32 2)
+  %R18030 = and i32 %R18029, 31
+  %R18034 = lshr i32 %R18027, %R18030
+  %R18036 = sitofp i32 %R18034 to double
+  call void @lua_pushnumber(%struct.lua_State* %ARG1, double %R18036)
   ret i32 1
 }
 
 define internal i32 @arshift(%struct.lua_State* %ARG1) {
 L3311:
-  %R18038 = call i32 @barg(%struct.lua_State* %ARG1, i32 1)
-  %R18040 = call i32 @barg(%struct.lua_State* %ARG1, i32 2)
-  %R18041 = and i32 %R18040, 31
-  %R18046 = ashr i32 %R18038, %R18041
-  %R18048 = sitofp i32 %R18046 to double
-  call void @lua_pushnumber(%struct.lua_State* %ARG1, double %R18048)
+  %R18039 = call i32 @barg(%struct.lua_State* %ARG1, i32 1)
+  %R18041 = call i32 @barg(%struct.lua_State* %ARG1, i32 2)
+  %R18042 = and i32 %R18041, 31
+  %R18047 = ashr i32 %R18039, %R18042
+  %R18049 = sitofp i32 %R18047 to double
+  call void @lua_pushnumber(%struct.lua_State* %ARG1, double %R18049)
   ret i32 1
 }
 
 define internal i32 @rol(%struct.lua_State* %ARG1) {
 L3312:
-  %R18051 = call i32 @barg(%struct.lua_State* %ARG1, i32 1)
-  %R18053 = call i32 @barg(%struct.lua_State* %ARG1, i32 2)
-  %R18054 = and i32 %R18053, 31
-  %R18058 = shl i32 %R18051, %R18054
-  %R18061 = sub i32 32, %R18054
-  %R18062 = lshr i32 %R18051, %R18061
-  %R18063 = or i32 %R18058, %R18062
-  %R18065 = sitofp i32 %R18063 to double
-  call void @lua_pushnumber(%struct.lua_State* %ARG1, double %R18065)
+  %R18052 = call i32 @barg(%struct.lua_State* %ARG1, i32 1)
+  %R18054 = call i32 @barg(%struct.lua_State* %ARG1, i32 2)
+  %R18055 = and i32 %R18054, 31
+  %R18059 = shl i32 %R18052, %R18055
+  %R18062 = sub i32 32, %R18055
+  %R18063 = lshr i32 %R18052, %R18062
+  %R18064 = or i32 %R18059, %R18063
+  %R18066 = sitofp i32 %R18064 to double
+  call void @lua_pushnumber(%struct.lua_State* %ARG1, double %R18066)
   ret i32 1
 }
 
 define internal i32 @ror(%struct.lua_State* %ARG1) {
 L3313:
-  %R18068 = call i32 @barg(%struct.lua_State* %ARG1, i32 1)
-  %R18070 = call i32 @barg(%struct.lua_State* %ARG1, i32 2)
-  %R18071 = and i32 %R18070, 31
-  %R18075 = lshr i32 %R18068, %R18071
-  %R18078 = sub i32 32, %R18071
-  %R18079 = shl i32 %R18068, %R18078
-  %R18080 = or i32 %R18075, %R18079
-  %R18082 = sitofp i32 %R18080 to double
-  call void @lua_pushnumber(%struct.lua_State* %ARG1, double %R18082)
+  %R18069 = call i32 @barg(%struct.lua_State* %ARG1, i32 1)
+  %R18071 = call i32 @barg(%struct.lua_State* %ARG1, i32 2)
+  %R18072 = and i32 %R18071, 31
+  %R18076 = lshr i32 %R18069, %R18072
+  %R18079 = sub i32 32, %R18072
+  %R18080 = shl i32 %R18069, %R18079
+  %R18081 = or i32 %R18076, %R18080
+  %R18083 = sitofp i32 %R18081 to double
+  call void @lua_pushnumber(%struct.lua_State* %ARG1, double %R18083)
   ret i32 1
 }
 
 define internal i32 @bswap(%struct.lua_State* %ARG1) {
 L3314:
-  %R18085 = call i32 @barg(%struct.lua_State* %ARG1, i32 1)
-  %R18087 = lshr i32 %R18085, 24
-  %R18089 = lshr i32 %R18085, 8
-  %R18090 = and i32 %R18089, 65280
-  %R18091 = or i32 %R18087, %R18090
-  %R18093 = and i32 %R18085, 65280
-  %R18094 = shl i32 %R18093, 8
-  %R18095 = or i32 %R18091, %R18094
-  %R18097 = shl i32 %R18085, 24
-  %R18098 = or i32 %R18095, %R18097
-  %R18102 = sitofp i32 %R18098 to double
-  call void @lua_pushnumber(%struct.lua_State* %ARG1, double %R18102)
+  %R18086 = call i32 @barg(%struct.lua_State* %ARG1, i32 1)
+  %R18088 = lshr i32 %R18086, 24
+  %R18090 = lshr i32 %R18086, 8
+  %R18091 = and i32 %R18090, 65280
+  %R18092 = or i32 %R18088, %R18091
+  %R18094 = and i32 %R18086, 65280
+  %R18095 = shl i32 %R18094, 8
+  %R18096 = or i32 %R18092, %R18095
+  %R18098 = shl i32 %R18086, 24
+  %R18099 = or i32 %R18096, %R18098
+  %R18103 = sitofp i32 %R18099 to double
+  call void @lua_pushnumber(%struct.lua_State* %ARG1, double %R18103)
   ret i32 1
 }
 
@@ -40344,12 +40346,12 @@ L3315:
   %2 = alloca i32
   %3 = alloca i8*
   %4 = alloca i32
-  %R18105 = call i32 @barg(%struct.lua_State* %ARG1, i32 1)
-  %R18107 = call i32 @lua_type(%struct.lua_State* %ARG1, i32 2)
-  %R18108 = icmp eq i32 %R18107, -1
-  %R181081 = zext i1 %R18108 to i32
-  store i32 %R18105, i32* %4
-  %cond = icmp ne i32 %R181081, 0
+  %R18106 = call i32 @barg(%struct.lua_State* %ARG1, i32 1)
+  %R18108 = call i32 @lua_type(%struct.lua_State* %ARG1, i32 2)
+  %R18109 = icmp eq i32 %R18108, -1
+  %R181091 = zext i1 %R18109 to i32
+  store i32 %R18106, i32* %4
+  %cond = icmp ne i32 %R181091, 0
   br i1 %cond, label %L3316, label %L3317
 
 L3316:                                            ; preds = %L3315
@@ -40357,63 +40359,63 @@ L3316:                                            ; preds = %L3315
   br label %L3318
 
 L3317:                                            ; preds = %L3315
-  %R18110 = call i32 @barg(%struct.lua_State* %ARG1, i32 2)
-  store i32 %R18110, i32* %0
+  %R18111 = call i32 @barg(%struct.lua_State* %ARG1, i32 2)
+  store i32 %R18111, i32* %0
   br label %L3318
 
 L3318:                                            ; preds = %L3317, %L3316
   %5 = load i32, i32* %0
-  %R18115 = icmp slt i32 %5, 0
-  %R181152 = zext i1 %R18115 to i32
+  %R18116 = icmp slt i32 %5, 0
+  %R181162 = zext i1 %R18116 to i32
   store i32 %5, i32* %1
   store i8* getelementptr inbounds ([17 x i8], [17 x i8]* @.str.221, i64 0, i64 0), i8** %3
-  %cond3 = icmp ne i32 %R181152, 0
+  %cond3 = icmp ne i32 %R181162, 0
   br i1 %cond3, label %L3319, label %L3320
 
 L3319:                                            ; preds = %L3318
-  %R18117 = sub i32 0, %5
-  store i32 %R18117, i32* %1
+  %R18118 = sub i32 0, %5
+  store i32 %R18118, i32* %1
   store i8* getelementptr inbounds ([17 x i8], [17 x i8]* @.str.222, i64 0, i64 0), i8** %3
   br label %L3320
 
 L3320:                                            ; preds = %L3319, %L3318
   %6 = load i32, i32* %1
-  %R18120 = icmp sgt i32 %6, 8
-  %R181204 = zext i1 %R18120 to i32
-  %cond5 = icmp ne i32 %R181204, 0
+  %R18121 = icmp sgt i32 %6, 8
+  %R181214 = zext i1 %R18121 to i32
+  %cond5 = icmp ne i32 %R181214, 0
   %select = select i1 %cond5, i32 8, i32 %6
   store i32 %select, i32* %2
   br label %L3321
 
 L3321:                                            ; preds = %L3322, %L3320
   %7 = load i32, i32* %2
-  %R18124 = add i32 %7, -1
-  %R18125 = icmp sge i32 %R18124, 0
-  %R181256 = zext i1 %R18125 to i32
-  store i32 %R18124, i32* %2
-  %R18133 = bitcast [8 x i8]* %buf_0x62d001026810 to i8*
-  %cond7 = icmp ne i32 %R181256, 0
+  %R18125 = add i32 %7, -1
+  %R18126 = icmp sge i32 %R18125, 0
+  %R181266 = zext i1 %R18126 to i32
+  store i32 %R18125, i32* %2
+  %R18134 = bitcast [8 x i8]* %buf_0x62d001026810 to i8*
+  %cond7 = icmp ne i32 %R181266, 0
   br i1 %cond7, label %L3322, label %L3323
 
 L3322:                                            ; preds = %L3321
   %8 = load i8*, i8** %3
   %9 = load i32, i32* %4
-  %R18128 = and i32 %9, 15
-  %R18129 = zext i32 %R18128 to i64
-  %10 = getelementptr inbounds i8, i8* %8, i64 %R18129
+  %R18129 = and i32 %9, 15
+  %R18130 = zext i32 %R18129 to i64
+  %10 = getelementptr inbounds i8, i8* %8, i64 %R18130
   %11 = getelementptr inbounds i8, i8* %10, i64 0
   %load_target = load i8, i8* %11
-  %R18135 = sext i32 %R18124 to i64
-  %12 = getelementptr inbounds i8, i8* %R18133, i64 %R18135
+  %R18136 = sext i32 %R18125 to i64
+  %12 = getelementptr inbounds i8, i8* %R18134, i64 %R18136
   %13 = getelementptr inbounds i8, i8* %12, i64 0
   store i8 %load_target, i8* %13
-  %R18139 = lshr i32 %9, 4
-  store i32 %R18139, i32* %4
+  %R18140 = lshr i32 %9, 4
+  store i32 %R18140, i32* %4
   br label %L3321
 
 L3323:                                            ; preds = %L3321
-  %R18144 = sext i32 %select to i64
-  call void @lua_pushlstring(%struct.lua_State* %ARG1, i8* %R18133, i64 %R18144)
+  %R18145 = sext i32 %select to i64
+  call void @lua_pushlstring(%struct.lua_State* %ARG1, i8* %R18134, i64 %R18145)
   ret i32 1
 }
 
@@ -40957,13 +40959,14 @@ define i32 @main(i32 %ARG1, i8** %ARG2) {
 L3325:
   %0 = alloca i32
   %1 = alloca i32
+  %R21138 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([12 x i8], [12 x i8]* @.str.345, i64 0, i64 0))
   call void @init_globals()
-  %R21136 = call %struct.lua_State* @luaL_newstate()
-  call void @luaL_openlibs(%struct.lua_State* %R21136)
-  call void @luaL_register(%struct.lua_State* %R21136, i8* getelementptr inbounds ([4 x i8], [4 x i8]* @.str.345, i64 0, i64 0), %struct.luaL_Reg* getelementptr inbounds ([13 x %struct.luaL_Reg], [13 x %struct.luaL_Reg]* @bitlib, i32 0, i32 0))
-  %R21142 = icmp slt i32 %ARG1, 2
-  %R211421 = zext i1 %R21142 to i32
-  %cond = icmp ne i32 %R211421, 0
+  %R21139 = call %struct.lua_State* @luaL_newstate()
+  call void @luaL_openlibs(%struct.lua_State* %R21139)
+  call void @luaL_register(%struct.lua_State* %R21139, i8* getelementptr inbounds ([4 x i8], [4 x i8]* @.str.346, i64 0, i64 0), %struct.luaL_Reg* getelementptr inbounds ([13 x %struct.luaL_Reg], [13 x %struct.luaL_Reg]* @bitlib, i32 0, i32 0))
+  %R21145 = icmp slt i32 %ARG1, 2
+  %R211451 = zext i1 %R21145 to i32
+  %cond = icmp ne i32 %R211451, 0
   br i1 %cond, label %L3326, label %L3327
 
 L3326:                                            ; preds = %L3325
@@ -40971,20 +40974,20 @@ L3326:                                            ; preds = %L3325
   br label %L3334
 
 L3327:                                            ; preds = %L3325
-  call void @lua_createtable(%struct.lua_State* %R21136, i32 0, i32 1)
+  call void @lua_createtable(%struct.lua_State* %R21139, i32 0, i32 1)
   %2 = bitcast i8** %ARG2 to i8*
   %3 = getelementptr inbounds i8, i8* %2, i64 8
   %4 = bitcast i8* %3 to i8**
   %load_target = load i8*, i8** %4
-  call void @lua_pushstring(%struct.lua_State* %R21136, i8* %load_target)
-  call void @lua_rawseti(%struct.lua_State* %R21136, i32 -2, i32 0)
-  call void @lua_setfield(%struct.lua_State* %R21136, i32 -10002, i8* getelementptr inbounds ([4 x i8], [4 x i8]* @.str.346, i64 0, i64 0))
+  call void @lua_pushstring(%struct.lua_State* %R21139, i8* %load_target)
+  call void @lua_rawseti(%struct.lua_State* %R21139, i32 -2, i32 0)
+  call void @lua_setfield(%struct.lua_State* %R21139, i32 -10002, i8* getelementptr inbounds ([4 x i8], [4 x i8]* @.str.347, i64 0, i64 0))
   %5 = bitcast i8** %ARG2 to i8*
   %6 = getelementptr inbounds i8, i8* %5, i64 8
   %7 = bitcast i8* %6 to i8**
   %load_target2 = load i8*, i8** %7
-  %R21154 = call i32 @luaL_loadfile(%struct.lua_State* %R21136, i8* %load_target2)
-  %cond3 = icmp ne i32 %R21154, 0
+  %R21157 = call i32 @luaL_loadfile(%struct.lua_State* %R21139, i8* %load_target2)
+  %cond3 = icmp ne i32 %R21157, 0
   br i1 %cond3, label %L3332, label %L3328
 
 L3328:                                            ; preds = %L3327
@@ -40993,41 +40996,41 @@ L3328:                                            ; preds = %L3327
 
 L3329:                                            ; preds = %L3330, %L3328
   %8 = load i32, i32* %0
-  %R21157 = icmp slt i32 %8, %ARG1
-  %R211574 = zext i1 %R21157 to i32
-  %cond5 = icmp ne i32 %R211574, 0
+  %R21160 = icmp slt i32 %8, %ARG1
+  %R211604 = zext i1 %R21160 to i32
+  %cond5 = icmp ne i32 %R211604, 0
   br i1 %cond5, label %L3330, label %L3331
 
 L3330:                                            ; preds = %L3329
-  %R21161 = sext i32 %8 to i64
-  %R21162 = mul i64 %R21161, 8
+  %R21164 = sext i32 %8 to i64
+  %R21165 = mul i64 %R21164, 8
   %9 = bitcast i8** %ARG2 to i8*
-  %10 = getelementptr inbounds i8, i8* %9, i64 %R21162
+  %10 = getelementptr inbounds i8, i8* %9, i64 %R21165
   %11 = bitcast i8* %10 to i8**
   %12 = bitcast i8** %11 to i8*
   %13 = getelementptr inbounds i8, i8* %12, i64 0
   %14 = bitcast i8* %13 to i8**
   %load_target6 = load i8*, i8** %14
-  call void @lua_pushstring(%struct.lua_State* %R21136, i8* %load_target6)
-  %R21166 = add i32 %8, 1
-  store i32 %R21166, i32* %0
+  call void @lua_pushstring(%struct.lua_State* %R21139, i8* %load_target6)
+  %R21169 = add i32 %8, 1
+  store i32 %R21169, i32* %0
   br label %L3329
 
 L3331:                                            ; preds = %L3329
-  %R21169 = add i32 %ARG1, -2
-  %R21170 = call i32 @lua_pcall(%struct.lua_State* %R21136, i32 %R21169, i32 0, i32 0)
-  %cond7 = icmp ne i32 %R21170, 0
+  %R21172 = add i32 %ARG1, -2
+  %R21173 = call i32 @lua_pcall(%struct.lua_State* %R21139, i32 %R21172, i32 0, i32 0)
+  %cond7 = icmp ne i32 %R21173, 0
   br i1 %cond7, label %L3332, label %L3333
 
 L3332:                                            ; preds = %L3331, %L3327
   %load_target8 = load %struct._IO_FILE*, %struct._IO_FILE** @stderr
-  %R21174 = call i8* @lua_tolstring(%struct.lua_State* %R21136, i32 -1, i64* null)
-  %R21175 = call i32 (%struct._IO_FILE*, i8*, ...) @fprintf(%struct._IO_FILE* %load_target8, i8* getelementptr inbounds ([11 x i8], [11 x i8]* @.str.347, i64 0, i64 0), i8* %R21174)
+  %R21177 = call i8* @lua_tolstring(%struct.lua_State* %R21139, i32 -1, i64* null)
+  %R21178 = call i32 (%struct._IO_FILE*, i8*, ...) @fprintf(%struct._IO_FILE* %load_target8, i8* getelementptr inbounds ([11 x i8], [11 x i8]* @.str.348, i64 0, i64 0), i8* %R21177)
   store i32 1, i32* %1
   br label %L3334
 
 L3333:                                            ; preds = %L3331
-  call void @lua_close(%struct.lua_State* %R21136)
+  call void @lua_close(%struct.lua_State* %R21139)
   store i32 0, i32* %1
   br label %L3334
 
@@ -41035,3 +41038,5 @@ L3334:                                            ; preds = %L3333, %L3332, %L33
   %15 = load i32, i32* %1
   ret i32 %15
 }
+
+declare i32 @printf(i8*, ...)

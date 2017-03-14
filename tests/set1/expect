@@ -1,0 +1,41 @@
+running crash1.c
+Inserting 97
+Inserting 103
+Inserting 113
+Inserting 119
+Inserting 101
+Inserting 119
+Inserting 98
+Inserting 120
+Inserting 107
+Inserting 108
+Inserting 112
+Inserting 102
+Inserting 103
+Inserting 121
+Inserting 116
+Inserting 117
+Inserting 111
+Inserting 114
+Inserting 122
+Inserting 0
+running fpcast1.c
+97.000000
+running funcptr1.c
+running init1.c
+hello 55 1.500000 65.780000
+ocal string 6 4.200000 42.340000
+running locals1.c
+running locals2.c
+running matmul.c
+-95.583583
+running pseudoval1.c
+running ptraddassign1.c
+running ptraddassign2.c
+running union1.c
+running varargs1.c
+Hello world!, from Sparse
+A very long value 918181788818181
+A int value 1000000
+running varargs2.c
+argc 1

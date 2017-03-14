@@ -146,6 +146,9 @@ static LLVMTypeRef sym_union_type(struct dmr_C *C, LLVMModuleRef module, struct 
 
 	snprintf(buffer, sizeof(buffer), "union.%s", sym->ident ? sym->ident->name : "anno");
 	type = LLVMStructCreateNamed(LLVMGetGlobalContext(), buffer);
+	/* set ->aux to avoid recursion */
+	sym->aux = type;
+
 	unsigned union_size;
 
 	/*

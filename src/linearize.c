@@ -2178,7 +2178,7 @@ static struct entrypoint *linearize_fn(struct dmr_C *C, struct symbol *sym, stru
 		add_one_insn(C, ep, insn);
 	}
 
-#if 0
+#if 1
 	/*
 	 * Do trivial flow simplification - branches to
 	 * branches, kill dead basicblocks etc

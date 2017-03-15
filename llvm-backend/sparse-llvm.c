@@ -399,6 +399,8 @@ static void pseudo_name(struct dmr_C *C, pseudo_t pseudo, char *buf)
 	}
 }
 
+
+
 static LLVMValueRef val_to_value(struct dmr_C *C, struct function *fn, unsigned long long val, struct symbol *ctype)
 {
 	LLVMTypeRef dtype;
@@ -415,7 +417,7 @@ static LLVMValueRef val_to_value(struct dmr_C *C, struct function *fn, unsigned 
 		result = LLVMConstIntToPtr(result, dtype);
 		break;
 	case LLVMIntegerTypeKind:
-		result = LLVMConstInt(dtype, val, 1);
+		result = LLVMConstInt(dtype, val, !is_unsigned(ctype));
 		break;
 	case LLVMFloatTypeKind:
 	case LLVMDoubleTypeKind:

@@ -2178,6 +2178,7 @@ static struct entrypoint *linearize_fn(struct dmr_C *C, struct symbol *sym, stru
 		add_one_insn(C, ep, insn);
 	}
 
+#if 0
 	/*
 	 * Do trivial flow simplification - branches to
 	 * branches, kill dead basicblocks etc
@@ -2188,7 +2189,6 @@ static struct entrypoint *linearize_fn(struct dmr_C *C, struct symbol *sym, stru
 	 * Turn symbols into pseudos
 	 */
 	simplify_symbol_usage(C, ep);
-
 repeat:
 	/*
 	 * Remove trivial instructions, and try to CSE
@@ -2222,7 +2222,7 @@ repeat:
 	/* Finally, add deathnotes to pseudos now that we have them */
 	if (C->dbg_dead)
 		track_pseudo_death(C, ep);
-
+#endif
 	return ep;
 }
 

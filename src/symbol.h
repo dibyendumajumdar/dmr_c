@@ -455,6 +455,17 @@ static inline int is_extern(struct symbol *sym)
 	return (sym->ctype.modifiers & MOD_EXTERN);
 }
 
+static inline int is_unsigned(struct symbol *sym)
+{
+	if (sym->ctype.modifiers & MOD_UNSIGNED)
+		return 1;
+	if (sym->type == SYM_NODE)
+		sym = sym->ctype.base_type;
+	if (sym->ctype.modifiers & MOD_UNSIGNED)
+		return 1;
+	return 0;
+}
+
 static inline int get_sym_type(struct symbol *type)
 {
 	if (type->type == SYM_NODE)

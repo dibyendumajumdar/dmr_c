@@ -40,6 +40,19 @@ static int one(void);
 
 #define NULL ((void *)0)
 
+   static char *type[7];
+   // FIXME
+   // = {
+   //  "char",
+   //  "short",
+   //  "int",
+   //  "long",
+   //  "unsigned",
+   //  "float",
+   //  "double"
+   //};
+
+
 struct defs {
      int cbits;          /* No. of bits per char           */
      int ibits;          /*                 int            */
@@ -176,9 +189,16 @@ prologue:
               pt = pd0->rfs;
               while(*pt++ = *ps++);
 
-used for housekeeping, handshaking and module initialization.
+used for housekeeping, handshaking and module initialization.                                     */
 
-                                                           */
+   type[0] = "char";
+   type[1] = "short";
+   type[2] = "int";
+   type[4] = "long";
+   type[5] = "unsigned";
+   type[6] = "float";
+   type[7] = "double";
+
 
    int j;
 #if 0
@@ -241,22 +261,28 @@ used for housekeeping, handshaking and module initialization.
    pd0 = &d0;
 
    for (j=0; j<sizeof(sec) / sizeof(sec[0]); j++) {
-     d0.rrc = (*sec[j])(pd0);
+     d0.rrc = sec[j](pd0);
      d0.crc = d0.crc+d0.rrc;
      if(d0.flgs != 0) printf("Section %s returned %d.\n",d0.rfs,d0.rrc);
    }
   
    if(d0.crc == 0) printf("\nNo errors detected.\n");
-   else printf("\nFailed.\n");
+   else printf("\nFailed %d errors.\n", d0.crc);
    return 0;
 }
+#if 1
+static const char *s22er = "s22,er%d\n";
+static const char *qs22  = "s22    ";
+#endif
 static int s22(struct defs *pd0)                 /* 2.2 Identifiers (Names)      */
 {
    int a234, a;
    int _, _234, A, rc;
 
+#if 0
    static char s22er[] = "s22,er%d\n";
    static char qs22[8] = "s22    ";
+#endif
 
    char *ps, *pt;
                          /* Initialize                      */
@@ -289,16 +315,24 @@ static int s22(struct defs *pd0)                 /* 2.2 Identifiers (Names)     
 
    return(rc);
 }
+#if 1
+static const char *s241er = "s241,er%d\n";
+static const char *qs241  = "s241   ";
+#endif
 static int s241(struct defs *pd0)                   /* 2.4.1 Integer constants
                                2.4.2 Explicit long constants  */
 {
+#if 0
+#if 0
    static char s241er[] = "s241,er%d\n";
    static char qs241[8] = "s241   ";
+#endif
    char *ps, *pt;
    int rc, j, lrc;
-   static long g[39] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                        0,6,0,8,0,12,0,16,0,18,0,20,0,24,
-                        0,28,0,30,0,32,0,36};
+   // FIXME
+   static long g[39];// = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+                     //   0,6,0,8,0,12,0,16,0,18,0,20,0,24,
+                     //   0,28,0,30,0,32,0,36};
    long d[39], o[39], x[39];
 
    rc = 0;
@@ -455,6 +489,8 @@ static int s241(struct defs *pd0)                   /* 2.4.1 Integer constants
    if (lrc != 0) rc =16;
 
    return rc;
+#endif
+  return 0;
 }
 
 static long pow2(long n)        /* Calculate 2**n by multiplying, not shifting  */
@@ -464,10 +500,16 @@ static long pow2(long n)        /* Calculate 2**n by multiplying, not shifting  
    while(n--) s = s*2;
    return s;
 }
+#if 1
+static const char *s243er = "s243,er%d\n";
+static const char *qs243 = "s243   ";
+#endif
 static int s243(struct defs *pd0)                   /*  2.4.3 Character constants  */
 {
+#if 0
    static char s243er[] = "s243,er%d\n";
    static char qs243[8] = "s243   ";
+#endif
    char *ps, *pt;
    int rc;
    char chars[256];
@@ -579,12 +621,18 @@ static int sumof(char *x)
    for(j=0; j<256; j++) total = total+ *p++;
    return total;
 }
+#if 1
+static const char *s244er = "s244,er%d\n";
+static const char *qs244 = "s244   ";
+#endif
 static int s244(struct defs *pd0)
 {
    double a[8];
    int rc, lrc, j;
+#if 0
    static char s244er[] = "s244,er%d\n";
    static char qs244[8] = "s244   ";
+#endif
    char *ps, *pt;
 
    ps = qs244;
@@ -631,12 +679,19 @@ static int s244(struct defs *pd0)
 
    return rc;
 }
+
+#if 1
+static const char *s25er = "s25,er%d\n";
+static const char *qs25 = "s25    ";
+#endif
 static int s25(struct defs *pd0)
 {
    char *s, *s2;
    int rc, lrc, j;
+#if 0
    static char s25er[] = "s25,er%d\n";
    static char qs25[8] = "s25    ";
+#endif
    char *ps, *pt;
 
    ps = qs25;
@@ -705,16 +760,26 @@ static int s25(struct defs *pd0)
    }
    return rc;
 }
+
+#if 1
+static const char *qs26 = "s26    ";
+static const char *s = "%3d bits in %ss.\n";
+static const char *s2 = "%e is the least number that can be added to 1. (%s).\n";
+#endif
+
 static int s26(struct defs *pd0)                  /*  2.6  Hardware Characteristics     */
 {
+#if 0
    static char qs26[8] = "s26    ";
+#endif
    char *ps, *pt;
    char c0, c1;
    float temp, one, delta;
    double tempd, oned;
+#if 0
    static char s[] = "%3d bits in %ss.\n";
    static char s2[] = "%e is the least number that can be added to 1. (%s).\n";
-
+#endif
    ps = qs26;
    pt = pd0->rfs;
 
@@ -791,11 +856,17 @@ static int s26(struct defs *pd0)                  /*  2.6  Hardware Characterist
 
    return 0;
 }
-int extvar;
+#if 1
+   static const char *s4er = "s4,er%d\n";
+   static const char *qs4 = "s4     ";
+#endif
+static int extvar;
 static int s4(struct defs *pd0)                    /* 4. What's in a name?             */
 {
+#if 0
    static char s4er[] = "s4,er%d\n";
    static char qs4[8] = "s4     ";
+#endif
    char *ps, *pt;
    int j, rc;
 
@@ -909,24 +980,39 @@ static int testev(void){
    if(extvar != 1066) return 1;
    else return 0;
 }
+
+#if 1   
+   static const char *s61er = "s61,er%d\n";
+   static const char *qs61 = "s61    ";
+   static const char *upper_alpha             = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+   static const char *lower_alpha             = "abcdefghijklmnopqrstuvwxyz";
+   static const char *numbers               = "0123456789";
+   static const char *special_characters    = "~!\"#%&()_=-^|{}[]+;*:<>,.?/";
+   static const char *extra_special_characters = "\n\t\b\r\f\\\'";
+   static const char *blank_and_NUL            = " \0";
+#endif
+
 static int s61(struct defs *pd0)          /* Characters and integers */
 {
+#if 0
    static char s61er[] = "s61,er%d\n";
    static char qs61[8] = "s61    ";
+#endif
    short from, shortint;
    long int to, longint;
    int rc, lrc;
    int j;
    char fromc, charint;
    char *wd, *pc[6];
-   
+
+#if 0   
    static char upper_alpha[]             = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
    static char lower_alpha[]             = "abcdefghijklmnopqrstuvwxyz";
    static char numbers[]               = "0123456789";
    static char special_characters[]    = "~!\"#%&()_=-^|{}[]+;*:<>,.?/";
    static char extra_special_characters[] = "\n\t\b\r\f\\\'";
    static char blank_and_NUL[]            = " \0";
-
+#endif
    char *ps, *pt;
    ps = qs61;
    pt = pd0->rfs;
@@ -984,14 +1070,22 @@ simply discarded.                                       */
 
    return rc;
 }
+
+#if 1
+   static const char *s626er = "s626,er%d\n";
+   static const char *qs626 = "s626   ";
+#endif
+
 static int s626(struct defs *pd0)          /* 6.2 Float and double                  */
                    /* 6.3 Floating and integral                 */
                    /* 6.4 Pointers and integers                 */
                    /* 6.5 Unsigned                              */
                    /* 6.6 Arithmetic conversions                */
 {
+#if 0
    static char s626er[] = "s626,er%d\n";
    static char qs626[8] = "s626   ";
+#endif
    int rc;
    char *ps, *pt;
    float eps, f1, f2, f3, f4, f;
@@ -1096,10 +1190,16 @@ static int s626(struct defs *pd0)          /* 6.2 Float and double              
 
    return rc;
 }
+#if 1
+   static const char *s71er = "s71,er%d\n";
+   static const char *qs71 = "s71    ";
+#endif
 static int s71(struct defs *pd0)          /*         7.1  Primary expressions   */
 {
+#if 0
    static char s71er[] = "s71,er%d\n";
    static char qs71[8] = "s71    ";
+#endif
    int rc;
    char *ps, *pt;
    static char q = 'q';
@@ -1193,11 +1293,19 @@ static void clobber(int x, int *y)
    x = 3;
    *y = 2;
 }
+#if 1
+   static const char *f = "Local error %d.\n";
+   static const char *s714er = "s714,er%d\n";
+   static const char *qs714 = "s714   ";
+#endif
 static int s714(struct defs *pd0)          /*  7.14  Assignment operators       */
 {
+#if 0
+#if 0
    static char f[] = "Local error %d.\n";
    static char s714er[] = "s714,er%d\n";
    static char qs714[8] = "s714   ";
+#endif
    register int prlc, lrc;
    int rc;
    char cl, cr;
@@ -3635,11 +3743,19 @@ initial         (5,2)       |    (5,2)    |  (12,10)
      if(pd0->flgd != 0) printf(s714er,1);
    }
    return rc;
+#endif
+  return 0;
 }
+#if 1
+   static const char *s715er = "s715,er%d\n";
+   static const char *qs715 = "s715   ";
+#endif
 static int s715(struct defs *pd0)          /*  7.15 Comma operator     */
 {
+#if 0
    static char s715er[] = "s715,er%d\n";
    static char qs715[8] = "s715   ";
+#endif
    int rc;
    char *ps, *pt;
    int a, t, c, i;
@@ -3681,10 +3797,16 @@ static int s715f(int x, int y, int z)
 {
    return y;
 }
+#if 1
+   static const char *s72er = "s72,er%d\n";
+   static const char *qs72 = "s72    ";
+#endif
 static int s72(struct defs *pd0)          /*  7.2  Unary operators  */
 {
+#if 0
    static char s72er[] = "s72,er%d\n";
    static char qs72[8] = "s72    ";
+#endif
    int rc;
    char *ps, *pt;
    int k, j, i, lrc;
@@ -3791,13 +3913,19 @@ static int s72(struct defs *pd0)          /*  7.2  Unary operators  */
 
    return rc;
 }
+#if 1
+   static const char *s757er = "s757,er%d\n";
+   static const char *qs757 = "s757   ";
+#endif
 static int s757(struct defs *pd0)          /* 7.5 Shift operators          */
                    /* 7.6 Relational operators     */
                    /* 7.7 Equality operator        */
 
 {
+#if 0
    static char s757er[] = "s757,er%d\n";
    static char qs757[8] = "s757   ";
+#endif
    int rc;
    char *ps, *pt;
    int t,lrc,k,j,a,b,c,d,x[16],*p;
@@ -3908,6 +4036,11 @@ static int s757(struct defs *pd0)          /* 7.5 Shift operators          */
 
    return rc;
 }
+#if 1
+   static const char *fl = "Local error %d.\n";
+   static const char *s7813er = "s7813,er%d\n";
+   static const char *qs7813 = "s7813  ";
+#endif   
 static int s7813(struct defs *pd0)          /* 7.8 Bitwise AND operator
                        7.9 Bitwise OR operator
                        7.10 Bitwise exclusive OR operator
@@ -3915,11 +4048,14 @@ static int s7813(struct defs *pd0)          /* 7.8 Bitwise AND operator
                        7.12 Logical OR operator
                        7.13 Conditional operator            */
 {
+#if 0
    register int prlc, lrc;
    int i, j, r, zero, one;
+#if 0
    static char fl[] = "Local error %d.\n";
    static char s7813er[] = "s7813,er%d\n";
    static char qs7813[8] = "s7813  ";
+#endif   
    int rc;
    char *ps, *pt;
    ps = qs7813;
@@ -4189,11 +4325,22 @@ static int s7813(struct defs *pd0)          /* 7.8 Bitwise AND operator
      rc = rc+16;
    }
    return rc;
+#endif
+  return 0;
 }
+#if 1
+   static const char *s81er = "s81,er%d\n";
+   static const char *qs81 = "s81    ";
+   static const char *badtest = "Register count for %s is unreliable.\n";
+   static const char *goodtest = "%d registers assigned to %s variables.\n";
+#endif
+
 static int s81(struct defs *pd0)              /* 8.1 Storage Class Specifiers    */
 {
+#if 0
    static char s81er[] = "s81,er%d\n";
    static char qs81[8] = "s81    ";
+#endif
    char *ps, *pt;
    int k, rc, j, crc, prc, irc;
    register char rchar;
@@ -4202,9 +4349,10 @@ static int s81(struct defs *pd0)              /* 8.1 Storage Class Specifiers   
             int *nrptr;
    register int rint;
             int nrint;
+#if 0
    static char badtest[] = "Register count for %s is unreliable.\n";
    static char goodtest[] = "%d registers assigned to %s variables.\n";
-   
+#endif   
    rc = 0;
    crc = 0;
    prc = 0;
@@ -4319,7 +4467,7 @@ ences of the first number. If we get a sequence like this, we can
 determine, by simple subtraction, how many (if any) variables are
 being assigned to registers. If we get some other sequence, we know
 that the test is invalid.                                     */
-
+#if 0
             char r00;
             char r01;
             char r02;
@@ -4459,6 +4607,8 @@ test is unreliable.              */
 
    if (s == 3) return 16-nr;
    else return -1;
+#endif
+  return 0;
 }
 static int regi(void) {     /*   int to register assignment    */
 /*   Testing a variable whose storage class has been spec-
@@ -4497,7 +4647,7 @@ determine, by simple subtraction, how many (if any) variables are
 being assigned to registers. If we get some other sequence, we know
 that the test is invalid.                                     */
 
-
+#if 0
             int r00;
             int r01;
             int r02;
@@ -4638,6 +4788,8 @@ test is unreliable.              */
 
    if (s == 3) return 16-nr;
    else return -1;
+#endif
+  return 0;
 }
 static int regp(void) {     /*   pointer to register assignment   */
 /*   Testing a variable whose storage class has been spec-
@@ -4675,7 +4827,7 @@ ences of the first number. If we get a sequence like this, we can
 determine, by simple subtraction, how many (if any) variables are
 being assigned to registers. If we get some other sequence, we know
 that the test is invalid.                                     */
-
+#if 0
 
             int *r00;
             int *r01;
@@ -4816,14 +4968,22 @@ test is unreliable.              */
 
    if (s == 3) return 16-nr;
    else return -1;
+#endif
+  return 0;
 }
+#if 1
+   static const char *s84er = "s84,er%d\n";
+   static const char *qs84 = "s84    ";
+#endif
 static int s84(struct defs *pd0)          /*  8.4 Meaning of declarators   */
 {
    int *ip, i, (*pfi)(int), j, k, array(int[], int, int);
    static int x3d[3][5][7];
    float fa[17], *afp[17], sum;
+#if 0
    static char s84er[] = "s84,er%d\n";
    static char qs84[8] = "s84    ";
+#endif
    int rc;
    char *ps, *pt;
    ps = qs84;
@@ -4910,10 +5070,17 @@ static int *fip(int x)
 }
 static int glork(int x)
 {return x;}
+#if 1
+   static const char *s85er = "s85,er%d\n";
+   static const char *qs85 = "s85    ";
+   static const char *aln = " alignment: ";
+#endif
 static int s85(struct defs *pd0)          /*  8.5 Structure and union declarations   */
 {
+#if 0
    static char s85er[] = "s85,er%d\n";
    static char qs85[8] = "s85    ";
+#endif
    int rc;
    char *ps, *pt;
    
@@ -4963,6 +5130,7 @@ static int s85(struct defs *pd0)          /*  8.5 Structure and union declaratio
 
    int diff[7], j;
 
+#if 0
    static char *type[] = {
      "char",
      "short",
@@ -4974,6 +5142,7 @@ static int s85(struct defs *pd0)          /*  8.5 Structure and union declaratio
    };
 
    static char aln[] = " alignment: ";
+#endif
 
    struct{
      int twobit:2;
@@ -5094,6 +5263,7 @@ static int s85(struct defs *pd0)          /*  8.5 Structure and union declaratio
 }
 static int s86(struct defs *pd0)          /*  8.6 Initialization  */
 {
+#if 0
    static char s86er[] = "s86,er%d\n";
    static char qs86[8] = "s86    ";
    int lrc, rc;
@@ -5186,15 +5356,23 @@ static int s86(struct defs *pd0)          /*  8.6 Initialization  */
      rc = rc+32;
    }
    return rc;
+#endif
+  return 0;
 }
 static int one(void){
    return 1;
 }
-int *metricp;
+static int *metricp;
+#if 1
+   static const char *s88er = "s88,er%d\n";
+   static const char *qs88 = "s88    ";
+#endif
 static int s88(struct defs *pd0)          /*  8.8 Typedef  */
 {
+#if 0
    static char s88er[] = "s88,er%d\n";
    static char qs88[8] = "s88    ";
+#endif
    int rc;
    char *ps, *pt;
 
@@ -5254,10 +5432,16 @@ static int s88(struct defs *pd0)          /*  8.8 Typedef  */
 
    return rc;
 }
+#if 1
+   static const char *s9er = "s9,er%d\n";
+   static const char *qs9 = "s9     ";
+#endif
 static int s9(struct defs *pd0)          /*  9  Statements  */
 {
+#if 0
    static char s9er[] = "s9,er%d\n";
    static char qs9[8] = "s9     ";
+#endif
    int rc;
    char *ps, *pt;
    int lrc, i;

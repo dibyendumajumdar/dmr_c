@@ -80,7 +80,7 @@ struct linearizer_state_t {
 	struct ptr_list *prev[MAX_VAL_HASH];
 	int nr;	/* pseudo number */
 	int bb_nr; /* basic block number */
-	char buffer[4096];
+	char buffer[4096*4];
 	int n;
 	char pseudo_buffer[4][64];
 #define INSN_HASH_SIZE 256

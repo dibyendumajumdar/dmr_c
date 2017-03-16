@@ -509,7 +509,7 @@ static LLVMValueRef pseudo_to_value(struct dmr_C *C, struct function *fn, struct
 				break;
 			}
 			case EXPR_SYMBOL: {
-				fprintf(stderr, "unresolved symbol reference in initializer\n");
+				expression_error(C, expr, "unresolved symbol reference in initializer\n");
 				show_expression(C, expr);
 				exit(1);
 				break;
@@ -531,7 +531,7 @@ static LLVMValueRef pseudo_to_value(struct dmr_C *C, struct function *fn, struct
 				sym->priv = result;
 				break;
 			default:
-				fprintf(stderr, "unsupported expr type in initializer: %d\n", expr->type);
+				expression_error(C, expr, "unsupported expr type in initializer: %d\n", expr->type);
 				show_expression(C, expr);
 				exit(1);
 			}
@@ -581,7 +581,8 @@ static LLVMValueRef pseudo_to_value(struct dmr_C *C, struct function *fn, struct
 	default:
 		assert(0);
 	}
-
+	if (!result)
+		sparse_error(C, insn->pos, "error: no result for pseudo at insn %s\n", show_instruction(C, insn));
 	assert(result);
 	return result;
 }
@@ -1007,6 +1008,7 @@ static void output_op_call(struct dmr_C *C, struct function *fn, struct instruct
 	} END_FOR_EACH_PTR(arg);
 
 	func = pseudo_to_value(C, fn, insn, insn->func);
+	assert(func);
 	pseudo_name(C, insn->target, name);
 	target = LLVMBuildCall(fn->builder, func, args, n_arg, name);
 
@@ -1531,8 +1533,8 @@ static LLVMValueRef output_data(struct dmr_C *C, LLVMModuleRef module, struct sy
 			break;
 		}
 		default:
-			fprintf(stderr, "unsupported expr type in global data initializer: %d\n", initializer->type);
-			show_expression(C, initializer);
+			expression_error(C, initializer, "unsupported expr type in global data initializer: %d\n", initializer->type);
+			show_expression(C, initializer);			
 		}
 		if (!initial_value)
 			return NULL;

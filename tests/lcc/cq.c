@@ -5056,7 +5056,7 @@ static int s84(struct defs *pd0)          /*  8.4 Meaning of declarators   */
 
    return rc;
 }
-static int array(int a[], int size, int start)
+int array(int a[], int size, int start)
 {
    int i;
    for(i=0; i<size; i++)

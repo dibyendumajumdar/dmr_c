@@ -223,7 +223,7 @@ cbrtl:
 	sub.64      %r173 <- %r172, %r170
 	fpcast.64   %r174 <- (64) %r173
 	store.64    %r174 -> 0[lt]
-	symaddr.64  %r175 <- <anon symbol:0000020A2ABD64F8>
+	symaddr.64  %r175 <- <anon symbol:00000185F1A46518>
 	load.64     %r176 <- 0[lt]
 	call.32     %r177 <- printf, %r175, %r176
 	load.64     %r178 <- 0[lt]
@@ -247,12 +247,12 @@ main:
 	br          %r184, .L10, .L11
 
 .L10:
-	symaddr.64  %r185 <- <anon symbol:0000020A2ABD6878>
+	symaddr.64  %r185 <- <anon symbol:00000185F1A46898>
 	call.32     %r186 <- printf, %r185
 	br          .L12
 
 .L11:
-	symaddr.64  %r187 <- <anon symbol:0000020A2ABD6BF8>
+	symaddr.64  %r187 <- <anon symbol:00000185F1A46C18>
 	call.32     %r188 <- printf, %r187
 	br          .L12
 

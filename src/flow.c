@@ -310,7 +310,7 @@ int dominates(struct dmr_C *C, pseudo_t pseudo, struct instruction *insn, struct
 	}
 	if (!same_memop(insn, dom)) {
 		if (dom->opcode == OP_LOAD)
-			return 0;
+			return -1;
 		if (!overlapping_memop(C, insn, dom))
 			return 0;
 		return -1;

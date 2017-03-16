@@ -555,11 +555,10 @@ static LLVMValueRef pseudo_to_value(struct dmr_C *C, struct function *fn, struct
 				sym->priv = result;
 			}
 			else {
-				if (is_static(sym)) {
-					fprintf(stderr, "missing initializer for local static symbol: %s\n", name);
-					exit(1);
-				}
 				result = build_local(C, fn, sym);
+				if (is_static(sym)) {
+					LLVMSetInitializer(result, LLVMConstNull(type));
+				}
 				sym->priv = result;
 			}
 		}

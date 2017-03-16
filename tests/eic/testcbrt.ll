@@ -1,175 +1,248 @@
-; ModuleID = 'testcbrt.c'
-source_filename = "testcbrt.c"
-target datalayout = "e-m:x-p:32:32-i64:64-f80:32-n8:16:32-a:0:32-S32"
-target triple = "i686-pc-windows-msvc"
+; ModuleID = 'out.bc'
+source_filename = "sparse"
 
-%union.anon = type { double }
+%union.anno = type { [8 x i8] }
 
-$"\01??_C@_0N@CCECFIIH@Failed?5test?6?$AA@" = comdat any
+@B1 = private constant i32 715094163, align 4
+@B2 = private constant i32 696219795, align 4
+@C = private constant double 0x3FE15F1600000000, align 8
+@D = private constant double 0xBFE691DE20000000, align 8
+@E = private constant double 0x3FF6A0EA00000000, align 8
+@F = private constant double 0x3FF9B6DB60000000, align 8
+@G = private constant double 0x3FD6DB6DC0000000, align 8
+@.str = private constant [13 x i8] c"Failed test\0A\00"
+@.str.1 = private constant [13 x i8] c"Passed test\0A\00"
 
-$"\01??_C@_0N@KMFMGHKK@Passed?5test?6?$AA@" = comdat any
+define internal double @cbrtl(double %ARG1) {
+L0:
+  %ux_00000282CB78B558 = alloca %union.anno
+  %ut_00000282CB78B478 = alloca %union.anno
+  %0 = alloca double
+  %1 = bitcast %union.anno* %ut_00000282CB78B478 to i32*
+  %2 = bitcast i32* %1 to i8*
+  %3 = getelementptr inbounds i8, i8* %2, i64 0
+  %4 = bitcast i8* %3 to i32*
+  %load_target = load i32, i32* %4
+  %R3 = icmp eq i32 %load_target, 0
+  %R31 = zext i1 %R3 to i32
+  %5 = bitcast %union.anno* %ut_00000282CB78B478 to double*
+  %6 = bitcast double* %5 to i8*
+  %7 = getelementptr inbounds i8, i8* %6, i64 0
+  %8 = bitcast i8* %7 to double*
+  store double 0.000000e+00, double* %8
+  %9 = bitcast %union.anno* %ux_00000282CB78B558 to double*
+  %10 = bitcast double* %9 to i8*
+  %11 = getelementptr inbounds i8, i8* %10, i64 0
+  %12 = bitcast i8* %11 to double*
+  store double %ARG1, double* %12
+  %R6 = bitcast %union.anno* %ux_00000282CB78B558 to i8*
+  %R9 = sext i32 %R31 to i64
+  %R10 = mul i64 %R9, 4
+  %13 = getelementptr inbounds i8, i8* %R6, i64 %R10
+  %14 = bitcast i8* %13 to i32*
+  %15 = bitcast i32* %14 to i8*
+  %16 = getelementptr inbounds i8, i8* %15, i64 0
+  %17 = bitcast i8* %16 to i32*
+  %load_target2 = load i32, i32* %17
+  %R16 = and i32 %load_target2, -2147483648
+  %R20 = xor i32 %load_target2, %R16
+  %R23 = icmp sge i32 %R20, 2146435072
+  %R233 = zext i1 %R23 to i32
+  %cond = icmp ne i32 %R233, 0
+  br i1 %cond, label %L1, label %L2
 
-$"\01??_C@_03PPOCCAPH@?$CFf?6?$AA@" = comdat any
+L1:                                               ; preds = %L0
+  %R26 = fadd double %ARG1, %ARG1
+  store double %R26, double* %0
+  br label %L8
 
-@"\01??_C@_0N@CCECFIIH@Failed?5test?6?$AA@" = linkonce_odr unnamed_addr constant [13 x i8] c"Failed test\0A\00", comdat, align 1
-@"\01??_C@_0N@KMFMGHKK@Passed?5test?6?$AA@" = linkonce_odr unnamed_addr constant [13 x i8] c"Passed test\0A\00", comdat, align 1
-@"\01??_C@_03PPOCCAPH@?$CFf?6?$AA@" = linkonce_odr unnamed_addr constant [4 x i8] c"%f\0A\00", comdat, align 1
-@str = private unnamed_addr constant [12 x i8] c"Passed test\00"
-@str.1 = private unnamed_addr constant [12 x i8] c"Failed test\00"
+L2:                                               ; preds = %L0
+  %R33 = sub i32 1, %R31
+  %R34 = sext i32 %R33 to i64
+  %R35 = mul i64 %R34, 4
+  %18 = getelementptr inbounds i8, i8* %R6, i64 %R35
+  %19 = bitcast i8* %18 to i32*
+  %20 = bitcast i32* %19 to i8*
+  %21 = getelementptr inbounds i8, i8* %20, i64 0
+  %22 = bitcast i8* %21 to i32*
+  %load_target4 = load i32, i32* %22
+  %R38 = or i32 %R20, %load_target4
+  %cond5 = icmp ne i32 %R38, 0
+  br i1 %cond5, label %L4, label %L3
 
-; Function Attrs: nounwind
-define i32 @main() local_unnamed_addr #0 {
-entry:
-  %call = tail call fastcc double @cbrtl()
-  %add = fadd double %call, 5.000000e-01
-  %conv = fptosi double %add to i32
-  %cmp = icmp eq i32 %conv, 3
-  br i1 %cmp, label %if.else, label %if.then
+L3:                                               ; preds = %L2
+  store double %ARG1, double* %0
+  br label %L8
 
-if.then:                                          ; preds = %entry
-  %puts4 = tail call i32 @puts(i8* getelementptr inbounds ([12 x i8], [12 x i8]* @str.1, i32 0, i32 0))
-  br label %if.end
+L4:                                               ; preds = %L2
+  %23 = bitcast i8* %13 to i32*
+  %24 = bitcast i32* %23 to i8*
+  %25 = getelementptr inbounds i8, i8* %24, i64 0
+  %26 = bitcast i8* %25 to i32*
+  store i32 %R20, i32* %26
+  %R50 = icmp slt i32 %R20, 1048576
+  %R506 = zext i1 %R50 to i32
+  %R51 = bitcast %union.anno* %ut_00000282CB78B478 to i8*
+  %27 = getelementptr inbounds i8, i8* %R51, i64 %R10
+  %cond7 = icmp ne i32 %R506, 0
+  br i1 %cond7, label %L5, label %L6
 
-if.else:                                          ; preds = %entry
-  %puts = tail call i32 @puts(i8* getelementptr inbounds ([12 x i8], [12 x i8]* @str, i32 0, i32 0))
-  br label %if.end
+L5:                                               ; preds = %L4
+  %28 = bitcast i8* %27 to i32*
+  %29 = bitcast i32* %28 to i8*
+  %30 = getelementptr inbounds i8, i8* %29, i64 0
+  %31 = bitcast i8* %30 to i32*
+  store i32 1129316352, i32* %31
+  %32 = bitcast %union.anno* %ut_00000282CB78B478 to double*
+  %33 = bitcast double* %32 to i8*
+  %34 = getelementptr inbounds i8, i8* %33, i64 0
+  %35 = bitcast i8* %34 to double*
+  %load_target8 = load double, double* %35
+  %R60 = fmul double %load_target8, %ARG1
+  %36 = bitcast %union.anno* %ut_00000282CB78B478 to double*
+  %37 = bitcast double* %36 to i8*
+  %38 = getelementptr inbounds i8, i8* %37, i64 0
+  %39 = bitcast i8* %38 to double*
+  store double %R60, double* %39
+  %40 = bitcast i8* %27 to i32*
+  %41 = bitcast i32* %40 to i8*
+  %42 = getelementptr inbounds i8, i8* %41, i64 0
+  %43 = bitcast i8* %42 to i32*
+  %load_target9 = load i32, i32* %43
+  %R69 = udiv i32 %load_target9, 3
+  %R70 = add i32 %R69, 696219795
+  %44 = bitcast i8* %27 to i32*
+  %45 = bitcast i32* %44 to i8*
+  %46 = getelementptr inbounds i8, i8* %45, i64 0
+  %47 = bitcast i8* %46 to i32*
+  store i32 %R70, i32* %47
+  br label %L7
 
-if.end:                                           ; preds = %if.else, %if.then
+L6:                                               ; preds = %L4
+  %R78 = sdiv i32 %R20, 3
+  %R80 = add i32 %R78, 715094163
+  %48 = bitcast i8* %27 to i32*
+  %49 = bitcast i32* %48 to i8*
+  %50 = getelementptr inbounds i8, i8* %49, i64 0
+  %51 = bitcast i8* %50 to i32*
+  store i32 %R80, i32* %51
+  br label %L7
+
+L7:                                               ; preds = %L6, %L5
+  %52 = bitcast %union.anno* %ut_00000282CB78B478 to double*
+  %53 = bitcast double* %52 to i8*
+  %54 = getelementptr inbounds i8, i8* %53, i64 0
+  %55 = bitcast i8* %54 to double*
+  %load_target10 = load double, double* %55
+  %R89 = fmul double %load_target10, %load_target10
+  %56 = bitcast %union.anno* %ux_00000282CB78B558 to double*
+  %57 = bitcast double* %56 to i8*
+  %58 = getelementptr inbounds i8, i8* %57, i64 0
+  %59 = bitcast i8* %58 to double*
+  %load_target11 = load double, double* %59
+  %R91 = fdiv double %R89, %load_target11
+  %R95 = fmul double %R91, %load_target10
+  %R96 = fadd double 0x3FE15F1600000000, %R95
+  %R101 = fadd double %R96, 0x3FF6A0EA00000000
+  %R104 = fdiv double 0xBFE691DE20000000, %R96
+  %R105 = fadd double %R101, %R104
+  %R106 = fdiv double 0x3FF9B6DB60000000, %R105
+  %R107 = fadd double 0x3FD6DB6DC0000000, %R106
+  %R110 = fmul double %load_target10, %R107
+  %60 = bitcast %union.anno* %ut_00000282CB78B478 to double*
+  %61 = bitcast double* %60 to i8*
+  %62 = getelementptr inbounds i8, i8* %61, i64 0
+  %63 = bitcast i8* %62 to double*
+  store double %R110, double* %63
+  %64 = getelementptr inbounds i8, i8* %R51, i64 %R35
+  %65 = bitcast i8* %64 to i32*
+  %66 = bitcast i32* %65 to i8*
+  %67 = getelementptr inbounds i8, i8* %66, i64 0
+  %68 = bitcast i8* %67 to i32*
+  store i32 0, i32* %68
+  %69 = bitcast i8* %27 to i32*
+  %70 = bitcast i32* %69 to i8*
+  %71 = getelementptr inbounds i8, i8* %70, i64 0
+  %72 = bitcast i8* %71 to i32*
+  %load_target12 = load i32, i32* %72
+  %R127 = add i32 %load_target12, 1
+  %73 = bitcast i8* %27 to i32*
+  %74 = bitcast i32* %73 to i8*
+  %75 = getelementptr inbounds i8, i8* %74, i64 0
+  %76 = bitcast i8* %75 to i32*
+  store i32 %R127, i32* %76
+  %77 = bitcast %union.anno* %ut_00000282CB78B478 to double*
+  %78 = bitcast double* %77 to i8*
+  %79 = getelementptr inbounds i8, i8* %78, i64 0
+  %80 = bitcast i8* %79 to double*
+  %load_target13 = load double, double* %80
+  %R131 = fmul double %load_target13, %load_target13
+  %81 = bitcast %union.anno* %ux_00000282CB78B558 to double*
+  %82 = bitcast double* %81 to i8*
+  %83 = getelementptr inbounds i8, i8* %82, i64 0
+  %84 = bitcast i8* %83 to double*
+  %load_target14 = load double, double* %84
+  %R134 = fdiv double %load_target14, %R131
+  %R137 = fadd double %load_target13, %load_target13
+  %R140 = fsub double %R134, %load_target13
+  %R143 = fadd double %R137, %R134
+  %R144 = fdiv double %R140, %R143
+  %R148 = fmul double %load_target13, %R144
+  %R149 = fadd double %load_target13, %R148
+  %85 = bitcast %union.anno* %ut_00000282CB78B478 to double*
+  %86 = bitcast double* %85 to i8*
+  %87 = getelementptr inbounds i8, i8* %86, i64 0
+  %88 = bitcast i8* %87 to double*
+  store double %R149, double* %88
+  %89 = bitcast i8* %27 to i32*
+  %90 = bitcast i32* %89 to i8*
+  %91 = getelementptr inbounds i8, i8* %90, i64 0
+  %92 = bitcast i8* %91 to i32*
+  %load_target15 = load i32, i32* %92
+  %R159 = or i32 %load_target15, %R16
+  %93 = bitcast i8* %27 to i32*
+  %94 = bitcast i32* %93 to i8*
+  %95 = getelementptr inbounds i8, i8* %94, i64 0
+  %96 = bitcast i8* %95 to i32*
+  store i32 %R159, i32* %96
+  %97 = bitcast %union.anno* %ut_00000282CB78B478 to double*
+  %98 = bitcast double* %97 to i8*
+  %99 = getelementptr inbounds i8, i8* %98, i64 0
+  %100 = bitcast i8* %99 to double*
+  %load_target16 = load double, double* %100
+  %R166 = fmul double %load_target16, %load_target16
+  %R167 = fdiv double %ARG1, %R166
+  %R168 = fsub double %load_target16, %R167
+  %R170 = fmul double %R168, 0x3FD5555555555555
+  %R173 = fsub double %load_target16, %R170
+  store double %R173, double* %0
+  br label %L8
+
+L8:                                               ; preds = %L7, %L3, %L1
+  %101 = load double, double* %0
+  ret double %101
+}
+
+define i32 @main() {
+L9:
+  %R177 = call double @cbrtl(double 2.700000e+01)
+  %R179 = fadd double %R177, 5.000000e-01
+  %R180 = fptosi double %R179 to i32
+  %R181 = icmp ne i32 %R180, 3
+  %R1811 = zext i1 %R181 to i32
+  %cond = icmp ne i32 %R1811, 0
+  br i1 %cond, label %L10, label %L11
+
+L10:                                              ; preds = %L9
+  %R183 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([13 x i8], [13 x i8]* @.str, i64 0, i64 0))
+  br label %L12
+
+L11:                                              ; preds = %L9
+  %R185 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([13 x i8], [13 x i8]* @.str.1, i64 0, i64 0))
+  br label %L12
+
+L12:                                              ; preds = %L11, %L10
   ret i32 0
 }
 
-; Function Attrs: nounwind
-define internal fastcc double @cbrtl() unnamed_addr #0 {
-entry:
-  %ut = alloca %union.anon, align 8
-  %ux = alloca %union.anon, align 8
-  %0 = bitcast %union.anon* %ut to i8*
-  call void @llvm.lifetime.start(i64 8, i8* %0) #3
-  %1 = bitcast %union.anon* %ux to i8*
-  call void @llvm.lifetime.start(i64 8, i8* %1) #3
-  %t = getelementptr inbounds %union.anon, %union.anon* %ut, i32 0, i32 0
-  store double 1.000000e+00, double* %t, align 8, !tbaa !1
-  %pt = bitcast %union.anon* %ut to [2 x i32]*
-  %arrayidx = bitcast %union.anon* %ut to i32*
-  %2 = load i32, i32* %arrayidx, align 8, !tbaa !5
-  %cmp = icmp eq i32 %2, 0
-  %conv = zext i1 %cmp to i32
-  store double 0.000000e+00, double* %t, align 8, !tbaa !1
-  %t2 = getelementptr inbounds %union.anon, %union.anon* %ux, i32 0, i32 0
-  store double 2.700000e+01, double* %t2, align 8, !tbaa !1
-  %pt3 = bitcast %union.anon* %ux to [2 x i32]*
-  %arrayidx4 = getelementptr inbounds [2 x i32], [2 x i32]* %pt3, i32 0, i32 %conv
-  %3 = load i32, i32* %arrayidx4, align 4, !tbaa !5
-  %and = and i32 %3, -2147483648
-  %xor = xor i32 %and, %3
-  %cmp5 = icmp sgt i32 %xor, 2146435071
-  br i1 %cmp5, label %cleanup, label %if.end
-
-if.end:                                           ; preds = %entry
-  %sub = xor i32 %conv, 1
-  %arrayidx8 = getelementptr inbounds [2 x i32], [2 x i32]* %pt3, i32 0, i32 %sub
-  %4 = load i32, i32* %arrayidx8, align 4, !tbaa !5
-  %or = or i32 %4, %xor
-  %cmp9 = icmp eq i32 %or, 0
-  br i1 %cmp9, label %cleanup, label %if.end13
-
-if.end13:                                         ; preds = %if.end
-  store i32 %xor, i32* %arrayidx4, align 4, !tbaa !5
-  %cmp16 = icmp slt i32 %xor, 1048576
-  br i1 %cmp16, label %if.then18, label %if.else
-
-if.then18:                                        ; preds = %if.end13
-  %arrayidx20 = getelementptr inbounds [2 x i32], [2 x i32]* %pt, i32 0, i32 %conv
-  store i32 1129316352, i32* %arrayidx20, align 4, !tbaa !5
-  %5 = load double, double* %t, align 8, !tbaa !1
-  %mul = fmul double %5, 2.700000e+01
-  store double %mul, double* %t, align 8, !tbaa !1
-  %6 = load i32, i32* %arrayidx20, align 4, !tbaa !5
-  %div = udiv i32 %6, 3
-  %add24 = add nuw i32 %div, 696219795
-  store i32 %add24, i32* %arrayidx20, align 4, !tbaa !5
-  br label %if.end31
-
-if.else:                                          ; preds = %if.end13
-  %div271 = udiv i32 %xor, 3
-  %add28 = add nuw nsw i32 %div271, 715094163
-  %arrayidx30 = getelementptr inbounds [2 x i32], [2 x i32]* %pt, i32 0, i32 %conv
-  store i32 %add28, i32* %arrayidx30, align 4, !tbaa !5
-  br label %if.end31
-
-if.end31:                                         ; preds = %if.else, %if.then18
-  %7 = load double, double* %t, align 8, !tbaa !1
-  %mul34 = fmul double %7, %7
-  %8 = load double, double* %t2, align 8, !tbaa !1
-  %div36 = fdiv double %mul34, %8
-  %mul38 = fmul double %7, %div36
-  %add39 = fadd double %mul38, 0x3FE15F15F15F15F1
-  %add40 = fadd double %add39, 0x3FF6A0EA0EA0EA0F
-  %div41 = fdiv double 0x3FE691DE2532C834, %add39
-  %add422 = fsub double %add40, %div41
-  %div43 = fdiv double 0x3FF9B6DB6DB6DB6E, %add422
-  %add44 = fadd double %div43, 0x3FD6DB6DB6DB6DB7
-  %mul46 = fmul double %7, %add44
-  store double %mul46, double* %t, align 8, !tbaa !1
-  %arrayidx49 = getelementptr inbounds [2 x i32], [2 x i32]* %pt, i32 0, i32 %sub
-  store i32 0, i32* %arrayidx49, align 4, !tbaa !5
-  %arrayidx51 = getelementptr inbounds [2 x i32], [2 x i32]* %pt, i32 0, i32 %conv
-  %9 = load i32, i32* %arrayidx51, align 4, !tbaa !5
-  %add52 = add i32 %9, 1
-  store i32 %add52, i32* %arrayidx51, align 4, !tbaa !5
-  %10 = load double, double* %t, align 8, !tbaa !1
-  %mul55 = fmul double %10, %10
-  %11 = load double, double* %t2, align 8, !tbaa !1
-  %div57 = fdiv double %11, %mul55
-  %add60 = fadd double %10, %10
-  %sub62 = fsub double %div57, %10
-  %add63 = fadd double %add60, %div57
-  %div64 = fdiv double %sub62, %add63
-  %mul67 = fmul double %10, %div64
-  %add68 = fadd double %10, %mul67
-  store double %add68, double* %t, align 8, !tbaa !1
-  %12 = load i32, i32* %arrayidx51, align 4, !tbaa !5
-  %or72 = or i32 %12, %and
-  store i32 %or72, i32* %arrayidx51, align 4, !tbaa !5
-  %13 = load double, double* %t, align 8, !tbaa !1
-  %mul74 = fmul double %13, %13
-  %div75 = fdiv double 2.700000e+01, %mul74
-  %sub76 = fsub double %13, %div75
-  %mul77 = fmul double %sub76, 0x3FD5555555555555
-  %sub78 = fsub double %13, %mul77
-  %call = tail call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @"\01??_C@_03PPOCCAPH@?$CFf?6?$AA@", i32 0, i32 0), double %sub78)
-  br label %cleanup
-
-cleanup:                                          ; preds = %if.end, %entry, %if.end31
-  %retval.0 = phi double [ %sub78, %if.end31 ], [ 5.400000e+01, %entry ], [ 2.700000e+01, %if.end ]
-  call void @llvm.lifetime.end(i64 8, i8* %1) #3
-  call void @llvm.lifetime.end(i64 8, i8* %0) #3
-  ret double %retval.0
-}
-
-; Function Attrs: nounwind
-declare i32 @printf(i8* nocapture readonly, ...) local_unnamed_addr #1
-
-; Function Attrs: argmemonly nounwind
-declare void @llvm.lifetime.start(i64, i8* nocapture) #2
-
-; Function Attrs: argmemonly nounwind
-declare void @llvm.lifetime.end(i64, i8* nocapture) #2
-
-; Function Attrs: nounwind
-declare i32 @puts(i8* nocapture readonly) #3
-
-attributes #0 = { nounwind "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="false" "no-infs-fp-math"="false" "no-jump-tables"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-features"="+x87" "unsafe-fp-math"="false" "use-soft-float"="false" }
-attributes #1 = { nounwind "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="false" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-features"="+x87" "unsafe-fp-math"="false" "use-soft-float"="false" }
-attributes #2 = { argmemonly nounwind }
-attributes #3 = { nounwind }
-
-!llvm.ident = !{!0}
-
-!0 = !{!"clang version 3.9.0 (trunk)"}
-!1 = !{!2, !2, i64 0}
-!2 = !{!"double", !3, i64 0}
-!3 = !{!"omnipotent char", !4, i64 0}
-!4 = !{!"Simple C/C++ TBAA"}
-!5 = !{!6, !6, i64 0}
-!6 = !{!"int", !3, i64 0}
+declare i32 @printf(i8*, ...)

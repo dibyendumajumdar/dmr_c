@@ -78,7 +78,6 @@ static double cbrtl (double x)
 
     lt = ut.t;
     lt -= (lt - (x/(lt*lt))) * 0.333333333333333333333;
-    printf("%f\n", lt);
     return lt;
 }
 
@@ -87,12 +86,6 @@ static double cbrtl (double x)
 
 int main (void)
 {
-    double d1, d2;
-    int v;
-    d1 = cbrtl (27.0);
-    d2 = d1 + 0.5;
-    v = (int) (cbrtl (27.0) + 0.5);
-    printf("%d %f %f\n", v, d1, d2); 
     if ((int) (cbrtl (27.0) + 0.5) != 3)
 	abort ();
     else

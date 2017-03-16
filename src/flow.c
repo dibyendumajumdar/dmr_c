@@ -669,6 +669,9 @@ static void simplify_one_symbol(struct dmr_C *C, struct entrypoint *ep, struct s
 	if (def)
 		src = def->target;
 
+	//printf("simply one symbol pre convert load\n");
+	//show_entry(C, ep);
+
 	FOR_EACH_PTR(pseudo->users, pu) {
 		struct instruction *insn = pu->insn;
 		if (insn->opcode == OP_LOAD) {
@@ -679,6 +682,10 @@ static void simplify_one_symbol(struct dmr_C *C, struct entrypoint *ep, struct s
 
 	/* Turn the store into a no-op */
 	kill_store(C, def);
+
+	//printf("simply one symbol post kill store\n");
+	//show_entry(C, ep);
+
 	return;
 
 multi_def:
@@ -690,6 +697,9 @@ external_visibility:
 		if (insn->opcode == OP_LOAD)
 			all &= find_dominating_stores(C, pseudo, insn, ++C->L->bb_generation, !mod);
 	} END_FOR_EACH_PTR_REVERSE(pu);
+
+	//printf("simply one symbol post find dominating stores\n");
+	//show_entry(C, ep);
 
 	/* If we converted all the loads, remove the stores. They are dead */
 	if (all && !mod) {
@@ -703,11 +713,19 @@ external_visibility:
 		 * If we couldn't take the shortcut, see if we can at least kill some
 		 * of them..
 		 */
+
 		FOR_EACH_PTR(pseudo->users, pu) {
 			struct instruction *insn = pu->insn;
+
+			//printf("simply one symbol pre kill dominated stores ins %s\n", show_instruction(C, insn));
+			//show_entry(C, ep);
+
 			if (insn->opcode == OP_STORE)
 				kill_dominated_stores(C, pseudo, insn, ++C->L->bb_generation, insn->bb, !mod, 0);
 		} END_FOR_EACH_PTR(pu);
+
+		//printf("simply one symbol pre kill dead stores\n");
+		//show_entry(C, ep);
 
 		if (!(mod & (MOD_NONLOCAL | MOD_STATIC))) {
 			struct basic_block *bb;

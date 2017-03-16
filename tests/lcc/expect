@@ -1,0 +1,45 @@
+running cq.c
+Section s22     returned 0.
+Section s22     returned 0.
+Section s243    returned 0.
+Section s244    returned 0.
+Section s25     returned 0.
+  8 bits in chars.
+ 32 bits in ints.
+ 16 bits in shorts.
+ 64 bits in longs.
+ 32 bits in unsigneds.
+ 32 bits in floats.
+ 64 bits in doubles.
+1.192093e-07 is the least number that can be added to 1. (float).
+2.220446e-16 is the least number that can be added to 1. (double).
+Section s26     returned 0.
+s4,er1
+s4,er1
+Section s4      returned 1.
+Section s61     returned 0.
+Section s626    returned 0.
+Section s71     returned 0.
+Section s72     returned 0.
+Section s757    returned 0.
+Section s757    returned 0.
+Section s757    returned 0.
+Section s715    returned 0.
+0 registers assigned to char variables.
+0 registers assigned to pointer variables.
+0 registers assigned to int variables.
+Section s81     returned 0.
+Section s84     returned 0.
+char alignment: 1
+short alignment: 2
+int alignment: 4
+(null) alignment: 8
+long alignment: 4
+unsigned alignment: 4
+float alignment: 8
+Section s85     returned 0.
+Section s85     returned 0.
+Section s88     returned 0.
+Section s9      returned 0.
+
+Failed 1 errors.

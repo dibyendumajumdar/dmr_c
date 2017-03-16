@@ -24,6 +24,7 @@ running fpcast1.c
 running funcptr1.c
 running funcptr2.c
 myfunc called with 42
+running funcptr3.c
 running globals1.c
 running init1.c
 hello 55 1.500000 65.780000

@@ -455,6 +455,11 @@ static inline int is_extern(struct symbol *sym)
 	return (sym->ctype.modifiers & MOD_EXTERN);
 }
 
+static inline int is_static(struct symbol *sym)
+{
+	return (sym->ctype.modifiers & MOD_STATIC);
+}
+
 static inline int is_unsigned(struct symbol *sym)
 {
 	if (sym->ctype.modifiers & MOD_UNSIGNED)

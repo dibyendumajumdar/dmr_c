@@ -434,24 +434,35 @@ static LLVMValueRef build_local(struct dmr_C *C, struct function *fn, struct sym
 {
 	const char *name = show_ident(C, sym->ident);
 	LLVMTypeRef type = symbol_type(C, fn->module, sym);
-	char localname[256] = { 0 };
-	/* insert alloca into entry block */
-	/* LLVM requires allocas to be at the start */
-	LLVMBasicBlockRef entrybbr = LLVMGetEntryBasicBlock(fn->fn);
-	/* Use temporary Builder as we don't want to mess the function builder */
-	LLVMBuilderRef tmp_builder = LLVMCreateBuilder();
-	LLVMValueRef firstins = LLVMGetFirstInstruction(entrybbr);
-	if (firstins)
-		LLVMPositionBuilderBefore(tmp_builder, firstins);
-	else
-		LLVMPositionBuilderAtEnd(tmp_builder, entrybbr);
-	/* Since multiple locals may have same name but in different scopes we
-	append the symbol's address to make each variable unique */
-	snprintf(localname, sizeof localname, "%s_%p", name, sym);
-	LLVMValueRef result = LLVMBuildAlloca(tmp_builder, type, localname);
-	LLVMDisposeBuilder(tmp_builder);
-	/* Store the alloca instruction for references to the value later on.
-	TODO - should we convert this to pointer here? */
+	LLVMValueRef result;
+	if (is_static(sym) || is_extern(sym) || is_toplevel(sym)) {
+		result = LLVMGetNamedGlobal(fn->module, name);
+		if (!result) {
+			result = LLVMAddGlobal(fn->module, type, name);
+			if (!is_extern(sym))
+				LLVMSetLinkage(result, LLVMInternalLinkage);
+			else 
+				LLVMSetLinkage(result, LLVMExternalLinkage);
+		}
+	}
+	else {
+		char localname[256] = { 0 };
+		/* insert alloca into entry block */
+		/* LLVM requires allocas to be at the start */
+		LLVMBasicBlockRef entrybbr = LLVMGetEntryBasicBlock(fn->fn);
+		/* Use temporary Builder as we don't want to mess the function builder */
+		LLVMBuilderRef tmp_builder = LLVMCreateBuilder();
+		LLVMValueRef firstins = LLVMGetFirstInstruction(entrybbr);
+		if (firstins)
+			LLVMPositionBuilderBefore(tmp_builder, firstins);
+		else
+			LLVMPositionBuilderAtEnd(tmp_builder, entrybbr);
+		/* Since multiple locals may have same name but in different scopes we
+		append the symbol's address to make each variable unique */
+		snprintf(localname, sizeof localname, "%s_%p", name, sym);
+		result = LLVMBuildAlloca(tmp_builder, type, localname);
+		LLVMDisposeBuilder(tmp_builder);
+	}
 	sym->priv = result;
 	return result;
 }
@@ -503,14 +514,20 @@ static LLVMValueRef pseudo_to_value(struct dmr_C *C, struct function *fn, struct
 				exit(1);
 				break;
 			}
-			case EXPR_VALUE:
+			case EXPR_VALUE: 
 				result = build_local(C, fn, sym);
-				LLVMBuildStore(fn->builder, LLVMConstInt(symbol_type(C, fn->module, sym), expr->value, 1), result);
+				if (is_static(sym))
+					LLVMSetInitializer(result, LLVMConstInt(symbol_type(C, fn->module, sym), expr->value, 1));
+				else
+					LLVMBuildStore(fn->builder, LLVMConstInt(symbol_type(C, fn->module, sym), expr->value, 1), result);
 				sym->priv = result;
 				break;
 			case EXPR_FVALUE:
 				result = build_local(C, fn, sym);
-				LLVMBuildStore(fn->builder, LLVMConstReal(symbol_type(C, fn->module, sym), expr->fvalue), result);
+				if (is_static(sym))
+					LLVMSetInitializer(result, LLVMConstReal(symbol_type(C, fn->module, sym), expr->fvalue));
+				else
+					LLVMBuildStore(fn->builder, LLVMConstReal(symbol_type(C, fn->module, sym), expr->fvalue), result);
 				sym->priv = result;
 				break;
 			default:
@@ -530,12 +547,20 @@ static LLVMValueRef pseudo_to_value(struct dmr_C *C, struct function *fn, struct
 			}
 			else if (is_extern(sym) || is_toplevel(sym)) {
 				result = LLVMGetNamedGlobal(fn->module, name);
-				if (!result)
+				if (!result) {
 					result = LLVMAddGlobal(fn->module, type, name);
+					if (is_extern(sym))
+						LLVMSetLinkage(result, LLVMExternalLinkage);
+				}
 				sym->priv = result;
 			}
 			else {
+				if (is_static(sym)) {
+					fprintf(stderr, "missing initializer for local static symbol: %s\n", name);
+					exit(1);
+				}
 				result = build_local(C, fn, sym);
+				sym->priv = result;
 			}
 		}
 		break;

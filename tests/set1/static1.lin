@@ -1,0 +1,22 @@
+staticint:
+.L0:
+	<entry-point>
+	load.32     %r1 <- 0[x]
+	add.32      %r2 <- %r1, $1
+	store.32    %r2 -> 0[x]
+	ret.32      %r1
+
+
+main:
+.L2:
+	<entry-point>
+	call.32     %r4 <- staticint
+	call.32     %r5 <- staticint
+	add.32      %r8 <- %r4, %r5
+	symaddr.64  %r10 <- <anon symbol:0000024C87BF2328>
+	load.64     %r12 <- 0[s]
+	call.32     %r13 <- printf, %r10, %r8, %r12
+	setne.32    %r16 <- %r8, $3
+	ret.32      %r16
+
+

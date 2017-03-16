@@ -1,19 +1,19 @@
 main:
 .L0:
 	<entry-point>
-	symaddr.64  %r1 <- <anon symbol:00000176D37806E8>
+	symaddr.64  %r1 <- <anon symbol:000002348F4F06E8>
 	store.64    %r1 -> 0[type]
-	symaddr.64  %r2 <- <anon symbol:00000176D3780D08>
+	symaddr.64  %r2 <- <anon symbol:000002348F4F0D08>
 	store.64    %r2 -> 8[type]
-	symaddr.64  %r3 <- <anon symbol:00000176D3781328>
+	symaddr.64  %r3 <- <anon symbol:000002348F4F1328>
 	store.64    %r3 -> 16[type]
-	symaddr.64  %r4 <- <anon symbol:00000176D3781948>
+	symaddr.64  %r4 <- <anon symbol:000002348F4F1948>
 	store.64    %r4 -> 32[type]
-	symaddr.64  %r5 <- <anon symbol:00000176D3781F68>
+	symaddr.64  %r5 <- <anon symbol:000002348F4F1F68>
 	store.64    %r5 -> 40[type]
-	symaddr.64  %r6 <- <anon symbol:00000176D3782588>
+	symaddr.64  %r6 <- <anon symbol:000002348F4F2588>
 	store.64    %r6 -> 48[type]
-	symaddr.64  %r7 <- <anon symbol:00000176D3782BA8>
+	symaddr.64  %r7 <- <anon symbol:000002348F4F2BA8>
 	store.64    %r7 -> 56[type]
 	symaddr.64  %r8 <- s22
 	store.64    %r8 -> 0[sec]
@@ -91,7 +91,7 @@ main:
 	br          %r44, .L5, .L2
 
 .L5:
-	symaddr.64  %r46 <- <anon symbol:00000176D3789A68>
+	symaddr.64  %r46 <- <anon symbol:000002348F4F9A68>
 	add.64      %r48 <- %r29, $60
 	call.32     %r50 <- printf, %r46, %r48, %r40
 	br          .L2
@@ -106,12 +106,12 @@ main:
 	br          %r53(d0), .L8, .L7
 
 .L7:
-	symaddr.64  %r55 <- <anon symbol:00000176D378A248>
+	symaddr.64  %r55 <- <anon symbol:000002348F4FA248>
 	call.32     %r56 <- printf, %r55
 	br          .L10
 
 .L8:
-	symaddr.64  %r57 <- <anon symbol:00000176D378A5C8>
+	symaddr.64  %r57 <- <anon symbol:000002348F4FA5C8>
 	call.32     %r59 <- printf, %r57, %r53(d0)
 	br          .L10
 
@@ -484,7 +484,7 @@ s25:
 	br          %r211, .L82, .L81
 
 .L81:
-	symaddr.64  %r214 <- <anon symbol:00000176D3738508>
+	symaddr.64  %r214 <- <anon symbol:000002348F4A8398>
 	load.8      %r216 <- 0["..."]
 	scast.32    %r217 <- (8) %r216
 	load.8      %r219 <- 1["..."]
@@ -618,8 +618,8 @@ s25:
 	br          .L98
 
 .L98:
-	symaddr.64  %r297 <- <anon symbol:00000176D3739F48>
-	symaddr.64  %r298(s) <- <anon symbol:00000176D373A2C8>
+	symaddr.64  %r297 <- <anon symbol:000002348F4A9DD8>
+	symaddr.64  %r298(s) <- <anon symbol:000002348F4AA158>
 	phisrc.32   %phi106(lrc) <- $0
 	phisrc.32   %phi110(j) <- $0
 	br          .L110
@@ -790,41 +790,41 @@ s26:
 
 .L135:
 	load.64     %r431 <- 0[s]
-	symaddr.64  %r434 <- <anon symbol:00000176D373BFA8>
+	symaddr.64  %r434 <- <anon symbol:000002348F4ABE38>
 	call.32     %r435 <- printf, %r431, %r348, %r434
 	load.64     %r436 <- 0[s]
 	load.32     %r438 <- 4[%arg1]
-	symaddr.64  %r439 <- <anon symbol:00000176D37444C8>
+	symaddr.64  %r439 <- <anon symbol:000002348F4B4358>
 	call.32     %r440 <- printf, %r436, %r438, %r439
 	load.64     %r441 <- 0[s]
 	load.32     %r443 <- 8[%arg1]
-	symaddr.64  %r444 <- <anon symbol:00000176D3744928>
+	symaddr.64  %r444 <- <anon symbol:000002348F4B47B8>
 	call.32     %r445 <- printf, %r441, %r443, %r444
 	load.64     %r446 <- 0[s]
 	load.32     %r448 <- 12[%arg1]
-	symaddr.64  %r449 <- <anon symbol:00000176D3744D88>
+	symaddr.64  %r449 <- <anon symbol:000002348F4B4C18>
 	call.32     %r450 <- printf, %r446, %r448, %r449
 	load.64     %r451 <- 0[s]
 	load.32     %r453 <- 16[%arg1]
-	symaddr.64  %r454 <- <anon symbol:00000176D37451E8>
+	symaddr.64  %r454 <- <anon symbol:000002348F4B5078>
 	call.32     %r455 <- printf, %r451, %r453, %r454
 	load.64     %r456 <- 0[s]
 	load.32     %r458 <- 20[%arg1]
-	symaddr.64  %r459 <- <anon symbol:00000176D3745648>
+	symaddr.64  %r459 <- <anon symbol:000002348F4B54D8>
 	call.32     %r460 <- printf, %r456, %r458, %r459
 	load.64     %r461 <- 0[s]
 	load.32     %r463 <- 24[%arg1]
-	symaddr.64  %r464 <- <anon symbol:00000176D3745AA8>
+	symaddr.64  %r464 <- <anon symbol:000002348F4B5938>
 	call.32     %r465 <- printf, %r461, %r463, %r464
 	load.64     %r466 <- 0[s2]
 	load.32     %r468 <- 28[%arg1]
 	fpcast.64   %r469 <- (32) %r468
-	symaddr.64  %r470 <- <anon symbol:00000176D3745F08>
+	symaddr.64  %r470 <- <anon symbol:000002348F4B5D98>
 	call.32     %r471 <- printf, %r466, %r469, %r470
 	load.64     %r472 <- 0[s2]
 	load.32     %r474 <- 32[%arg1]
 	fpcast.64   %r475 <- (32) %r474
-	symaddr.64  %r476 <- <anon symbol:00000176D3746368>
+	symaddr.64  %r476 <- <anon symbol:000002348F4B61F8>
 	call.32     %r477 <- printf, %r472, %r475, %r476
 	br          .L137
 
@@ -1327,7 +1327,7 @@ s626:
 .L294:
 	load.64     %r900 <- 0[s626er]
 	call.32     %r901 <- printf, %r900, $4
-	symaddr.64  %r902 <- <anon symbol:00000176D37564C8>
+	symaddr.64  %r902 <- <anon symbol:000002348F4C6358>
 	call.32     %r903 <- printf, %r902
 	phisrc.32   %phi225(j) <- $0
 	br          .L299
@@ -1338,7 +1338,7 @@ s626:
 	br          %r905, .L296, .L298
 
 .L296:
-	symaddr.64  %r906 <- <anon symbol:00000176D3756848>
+	symaddr.64  %r906 <- <anon symbol:000002348F4C66D8>
 	symaddr.64  %r907 <- t
 	scast.64    %r909 <- (32) %r904(j)
 	add.64      %r910 <- %r907, %r909
@@ -1350,7 +1350,7 @@ s626:
 	br          .L299
 
 .L298:
-	symaddr.64  %r916 <- <anon symbol:00000176D3756E68>
+	symaddr.64  %r916 <- <anon symbol:000002348F4C6CF8>
 	call.32     %r917 <- printf, %r916
 	br          .L301
 
@@ -1907,7 +1907,7 @@ s757:
 	br          %r1449, .L432, .L431
 
 .L432:
-	symaddr.64  %r1451 <- <anon symbol:00000176D375ABA8>
+	symaddr.64  %r1451 <- <anon symbol:000002348F4CAA38>
 	call.32     %r1452 <- printf, %r1451
 	br          .L431
 
@@ -2120,13 +2120,13 @@ s81:
 
 .L496:
 	load.64     %r1589 <- 0[badtest]
-	symaddr.64  %r1590 <- <anon symbol:00000176D3765828>
+	symaddr.64  %r1590 <- <anon symbol:000002348F4D56B8>
 	call.32     %r1591 <- printf, %r1589, %r1590
 	br          .L495
 
 .L497:
 	load.64     %r1592 <- 0[goodtest]
-	symaddr.64  %r1594 <- <anon symbol:00000176D3765BA8>
+	symaddr.64  %r1594 <- <anon symbol:000002348F4D5A38>
 	call.32     %r1595 <- printf, %r1592, %r1583(k), %r1594
 	br          .L495
 
@@ -2142,13 +2142,13 @@ s81:
 
 .L501:
 	load.64     %r1602 <- 0[badtest]
-	symaddr.64  %r1603 <- <anon symbol:00000176D3766008>
+	symaddr.64  %r1603 <- <anon symbol:000002348F4D5E98>
 	call.32     %r1604 <- printf, %r1602, %r1603
 	br          .L500
 
 .L502:
 	load.64     %r1605 <- 0[goodtest]
-	symaddr.64  %r1607 <- <anon symbol:00000176D3766388>
+	symaddr.64  %r1607 <- <anon symbol:000002348F4D6218>
 	call.32     %r1608 <- printf, %r1605, %r1596(k), %r1607
 	br          .L500
 
@@ -2164,13 +2164,13 @@ s81:
 
 .L506:
 	load.64     %r1615 <- 0[badtest]
-	symaddr.64  %r1616 <- <anon symbol:00000176D37667E8>
+	symaddr.64  %r1616 <- <anon symbol:000002348F4D6678>
 	call.32     %r1617 <- printf, %r1615, %r1616
 	br          .L505
 
 .L507:
 	load.64     %r1618 <- 0[goodtest]
-	symaddr.64  %r1620 <- <anon symbol:00000176D3766B68>
+	symaddr.64  %r1620 <- <anon symbol:000002348F4D69F8>
 	call.32     %r1621 <- printf, %r1618, %r1609(k), %r1620
 	br          .L505
 
@@ -2600,7 +2600,7 @@ s85:
 	br          %r1899, .L581, .L595
 
 .L581:
-	symaddr.64  %r1900 <- <anon symbol:00000176D376DF68>
+	symaddr.64  %r1900 <- <anon symbol:000002348F4DDDF8>
 	symaddr.64  %r1901 <- type
 	scast.64    %r1903 <- (32) %r1898(j)
 	muls.64     %r1904 <- %r1903, $8

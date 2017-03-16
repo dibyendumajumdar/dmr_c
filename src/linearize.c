@@ -2178,16 +2178,16 @@ static struct entrypoint *linearize_fn(struct dmr_C *C, struct symbol *sym, stru
 		add_one_insn(C, ep, insn);
 	}
 
-	//printf("step 1 pre kill unreachable\n");
-	//show_entry(C, ep);
+	printf("step 1 pre kill unreachable\n");
+	show_entry(C, ep);
 	/*
 	 * Do trivial flow simplification - branches to
 	 * branches, kill dead basicblocks etc
 	 */
 	kill_unreachable_bbs(C, ep);
 
-	//printf("step 2 pre simplify symbol usage\n");
-	//show_entry(C, ep);
+	printf("step 2 pre simplify symbol usage\n");
+	show_entry(C, ep);
 	/*
 	 * Turn symbols into pseudos
 	 */
@@ -2198,8 +2198,8 @@ repeat:
 	 * the rest.
 	 */
 	do {
-		//printf("step 3 pre CSE\n");
-		//show_entry(C, ep);
+		printf("step 3 pre CSE\n");
+		show_entry(C, ep);
 		cleanup_and_cse(C, ep);
 		pack_basic_blocks(C, ep);
 	} while (C->L->repeat_phase & REPEAT_CSE);
@@ -2209,18 +2209,18 @@ repeat:
 	kill_unreachable_bbs(C, ep);
 	vrfy_flow(ep);
 
-	//printf("step pre cleanup 5\n");
-	//show_entry(C, ep);
+	printf("step pre cleanup 5\n");
+	show_entry(C, ep);
 	/* Cleanup */
 	clear_symbol_pseudos(ep);
 
-	//printf("step post cleanup 6\n");
-	//show_entry(C, ep);
+	printf("step post cleanup 6\n");
+	show_entry(C, ep);
 	/* And track pseudo register usage */
 	track_pseudo_liveness(C, ep);
 
-	//printf("pre simply flow 6\n");
-	//show_entry(C, ep);
+	printf("pre simply flow 6\n");
+	show_entry(C, ep);
 	/*
 	 * Some flow optimizations can only effectively
 	 * be done when we've done liveness analysis. But
@@ -2229,8 +2229,8 @@ repeat:
 	 */
 	if (simplify_flow(C, ep)) {
 
-		//printf("post simplify flow 6\n");
-		//show_entry(C, ep);
+		printf("post simplify flow 6\n");
+		show_entry(C, ep);
 
 		clear_liveness(ep);
 		goto repeat;

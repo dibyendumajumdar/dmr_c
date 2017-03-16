@@ -36,6 +36,7 @@ running pseudoval1.c
 running ptraddassign1.c
 running ptraddassign2.c
 running ptraddassign3.c
+running ret1.c
 running symaddr.c
 value -1
 running union1.c

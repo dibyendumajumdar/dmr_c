@@ -435,10 +435,12 @@ static LLVMValueRef build_local(struct dmr_C *C, struct function *fn, struct sym
 	const char *name = show_ident(C, sym->ident);
 	LLVMTypeRef type = symbol_type(C, fn->module, sym);
 	LLVMValueRef result;
+	char localname[256] = { 0 };
+	snprintf(localname, sizeof localname, "%s_%p", name, sym);
 	if (is_static(sym) || is_extern(sym) || is_toplevel(sym)) {
-		result = LLVMGetNamedGlobal(fn->module, name);
+		result = LLVMGetNamedGlobal(fn->module, localname);
 		if (!result) {
-			result = LLVMAddGlobal(fn->module, type, name);
+			result = LLVMAddGlobal(fn->module, type, localname);
 			if (!is_extern(sym))
 				LLVMSetLinkage(result, LLVMInternalLinkage);
 			else 
@@ -446,7 +448,6 @@ static LLVMValueRef build_local(struct dmr_C *C, struct function *fn, struct sym
 		}
 	}
 	else {
-		char localname[256] = { 0 };
 		/* insert alloca into entry block */
 		/* LLVM requires allocas to be at the start */
 		LLVMBasicBlockRef entrybbr = LLVMGetEntryBasicBlock(fn->fn);
@@ -459,7 +460,6 @@ static LLVMValueRef build_local(struct dmr_C *C, struct function *fn, struct sym
 			LLVMPositionBuilderAtEnd(tmp_builder, entrybbr);
 		/* Since multiple locals may have same name but in different scopes we
 		append the symbol's address to make each variable unique */
-		snprintf(localname, sizeof localname, "%s_%p", name, sym);
 		result = LLVMBuildAlloca(tmp_builder, type, localname);
 		LLVMDisposeBuilder(tmp_builder);
 	}

@@ -5496,7 +5496,7 @@ static int s9(struct defs *pd0)          /*  9  Statements  */
    return rc;
 }
 static void setev(void ){                  /* Sets an external variable. Used  */
-static int extvar;     /* by s4, and should be compiled    */
+   extern int extvar;     /* by s4, and should be compiled    */
    extvar = 1066;         /* separately from s4.              */
 }
      int lbits;          /*                 long           */

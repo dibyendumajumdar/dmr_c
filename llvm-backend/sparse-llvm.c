@@ -981,10 +981,10 @@ static void output_op_call(struct dmr_C *C, struct function *fn, struct instruct
 
 	n_arg = ptrlist_size(insn->arguments);
 	args = alloca(n_arg * sizeof(LLVMValueRef));
+	struct symbol *ftype = get_function_basetype(insn->fntype);
 
 	i = 0;
 	FOR_EACH_PTR(insn->arguments, arg) {
-		struct symbol *ftype = get_function_basetype(insn->fntype);
 		LLVMValueRef value;
 		struct symbol *atype;
 		atype = get_nth_symbol(ftype->arguments, i);
@@ -1010,7 +1010,13 @@ static void output_op_call(struct dmr_C *C, struct function *fn, struct instruct
 	func = pseudo_to_value(C, fn, insn, insn->func);
 	assert(func);
 	pseudo_name(C, insn->target, name);
-	target = LLVMBuildCall(fn->builder, func, args, n_arg, name);
+	LLVMTypeRef function_type = symbol_type(C, fn->module, ftype);
+	LLVMTypeRef fptr_type = LLVMPointerType(function_type, 0);
+	LLVMTypeRef bytep = LLVMPointerType(LLVMInt8Type(), 0);
+
+	target = LLVMBuildBitCast(fn->builder, func, bytep, name);
+	target = LLVMBuildBitCast(fn->builder, target, fptr_type, name);
+	target = LLVMBuildCall(fn->builder, target, args, n_arg, name);
 
 	insn->target->priv = target;
 }
@@ -1520,7 +1526,8 @@ static LLVMValueRef output_data(struct dmr_C *C, LLVMModuleRef module, struct sy
 			break;
 		case EXPR_SYMBOL: {
 			struct symbol *sym = initializer->symbol;
-			initial_value = LLVMGetNamedGlobal(module, show_ident(C, sym->ident));
+			if (sym->ident)
+				initial_value = LLVMGetNamedGlobal(module, show_ident(C, sym->ident));
 			if (!initial_value)
 				initial_value = output_data(C, module, sym);
 			break;
@@ -1546,7 +1553,8 @@ static LLVMValueRef output_data(struct dmr_C *C, LLVMModuleRef module, struct sy
 	name = show_ident(C, sym->ident);
 
 	if (!sym->priv) {
-		data = LLVMGetNamedGlobal(module, name);
+		if (sym->ident)
+			data = LLVMGetNamedGlobal(module, name);
 		if (!data)
 			data = LLVMAddGlobal(module, LLVMTypeOf(initial_value), name);
 

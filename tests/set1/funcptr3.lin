@@ -1,0 +1,38 @@
+execute:
+.L0:
+	<entry-point>
+	ptrcast.64  %r6 <- (64) %arg2
+	br          %arg1, .L2, .L1
+
+.L1:
+	call.32     %r7 <- %r6, %arg3, %arg4
+	phisrc.32   %phi1(return) <- %r7
+	br          .L3
+
+.L2:
+	call.32     %r12 <- %r6, %arg3
+	phisrc.32   %phi2(return) <- %r12
+	br          .L3
+
+.L3:
+	phi.32      %r8 <- %phi1(return), %phi2(return)
+	ret.32      %r8
+
+
+unary:
+.L4:
+	<entry-point>
+	add.32      %r14 <- %arg1, $3
+	ret.32      %r14
+
+
+main:
+.L6:
+	<entry-point>
+	symaddr.64  %r17 <- unary
+	cast.64     %r18 <- (64) %r17
+	call.32     %r19 <- execute, $1, %r18, $3, $10
+	setne.32    %r21 <- %r19, $6
+	ret.32      %r21
+
+

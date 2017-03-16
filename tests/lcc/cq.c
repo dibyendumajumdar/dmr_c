@@ -9,6 +9,25 @@ static int testev(void);
 static long pow2(long n);
 static int zero(void);
 
+struct defs {
+     int cbits;          /* No. of bits per char           */
+     int ibits;          /*                 int            */
+     int sbits;          /*                 short          */
+     int lbits;          /*                 long           */
+     int ubits;          /*                 unsigned       */
+     int fbits;          /*                 float          */
+     int dbits;          /*                 double         */
+     float fprec;        /* Smallest number that can be    */
+     float dprec;        /* significantly added to 1.      */
+     int flgs;           /* Print return codes, by section */
+     int flgm;           /* Announce machine dependencies  */
+     int flgd;           /* give explicit diagnostics      */
+     int flgl;           /* Report local return codes.     */
+     int rrc;            /* recent return code             */
+     int crc;            /* Cumulative return code         */
+     char rfs[8];        /* Return from section            */
+   };
+
 static int s22(struct defs *);
 static int s241(struct defs *);
 static int s243(struct defs *);
@@ -53,24 +72,7 @@ static int one(void);
    //};
 
 
-struct defs {
-     int cbits;          /* No. of bits per char           */
-     int ibits;          /*                 int            */
-     int sbits;          /*                 short          */
-     int lbits;          /*                 long           */
-     int ubits;          /*                 unsigned       */
-     int fbits;          /*                 float          */
-     int dbits;          /*                 double         */
-     float fprec;        /* Smallest number that can be    */
-     float dprec;        /* significantly added to 1.      */
-     int flgs;           /* Print return codes, by section */
-     int flgm;           /* Announce machine dependencies  */
-     int flgd;           /* give explicit diagnostics      */
-     int flgl;           /* Report local return codes.     */
-     int rrc;            /* recent return code             */
-     int crc;            /* Cumulative return code         */
-     char rfs[8];        /* Return from section            */
-   };
+
 int main(int n, const char *args[])               /* C REFERENCE MANUAL         */
 {
 

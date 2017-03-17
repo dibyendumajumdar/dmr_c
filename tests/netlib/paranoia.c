@@ -1,5 +1,3 @@
-#undef V9
-#define NOPAUSE
 /*	A C version of Kahan's Floating Point Test "Paranoia"
 
 			Thos Sumner, UCSF, Feb. 1985
@@ -10,6 +8,11 @@
 			B. A. Wichmann, 18 Jan. 1985
 
 	(and does NOT exhibit good C programming style).
+
+	Adjusted to use Standard C headers 19 Jan. 1992 (dmg);
+	compile with -DKR_headers or insert
+#define KR_headers
+	at the beginning if you have an old-style C compiler.
 
 (C) Apr 19 1983 in BASIC version by:
 	Professor W. M. Kahan,
@@ -147,8 +150,10 @@ file, paranoia.h, that these files require.
 r paranoia.c
 $
 ?SPLIT
-+,$w msgs.c
- .,$d
+ .d
++d
+-,$w msgs.c
+-,$d
 ?SPLIT
  .d
 +d
@@ -208,7 +213,7 @@ $
 /^jmp_buf/s/^/extern /
 /^Sig_type/s/^/extern /
 s/$/\
-extern void sigfpe();/
+extern void sigfpe(INT);/
 w paranoia.h
 q
 
@@ -219,8 +224,6 @@ q
 #include <signal.h>
 #endif
 #include <setjmp.h>
-
-extern double fabs(), floor(), log(), pow(), sqrt();
 
 #ifdef Single
 #define FLOAT float
@@ -239,13 +242,67 @@ extern double fabs(), floor(), log(), pow(), sqrt();
 #endif
 
 jmp_buf ovfl_buf;
+#ifdef KR_headers
+#define VOID /* void */
+#define INT /* int */
+#define FP /* FLOAT */
+#define CHARP /* char * */
+#define CHARPP /* char ** */
+extern double fabs(), floor(), log(), pow(), sqrt();
+extern void exit();
 typedef void (*Sig_type)();
+FLOAT Sign(), Random();
+extern void BadCond();
+extern void SqXMinX();
+extern void TstCond();
+extern void notify();
+extern int read();
+#else
+#define VOID void
+#define INT int
+#define FP FLOAT
+#define CHARP char *
+#define CHARPP char **
+#ifdef __STDC__
+#include <stdlib.h>
+#include <math.h>
+#else
+#ifdef __cplusplus
+extern "C" {
+#endif
+extern double fabs(double), floor(double), log(double);
+extern double pow(double,double), sqrt(double);
+extern void exit(INT);
+#ifdef __cplusplus
+	}
+#endif
+#endif
+typedef void (*Sig_type)(int);
+FLOAT Sign(FLOAT), Random(void);
+extern void BadCond(int, char*);
+extern void SqXMinX(int);
+extern void TstCond(int, int, char*);
+extern void notify(char*);
+extern int read(int, char*, int);
+#endif
+#undef V9
+extern void Characteristics(VOID);
+extern void Heading(VOID);
+extern void History(VOID);
+extern void Instructions(VOID);
+extern void IsYeqX(VOID);
+extern void NewD(VOID);
+extern void Pause(VOID);
+extern void PrintIfNPositive(VOID);
+extern void SR3750(VOID);
+extern void SR3980(VOID);
+extern void TstPtUf(VOID);
+
 Sig_type sigsave;
 
 #define KEYBOARD 0
 
 FLOAT Radix, BInvrse, RadixD2, BMinusU2;
-FLOAT Sign(), Random();
 
 /*Small floating point constants.*/
 FLOAT Zero = 0.0;
@@ -324,10 +381,10 @@ int Break, Done, NotMonot, Monot, Anomaly, IEEE,
 
 /* floating point exception receiver */
  void
-sigfpe(i)
+sigfpe(INT x)
 {
 	fpecount++;
-	printf("\n* * * FLOATING-POINT ERROR * * *\n");
+	printf("\n* * * FLOATING-POINT ERROR %d * * *\n", x);
 	fflush(stdout);
 	if (sigsave) {
 #ifndef NOSIGNAL
@@ -336,15 +393,11 @@ sigfpe(i)
 		sigsave = 0;
 		longjmp(ovfl_buf, 1);
 		}
-	abort();
+	exit(1);
 }
 
-main()
+main(VOID)
 {
-#ifdef mc
-	char *out;
-	ieee_flags("set", "precision", "double", &out);
-#endif
 	/* First two assignments use integer right-hand sides. */
 	Zero = 0;
 	One = 1;
@@ -391,7 +444,7 @@ main()
 	if (Z != 0.0) {
 		ErrCnt[Failure] = ErrCnt[Failure] + 1;
 		printf("Comparison alleges that -0.0 is Non-zero!\n");
-		U1 = 0.001;
+		U2 = 0.001;
 		Radix = 1;
 		TstPtUf();
 		}
@@ -408,16 +461,22 @@ main()
 		  "1/2 + (-1) + 1/2 != 0");
 	/*=============================================*/
 	/*SPLIT
-	part2();
-	part3();
-	part4();
-	part5();
-	part6();
-	part7();
-	part8();
+	{
+		extern void part2(VOID), part3(VOID), part4(VOID),
+			part5(VOID), part6(VOID), part7(VOID);
+		int part8(VOID);
+
+		part2();
+		part3();
+		part4();
+		part5();
+		part6();
+		part7();
+		return part8();
+		}
 	}
 #include "paranoia.h"
-part2(){
+void part2(VOID){
 */
 	Milestone = 10;
 	/*=============================================*/
@@ -625,7 +684,7 @@ part2(){
 	/*SPLIT
 	}
 #include "paranoia.h"
-part3(){
+void part3(VOID){
 */
 	Milestone = 35;
 	/*=============================================*/
@@ -678,7 +737,8 @@ part3(){
 	T = Nine / TwentySeven;
 	Z = Z - T;
 	TstCond(Defect, X == Zero && Y == Zero && Z == Zero,
-		"Division lacks a Guard Digit, so error can exceed 1 ulp\nor  1/3  and  3/9  and  9/27 may disagree");
+		"Division lacks a Guard Digit, so error can exceed 1 ulp\n\
+or  1/3  and  3/9  and  9/27 may disagree");
 	Y = F9 / One;
 	X = F9 - Half;
 	Y = (Y - Half) - X;
@@ -850,7 +910,7 @@ part3(){
 	/*SPLIT
 	}
 #include "paranoia.h"
-part4(){
+void part4(VOID){
 */
 	Milestone = 50;
 	/*=============================================*/
@@ -944,7 +1004,8 @@ part4(){
 	else printf("Sticky bit used incorrectly or not at all.\n");
 	TstCond (Flaw, !(GMult == No || GDiv == No || GAddSub == No ||
 			RMult == Other || RDiv == Other || RAddSub == Other),
-		"lack(s) of guard digits or failure(s) to correctly round or chop\n(noted above) count as one flaw in the final tally below");
+		"lack(s) of guard digits or failure(s) to correctly round or chop\n\
+(noted above) count as one flaw in the final tally below");
 	/*=============================================*/
 	Milestone = 60;
 	/*=============================================*/
@@ -1024,7 +1085,7 @@ part4(){
 		if ((X > Q) || (Q > Z)) NotMonot = True;
 		else {
 			Q = FLOOR(Q + Half);
-			if ((I > 0) || (Radix == Q * Q)) Monot = True;
+			if (!(I > 0 || Radix == Q * Q)) Monot = True;
 			else if (I > 0) {
 			if (I > 1) Monot = True;
 			else {
@@ -1049,7 +1110,7 @@ part4(){
 	/*SPLIT
 	}
 #include "paranoia.h"
-part5(){
+void part5(VOID){
 */
 	Milestone = 80;
 	/*=============================================*/
@@ -1206,7 +1267,7 @@ part5(){
 	/* ... test powers of zero. */
 	I = 0;
 	Z = -Zero;
-	M = 3.0;
+	M = 3;
 	Break = False;
 	do  {
 		X = One;
@@ -1218,8 +1279,6 @@ part5(){
 		if (Z == MinusOne) Break = True;
 		else {
 			Z = MinusOne;
-			PrintIfNPositive();
-			N = 0;
 			/* .. if(-1)^N is invalid, replace MinusOne by One. */
 			I = - 4;
 			}
@@ -1228,7 +1287,7 @@ part5(){
 	N1 = N;
 	N = 0;
 	Z = A1;
-	M = FLOOR(Two * LOG(W) / LOG(A1));
+	M = (int)FLOOR(Two * LOG(W) / LOG(A1));
 	Break = False;
 	do  {
 		X = Z;
@@ -1258,14 +1317,14 @@ part5(){
 		}
 	PrintIfNPositive();
 	N += N1;
-	if (N == 0) printf("... no discrepancis found.\n");
+	if (N == 0) printf("... no discrepancies found.\n");
 	if (N > 0) Pause();
 	else printf("\n");
 	/*=============================================*/
 	/*SPLIT
 	}
 #include "paranoia.h"
-part6(){
+void part6(VOID){
 */
 	Milestone = 110;
 	/*=============================================*/
@@ -1488,7 +1547,7 @@ part6(){
 	/*SPLIT
 	}
 #include "paranoia.h"
-part7(){
+void part7(VOID){
 */
 	Milestone = 130;
 	/*=============================================*/
@@ -1496,18 +1555,28 @@ part7(){
 	Y2 = Y + Y;
 	printf("Since underflow occurs below the threshold\n");
 	printf("UfThold = (%.17e) ^ (%.17e)\nonly underflow ", HInvrse, Y);
-	printf("should afflict the expression\n\t(%.17e) ^ (%.17e);\n", HInvrse, Y);
-	V9 = POW(HInvrse, Y2);
-	printf("actually calculating yields: %.17e .\n", V9);
-	if (! ((V9 >= Zero) && (V9 <= (Radix + Radix + E9) * UfThold))) {
-		BadCond(Serious, "this is not between 0 and underflow\n");
+	printf("should afflict the expression\n\t(%.17e) ^ (%.17e);\n",
+		HInvrse, Y2);
+	printf("actually calculating yields:");
+	if (setjmp(ovfl_buf)) {
+		sigsave = 0;
+		BadCond(Serious, "trap on underflow.\n");
+		}
+	else {
+		sigsave = sigfpe;
+		V9 = POW(HInvrse, Y2);
+		sigsave = 0;
+		printf(" %.17e .\n", V9);
+		if (! ((V9 >= Zero) && (V9 <= (Radix + Radix + E9) * UfThold))) {
+			BadCond(Serious, "this is not between 0 and underflow\n");
 		printf("   threshold = %.17e .\n", UfThold);
 		}
-	else if (! (V9 > UfThold * (One + E9)))
-		printf("This computed value is O.K.\n");
-	else {
-		BadCond(Defect, "this is not between 0 and underflow\n");
-		printf("   threshold = %.17e .\n", UfThold);
+		else if (! (V9 > UfThold * (One + E9)))
+			printf("This computed value is O.K.\n");
+		else {
+			BadCond(Defect, "this is not between 0 and underflow\n");
+			printf("   threshold = %.17e .\n", UfThold);
+			}
 		}
 	/*=============================================*/
 	Milestone = 140;
@@ -1638,7 +1707,8 @@ overflow:
 		}
 	printf("Overflow threshold is V  = %.17e .\n", V);
 	if (I) printf("Overflow saturates at V0 = %.17e .\n", V0);
-	else printf("There is no saturation value because the system traps on overflow.\n");
+	else printf("There is no saturation value because \
+the system traps on overflow.\n");
 	V9 = V * One;
 	printf("No Overflow should be signaled for V * 1 = %.17e\n", V9);
 	V9 = V / One;
@@ -1696,7 +1766,7 @@ overflow:
 	/*SPLIT
 	}
 #include "paranoia.h"
-part8(){
+int part8(VOID){
 */
 	Milestone = 190;
 	/*=============================================*/
@@ -1843,15 +1913,15 @@ part8(){
 #include "paranoia.h"
 */
 
-/* Sign */
-
-FLOAT Sign (X)
+ FLOAT
+Sign (FP X)
+#ifdef KR_headers
 FLOAT X;
+#endif
 { return X >= 0. ? 1.0 : -1.0; }
 
-/* Pause */
-
-Pause()
+ void
+Pause(VOID)
 {
 #ifndef NOPAUSE
 	char ch[8];
@@ -1866,16 +1936,20 @@ Pause()
 	++PageNo;
 	}
 
- /* TstCond */
-
-TstCond (K, Valid, T)
+ void
+TstCond (INT K, INT Valid, CHARP T)
+#ifdef KR_headers
 int K, Valid;
 char *T;
+#endif
 { if (! Valid) { BadCond(K,T); printf(".\n"); } }
 
-BadCond(K, T)
+ void
+BadCond(INT K, CHARP T)
+#ifdef KR_headers
 int K;
 char *T;
+#endif
 {
 	static char *msg[] = { "FAILURE", "SERIOUS DEFECT", "DEFECT", "FLAW" };
 
@@ -1883,14 +1957,14 @@ char *T;
 	printf("%s:  %s", msg[K], T);
 	}
 
-/* Random */
+
+ FLOAT
+Random(VOID)
 /*  Random computes
      X = (Random1 + Random9)^5
      Random1 = X - FLOOR(X) + 0.000005 * X;
    and returns the new value of Random1
 */
-
-FLOAT Random()
 {
 	FLOAT X, Y;
 	
@@ -1903,10 +1977,11 @@ FLOAT Random()
 	return(Random1);
 	}
 
-/* SqXMinX */
-
-SqXMinX (ErrKind)
+ void
+SqXMinX (INT ErrKind)
+#ifdef KR_headers
 int ErrKind;
+#endif
 {
 	FLOAT XA, XB;
 	
@@ -1923,9 +1998,8 @@ int ErrKind;
 		}
 	}
 
-/* NewD */
-
-NewD()
+ void
+NewD(VOID)
 {
 	X = Z1 * Q;
 	X = FLOOR(Half - X / Radix) * Radix + X;
@@ -1938,9 +2012,8 @@ NewD()
 	D = Radix * D;
 	}
 
-/* SR3750 */
-
-SR3750()
+ void
+SR3750(VOID)
 {
 	if (! ((X - Radix < Z2 - Radix) || (X - Z2 > W - Z2))) {
 		I = I + 1;
@@ -1955,9 +2028,8 @@ SR3750()
 		}
 	}
 
-/* IsYeqX */
-
-IsYeqX()
+ void
+IsYeqX(VOID)
 {
 	if (Y != X) {
 		if (N <= 0) {
@@ -1974,9 +2046,8 @@ IsYeqX()
 		}
 	}
 
-/* SR3980 */
-
-SR3980()
+ void
+SR3980(VOID)
 {
 	do {
 		Q = (FLOAT) I;
@@ -1987,16 +2058,14 @@ SR3980()
 		} while ( X < W );
 	}
 
-/* PrintIfNPositive */
-
-PrintIfNPositive()
+ void
+PrintIfNPositive(VOID)
 {
 	if (N > 0) printf("Similar discrepancies have occurred %d times.\n", N);
 	}
 
-/* TstPtUf */
-
-TstPtUf()
+ void
+TstPtUf(VOID)
 {
 	N = 0;
 	if (Z != Zero) {
@@ -2054,22 +2123,29 @@ very_serious:
 		}
 	}
 
-notify(s)
-char *s;
+ void
+notify(CHARP s)
+#ifdef KR_headers
+ char *s;
+#endif
 {
 	printf("%s test appears to be inconsistent...\n", s);
 	printf("   PLEASE NOTIFY KARPINKSI!\n");
 	}
 
-/*SPLIT msgs.c */
+/*SPLIT msgs.c
+#include "paranoia.h"
+*/
 
-/* Instructions */
-
-msglist(s)
+ void
+msglist(CHARPP s)
+#ifdef KR_headers
 char **s;
+#endif
 { while(*s) printf("%s\n", *s++); }
 
-Instructions()
+ void
+Instructions(VOID)
 {
   static char *instr[] = {
 	"Lest this program stop prematurely, i.e. before displaying\n",
@@ -2086,9 +2162,8 @@ Instructions()
 	msglist(instr);
 	}
 
-/* Heading */
-
-Heading()
+ void
+Heading(VOID)
 {
   static char *head[] = {
 	"Users are invited to help debug and augment this program so it will",
@@ -2114,9 +2189,8 @@ Heading()
 	msglist(head);
 	}
 
-/* Characteristics */
-
-Characteristics()
+ void
+Characteristics(VOID)
 {
 	static char *chars[] = {
 	 "Running this program should reveal these characteristics:",
@@ -2143,8 +2217,8 @@ Characteristics()
 	msglist(chars);
 	}
 
-History()
-
+ void
+History(VOID)
 { /* History */
  /* Converted from Brian Wichmann's Pascal version to C by Thos Sumner,
 	with further massaging by David M. Gay. */
@@ -2171,33 +2245,3 @@ History()
 
 	msglist(hist);
 	}
-
-double
-pow(x, y) /* return x ^ y (exponentiation) */
-double x, y;
-{
-	extern double exp(), frexp(), ldexp(), log(), modf();
-	double xy, ye;
-	long i;
-	int ex, ey = 0, flip = 0;
-
-	if (!y) return 1.0;
-
-	if ((y < -1100. || y > 1100.) && x != -1.) return exp(y * log(x));
-
-	if (y < 0.) { y = -y; flip = 1; }
-	y = modf(y, &ye);
-	if (y) xy = exp(y * log(x));
-	else xy = 1.0;
-	/* next several lines assume >= 32 bit integers */
-	x = frexp(x, &ex);
-	if (i = ye) for(;;) {
-		if (i & 1) { xy *= x; ey += ex; }
-		if (!(i >>= 1)) break;
-		x *= x;
-		ex *= 2;
-		if (x < .5) { x *= 2.; ex -= 1; }
-		}
-	if (flip) { xy = 1. / xy; ey = -ey; }
-	return ldexp(xy, ey);
-}

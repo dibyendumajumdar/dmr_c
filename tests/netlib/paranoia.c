@@ -219,6 +219,7 @@ q
 
 */
 
+#define NOSIGNAL
 #include <stdio.h>
 #ifndef NOSIGNAL
 #include <signal.h>
@@ -343,38 +344,44 @@ typedef int Guard, Rounding, Class;
 typedef char Message;
 
 /* Declarations of Variables */
-int Indx;
-char ch[8];
-FLOAT AInvrse, A1;
-FLOAT C, CInvrse;
-FLOAT D, FourD;
-FLOAT E0, E1, Exp2, E3, MinSqEr;
-FLOAT SqEr, MaxSqEr, E9;
-FLOAT Third;
-FLOAT F6, F9;
-FLOAT H, HInvrse;
-int I;
-FLOAT StickyBit, J;
-FLOAT MyZero;
-FLOAT Precision;
-FLOAT Q, Q9;
-FLOAT R, Random9;
-FLOAT T, Underflow, S;
-FLOAT OneUlp, UfThold, U1, U2;
-FLOAT V, V0, V9;
-FLOAT W;
-FLOAT X, X1, X2, X8, Random1;
-FLOAT Y, Y1, Y2, Random2;
-FLOAT Z, PseudoZero, Z1, Z2, Z9;
-int ErrCnt[4];
-int fpecount;
-int Milestone;
-int PageNo;
-int M, N, N1;
-Guard GMult, GDiv, GAddSub;
-Rounding RMult, RDiv, RAddSub, RSqrt;
-int Break, Done, NotMonot, Monot, Anomaly, IEEE,
+static int Indx;
+static char ch[8];
+static FLOAT AInvrse, A1;
+static FLOAT C, CInvrse;
+static FLOAT D, FourD;
+static FLOAT E0, E1, Exp2, E3, MinSqEr;
+static FLOAT SqEr, MaxSqEr, E9;
+static FLOAT Third;
+static FLOAT F6, F9;
+static FLOAT H, HInvrse;
+static int I;
+static FLOAT StickyBit, J;
+static FLOAT MyZero;
+static FLOAT Precision;
+static FLOAT Q, Q9;
+static FLOAT R, Random9;
+static FLOAT T, Underflow, S;
+static FLOAT OneUlp, UfThold, U1, U2;
+static FLOAT V, V0, V9;
+static FLOAT W;
+static FLOAT X, X1, X2, X8, Random1;
+static FLOAT Y, Y1, Y2, Random2;
+static FLOAT Z, PseudoZero, Z1, Z2, Z9;
+static int ErrCnt[4];
+static int fpecount;
+static int Milestone;
+static int PageNo;
+static int M, N, N1;
+static Guard GMult, GDiv, GAddSub;
+static Rounding RMult, RDiv, RAddSub, RSqrt;
+static int Break, Done, NotMonot, Monot, Anomaly, IEEE,
 		SqRWrng, UfNGrad;
+
+#if 1
+static char *msg[4];
+static char *msg2[4];
+#endif
+
 /* Computed constants. */
 /*U1  gap below 1.0, i.e, 1.0-U1 is next number below 1.0 */
 /*U2  gap above 1.0, i.e, 1.0+U2 is next number above 1.0 */
@@ -396,8 +403,20 @@ sigfpe(INT x)
 	exit(1);
 }
 
-main(VOID)
+int main(VOID)
 {
+#if 1
+ 	msg[0] = "FAILUREs  encountered =";
+	msg[1] = "SERIOUS DEFECTs  discovered =";
+	msg[2] = "DEFECTs  discovered =";
+	msg[3] = "FLAWs  discovered =";
+
+	msg2[0] = "FAILURE";
+	msg2[1] = "SERIOUS DEFECT";
+	msg2[2] = "DEFECT";
+	msg2[3] = "FLAW";
+#endif
+
 	/* First two assignments use integer right-hand sides. */
 	Zero = 0;
 	One = 1;
@@ -1845,11 +1864,13 @@ int part8(VOID){
 	Pause();
 	printf("\n");
 	{
+#if 0
 		static char *msg[] = {
 			"FAILUREs  encountered =",
 			"SERIOUS DEFECTs  discovered =",
 			"DEFECTs  discovered =",
 			"FLAWs  discovered =" };
+#endif
 		int i;
 		for(i = 0; i < 4; i++) if (ErrCnt[i])
 			printf("The number of  %-29s %d.\n",
@@ -1951,10 +1972,11 @@ int K;
 char *T;
 #endif
 {
+#if 0
 	static char *msg[] = { "FAILURE", "SERIOUS DEFECT", "DEFECT", "FLAW" };
-
+#endif
 	ErrCnt [K] = ErrCnt [K] + 1;
-	printf("%s:  %s", msg[K], T);
+	printf("%s:  %s", msg2[K], T);
 	}
 
 
@@ -2147,6 +2169,7 @@ char **s;
  void
 Instructions(VOID)
 {
+#if 0
   static char *instr[] = {
 	"Lest this program stop prematurely, i.e. before displaying\n",
 	"    `END OF TEST',\n",
@@ -2160,11 +2183,13 @@ Instructions(VOID)
 	0};
 
 	msglist(instr);
+#endif
 	}
 
  void
 Heading(VOID)
 {
+#if 0
   static char *head[] = {
 	"Users are invited to help debug and augment this program so it will",
 	"cope with unanticipated and newly uncovered arithmetic pathologies.\n",
@@ -2187,11 +2212,13 @@ Heading(VOID)
 	0};
 
 	msglist(head);
+#endif
 	}
 
  void
 Characteristics(VOID)
 {
+#if 0
 	static char *chars[] = {
 	 "Running this program should reveal these characteristics:",
 	"     Radix = 1, 2, 4, 8, 10, 16, 100, 256 ...",
@@ -2215,6 +2242,7 @@ Characteristics(VOID)
 	0};
 
 	msglist(chars);
+#endif
 	}
 
  void
@@ -2222,7 +2250,7 @@ History(VOID)
 { /* History */
  /* Converted from Brian Wichmann's Pascal version to C by Thos Sumner,
 	with further massaging by David M. Gay. */
-
+#if 0
   static char *hist[] = {
 	"The program attempts to discriminate among",
 	"   FLAWs, like lack of a sticky bit,",
@@ -2244,4 +2272,5 @@ History(VOID)
 	0};
 
 	msglist(hist);
+#endif
 	}

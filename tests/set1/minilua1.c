@@ -651,6 +651,12 @@ static void luaD_reallocCI(lua_State *L, int newsize);
 static void luaD_reallocstack(lua_State *L, int newsize);
 static void luaD_growstack(lua_State *L, int n);
 static void luaD_throw(lua_State *L, int errcode);
+static int luaV_tostring(lua_State *L, StkId obj);
+static int call_binTM(lua_State *L, const TValue *p1, const TValue *p2,
+		      StkId res, TMS event);
+static void luaG_concaterror(lua_State *L, StkId p1, StkId p2);
+static char *luaZ_openspace(lua_State *L, Mbuffer *buff, size_t n);
+static TString *luaS_newlstr(lua_State *L, const char *str, size_t l);
 
 static void luaV_concat(lua_State *L, int total, int last)
 {

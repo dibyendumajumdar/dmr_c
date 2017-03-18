@@ -20,6 +20,6 @@ int main(void)
 
 	printf("%f\n", Half);
 
-	return 0;
+	return Half == 0.5 ? 0 : 1;
 }	
 

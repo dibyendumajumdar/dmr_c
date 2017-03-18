@@ -14,9 +14,7 @@ Section s25     returned 0.
 1.192093e-07 is the least number that can be added to 1. (float).
 2.220446e-16 is the least number that can be added to 1. (double).
 Section s26     returned 0.
-s4,er1
-s4,er1
-Section s4      returned 1.
+Section s4      returned 0.
 Section s61     returned 0.
 Section s626    returned 0.
 Section s71     returned 0.
@@ -42,4 +40,4 @@ Section s85     returned 0.
 Section s88     returned 0.
 Section s9      returned 0.
 
-Failed 1 errors.
+No errors detected.

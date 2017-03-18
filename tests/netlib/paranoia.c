@@ -219,6 +219,7 @@ q
 
 */
 
+#define NOPAUSE
 #define NOSIGNAL
 #include <stdio.h>
 #ifndef NOSIGNAL

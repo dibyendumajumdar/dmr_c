@@ -33,6 +33,11 @@ running locals1.c
 running locals2.c
 running matmul.c
 -95.583583
+running opt1.c
+-1.000000
+running paranoia0.c
+0.500000
+running paranoia1.c
 running pseudoval1.c
 running ptraddassign1.c
 running ptraddassign2.c

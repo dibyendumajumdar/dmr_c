@@ -303,25 +303,25 @@ Sig_type sigsave;
 
 #define KEYBOARD 0
 
-FLOAT Radix, BInvrse, RadixD2, BMinusU2;
+static FLOAT Radix, BInvrse, RadixD2, BMinusU2;
 
 /*Small floating point constants.*/
-FLOAT Zero = 0.0;
-FLOAT Half = 0.5;
-FLOAT One = 1.0;
-FLOAT Two = 2.0;
-FLOAT Three = 3.0;
-FLOAT Four = 4.0;
-FLOAT Five = 5.0;
-FLOAT Eight = 8.0;
-FLOAT Nine = 9.0;
-FLOAT TwentySeven = 27.0;
-FLOAT ThirtyTwo = 32.0;
-FLOAT TwoForty = 240.0;
-FLOAT MinusOne = -1.0;
-FLOAT OneAndHalf = 1.5;
+static FLOAT Zero = 0.0;
+static FLOAT Half = 0.5;
+static FLOAT One = 1.0;
+static FLOAT Two = 2.0;
+static FLOAT Three = 3.0;
+static FLOAT Four = 4.0;
+static FLOAT Five = 5.0;
+static FLOAT Eight = 8.0;
+static FLOAT Nine = 9.0;
+static FLOAT TwentySeven = 27.0;
+static FLOAT ThirtyTwo = 32.0;
+static FLOAT TwoForty = 240.0;
+static FLOAT MinusOne = -1.0;
+static FLOAT OneAndHalf = 1.5;
 /*Integer constants*/
-int NoTrials = 20; /*Number of tests for commutativity. */
+static int NoTrials = 20; /*Number of tests for commutativity. */
 #define False 0
 #define True 1
 

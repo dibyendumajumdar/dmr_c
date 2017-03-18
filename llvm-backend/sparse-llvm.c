@@ -421,7 +421,7 @@ static LLVMValueRef val_to_value(struct dmr_C *C, struct function *fn, unsigned 
 		break;
 	case LLVMFloatTypeKind:
 	case LLVMDoubleTypeKind:
-		result = LLVMConstReal(dtype, (double)val);
+		result = LLVMConstReal(dtype, (double)(long long)val);
 		break;
 	default:
 		fprintf(stderr, "unsupported pseudo value kind %d\n", kind);

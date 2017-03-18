@@ -1194,7 +1194,7 @@ found:
 
 int simplify_instruction(struct dmr_C *C, struct instruction *insn)
 {
-	if (!insn->bb)
+	if (!insn->bb || insn->type && is_float_type(C->S, insn->type))
 		return 0;
 	switch (insn->opcode) {
 	case OP_ADD: case OP_MULS:

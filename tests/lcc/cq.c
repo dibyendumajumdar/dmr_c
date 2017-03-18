@@ -59,7 +59,7 @@ static int one(void);
 
 #define NULL ((void *)0)
 
-   static char *type[7];
+static char *type[7];
    // FIXME
    // = {
    //  "char",
@@ -70,7 +70,7 @@ static int one(void);
    //  "float",
    //  "double"
    //};
-
+static long g[39];
 
 
 int main(int n, const char *args[])               /* C REFERENCE MANUAL         */
@@ -201,6 +201,46 @@ used for housekeeping, handshaking and module initialization.                   
    type[6] = "float";
    type[7] = "double";
 
+  g[0] = 0;
+  g[1] = 0;
+  g[2] = 0;
+  g[3] = 0;
+  g[4] = 0;
+  g[5] = 0;
+  g[6] = 0;
+  g[7] = 0;
+  g[8] = 0;
+  g[9] = 0;
+  g[10] = 0;
+  g[11] = 0;
+  g[12] = 0;
+  g[13] = 0;
+  g[14] = 0;
+  g[15] = 0;
+  g[16] = 0;
+  g[17] = 0;
+  g[18] = 6;
+  g[19] = 0;
+  g[20] = 8;
+  g[21] = 0;
+  g[22] = 12;
+  g[23] = 0;
+  g[24] = 16;
+  g[25] = 0;
+  g[26] = 18;
+  g[27] = 0;
+  g[28] = 20;
+  g[29] = 0;
+  g[30] = 24;
+  g[31] = 0;
+  g[32] = 28;
+  g[33] = 0;
+  g[34] = 30;
+  g[35] = 0;
+  g[36] = 32;
+  g[37] = 0;
+  g[38] = 36;
+
 
    int j;
 #if 0
@@ -325,18 +365,18 @@ static int s241(struct defs *pd0)                   /* 2.4.1 Integer constants
                                2.4.2 Explicit long constants  */
 {
 #if 0
-#if 0
    static char s241er[] = "s241,er%d\n";
    static char qs241[8] = "s241   ";
 #endif
    char *ps, *pt;
    int rc, j, lrc;
    // FIXME
-   static long g[39];// = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                     //   0,6,0,8,0,12,0,16,0,18,0,20,0,24,
-                     //   0,28,0,30,0,32,0,36};
+#if 0
+   static long g[39] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+                        0,6,0,8,0,12,0,16,0,18,0,20,0,24,
+                        0,28,0,30,0,32,0,36};
+#endif
    long d[39], o[39], x[39];
-
    rc = 0;
    lrc = 0;
    ps = qs241;
@@ -491,8 +531,6 @@ static int s241(struct defs *pd0)                   /* 2.4.1 Integer constants
    if (lrc != 0) rc =16;
 
    return rc;
-#endif
-  return 0;
 }
 
 static long pow2(long n)        /* Calculate 2**n by multiplying, not shifting  */

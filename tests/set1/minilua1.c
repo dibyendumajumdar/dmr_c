@@ -499,7 +499,7 @@ static TValue luaO_nilobject_;
 //			   size_t size);
 //static void *luaM_toobig(lua_State *L);
 //static void *luaM_growaux_(lua_State *L, void *block, int *size,
-			   size_t size_elem, int limit, const char *errormsg);
+//			   size_t size_elem, int limit, const char *errormsg);
 typedef struct Zio ZIO;
 #define char2int(c) cast(int, cast(unsigned char, (c)))
 #define zgetc(z) (((z)->n--) > 0 ? char2int(*(z)->p++) : luaZ_fill(z))

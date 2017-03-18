@@ -180,14 +180,14 @@ typedef const char *(*lua_Reader)(lua_State *L, void *ud, size_t *sz);
 typedef void *(*lua_Alloc)(void *ud, void *ptr, size_t osize, size_t nsize);
 typedef double lua_Number;
 typedef ptrdiff_t lua_Integer;
-static void lua_settop(lua_State *L, int idx);
-static int lua_type(lua_State *L, int idx);
-static const char *lua_tolstring(lua_State *L, int idx, size_t *len);
-static size_t lua_objlen(lua_State *L, int idx);
-static void lua_pushlstring(lua_State *L, const char *s, size_t l);
-static void lua_pushcclosure(lua_State *L, lua_CFunction fn, int n);
-static void lua_createtable(lua_State *L, int narr, int nrec);
-static void lua_setfield(lua_State *L, int idx, const char *k);
+//static void lua_settop(lua_State *L, int idx);
+//static int lua_type(lua_State *L, int idx);
+//static const char *lua_tolstring(lua_State *L, int idx, size_t *len);
+//static size_t lua_objlen(lua_State *L, int idx);
+//static void lua_pushlstring(lua_State *L, const char *s, size_t l);
+//static void lua_pushcclosure(lua_State *L, lua_CFunction fn, int n);
+//static void lua_createtable(lua_State *L, int narr, int nrec);
+//static void lua_setfield(lua_State *L, int idx, const char *k);
 #define lua_pop(L, n) lua_settop(L, -(n)-1)
 #define lua_newtable(L) lua_createtable(L, 0, 0)
 #define lua_pushcfunction(L, f) lua_pushcclosure(L, (f), 0)
@@ -471,14 +471,14 @@ static const TValue luaO_nilobject_;
 static TValue luaO_nilobject_;
 #endif
 #define ceillog2(x) (luaO_log2((x)-1) + 1)
-static int luaO_log2(unsigned int x);
+//static int luaO_log2(unsigned int x);
 #define gfasttm(g, et, e)                                                      \
 	((et) == NULL ? NULL                                                   \
 		      : ((et)->flags & (1u << (e)))                            \
 			    ? NULL                                             \
 			    : luaT_gettm(et, e, (g)->tmname[e]))
 #define fasttm(l, et, e) gfasttm(G(l), et, e)
-static const TValue *luaT_gettm(Table *events, TMS event, TString *ename);
+//static const TValue *luaT_gettm(Table *events, TMS event, TString *ename);
 #define luaM_reallocv(L, b, on, n, e)                                          \
 	((cast(size_t, (n) + 1) <= ((size_t)(~(size_t)0) - 2) / (e))           \
 	     ? luaM_realloc_(L, (b), (on) * (e), (n) * (e))                    \
@@ -495,10 +495,10 @@ static const TValue *luaT_gettm(Table *events, TMS event, TString *ename);
 	((v) = cast(t *, luaM_growaux_(L, v, &(size), sizeof(t), limit, e)))
 #define luaM_reallocvector(L, v, oldn, n, t)                                   \
 	((v) = cast(t *, luaM_reallocv(L, v, oldn, n, sizeof(t))))
-static void *luaM_realloc_(lua_State *L, void *block, size_t oldsize,
+//static void *luaM_realloc_(lua_State *L, void *block, size_t oldsize,
 			   size_t size);
-static void *luaM_toobig(lua_State *L);
-static void *luaM_growaux_(lua_State *L, void *block, int *size,
+//static void *luaM_toobig(lua_State *L);
+//static void *luaM_growaux_(lua_State *L, void *block, int *size,
 			   size_t size_elem, int limit, const char *errormsg);
 typedef struct Zio ZIO;
 #define char2int(c) cast(int, cast(unsigned char, (c)))
@@ -524,7 +524,7 @@ struct Zio {
 	void *data;
 	lua_State *L;
 };
-static int luaZ_fill(ZIO *z);
+//static int luaZ_fill(ZIO *z);
 struct lua_longjmp;
 #define gt(L) (&L->l_gt)
 #define registry(L) (&G(L)->l_registry)
@@ -624,11 +624,11 @@ union GCObject {
 #define ngcotouv(o) check_exp((o) == NULL || (o)->gch.tt == (8 + 2), &((o)->uv))
 #define gco2th(o) check_exp((o)->gch.tt == 8, &((o)->th))
 #define obj2gco(v) (cast(GCObject *, (v)))
-static void luaE_freethread(lua_State *L, lua_State *L1);
+//static void luaE_freethread(lua_State *L, lua_State *L1);
 #define pcRel(pc, p) (cast(int, (pc) - (p)->code) - 1)
 #define getline_(f, pc) (((f)->lineinfo) ? (f)->lineinfo[pc] : 0)
 #define resethookcount(L) (L->hookcount = L->basehookcount)
-static void luaG_typeerror(lua_State *L, const TValue *o, const char *opname);
+//static void luaG_typeerror(lua_State *L, const TValue *o, const char *opname);
 static void luaG_runerror(lua_State *L, const char *fmt, ...);
 #define luaD_checkstack(L, n)                                                  \
 	if ((char *)L->stack_last - (char *)L->top <=                          \
@@ -646,11 +646,11 @@ static void luaG_runerror(lua_State *L, const char *fmt, ...);
 #define saveci(L, p) ((char *)(p) - (char *)L->base_ci)
 #define restoreci(L, n) ((CallInfo *)((char *)L->base_ci + (n)))
 typedef void (*Pfunc)(lua_State *L, void *ud);
-static int luaD_poscall(lua_State *L, StkId firstResult);
-static void luaD_reallocCI(lua_State *L, int newsize);
-static void luaD_reallocstack(lua_State *L, int newsize);
-static void luaD_growstack(lua_State *L, int n);
-static void luaD_throw(lua_State *L, int errcode);
+//static int luaD_poscall(lua_State *L, StkId firstResult);
+//static void luaD_reallocCI(lua_State *L, int newsize);
+//static void luaD_reallocstack(lua_State *L, int newsize);
+//static void luaD_growstack(lua_State *L, int n);
+//static void luaD_throw(lua_State *L, int errcode);
 static int luaV_tostring(lua_State *L, StkId obj);
 static int call_binTM(lua_State *L, const TValue *p1, const TValue *p2,
 		      StkId res, TMS event);

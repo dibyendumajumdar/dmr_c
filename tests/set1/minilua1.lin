@@ -1,0 +1,171 @@
+luaV_concat:
+.L0:
+	<entry-point>
+	phisrc.32   %phi4(total) <- %arg2
+	phisrc.32   %phi7(total) <- %arg2
+	phisrc.32   %phi10(last) <- %arg3
+	br          .L1
+
+.L1:
+	load.64     %r2 <- 24[%arg1]
+	phi.32      %r3(last) <- %phi10(last), %phi11(last)
+	scast.64    %r4 <- (32) %r3(last)
+	muls.64     %r5 <- %r4, $16
+	add.64      %r6 <- %r2, %r5
+	add.64      %r7 <- %r6, $16
+	load.32     %r10 <- -8[%r6]
+	seteq.32    %r11 <- %r10, $4
+	phisrc.32   %phi12(n) <- $2
+	phisrc.32   %phi38 <- %r10
+	phisrc.32   %phi42 <- %r10
+	phisrc.32   %phi43 <- %r10
+	br          %r11, .L6, .L7
+
+.L7:
+	seteq.32    %r15 <- %r10, $3
+	phisrc.32   %phi39 <- %r10
+	br          %r15, .L6, .L4
+
+.L6:
+	load.32     %r18 <- 8[%r6]
+	seteq.32    %r19 <- %r18, $4
+	br          %r19, .L5, .L8
+
+.L8:
+	add.64      %r22 <- %r7, $-16
+	call.32     %r23 <- luaV_tostring, %arg1, %r22
+	br          %r23, .L5, .L4
+
+.L4:
+	add.64      %r26 <- %r7, $-32
+	add.64      %r28 <- %r7, $-16
+	call.32     %r31 <- call_binTM, %arg1, %r26, %r28, %r26, $15
+	br          %r31, .L11, .L9
+
+.L9:
+	add.64      %r36 <- %r7, $-16
+	call        luaG_concaterror, %arg1, %r26, %r36
+	br          .L11
+
+.L5:
+	load.64     %r39 <- 0[%r6]
+	load.64     %r40 <- 16[%r39]
+	br          %r40, .L13, .L12
+
+.L12:
+	load.32     %r44 <- -8[%r6]
+	seteq.32    %r45 <- %r44, $4
+	br          %r45, .L11, .L15
+
+.L15:
+	add.64      %r48 <- %r7, $-32
+	call.32     %r49 <- luaV_tostring, %arg1, %r48
+	br          .L11
+
+.L13:
+	phisrc.32   %phi22(n) <- $1
+	phisrc.64   %phi28(tl) <- %r40
+	phisrc.64   %phi31(tl) <- %r40
+	br          .L21
+
+.L21:
+	phi.32      %r55(n) <- %phi22(n), %phi23(n)
+	phi.32      %r56 <- %phi7(total), %phi8(total)
+	setlt.32    %r57 <- %r55(n), %r56
+	phisrc.32   %phi6(total) <- %r56
+	br          %r57, .L22, .L20
+
+.L22:
+	scast.64    %r60 <- (32) %r55(n)
+	muls.64     %r61 <- %r60, $16
+	sub.64      %r62 <- %r7, %r61
+	load.32     %r64 <- -8[%r62]
+	seteq.32    %r65 <- %r64, $4
+	br          %r65, .L18, .L23
+
+.L23:
+	add.64      %r72 <- %r62, $-16
+	call.32     %r73 <- luaV_tostring, %arg1, %r72
+	br          %r73, .L18, .L20
+
+.L18:
+	load.64     %r80 <- -16[%r62]
+	load.64     %r81 <- 16[%r80]
+	phi.64      %r83(tl) <- %phi31(tl), %phi32(tl)
+	sub.64      %r84 <- $-3, %r83(tl)
+	setae.32    %r85 <- %r81, %r84
+	br          %r85, .L24, .L25
+
+.L24:
+	symaddr.64  %r87 <- <anon symbol:0x62d000448b68>
+	call        luaG_runerror, %arg1, %r87
+	br          .L25
+
+.L25:
+	add.64      %r91 <- %r83(tl), %r81
+	phisrc.64   %phi29(tl) <- %r91
+	phisrc.64   %phi32(tl) <- %r91
+	add.32      %r94 <- %r55(n), $1
+	phisrc.32   %phi23(n) <- %r94
+	br          .L21
+
+.L20:
+	load.64     %r97 <- 32[%arg1]
+	add.64      %r98 <- %r97, $88
+	phi.64      %r99 <- %phi28(tl), %phi29(tl)
+	call.64     %r100 <- luaZ_openspace, %arg1, %r98, %r99
+	phisrc.64   %phi26(tl) <- $0
+	phisrc.32   %phi35(i) <- %r55(n)
+	br          .L29
+
+.L29:
+	phi.32      %r102(i) <- %phi35(i), %phi36(i)
+	setgt.32    %r103 <- %r102(i), $0
+	phi.64      %r112 <- %phi26(tl), %phi27(tl)
+	br          %r103, .L26, .L28
+
+.L26:
+	scast.64    %r106 <- (32) %r102(i)
+	muls.64     %r107 <- %r106, $16
+	sub.64      %r108 <- %r7, %r107
+	load.64     %r109 <- 0[%r108]
+	load.64     %r110 <- 16[%r109]
+	add.64      %r113 <- %r100, %r112
+	cast.64     %r114 <- (64) %r113
+	add.64      %r122 <- %r109, $24
+	ptrcast.64  %r123 <- (64) %r122
+	cast.64     %r124 <- (64) %r123
+	call.64     %r126 <- memcpy, %r114, %r124, %r110
+	add.64      %r130 <- %r112, %r110
+	phisrc.64   %phi27(tl) <- %r130
+	add.32      %r133 <- %r102(i), $-1
+	phisrc.32   %phi36(i) <- %r133
+	br          .L29
+
+.L28:
+	scast.64    %r136 <- (32) %r55(n)
+	muls.64     %r137 <- %r136, $16
+	sub.64      %r138 <- %r7, %r137
+	call.64     %r142 <- luaS_newlstr, %arg1, %r100, %r112
+	ptrcast.64  %r143 <- (64) %r142
+	store.64    %r143 -> 0[%r138]
+	store.32    $4 -> 8[%r138]
+	phisrc.32   %phi13(n) <- %r55(n)
+	br          .L11
+
+.L11:
+	phi.32      %r146 <- %phi12(n), %phi13(n)
+	add.32      %r147 <- %r146, $-1
+	phi.32      %r148 <- %phi4(total), %phi5(total), %phi6(total)
+	sub.32      %r150 <- %r148, %r147
+	sub.32      %r156 <- %r3(last), %r147
+	phisrc.32   %phi5(total) <- %r150
+	phisrc.32   %phi8(total) <- %r150
+	phisrc.32   %phi11(last) <- %r156
+	setgt.32    %r159 <- %r150, $1
+	br          %r159, .L1, .L3
+
+.L3:
+	ret
+
+

@@ -496,7 +496,7 @@ static TValue luaO_nilobject_;
 #define luaM_reallocvector(L, v, oldn, n, t)                                   \
 	((v) = cast(t *, luaM_reallocv(L, v, oldn, n, sizeof(t))))
 //static void *luaM_realloc_(lua_State *L, void *block, size_t oldsize,
-			   size_t size);
+//			   size_t size);
 //static void *luaM_toobig(lua_State *L);
 //static void *luaM_growaux_(lua_State *L, void *block, int *size,
 			   size_t size_elem, int limit, const char *errormsg);

@@ -562,7 +562,7 @@ static LLVMValueRef pseudo_to_value(struct dmr_C *C, struct function *fn, struct
 		break;
 	}
 	case PSEUDO_VAL: {
-		result = val_to_value(C, fn, pseudo->value, pseudo->sym);
+		result = val_to_value(C, fn, pseudo->value, insn->type);
 		break;
 	}
 	case PSEUDO_ARG: {
@@ -772,6 +772,23 @@ static void output_op_binary(struct dmr_C *C, struct function *fn, struct instru
 		break;
 	}
 	insn->target->priv = target;
+}
+
+static inline struct symbol *pseudo_type(struct dmr_C *C, pseudo_t pseudo)
+{
+	switch (pseudo->type) {
+	case PSEUDO_SYM:
+	case PSEUDO_ARG:
+		return pseudo->sym;
+	case PSEUDO_REG:
+	case PSEUDO_PHI:
+		return pseudo->def->type;
+	case PSEUDO_VAL:
+		return C->target->size_t_ctype;
+	case PSEUDO_VOID:
+	default:
+		return &C->S->void_ctype;
+	}
 }
 
 static void output_op_compare(struct dmr_C *C, struct function *fn, struct instruction *insn)
@@ -993,7 +1010,7 @@ static void output_op_call(struct dmr_C *C, struct function *fn, struct instruct
 			if (atype)
 				value = val_to_value(C, fn, arg->value, atype);
 			else
-				value = val_to_value(C, fn, arg->value, arg->sym);
+				value = val_to_value(C, fn, arg->value, pseudo_type(C, arg));
 		}
 		else {
 			value = pseudo_to_value(C, fn, insn, arg);

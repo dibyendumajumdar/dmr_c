@@ -43,14 +43,12 @@ enum pseudo_type {
 struct pseudo {
 	int nr;
 	enum pseudo_type type;
-	union {
-		struct ptr_list *users; /* pseudo_user list */
-		long long value;	// PSEUDO_VAL
-	};
+	struct ptr_list *users; /* pseudo_user list */
 	struct ident *ident;
 	union {
-		struct symbol *sym;	// PSEUDO_SYM, VAL & ARG
-		struct instruction *def;// PSEUDO_REG & PHI
+		struct symbol *sym;	     // PSEUDO_SYM, VAL & ARG
+		struct instruction *def; // PSEUDO_REG & PHI
+		long long value;	     // PSEUDO_VAL
 	};
 	void *priv;
 };
@@ -386,22 +384,6 @@ static inline void add_pseudo_user_ptr(struct pseudo_user *user, struct ptr_list
 	ptrlist_add(list, user);
 }
 
-static inline struct symbol *pseudo_type(struct dmr_C *C, pseudo_t pseudo)
-{
-	switch (pseudo->type) {
-	case PSEUDO_SYM:
-	case PSEUDO_ARG:
-	case PSEUDO_VAL:
-		return pseudo->sym;
-	case PSEUDO_REG:
-	case PSEUDO_PHI:
-		return pseudo->def->type;
-	case PSEUDO_VOID:
-	default:
-	return &C->S->void_ctype;
-	}
-}
-
 static inline int has_use_list(pseudo_t p)
 {
 	return (p && p->type != PSEUDO_VOID && p->type != PSEUDO_VAL);
@@ -447,7 +429,7 @@ extern void insert_branch(struct dmr_C *C, struct basic_block *bb, struct instru
 
 pseudo_t alloc_phi(struct dmr_C *C, struct basic_block *source, pseudo_t pseudo, struct symbol *type);
 pseudo_t alloc_pseudo(struct dmr_C *C, struct instruction *def);
-pseudo_t value_pseudo(struct dmr_C *C, long long val, struct symbol *type);
+pseudo_t value_pseudo(struct dmr_C *C, long long val);
 
 struct entrypoint *linearize_symbol(struct dmr_C *C, struct symbol *sym);
 int unssa(struct dmr_C *C, struct entrypoint *ep);

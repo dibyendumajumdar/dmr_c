@@ -282,8 +282,15 @@ const char *show_instruction(struct dmr_C *C, struct instruction *insn)
 			buf += sprintf(buf, "opcode:%d", opcode);
 		else
 			buf += sprintf(buf, "%s", op);
-		if (insn->size)
+		if (insn->type && is_float_type(C->S, insn->type))
+			buf += sprintf(buf, ".f%d", insn->size);
+		else if (insn->size)
 			buf += sprintf(buf, ".%d", insn->size);
+		if (insn->type) {
+			if (is_ptr_type(insn->type))
+				buf += sprintf(buf, "*");
+		}
+
 		memset(buf, ' ', 20);
 		buf++;
 	}

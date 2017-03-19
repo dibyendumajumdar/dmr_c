@@ -897,13 +897,28 @@ static LLVMValueRef calc_memop_addr(struct dmr_C *C, struct function *fn, struct
 	off = LLVMConstInt(int_type, (int) insn->offset, 0);
 
 	/* convert src to the effective pointer type */
+	//printf("insn %s\n", show_instruction(C, insn));
 	src = pseudo_to_value(C, fn, insn, insn->src);
 	as = LLVMGetPointerAddressSpace(LLVMTypeOf(src));
 	addr_type = LLVMPointerType(insn_symbol_type(C, fn->module, insn), as);
+	//LLVMDumpValue(src);
+	//LLVMDumpType(LLVMTypeOf(src));
+#if 1
+	src = value_to_ivalue(C, fn, src);
+	//LLVMDumpValue(src);
+	//LLVMDumpType(LLVMTypeOf(src));
+	addr = LLVMBuildAdd(fn->builder, src, off, "");
+	//LLVMDumpValue(addr);
+	//LLVMDumpType(LLVMTypeOf(addr));
+	addr = LLVMBuildIntToPtr(fn->builder, addr, addr_type, "");
+	//LLVMDumpValue(addr);
+	//LLVMDumpType(LLVMTypeOf(addr));
+#else
 	src = LLVMBuildPointerCast(fn->builder, src, addr_type, "");
 
 	/* addr = src + off */
 	addr = calc_gep(C, fn->builder, src, off);
+#endif
 	return addr;
 }
 

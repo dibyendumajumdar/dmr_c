@@ -897,22 +897,13 @@ static LLVMValueRef calc_memop_addr(struct dmr_C *C, struct function *fn, struct
 	off = LLVMConstInt(int_type, (int) insn->offset, 0);
 
 	/* convert src to the effective pointer type */
-	//printf("insn %s\n", show_instruction(C, insn));
 	src = pseudo_to_value(C, fn, insn, insn->src);
 	as = LLVMGetPointerAddressSpace(LLVMTypeOf(src));
 	addr_type = LLVMPointerType(insn_symbol_type(C, fn->module, insn), as);
-	//LLVMDumpValue(src);
-	//LLVMDumpType(LLVMTypeOf(src));
 #if 1
 	src = value_to_ivalue(C, fn, src);
-	//LLVMDumpValue(src);
-	//LLVMDumpType(LLVMTypeOf(src));
 	addr = LLVMBuildAdd(fn->builder, src, off, "");
-	//LLVMDumpValue(addr);
-	//LLVMDumpType(LLVMTypeOf(addr));
 	addr = LLVMBuildIntToPtr(fn->builder, addr, addr_type, "");
-	//LLVMDumpValue(addr);
-	//LLVMDumpType(LLVMTypeOf(addr));
 #else
 	src = LLVMBuildPointerCast(fn->builder, src, addr_type, "");
 
@@ -942,7 +933,7 @@ static void output_op_store(struct dmr_C *C, struct function *fn, struct instruc
 
 	addr = calc_memop_addr(C, fn, insn);
 
-	target_in = pseudo_to_rvalue(C, fn, insn, insn->target);
+	target_in = pseudo_to_value(C, fn, insn, insn->target);
 	desttype = insn_symbol_type(C, fn->module, insn);
 
 	/* Cast to the right type - to resolve issue with union types */
@@ -1050,7 +1041,7 @@ static void output_op_call(struct dmr_C *C, struct function *fn, struct instruct
 		struct symbol *atype;
 		
 		atype = get_nth_symbol(ftype->arguments, i);
-		value = pseudo_to_rvalue(C, fn, arg, arg->src);
+		value = pseudo_to_value(C, fn, arg, arg->src);
 		if (atype) {
 			LLVMTypeRef argtype = symbol_type(C, fn->module, atype);
 			value = build_cast(C, fn, value, argtype, "", 0);

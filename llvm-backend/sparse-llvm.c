@@ -1712,8 +1712,10 @@ static LLVMValueRef output_fn(struct dmr_C *C, LLVMModuleRef module, struct entr
 			entrybbr = LLVMGetEntryBasicBlock(function.fn);
 			LLVMPositionBuilderAtEnd(function.builder, entrybbr);
 			phi_type = insn_symbol_type(C, module, insn);
-			if (!phi_type)
+			if (!phi_type) {
+				LLVMDisposeBuilder(function.builder);
 				return NULL;
+			}
 			ptr = LLVMBuildAlloca(function.builder, phi_type, "");
 			/* emit forward load for phi */
 			LLVMClearInsertionPosition(function.builder);
@@ -1725,8 +1727,10 @@ static LLVMValueRef output_fn(struct dmr_C *C, LLVMModuleRef module, struct entr
 	FOR_EACH_PTR(ep->bbs, bb) {
 		LLVMPositionBuilderAtEnd(function.builder, bb->priv);
 
-		if (!output_bb(C, &function, bb))
+		if (!output_bb(C, &function, bb)) {
+			LLVMDisposeBuilder(function.builder);
 			return NULL;
+		}
 	}
 	END_FOR_EACH_PTR(bb);
 

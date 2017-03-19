@@ -1,0 +1,6688 @@
+sigfpe:
+.L0:
+	<entry-point>
+	load.32     %r1 <- 0[fpecount]
+	add.32      %r2 <- %r1, $1
+	store.32    %r2 -> 0[fpecount]
+	symaddr.64* %r3 <- <anon symbol:0x62d00049c8a0>
+	push.64*    %r3
+	push.32     %arg1
+	call.32     %r5 <- printf
+	load.64*    %r6 <- 0[stdout]
+	push.64*    %r6
+	call.32     %r7 <- fflush
+	load.64*    %r8 <- 0[sigsave]
+	br          %r8, .L1, .L2
+
+.L1:
+	store.64*   $0 -> 0[sigsave]
+	symaddr.64* %r9 <- ovfl_buf
+	push.64*    %r9
+	push.32     $1
+	call        longjmp
+	br          .L2
+
+.L2:
+	push.32     $1
+	call        exit
+	ret
+
+
+main:
+.L4:
+	<entry-point>
+	symaddr.64* %r10 <- <anon symbol:0x62d00049d1b0>
+	store.64*   %r10 -> 0[msg]
+	symaddr.64* %r11 <- <anon symbol:0x62d00049d808>
+	store.64*   %r11 -> 8[msg]
+	symaddr.64* %r12 <- <anon symbol:0x62d00049de60>
+	store.64*   %r12 -> 16[msg]
+	symaddr.64* %r13 <- <anon symbol:0x62d00049e4b8>
+	store.64*   %r13 -> 24[msg]
+	symaddr.64* %r14 <- <anon symbol:0x62d00049eb10>
+	store.64*   %r14 -> 0[msg2]
+	symaddr.64* %r15 <- <anon symbol:0x62d00049f168>
+	store.64*   %r15 -> 8[msg2]
+	symaddr.64* %r16 <- <anon symbol:0x62d00049f7c0>
+	store.64*   %r16 -> 16[msg2]
+	symaddr.64* %r17 <- <anon symbol:0x62d00049fe18>
+	store.64*   %r17 -> 24[msg2]
+	store.f64   $0 -> 0[Zero]
+	store.f64   $1 -> 0[One]
+	add.f64     %r20 <- $1, $1
+	store.f64   %r20 -> 0[Two]
+	add.f64     %r23 <- %r20, $1
+	store.f64   %r23 -> 0[Three]
+	add.f64     %r26 <- %r23, $1
+	store.f64   %r26 -> 0[Four]
+	add.f64     %r29 <- %r26, $1
+	store.f64   %r29 -> 0[Five]
+	add.f64     %r32 <- %r26, %r26
+	store.f64   %r32 -> 0[Eight]
+	mulu.f64    %r35 <- %r23, %r23
+	store.f64   %r35 -> 0[Nine]
+	mulu.f64    %r38 <- %r35, %r23
+	store.f64   %r38 -> 0[TwentySeven]
+	mulu.f64    %r41 <- %r26, %r32
+	store.f64   %r41 -> 0[ThirtyTwo]
+	mulu.f64    %r44 <- %r26, %r29
+	mulu.f64    %r46 <- %r44, %r23
+	mulu.f64    %r48 <- %r46, %r26
+	store.f64   %r48 -> 0[TwoForty]
+	neg.f64     %r50 <- $1
+	store.f64   %r50 -> 0[MinusOne]
+	divu.f64    %r53 <- $1, %r20
+	store.f64   %r53 -> 0[Half]
+	add.f64     %r56 <- $1, %r53
+	store.f64   %r56 -> 0[OneAndHalf]
+	store.32    $0 -> 0[ErrCnt]
+	store.32    $0 -> 4[ErrCnt]
+	store.32    $0 -> 8[ErrCnt]
+	store.32    $0 -> 12[ErrCnt]
+	store.32    $1 -> 0[PageNo]
+	store.32    $0 -> 0[Milestone]
+	call        Instructions
+	call        Pause
+	call        Heading
+	call        Pause
+	call        Characteristics
+	call        Pause
+	call        History
+	call        Pause
+	store.32    $7 -> 0[Milestone]
+	symaddr.64* %r57 <- <anon symbol:0x62d0004a0c98>
+	push.64*    %r57
+	call.32     %r58 <- printf
+	push.32     $0
+	load.f64    %r59 <- 0[Zero]
+	add.f64     %r61 <- %r59, %r59
+	seteq.32    %r63 <- %r61, %r59
+	load.f64    %r64 <- 0[One]
+	sub.f64     %r66 <- %r64, %r64
+	seteq.32    %r68 <- %r66, %r59
+	and-bool.32 %r69 <- %r63, %r68
+	setgt.32    %r72 <- %r64, %r59
+	and-bool.32 %r73 <- %r69, %r72
+	add.f64     %r76 <- %r64, %r64
+	load.f64    %r77 <- 0[Two]
+	seteq.32    %r78 <- %r76, %r77
+	and-bool.32 %r79 <- %r73, %r78
+	push.32     %r79
+	symaddr.64* %r80 <- <anon symbol:0x62d0004a1038>
+	push.64*    %r80
+	call        TstCond
+	load.f64    %r81 <- 0[Zero]
+	neg.f64     %r82 <- %r81
+	store.f64   %r82 -> 0[Z]
+	set.f64     %r84 <- 0.000000
+	setne.32    %r85 <- %r82, %r84
+	phisrc.f64  %phi46(Zero) <- %r81
+	phisrc.f64  %phi656 <- %r81
+	phisrc.f64  %phi771 <- %r81
+	phisrc.f64  %phi888 <- %r81
+	phisrc.f64  %phi1003 <- %r81
+	phisrc.f64  %phi1118 <- %r81
+	phisrc.f64  %phi1233 <- %r81
+	br          %r85, .L5, .L6
+
+.L5:
+	load.32     %r86 <- 0[ErrCnt]
+	add.32      %r87 <- %r86, $1
+	store.32    %r87 -> 0[ErrCnt]
+	symaddr.64* %r88 <- <anon symbol:0x62d0004a1948>
+	push.64*    %r88
+	call.32     %r89 <- printf
+	set.f64     %r90 <- 0.001000
+	store.f64   %r90 -> 0[U2]
+	store.f64   $1 -> 0[Radix]
+	call        TstPtUf
+	br          .L6
+
+.L6:
+	push.32     $0
+	load.f64    %r91 <- 0[Three]
+	load.f64    %r92(Two) <- 0[Two]
+	load.f64    %r93 <- 0[One]
+	add.f64     %r94 <- %r92(Two), %r93
+	seteq.32    %r95 <- %r91, %r94
+	load.f64    %r96(Four) <- 0[Four]
+	add.f64     %r99 <- %r91, %r93
+	seteq.32    %r100 <- %r96(Four), %r99
+	and-bool.32 %r101 <- %r95, %r100
+	br          %r101, .L10, .L8
+
+.L10:
+	neg.f64     %r105 <- %r92(Two)
+	mulu.f64    %r106 <- %r92(Two), %r105
+	add.f64     %r107 <- %r96(Four), %r106
+	load.f64    %r108(Zero) <- 0[Zero]
+	seteq.32    %r109 <- %r107, %r108(Zero)
+	br          %r109, .L7, .L8
+
+.L7:
+	sub.f64     %r112 <- %r96(Four), %r91
+	sub.f64     %r114 <- %r112, %r93
+	seteq.32    %r116 <- %r114, %r108(Zero)
+	phisrc.32   %phi1 <- %r116
+	br          .L9
+
+.L8:
+	phisrc.32   %phi2 <- $0
+	br          .L9
+
+.L9:
+	phi.32      %r117 <- %phi1, %phi2
+	push.32     %r117
+	symaddr.64* %r118 <- <anon symbol:0x62d0004a1ce8>
+	push.64*    %r118
+	call        TstCond
+	push.32     $0
+	load.f64    %r119 <- 0[MinusOne]
+	set.f64     %r120 <- 0.000000
+	load.f64    %r121 <- 0[One]
+	sub.f64     %r122 <- %r120, %r121
+	seteq.32    %r123 <- %r119, %r122
+	add.f64     %r126 <- %r119, %r121
+	load.f64    %r127 <- 0[Zero]
+	seteq.32    %r128 <- %r126, %r127
+	and-bool.32 %r129 <- %r123, %r128
+	add.f64     %r132 <- %r121, %r119
+	seteq.32    %r134 <- %r132, %r127
+	and-bool.32 %r135 <- %r129, %r134
+	push.f64    %r121
+	call.f64    %r138 <- fabs
+	add.f64     %r139 <- %r119, %r138
+	load.f64    %r140(Zero) <- 0[Zero]
+	seteq.32    %r141 <- %r139, %r140(Zero)
+	and-bool.32 %r142 <- %r135, %r141
+	br          %r142, .L11, .L12
+
+.L11:
+	load.f64    %r143 <- 0[MinusOne]
+	mulu.f64    %r146 <- %r143, %r143
+	add.f64     %r147 <- %r143, %r146
+	seteq.32    %r149 <- %r147, %r140(Zero)
+	phisrc.32   %phi3 <- %r149
+	br          .L13
+
+.L12:
+	phisrc.32   %phi4 <- $0
+	br          .L13
+
+.L13:
+	phi.32      %r150 <- %phi3, %phi4
+	push.32     %r150
+	symaddr.64* %r151 <- <anon symbol:0x62d0004a2088>
+	push.64*    %r151
+	call        TstCond
+	push.32     $0
+	load.f64    %r152 <- 0[Half]
+	load.f64    %r153 <- 0[MinusOne]
+	add.f64     %r154 <- %r152, %r153
+	add.f64     %r156 <- %r154, %r152
+	load.f64    %r157 <- 0[Zero]
+	seteq.32    %r158 <- %r156, %r157
+	push.32     %r158
+	symaddr.64* %r159 <- <anon symbol:0x62d0004a2428>
+	push.64*    %r159
+	call        TstCond
+	store.32    $10 -> 0[Milestone]
+	push.32     $0
+	load.f64    %r160 <- 0[Nine]
+	load.f64    %r161 <- 0[Three]
+	mulu.f64    %r163 <- %r161, %r161
+	seteq.32    %r164 <- %r160, %r163
+	load.f64    %r165(TwentySeven) <- 0[TwentySeven]
+	mulu.f64    %r168 <- %r160, %r161
+	seteq.32    %r169 <- %r165(TwentySeven), %r168
+	and-bool.32 %r170 <- %r164, %r169
+	load.f64    %r171 <- 0[Eight]
+	load.f64    %r172 <- 0[Four]
+	add.f64     %r174 <- %r172, %r172
+	seteq.32    %r175 <- %r171, %r174
+	and-bool.32 %r176 <- %r170, %r175
+	load.f64    %r177(ThirtyTwo) <- 0[ThirtyTwo]
+	mulu.f64    %r180 <- %r171, %r172
+	seteq.32    %r181 <- %r177(ThirtyTwo), %r180
+	and-bool.32 %r182 <- %r176, %r181
+	br          %r182, .L14, .L15
+
+.L14:
+	sub.f64     %r185 <- %r177(ThirtyTwo), %r165(TwentySeven)
+	sub.f64     %r187 <- %r185, %r172
+	load.f64    %r188 <- 0[One]
+	sub.f64     %r189 <- %r187, %r188
+	load.f64    %r190 <- 0[Zero]
+	seteq.32    %r191 <- %r189, %r190
+	phisrc.32   %phi5 <- %r191
+	br          .L16
+
+.L15:
+	phisrc.32   %phi6 <- $0
+	br          .L16
+
+.L16:
+	phi.32      %r192 <- %phi5, %phi6
+	push.32     %r192
+	symaddr.64* %r193 <- <anon symbol:0x62d0004a27c8>
+	push.64*    %r193
+	call        TstCond
+	push.32     $0
+	load.f64    %r194(Five) <- 0[Five]
+	load.f64    %r195(Four) <- 0[Four]
+	load.f64    %r196 <- 0[One]
+	add.f64     %r197 <- %r195(Four), %r196
+	seteq.32    %r198 <- %r194(Five), %r197
+	br          %r198, .L22, .L18
+
+.L22:
+	load.f64    %r199(TwoForty) <- 0[TwoForty]
+	mulu.f64    %r202 <- %r195(Four), %r194(Five)
+	load.f64    %r203(Three) <- 0[Three]
+	mulu.f64    %r204 <- %r202, %r203(Three)
+	mulu.f64    %r206 <- %r204, %r195(Four)
+	seteq.32    %r207 <- %r199(TwoForty), %r206
+	br          %r207, .L21, .L18
+
+.L21:
+	divu.f64    %r210 <- %r199(TwoForty), %r203(Three)
+	mulu.f64    %r213 <- %r195(Four), %r195(Four)
+	mulu.f64    %r215 <- %r213, %r194(Five)
+	sub.f64     %r216 <- %r210, %r215
+	load.f64    %r217(Zero) <- 0[Zero]
+	seteq.32    %r218 <- %r216, %r217(Zero)
+	br          %r218, .L20, .L18
+
+.L20:
+	divu.f64    %r221 <- %r199(TwoForty), %r195(Four)
+	mulu.f64    %r224 <- %r194(Five), %r203(Three)
+	mulu.f64    %r226 <- %r224, %r195(Four)
+	sub.f64     %r227 <- %r221, %r226
+	seteq.32    %r229 <- %r227, %r217(Zero)
+	br          %r229, .L17, .L18
+
+.L17:
+	divu.f64    %r232 <- %r199(TwoForty), %r194(Five)
+	mulu.f64    %r235 <- %r195(Four), %r203(Three)
+	mulu.f64    %r237 <- %r235, %r195(Four)
+	sub.f64     %r238 <- %r232, %r237
+	seteq.32    %r240 <- %r238, %r217(Zero)
+	phisrc.32   %phi7 <- %r240
+	br          .L19
+
+.L18:
+	phisrc.32   %phi8 <- $0
+	br          .L19
+
+.L19:
+	phi.32      %r241 <- %phi7, %phi8
+	push.32     %r241
+	symaddr.64* %r242 <- <anon symbol:0x62d0004a2b68>
+	push.64*    %r242
+	call        TstCond
+	load.32     %r243 <- 0[ErrCnt]
+	br          %r243, .L24, .L23
+
+.L23:
+	symaddr.64* %r245 <- <anon symbol:0x62d0004a31c0>
+	push.64*    %r245
+	call.32     %r246 <- printf
+	symaddr.64* %r247 <- <anon symbol:0x62d0004a3560>
+	push.64*    %r247
+	call.32     %r248 <- printf
+	br          .L24
+
+.L24:
+	symaddr.64* %r249 <- <anon symbol:0x62d0004a3900>
+	push.64*    %r249
+	call.32     %r250 <- printf
+	load.f64    %r251 <- 0[One]
+	store.f64   %r251 -> 0[W]
+	phisrc.f64  %phi78(One) <- %r251
+	phisrc.f64  %phi210(W) <- %r251
+	phisrc.f64  %phi654 <- %r251
+	phisrc.f64  %phi655 <- %r251
+	phisrc.f64  %phi769 <- %r251
+	phisrc.f64  %phi770 <- %r251
+	phisrc.f64  %phi886 <- %r251
+	phisrc.f64  %phi887 <- %r251
+	phisrc.f64  %phi1001 <- %r251
+	phisrc.f64  %phi1002 <- %r251
+	phisrc.f64  %phi1116 <- %r251
+	phisrc.f64  %phi1117 <- %r251
+	phisrc.f64  %phi1231 <- %r251
+	phisrc.f64  %phi1232 <- %r251
+	br          .L25
+
+.L25:
+	load.f64    %r252 <- 0[W]
+	add.f64     %r254 <- %r252, %r252
+	store.f64   %r254 -> 0[W]
+	load.f64    %r256 <- 0[One]
+	add.f64     %r257 <- %r254, %r256
+	sub.f64     %r260 <- %r257, %r254
+	store.f64   %r260 -> 0[Z]
+	sub.f64     %r263(Y) <- %r260, %r256
+	store.f64   %r263(Y) -> 0[Y]
+	load.f64    %r264 <- 0[MinusOne]
+	push.f64    %r263(Y)
+	call.f64    %r266 <- fabs
+	add.f64     %r267 <- %r264, %r266
+	load.f64    %r268(Zero) <- 0[Zero]
+	setlt.32    %r269 <- %r267, %r268(Zero)
+	br          %r269, .L25, .L27
+
+.L27:
+	store.f64   %r268(Zero) -> 0[Precision]
+	load.f64    %r271(One) <- 0[One]
+	phisrc.f64  %phi251(Y) <- %r271(One)
+	br          .L28
+
+.L28:
+	load.f64    %r272 <- 0[W]
+	phi.f64     %r273 <- %phi251(Y), %phi252(Y)
+	add.f64     %r274 <- %r272, %r273
+	add.f64     %r277 <- %r273, %r273
+	store.f64   %r277 -> 0[Y]
+	sub.f64     %r280(Radix) <- %r274, %r272
+	store.f64   %r280(Radix) -> 0[Radix]
+	phisrc.f64  %phi252(Y) <- %r277
+	seteq.32    %r283 <- %r280(Radix), %r268(Zero)
+	br          %r283, .L28, .L30
+
+.L30:
+	load.f64    %r285 <- 0[Two]
+	setlt.32    %r286 <- %r280(Radix), %r285
+	phisrc.f64  %phi203(Radix) <- %r280(Radix)
+	br          %r286, .L31, .L32
+
+.L31:
+	store.f64   %r271(One) -> 0[Radix]
+	phisrc.f64  %phi204(Radix) <- %r271(One)
+	br          .L32
+
+.L32:
+	symaddr.64* %r288 <- <anon symbol:0x62d0004a3ca0>
+	push.64*    %r288
+	phi.f64     %r289 <- %phi203(Radix), %phi204(Radix)
+	push.f64    %r289
+	call.32     %r290 <- printf
+	load.f64    %r291(Radix) <- 0[Radix]
+	set.f64     %r292 <- 1.000000
+	setne.32    %r293 <- %r291(Radix), %r292
+	phisrc.f64  %phi200(Radix) <- %r291(Radix)
+	br          %r293, .L33, .L34
+
+.L33:
+	load.f64    %r294(One) <- 0[One]
+	phisrc.f64  %phi208(W) <- %r294(One)
+	br          .L35
+
+.L35:
+	load.f64    %r295 <- 0[Precision]
+	add.f64     %r297 <- %r295, %r294(One)
+	store.f64   %r297 -> 0[Precision]
+	phi.f64     %r298 <- %phi208(W), %phi209(W)
+	mulu.f64    %r300 <- %r298, %r291(Radix)
+	store.f64   %r300 -> 0[W]
+	add.f64     %r303(Y) <- %r300, %r294(One)
+	store.f64   %r303(Y) -> 0[Y]
+	phisrc.f64  %phi201(Radix) <- %r291(Radix)
+	phisrc.f64  %phi209(W) <- %r300
+	sub.f64     %r306 <- %r303(Y), %r300
+	seteq.32    %r308 <- %r306, %r294(One)
+	br          %r308, .L35, .L34
+
+.L34:
+	load.f64    %r309 <- 0[One]
+	load.f64    %r310 <- 0[W]
+	divu.f64    %r311 <- %r309, %r310
+	store.f64   %r311 -> 0[U1]
+	phi.f64     %r312 <- %phi200(Radix), %phi201(Radix)
+	mulu.f64    %r314 <- %r312, %r311
+	store.f64   %r314 -> 0[U2]
+	symaddr.64* %r315 <- <anon symbol:0x62d0004a4040>
+	push.64*    %r315
+	push.f64    %r311
+	call.32     %r317 <- printf
+	symaddr.64* %r318 <- <anon symbol:0x62d0004a6418>
+	push.64*    %r318
+	call.32     %r319 <- printf
+	load.f64    %r320 <- 0[Radix]
+	store.f64   %r320 -> 0[E0]
+	load.f64    %r321 <- 0[U1]
+	store.f64   %r321 -> 0[E1]
+	load.f64    %r322 <- 0[U2]
+	store.f64   %r322 -> 0[E9]
+	load.f64    %r323 <- 0[Precision]
+	store.f64   %r323 -> 0[E3]
+	load.f64    %r324 <- 0[Four]
+	load.f64    %r325 <- 0[Three]
+	divu.f64    %r326 <- %r324, %r325
+	load.f64    %r328 <- 0[One]
+	sub.f64     %r329 <- %r326, %r328
+	store.f64   %r329 -> 0[Third]
+	load.f64    %r330 <- 0[Half]
+	sub.f64     %r332 <- %r330, %r329
+	store.f64   %r332 -> 0[F6]
+	add.f64     %r335 <- %r332, %r332
+	store.f64   %r335 -> 0[X]
+	sub.f64     %r338 <- %r335, %r329
+	push.f64    %r338
+	call.f64    %r339 <- fabs
+	store.f64   %r339 -> 0[X]
+	load.f64    %r341(U2) <- 0[U2]
+	setlt.32    %r342 <- %r339, %r341(U2)
+	phisrc.f64  %phi329(X) <- %r339
+	br          %r342, .L38, .L40
+
+.L38:
+	store.f64   %r341(U2) -> 0[X]
+	phisrc.f64  %phi330(X) <- %r341(U2)
+	br          .L40
+
+.L40:
+	phi.f64     %r344 <- %phi329(X), %phi330(X), %phi331(X)
+	store.f64   %r344 -> 0[U2]
+	load.f64    %r345(Half) <- 0[Half]
+	mulu.f64    %r347 <- %r345(Half), %r344
+	load.f64    %r348 <- 0[ThirtyTwo]
+	mulu.f64    %r350 <- %r348, %r344
+	mulu.f64    %r352 <- %r350, %r344
+	add.f64     %r353 <- %r347, %r352
+	load.f64    %r354 <- 0[One]
+	add.f64     %r356 <- %r354, %r353
+	store.f64   %r356 -> 0[Y]
+	sub.f64     %r359(X) <- %r356, %r354
+	store.f64   %r359(X) -> 0[X]
+	phisrc.f64  %phi331(X) <- %r359(X)
+	setle.32    %r362 <- %r344, %r359(X)
+	load.f64    %r364 <- 0[Zero]
+	setle.32    %r365 <- %r359(X), %r364
+	or-bool.32  %r366 <- %r362, %r365
+	br          %r366, .L42, .L40
+
+.L42:
+	load.f64    %r367 <- 0[Two]
+	load.f64    %r368 <- 0[Three]
+	divu.f64    %r369 <- %r367, %r368
+	sub.f64     %r372 <- %r369, %r345(Half)
+	store.f64   %r372 -> 0[F6]
+	add.f64     %r375 <- %r372, %r372
+	store.f64   %r375 -> 0[Third]
+	sub.f64     %r378 <- %r375, %r345(Half)
+	store.f64   %r378 -> 0[X]
+	add.f64     %r381 <- %r378, %r372
+	push.f64    %r381
+	call.f64    %r382 <- fabs
+	store.f64   %r382 -> 0[X]
+	load.f64    %r384(U1) <- 0[U1]
+	setlt.32    %r385 <- %r382, %r384(U1)
+	phisrc.f64  %phi325(X) <- %r382
+	br          %r385, .L43, .L45
+
+.L43:
+	store.f64   %r384(U1) -> 0[X]
+	phisrc.f64  %phi326(X) <- %r384(U1)
+	br          .L45
+
+.L45:
+	phi.f64     %r387 <- %phi325(X), %phi326(X), %phi327(X)
+	store.f64   %r387 -> 0[U1]
+	load.f64    %r388 <- 0[Half]
+	mulu.f64    %r390 <- %r388, %r387
+	load.f64    %r391 <- 0[ThirtyTwo]
+	mulu.f64    %r393 <- %r391, %r387
+	mulu.f64    %r395 <- %r393, %r387
+	add.f64     %r396 <- %r390, %r395
+	sub.f64     %r399 <- %r388, %r396
+	add.f64     %r402 <- %r388, %r399
+	sub.f64     %r405 <- %r388, %r402
+	store.f64   %r405 -> 0[Y]
+	add.f64     %r408(X) <- %r388, %r405
+	store.f64   %r408(X) -> 0[X]
+	phisrc.f64  %phi327(X) <- %r408(X)
+	setle.32    %r411 <- %r387, %r408(X)
+	load.f64    %r413 <- 0[Zero]
+	setle.32    %r414 <- %r408(X), %r413
+	or-bool.32  %r415 <- %r411, %r414
+	br          %r415, .L47, .L45
+
+.L47:
+	load.f64    %r417 <- 0[E1]
+	seteq.32    %r418 <- %r387, %r417
+	br          %r418, .L48, .L49
+
+.L48:
+	symaddr.64* %r419 <- <anon symbol:0x62d0004a67b8>
+	push.64*    %r419
+	call.32     %r420 <- printf
+	br          .L50
+
+.L49:
+	symaddr.64* %r421 <- <anon symbol:0x62d0004a6b58>
+	push.64*    %r421
+	push.f64    %r387
+	call.32     %r423 <- printf
+	br          .L50
+
+.L50:
+	load.f64    %r424 <- 0[One]
+	load.f64    %r425 <- 0[U1]
+	divu.f64    %r426 <- %r424, %r425
+	store.f64   %r426 -> 0[W]
+	load.f64    %r427 <- 0[Half]
+	sub.f64     %r429 <- %r427, %r425
+	add.f64     %r431 <- %r429, %r427
+	store.f64   %r431 -> 0[F9]
+	set.f64     %r432 <- 0.010000
+	load.f64    %r433 <- 0[U2]
+	divu.f64    %r435 <- %r433, %r425
+	add.f64     %r436 <- %r432, %r435
+	push.f64    %r436
+	call.f64    %r437 <- floor
+	store.f64   %r437 -> 0[Radix]
+	load.f64    %r439 <- 0[E0]
+	seteq.32    %r440 <- %r437, %r439
+	br          %r440, .L51, .L52
+
+.L51:
+	symaddr.64* %r441 <- <anon symbol:0x62d0004a6ef8>
+	push.64*    %r441
+	call.32     %r442 <- printf
+	br          .L53
+
+.L52:
+	symaddr.64* %r443 <- <anon symbol:0x62d0004a7298>
+	push.64*    %r443
+	push.f64    %r437
+	call.32     %r445 <- printf
+	br          .L53
+
+.L53:
+	push.32     $2
+	load.f64    %r446 <- 0[Radix]
+	load.f64    %r447 <- 0[Eight]
+	add.f64     %r449 <- %r447, %r447
+	setle.32    %r450 <- %r446, %r449
+	push.32     %r450
+	symaddr.64* %r451 <- <anon symbol:0x62d0004a7638>
+	push.64*    %r451
+	call        TstCond
+	push.32     $3
+	load.f64    %r452 <- 0[Radix]
+	load.f64    %r453 <- 0[Two]
+	seteq.32    %r454 <- %r452, %r453
+	set.f64     %r456 <- 10.000000
+	seteq.32    %r457 <- %r452, %r456
+	or-bool.32  %r458 <- %r454, %r457
+	load.f64    %r460 <- 0[One]
+	seteq.32    %r461 <- %r452, %r460
+	or-bool.32  %r462 <- %r458, %r461
+	push.32     %r462
+	symaddr.64* %r463 <- <anon symbol:0x62d0004a79d8>
+	push.64*    %r463
+	call        TstCond
+	store.32    $20 -> 0[Milestone]
+	push.32     $0
+	load.f64    %r464 <- 0[F9]
+	load.f64    %r465 <- 0[Half]
+	sub.f64     %r466 <- %r464, %r465
+	setlt.32    %r468 <- %r466, %r465
+	push.32     %r468
+	symaddr.64* %r469 <- <anon symbol:0x62d0004a7d78>
+	push.64*    %r469
+	call        TstCond
+	load.f64    %r470 <- 0[F9]
+	store.f64   %r470 -> 0[X]
+	store.32    $1 -> 0[I]
+	load.f64    %r472 <- 0[Half]
+	sub.f64     %r473 <- %r470, %r472
+	store.f64   %r473 -> 0[Y]
+	sub.f64     %r476 <- %r473, %r472
+	store.f64   %r476 -> 0[Z]
+	push.32     $0
+	load.f64    %r478 <- 0[One]
+	setne.32    %r479 <- %r470, %r478
+	load.f64    %r481 <- 0[Zero]
+	seteq.32    %r482 <- %r476, %r481
+	or-bool.32  %r483 <- %r479, %r482
+	push.32     %r483
+	symaddr.64* %r484 <- <anon symbol:0x62d0004a8118>
+	push.64*    %r484
+	call        TstCond
+	load.f64    %r485 <- 0[One]
+	load.f64    %r486 <- 0[U2]
+	add.f64     %r487 <- %r485, %r486
+	store.f64   %r487 -> 0[X]
+	store.32    $0 -> 0[I]
+	store.32    $25 -> 0[Milestone]
+	load.f64    %r488 <- 0[Radix]
+	sub.f64     %r490 <- %r488, %r485
+	sub.f64     %r493 <- %r490, %r486
+	add.f64     %r495 <- %r493, %r485
+	store.f64   %r495 -> 0[BMinusU2]
+	setne.32    %r498 <- %r488, %r485
+	br          %r498, .L54, .L55
+
+.L54:
+	load.f64    %r499 <- 0[TwoForty]
+	neg.f64     %r500 <- %r499
+	load.f64    %r501 <- 0[U1]
+	push.f64    %r501
+	call.f64    %r502 <- log
+	mulu.f64    %r503 <- %r500, %r502
+	load.f64    %r504 <- 0[Radix]
+	push.f64    %r504
+	call.f64    %r505 <- log
+	divu.f64    %r506 <- %r503, %r505
+	store.f64   %r506 -> 0[X]
+	load.f64    %r507 <- 0[Half]
+	add.f64     %r509 <- %r507, %r506
+	push.f64    %r509
+	call.f64    %r510 <- floor
+	store.f64   %r510 -> 0[Y]
+	load.f64    %r511 <- 0[X]
+	sub.f64     %r513 <- %r511, %r510
+	push.f64    %r513
+	call.f64    %r514 <- fabs
+	load.f64    %r515 <- 0[Four]
+	mulu.f64    %r516 <- %r514, %r515
+	load.f64    %r517 <- 0[One]
+	setlt.32    %r518 <- %r516, %r517
+	br          %r518, .L56, .L57
+
+.L56:
+	load.f64    %r519 <- 0[Y]
+	store.f64   %r519 -> 0[X]
+	br          .L57
+
+.L57:
+	load.f64    %r520 <- 0[X]
+	load.f64    %r521 <- 0[TwoForty]
+	divu.f64    %r522 <- %r520, %r521
+	store.f64   %r522 -> 0[Precision]
+	load.f64    %r523 <- 0[Half]
+	add.f64     %r525 <- %r523, %r522
+	push.f64    %r525
+	call.f64    %r526 <- floor
+	store.f64   %r526 -> 0[Y]
+	load.f64    %r527 <- 0[Precision]
+	sub.f64     %r529 <- %r527, %r526
+	push.f64    %r529
+	call.f64    %r530 <- fabs
+	load.f64    %r531 <- 0[TwoForty]
+	mulu.f64    %r532 <- %r530, %r531
+	load.f64    %r533 <- 0[Half]
+	setlt.32    %r534 <- %r532, %r533
+	br          %r534, .L58, .L55
+
+.L58:
+	load.f64    %r535 <- 0[Y]
+	store.f64   %r535 -> 0[Precision]
+	br          .L55
+
+.L55:
+	load.f64    %r536 <- 0[Precision]
+	push.f64    %r536
+	call.f64    %r538 <- floor
+	setne.32    %r539 <- %r536, %r538
+	load.f64    %r540 <- 0[Radix]
+	load.f64    %r541 <- 0[One]
+	seteq.32    %r542 <- %r540, %r541
+	or-bool.32  %r543 <- %r539, %r542
+	phisrc.f64  %phi74(One) <- %r541
+	phisrc.f64  %phi198(Radix) <- %r540
+	phisrc.f64  %phi652 <- %r541
+	phisrc.f64  %phi653 <- %r540
+	phisrc.f64  %phi767 <- %r541
+	phisrc.f64  %phi768 <- %r540
+	phisrc.f64  %phi884 <- %r541
+	phisrc.f64  %phi885 <- %r540
+	phisrc.f64  %phi999 <- %r541
+	phisrc.f64  %phi1000 <- %r540
+	phisrc.f64  %phi1114 <- %r541
+	phisrc.f64  %phi1115 <- %r540
+	phisrc.f64  %phi1229 <- %r541
+	phisrc.f64  %phi1230 <- %r540
+	br          %r543, .L60, .L61
+
+.L60:
+	symaddr.64* %r544 <- <anon symbol:0x62d0004a84b8>
+	push.64*    %r544
+	call.32     %r545 <- printf
+	symaddr.64* %r546 <- <anon symbol:0x62d0004a8858>
+	push.64*    %r546
+	call.32     %r547 <- printf
+	br          .L61
+
+.L61:
+	load.f64    %r548 <- 0[Radix]
+	load.f64    %r549 <- 0[One]
+	seteq.32    %r550 <- %r548, %r549
+	br          %r550, .L62, .L63
+
+.L62:
+	symaddr.64* %r551 <- <anon symbol:0x62d0004a8bf8>
+	push.64*    %r551
+	call.32     %r552 <- printf
+	br          .L64
+
+.L63:
+	symaddr.64* %r553 <- <anon symbol:0x62d0004a8f98>
+	push.64*    %r553
+	load.f64    %r554 <- 0[Precision]
+	push.f64    %r554
+	call.32     %r555 <- printf
+	br          .L64
+
+.L64:
+	push.32     $1
+	load.f64    %r556 <- 0[U2]
+	load.f64    %r557 <- 0[Nine]
+	mulu.f64    %r558 <- %r556, %r557
+	mulu.f64    %r560 <- %r558, %r557
+	load.f64    %r561 <- 0[TwoForty]
+	mulu.f64    %r562 <- %r560, %r561
+	load.f64    %r563 <- 0[One]
+	setlt.32    %r564 <- %r562, %r563
+	push.32     %r564
+	symaddr.64* %r565 <- <anon symbol:0x62d0004a9338>
+	push.64*    %r565
+	call        TstCond
+	store.32    $30 -> 0[Milestone]
+	load.f64    %r566 <- 0[Four]
+	load.f64    %r567 <- 0[Three]
+	divu.f64    %r568 <- %r566, %r567
+	load.f64    %r569 <- 0[One]
+	sub.f64     %r570 <- %r568, %r569
+	divu.f64    %r573 <- %r569, %r566
+	sub.f64     %r574 <- %r570, %r573
+	mulu.f64    %r576 <- %r574, %r567
+	sub.f64     %r580 <- %r576, %r573
+	push.f64    %r580
+	call.f64    %r581(X) <- fabs
+	phisrc.f64  %phi322(X) <- %r581(X)
+	br          .L65
+
+.L65:
+	phi.f64     %r582 <- %phi322(X), %phi323(X)
+	store.f64   %r582 -> 0[Z2]
+	load.f64    %r583 <- 0[One]
+	load.f64    %r584 <- 0[Half]
+	mulu.f64    %r586 <- %r584, %r582
+	load.f64    %r587 <- 0[ThirtyTwo]
+	mulu.f64    %r589 <- %r587, %r582
+	mulu.f64    %r591 <- %r589, %r582
+	add.f64     %r592 <- %r586, %r591
+	add.f64     %r593 <- %r583, %r592
+	sub.f64     %r595(X) <- %r593, %r583
+	store.f64   %r595(X) -> 0[X]
+	phisrc.f64  %phi323(X) <- %r595(X)
+	setle.32    %r598 <- %r582, %r595(X)
+	load.f64    %r600 <- 0[Zero]
+	setle.32    %r601 <- %r595(X), %r600
+	or-bool.32  %r602 <- %r598, %r601
+	br          %r602, .L67, .L65
+
+.L67:
+	load.f64    %r603 <- 0[Three]
+	load.f64    %r604 <- 0[Four]
+	divu.f64    %r605 <- %r603, %r604
+	load.f64    %r606 <- 0[Two]
+	divu.f64    %r608 <- %r606, %r603
+	sub.f64     %r609 <- %r605, %r608
+	mulu.f64    %r611 <- %r609, %r603
+	divu.f64    %r614 <- %r583, %r604
+	sub.f64     %r615 <- %r611, %r614
+	push.f64    %r615
+	call.f64    %r616(Z) <- fabs
+	store.f64   %r616(Z) -> 0[Y]
+	store.f64   %r616(Z) -> 0[X]
+	phisrc.f64  %phi162(Z) <- %r616(Z)
+	phisrc.f64  %phi248(Y) <- %r616(Z)
+	phisrc.f64  %phi319(X) <- %r616(Z)
+	br          .L68
+
+.L68:
+	phi.f64     %r617 <- %phi162(Z), %phi163(Z)
+	store.f64   %r617 -> 0[Z1]
+	load.f64    %r618 <- 0[One]
+	load.f64    %r619 <- 0[Two]
+	divu.f64    %r620 <- %r618, %r619
+	load.f64    %r624(Half) <- 0[Half]
+	mulu.f64    %r626 <- %r624(Half), %r617
+	load.f64    %r627(ThirtyTwo) <- 0[ThirtyTwo]
+	mulu.f64    %r629 <- %r627(ThirtyTwo), %r617
+	mulu.f64    %r631 <- %r629, %r617
+	add.f64     %r632 <- %r626, %r631
+	sub.f64     %r633 <- %r620, %r632
+	add.f64     %r637 <- %r633, %r620
+	sub.f64     %r638 <- %r620, %r637
+	add.f64     %r642(Z) <- %r638, %r620
+	store.f64   %r642(Z) -> 0[Z]
+	phisrc.f64  %phi163(Z) <- %r642(Z)
+	phisrc.f64  %phi651 <- %r617
+	phisrc.f64  %phi766 <- %r617
+	setle.32    %r645 <- %r617, %r642(Z)
+	load.f64    %r647(Zero) <- 0[Zero]
+	setle.32    %r648 <- %r642(Z), %r647(Zero)
+	or-bool.32  %r649 <- %r645, %r648
+	phisrc.f64  %phi649(Zero) <- %r647(Zero)
+	phisrc.f64  %phi764(Zero) <- %r647(Zero)
+	phisrc.f64  %phi881(Zero) <- %r647(Zero)
+	phisrc.f64  %phi883 <- %r617
+	phisrc.f64  %phi996(Zero) <- %r647(Zero)
+	phisrc.f64  %phi998 <- %r617
+	phisrc.f64  %phi1111(Zero) <- %r647(Zero)
+	phisrc.f64  %phi1113 <- %r617
+	phisrc.f64  %phi1226(Zero) <- %r647(Zero)
+	phisrc.f64  %phi1228 <- %r617
+	br          %r649, .L74, .L68
+
+.L74:
+	phi.f64     %r650 <- %phi248(Y), %phi249(Y)
+	store.f64   %r650 -> 0[Y1]
+	mulu.f64    %r655 <- %r624(Half), %r650
+	mulu.f64    %r658 <- %r627(ThirtyTwo), %r650
+	mulu.f64    %r660 <- %r658, %r650
+	add.f64     %r661 <- %r655, %r660
+	sub.f64     %r662 <- %r624(Half), %r661
+	add.f64     %r664 <- %r662, %r624(Half)
+	sub.f64     %r665 <- %r624(Half), %r664
+	add.f64     %r667(Y) <- %r665, %r624(Half)
+	store.f64   %r667(Y) -> 0[Y]
+	phisrc.f64  %phi249(Y) <- %r667(Y)
+	setle.32    %r670 <- %r650, %r667(Y)
+	setle.32    %r673 <- %r667(Y), %r647(Zero)
+	or-bool.32  %r674 <- %r670, %r673
+	br          %r674, .L76, .L74
+
+.L76:
+	phi.f64     %r675 <- %phi319(X), %phi320(X)
+	store.f64   %r675 -> 0[X1]
+	mulu.f64    %r678 <- %r624(Half), %r675
+	mulu.f64    %r681 <- %r627(ThirtyTwo), %r675
+	mulu.f64    %r683 <- %r681, %r675
+	add.f64     %r684 <- %r678, %r683
+	load.f64    %r685 <- 0[F9]
+	sub.f64     %r686 <- %r684, %r685
+	add.f64     %r688(X) <- %r686, %r685
+	store.f64   %r688(X) -> 0[X]
+	phisrc.f64  %phi320(X) <- %r688(X)
+	setle.32    %r691 <- %r675, %r688(X)
+	setle.32    %r694 <- %r688(X), %r647(Zero)
+	or-bool.32  %r695 <- %r691, %r694
+	br          %r695, .L73, .L74
+
+.L73:
+	setne.32    %r698 <- %r675, %r650
+	setne.32    %r701 <- %r675, %r617
+	or-bool.32  %r702 <- %r698, %r701
+	br          %r702, .L77, .L78
+
+.L77:
+	push.32     $1
+	symaddr.64* %r703 <- <anon symbol:0x62d0004a96d8>
+	push.64*    %r703
+	call        BadCond
+	symaddr.64* %r704 <- <anon symbol:0x62d0004a9a78>
+	push.64*    %r704
+	load.f64    %r705 <- 0[X1]
+	push.f64    %r705
+	load.f64    %r706 <- 0[Y1]
+	push.f64    %r706
+	load.f64    %r707 <- 0[Z1]
+	push.f64    %r707
+	call.32     %r708 <- printf
+	symaddr.64* %r709 <- <anon symbol:0x62d0004a9e18>
+	push.64*    %r709
+	call.32     %r710 <- printf
+	symaddr.64* %r711 <- <anon symbol:0x62d0004aa1b8>
+	push.64*    %r711
+	call.32     %r712 <- printf
+	symaddr.64* %r713 <- <anon symbol:0x62d0004aa558>
+	push.64*    %r713
+	call        notify
+	load.f64    %r714 <- 0[X1]
+	load.f64    %r715 <- 0[U1]
+	seteq.32    %r716 <- %r714, %r715
+	load.f64    %r717 <- 0[Y1]
+	seteq.32    %r719 <- %r717, %r715
+	or-bool.32  %r720 <- %r716, %r719
+	load.f64    %r721 <- 0[Z1]
+	seteq.32    %r723 <- %r721, %r715
+	or-bool.32  %r724 <- %r720, %r723
+	br          %r724, .L79, .L81
+
+.L79:
+	symaddr.64* %r725 <- <anon symbol:0x62d0004aa8f8>
+	push.64*    %r725
+	call.32     %r726 <- printf
+	br          .L81
+
+.L78:
+	load.f64    %r728(U1) <- 0[U1]
+	setne.32    %r729 <- %r617, %r728(U1)
+	load.f64    %r730(Z2) <- 0[Z2]
+	load.f64    %r731(U2) <- 0[U2]
+	setne.32    %r732 <- %r730(Z2), %r731(U2)
+	or-bool.32  %r733 <- %r729, %r732
+	phisrc.f64  %phi647(U2) <- %r731(U2)
+	phisrc.f64  %phi648(U1) <- %r728(U1)
+	phisrc.f64  %phi650(Z2) <- %r730(Z2)
+	phisrc.f64  %phi762(U2) <- %r731(U2)
+	phisrc.f64  %phi763(U1) <- %r728(U1)
+	phisrc.f64  %phi765(Z2) <- %r730(Z2)
+	phisrc.f64  %phi879(U2) <- %r731(U2)
+	phisrc.f64  %phi880(U1) <- %r728(U1)
+	phisrc.f64  %phi882(Z2) <- %r730(Z2)
+	phisrc.f64  %phi994(U2) <- %r731(U2)
+	phisrc.f64  %phi995(U1) <- %r728(U1)
+	phisrc.f64  %phi997(Z2) <- %r730(Z2)
+	phisrc.f64  %phi1109(U2) <- %r731(U2)
+	phisrc.f64  %phi1110(U1) <- %r728(U1)
+	phisrc.f64  %phi1112(Z2) <- %r730(Z2)
+	phisrc.f64  %phi1224(U2) <- %r731(U2)
+	phisrc.f64  %phi1225(U1) <- %r728(U1)
+	phisrc.f64  %phi1227(Z2) <- %r730(Z2)
+	br          %r733, .L82, .L81
+
+.L82:
+	setge.32    %r736 <- %r617, %r728(U1)
+	setge.32    %r739 <- %r730(Z2), %r731(U2)
+	or-bool.32  %r740 <- %r736, %r739
+	phisrc.f64  %phi180(U2) <- %r731(U2)
+	phisrc.f64  %phi261(U1) <- %r728(U1)
+	br          %r740, .L84, .L85
+
+.L84:
+	push.32     $0
+	symaddr.64* %r741 <- <anon symbol:0x62d0004aac98>
+	push.64*    %r741
+	call        BadCond
+	symaddr.64* %r742 <- <anon symbol:0x62d0004ab038>
+	push.64*    %r742
+	call        notify
+	symaddr.64* %r743 <- <anon symbol:0x62d0004ab3d8>
+	push.64*    %r743
+	load.f64    %r744 <- 0[U1]
+	push.f64    %r744
+	load.f64    %r745 <- 0[Z1]
+	sub.f64     %r747 <- %r745, %r744
+	push.f64    %r747
+	call.32     %r748 <- printf
+	symaddr.64* %r749 <- <anon symbol:0x62d0004ab778>
+	push.64*    %r749
+	load.f64    %r750 <- 0[U2]
+	push.f64    %r750
+	load.f64    %r751 <- 0[Z2]
+	sub.f64     %r753 <- %r751, %r750
+	push.f64    %r753
+	call.32     %r754 <- printf
+	br          .L81
+
+.L85:
+	setle.32    %r757 <- %r617, %r647(Zero)
+	setle.32    %r760 <- %r730(Z2), %r647(Zero)
+	or-bool.32  %r761 <- %r757, %r760
+	phisrc.f64  %phi36(Zero) <- %r647(Zero)
+	phisrc.f64  %phi361(Z2) <- %r730(Z2)
+	phisrc.f64  %phi369(Z1) <- %r617
+	br          %r761, .L87, .L88
+
+.L87:
+	symaddr.64* %r762 <- <anon symbol:0x62d0004abb18>
+	push.64*    %r762
+	load.f64    %r763 <- 0[Radix]
+	push.f64    %r763
+	call.32     %r764 <- printf
+	symaddr.64* %r765 <- <anon symbol:0x62d0004abeb8>
+	push.64*    %r765
+	call.32     %r766 <- printf
+	symaddr.64* %r767 <- <anon symbol:0x62d0004ac258>
+	push.64*    %r767
+	load.f64    %r768 <- 0[Z1]
+	push.f64    %r768
+	load.f64    %r769 <- 0[Z2]
+	push.f64    %r769
+	call.32     %r770 <- printf
+	symaddr.64* %r771 <- <anon symbol:0x62d0004ac5f8>
+	push.64*    %r771
+	call        notify
+	br          .L88
+
+.L88:
+	load.f64    %r772 <- 0[Z1]
+	load.f64    %r773(Z2) <- 0[Z2]
+	setne.32    %r774 <- %r772, %r773(Z2)
+	load.f64    %r776 <- 0[Zero]
+	setgt.32    %r777 <- %r772, %r776
+	or-bool.32  %r778 <- %r774, %r777
+	br          %r778, .L89, .L90
+
+.L89:
+	load.f64    %r780 <- 0[U1]
+	divu.f64    %r781 <- %r772, %r780
+	store.f64   %r781 -> 0[X]
+	load.f64    %r783 <- 0[U2]
+	divu.f64    %r784 <- %r773(Z2), %r783
+	store.f64   %r784 -> 0[Y]
+	setgt.32    %r787 <- %r784, %r781
+	phisrc.f64  %phi316(X) <- %r781
+	br          %r787, .L91, .L92
+
+.L91:
+	store.f64   %r784 -> 0[X]
+	phisrc.f64  %phi317(X) <- %r784
+	br          .L92
+
+.L92:
+	phi.f64     %r789 <- %phi316(X), %phi317(X)
+	push.f64    %r789
+	call.f64    %r790 <- log
+	neg.f64     %r791 <- %r790
+	store.f64   %r791 -> 0[Q]
+	symaddr.64* %r792 <- <anon symbol:0x62d0004ac998>
+	push.64*    %r792
+	call.32     %r793 <- printf
+	symaddr.64* %r794 <- <anon symbol:0x62d0004acd38>
+	push.64*    %r794
+	load.f64    %r795 <- 0[Q]
+	load.f64    %r796 <- 0[Radix]
+	push.f64    %r796
+	call.f64    %r797 <- log
+	divu.f64    %r798 <- %r795, %r797
+	push.f64    %r798
+	call.32     %r799 <- printf
+	symaddr.64* %r800 <- <anon symbol:0x62d0004ad0d8>
+	push.64*    %r800
+	load.f64    %r801 <- 0[Q]
+	set.f64     %r802 <- 10.000000
+	push.f64    %r802
+	call.f64    %r803 <- log
+	divu.f64    %r804 <- %r801, %r803
+	push.f64    %r804
+	call.32     %r805 <- printf
+	br          .L90
+
+.L90:
+	symaddr.64* %r806 <- <anon symbol:0x62d0004ad478>
+	push.64*    %r806
+	call.32     %r807 <- printf
+	br          .L81
+
+.L81:
+	call        Pause
+	store.32    $35 -> 0[Milestone]
+	load.f64    %r808(Radix) <- 0[Radix]
+	load.f64    %r809 <- 0[Two]
+	setge.32    %r810 <- %r808(Radix), %r809
+	br          %r810, .L93, .L94
+
+.L93:
+	load.f64    %r811 <- 0[W]
+	mulu.f64    %r814 <- %r808(Radix), %r808(Radix)
+	divu.f64    %r815 <- %r811, %r814
+	load.f64    %r817 <- 0[One]
+	add.f64     %r818 <- %r815, %r817
+	store.f64   %r818 -> 0[Y]
+	sub.f64     %r821 <- %r818, %r815
+	store.f64   %r821 -> 0[Z]
+	load.f64    %r823 <- 0[U2]
+	add.f64     %r824 <- %r821, %r823
+	store.f64   %r824 -> 0[T]
+	sub.f64     %r827 <- %r824, %r821
+	store.f64   %r827 -> 0[X]
+	push.32     $0
+	seteq.32    %r830 <- %r827, %r823
+	push.32     %r830
+	symaddr.64* %r831 <- <anon symbol:0x62d0004ad818>
+	push.64*    %r831
+	call        TstCond
+	load.f64    %r832 <- 0[X]
+	load.f64    %r833 <- 0[U2]
+	seteq.32    %r834 <- %r832, %r833
+	br          %r834, .L95, .L94
+
+.L95:
+	symaddr.64* %r835 <- <anon symbol:0x62d0004adbb8>
+	push.64*    %r835
+	call.32     %r836 <- printf
+	br          .L94
+
+.L94:
+	symaddr.64* %r837 <- <anon symbol:0x62d0004adf58>
+	push.64*    %r837
+	call.32     %r838 <- printf
+	load.f64    %r839 <- 0[F9]
+	load.f64    %r840 <- 0[One]
+	mulu.f64    %r841 <- %r839, %r840
+	mulu.f64    %r844 <- %r840, %r839
+	load.f64    %r846 <- 0[Half]
+	sub.f64     %r847 <- %r839, %r846
+	sub.f64     %r850 <- %r841, %r846
+	sub.f64     %r852 <- %r850, %r847
+	store.f64   %r852 -> 0[Y]
+	sub.f64     %r855 <- %r844, %r846
+	sub.f64     %r857 <- %r855, %r847
+	store.f64   %r857 -> 0[Z]
+	load.f64    %r859 <- 0[U2]
+	add.f64     %r860 <- %r840, %r859
+	load.f64    %r862 <- 0[Radix]
+	mulu.f64    %r863 <- %r860, %r862
+	mulu.f64    %r866 <- %r862, %r860
+	store.f64   %r866 -> 0[R]
+	sub.f64     %r869 <- %r863, %r862
+	mulu.f64    %r873 <- %r862, %r859
+	sub.f64     %r874 <- %r869, %r873
+	sub.f64     %r877 <- %r866, %r862
+	sub.f64     %r882 <- %r877, %r873
+	sub.f64     %r886 <- %r862, %r840
+	mulu.f64    %r887 <- %r874, %r886
+	store.f64   %r887 -> 0[X]
+	mulu.f64    %r892 <- %r882, %r886
+	store.f64   %r892 -> 0[T]
+	load.f64    %r894 <- 0[Zero]
+	seteq.32    %r895 <- %r887, %r894
+	seteq.32    %r898 <- %r852, %r894
+	and-bool.32 %r899 <- %r895, %r898
+	seteq.32    %r902 <- %r857, %r894
+	and-bool.32 %r903 <- %r899, %r902
+	seteq.32    %r906 <- %r892, %r894
+	and-bool.32 %r907 <- %r903, %r906
+	phisrc.f64  %phi72(One) <- %r840
+	phisrc.f64  %phi179(U2) <- %r859
+	phisrc.f64  %phi196(Radix) <- %r862
+	phisrc.f64  %phi644 <- %r840
+	phisrc.f64  %phi645 <- %r859
+	phisrc.f64  %phi646 <- %r862
+	phisrc.f64  %phi759 <- %r840
+	phisrc.f64  %phi760 <- %r859
+	phisrc.f64  %phi761 <- %r862
+	phisrc.f64  %phi876 <- %r840
+	phisrc.f64  %phi877 <- %r859
+	phisrc.f64  %phi878 <- %r862
+	phisrc.f64  %phi991 <- %r840
+	phisrc.f64  %phi992 <- %r859
+	phisrc.f64  %phi993 <- %r862
+	phisrc.f64  %phi1106 <- %r840
+	phisrc.f64  %phi1107 <- %r859
+	phisrc.f64  %phi1108 <- %r862
+	phisrc.f64  %phi1221 <- %r840
+	phisrc.f64  %phi1222 <- %r859
+	phisrc.f64  %phi1223 <- %r862
+	br          %r907, .L97, .L98
+
+.L97:
+	store.32    $1 -> 0[GMult]
+	br          .L99
+
+.L98:
+	store.32    $0 -> 0[GMult]
+	push.32     $1
+	push.32     $0
+	symaddr.64* %r908 <- <anon symbol:0x62d0004ae2f8>
+	push.64*    %r908
+	call        TstCond
+	br          .L99
+
+.L99:
+	load.f64    %r909 <- 0[Radix]
+	load.f64    %r910 <- 0[U2]
+	mulu.f64    %r911 <- %r909, %r910
+	store.f64   %r911 -> 0[Z]
+	load.f64    %r912 <- 0[One]
+	add.f64     %r914 <- %r912, %r911
+	store.f64   %r914 -> 0[X]
+	add.f64     %r917 <- %r914, %r911
+	mulu.f64    %r920 <- %r914, %r914
+	sub.f64     %r921 <- %r917, %r920
+	push.f64    %r921
+	call.f64    %r922 <- fabs
+	load.f64    %r923 <- 0[U2]
+	sub.f64     %r924 <- %r922, %r923
+	store.f64   %r924 -> 0[Y]
+	load.f64    %r925 <- 0[One]
+	sub.f64     %r927 <- %r925, %r923
+	store.f64   %r927 -> 0[X]
+	sub.f64     %r930 <- %r927, %r923
+	mulu.f64    %r933 <- %r927, %r927
+	sub.f64     %r934 <- %r930, %r933
+	push.f64    %r934
+	call.f64    %r935 <- fabs
+	load.f64    %r936 <- 0[U1]
+	sub.f64     %r937 <- %r935, %r936
+	store.f64   %r937 -> 0[Z]
+	push.32     $0
+	load.f64    %r938 <- 0[Y]
+	load.f64    %r939 <- 0[Zero]
+	setle.32    %r940 <- %r938, %r939
+	setle.32    %r943 <- %r937, %r939
+	and-bool.32 %r944 <- %r940, %r943
+	push.32     %r944
+	symaddr.64* %r945 <- <anon symbol:0x62d0004b06d0>
+	push.64*    %r945
+	call        TstCond
+	load.f64    %r946 <- 0[One]
+	load.f64    %r947 <- 0[U2]
+	sub.f64     %r948 <- %r946, %r947
+	add.f64     %r951 <- %r946, %r947
+	divu.f64    %r954 <- %r946, %r948
+	sub.f64     %r957 <- %r954, %r951
+	store.f64   %r957 -> 0[Y]
+	load.f64    %r959 <- 0[Three]
+	divu.f64    %r960 <- %r946, %r959
+	load.f64    %r962 <- 0[Nine]
+	divu.f64    %r963 <- %r959, %r962
+	sub.f64     %r966 <- %r960, %r963
+	store.f64   %r966 -> 0[X]
+	load.f64    %r968 <- 0[TwentySeven]
+	divu.f64    %r969 <- %r962, %r968
+	store.f64   %r969 -> 0[T]
+	sub.f64     %r972 <- %r963, %r969
+	store.f64   %r972 -> 0[Z]
+	push.32     $2
+	load.f64    %r974 <- 0[Zero]
+	seteq.32    %r975 <- %r966, %r974
+	seteq.32    %r978 <- %r957, %r974
+	and-bool.32 %r979 <- %r975, %r978
+	seteq.32    %r982 <- %r972, %r974
+	and-bool.32 %r983 <- %r979, %r982
+	push.32     %r983
+	symaddr.64* %r984 <- <anon symbol:0x62d0004b0a70>
+	push.64*    %r984
+	call        TstCond
+	load.f64    %r985 <- 0[F9]
+	load.f64    %r986 <- 0[One]
+	divu.f64    %r987 <- %r985, %r986
+	load.f64    %r989 <- 0[Half]
+	sub.f64     %r990 <- %r985, %r989
+	sub.f64     %r993 <- %r987, %r989
+	sub.f64     %r995 <- %r993, %r990
+	store.f64   %r995 -> 0[Y]
+	load.f64    %r997 <- 0[U2]
+	add.f64     %r998 <- %r986, %r997
+	divu.f64    %r1001 <- %r998, %r986
+	store.f64   %r1001 -> 0[T]
+	sub.f64     %r1004 <- %r1001, %r998
+	store.f64   %r1004 -> 0[X]
+	load.f64    %r1006 <- 0[Zero]
+	seteq.32    %r1007 <- %r1004, %r1006
+	seteq.32    %r1010 <- %r995, %r1006
+	and-bool.32 %r1011 <- %r1007, %r1010
+	load.f64    %r1012 <- 0[Z]
+	seteq.32    %r1014 <- %r1012, %r1006
+	and-bool.32 %r1015 <- %r1011, %r1014
+	phisrc.f64  %phi35(Zero) <- %r1006
+	phisrc.f64  %phi71(One) <- %r986
+	phisrc.f64  %phi117(Half) <- %r989
+	phisrc.f64  %phi178(U2) <- %r997
+	phisrc.f64  %phi640 <- %r1006
+	phisrc.f64  %phi641 <- %r989
+	phisrc.f64  %phi642 <- %r997
+	phisrc.f64  %phi643 <- %r986
+	phisrc.f64  %phi755 <- %r1006
+	phisrc.f64  %phi756 <- %r989
+	phisrc.f64  %phi757 <- %r997
+	phisrc.f64  %phi758 <- %r986
+	phisrc.f64  %phi872 <- %r1006
+	phisrc.f64  %phi873 <- %r989
+	phisrc.f64  %phi874 <- %r997
+	phisrc.f64  %phi875 <- %r986
+	phisrc.f64  %phi987 <- %r1006
+	phisrc.f64  %phi988 <- %r989
+	phisrc.f64  %phi989 <- %r997
+	phisrc.f64  %phi990 <- %r986
+	phisrc.f64  %phi1102 <- %r1006
+	phisrc.f64  %phi1103 <- %r989
+	phisrc.f64  %phi1104 <- %r997
+	phisrc.f64  %phi1105 <- %r986
+	phisrc.f64  %phi1217 <- %r1006
+	phisrc.f64  %phi1218 <- %r989
+	phisrc.f64  %phi1219 <- %r997
+	phisrc.f64  %phi1220 <- %r986
+	br          %r1015, .L100, .L101
+
+.L100:
+	store.32    $1 -> 0[GDiv]
+	br          .L102
+
+.L101:
+	store.32    $0 -> 0[GDiv]
+	push.32     $1
+	push.32     $0
+	symaddr.64* %r1016 <- <anon symbol:0x62d0004b0e10>
+	push.64*    %r1016
+	call        TstCond
+	br          .L102
+
+.L102:
+	load.f64    %r1017 <- 0[One]
+	load.f64    %r1019 <- 0[U2]
+	add.f64     %r1020 <- %r1017, %r1019
+	divu.f64    %r1021 <- %r1017, %r1020
+	store.f64   %r1021 -> 0[X]
+	load.f64    %r1023 <- 0[Half]
+	sub.f64     %r1024 <- %r1021, %r1023
+	sub.f64     %r1026 <- %r1024, %r1023
+	store.f64   %r1026 -> 0[Y]
+	push.32     $1
+	load.f64    %r1028 <- 0[Zero]
+	setlt.32    %r1029 <- %r1026, %r1028
+	push.32     %r1029
+	symaddr.64* %r1030 <- <anon symbol:0x62d0004b11b0>
+	push.64*    %r1030
+	call        TstCond
+	load.f64    %r1031 <- 0[One]
+	load.f64    %r1032 <- 0[U2]
+	sub.f64     %r1033 <- %r1031, %r1032
+	load.f64    %r1035 <- 0[Radix]
+	mulu.f64    %r1037 <- %r1035, %r1032
+	add.f64     %r1038 <- %r1031, %r1037
+	mulu.f64    %r1041 <- %r1033, %r1035
+	store.f64   %r1041 -> 0[Z]
+	mulu.f64    %r1044 <- %r1038, %r1035
+	store.f64   %r1044 -> 0[T]
+	divu.f64    %r1047 <- %r1041, %r1035
+	store.f64   %r1047 -> 0[R]
+	divu.f64    %r1050 <- %r1044, %r1035
+	store.f64   %r1050 -> 0[StickyBit]
+	sub.f64     %r1053 <- %r1047, %r1033
+	store.f64   %r1053 -> 0[X]
+	sub.f64     %r1056 <- %r1050, %r1038
+	store.f64   %r1056 -> 0[Y]
+	push.32     $0
+	load.f64    %r1058 <- 0[Zero]
+	seteq.32    %r1059 <- %r1053, %r1058
+	seteq.32    %r1062 <- %r1056, %r1058
+	and-bool.32 %r1063 <- %r1059, %r1062
+	push.32     %r1063
+	symaddr.64* %r1064 <- <anon symbol:0x62d0004b1550>
+	push.64*    %r1064
+	call        TstCond
+	load.f64    %r1065 <- 0[One]
+	load.f64    %r1066 <- 0[U1]
+	sub.f64     %r1067 <- %r1065, %r1066
+	load.f64    %r1069 <- 0[F9]
+	sub.f64     %r1070 <- %r1065, %r1069
+	store.f64   %r1070 -> 0[X]
+	sub.f64     %r1073 <- %r1065, %r1067
+	store.f64   %r1073 -> 0[Y]
+	load.f64    %r1074 <- 0[Radix]
+	load.f64    %r1075 <- 0[U2]
+	sub.f64     %r1076 <- %r1074, %r1075
+	load.f64    %r1078 <- 0[BMinusU2]
+	sub.f64     %r1079 <- %r1074, %r1078
+	store.f64   %r1079 -> 0[Z]
+	sub.f64     %r1082 <- %r1074, %r1076
+	store.f64   %r1082 -> 0[T]
+	seteq.32    %r1085 <- %r1070, %r1066
+	seteq.32    %r1088 <- %r1073, %r1066
+	and-bool.32 %r1089 <- %r1085, %r1088
+	seteq.32    %r1092 <- %r1079, %r1075
+	and-bool.32 %r1093 <- %r1089, %r1092
+	seteq.32    %r1096 <- %r1082, %r1075
+	and-bool.32 %r1097 <- %r1093, %r1096
+	phisrc.f64  %phi70(One) <- %r1065
+	phisrc.f64  %phi338(F9) <- %r1069
+	phisrc.f64  %phi638 <- %r1065
+	phisrc.f64  %phi639 <- %r1069
+	phisrc.f64  %phi753 <- %r1065
+	phisrc.f64  %phi754 <- %r1069
+	phisrc.f64  %phi870 <- %r1065
+	phisrc.f64  %phi871 <- %r1069
+	phisrc.f64  %phi985 <- %r1065
+	phisrc.f64  %phi986 <- %r1069
+	phisrc.f64  %phi1100 <- %r1065
+	phisrc.f64  %phi1101 <- %r1069
+	phisrc.f64  %phi1215 <- %r1065
+	phisrc.f64  %phi1216 <- %r1069
+	br          %r1097, .L103, .L104
+
+.L103:
+	store.32    $1 -> 0[GAddSub]
+	phisrc.32   %phi407(GAddSub) <- $1
+	phisrc.32   %phi637(I) <- $1
+	phisrc.32   %phi752(I) <- $1
+	phisrc.32   %phi869(I) <- $1
+	phisrc.32   %phi984(I) <- $1
+	phisrc.32   %phi1099(I) <- $1
+	phisrc.32   %phi1214(I) <- $1
+	br          .L105
+
+.L104:
+	store.32    $0 -> 0[GAddSub]
+	push.32     $1
+	push.32     $0
+	symaddr.64* %r1098 <- <anon symbol:0x62d0004b18f0>
+	push.64*    %r1098
+	call        TstCond
+	br          .L105
+
+.L105:
+	load.f64    %r1099 <- 0[F9]
+	load.f64    %r1100 <- 0[One]
+	setne.32    %r1101 <- %r1099, %r1100
+	sub.f64     %r1104 <- %r1099, %r1100
+	load.f64    %r1105 <- 0[Zero]
+	setge.32    %r1106 <- %r1104, %r1105
+	and-bool.32 %r1107 <- %r1101, %r1106
+	br          %r1107, .L106, .L107
+
+.L106:
+	push.32     $1
+	symaddr.64* %r1108 <- <anon symbol:0x62d0004b1c90>
+	push.64*    %r1108
+	call        BadCond
+	symaddr.64* %r1109 <- <anon symbol:0x62d0004b2030>
+	push.64*    %r1109
+	call.32     %r1110 <- printf
+	symaddr.64* %r1111 <- <anon symbol:0x62d0004b23d0>
+	push.64*    %r1111
+	call.32     %r1112 <- printf
+	symaddr.64* %r1113 <- <anon symbol:0x62d0004b2770>
+	push.64*    %r1113
+	call.32     %r1114 <- printf
+	br          .L107
+
+.L107:
+	load.32     %r1115 <- 0[GMult]
+	seteq.32    %r1116 <- %r1115, $1
+	load.32     %r1117 <- 0[GDiv]
+	seteq.32    %r1118 <- %r1117, $1
+	and-bool.32 %r1119 <- %r1116, %r1118
+	load.32     %r1120 <- 0[GAddSub]
+	seteq.32    %r1121 <- %r1120, $1
+	and-bool.32 %r1122 <- %r1119, %r1121
+	br          %r1122, .L108, .L109
+
+.L108:
+	symaddr.64* %r1123 <- <anon symbol:0x62d0004b2b10>
+	push.64*    %r1123
+	call.32     %r1124 <- printf
+	br          .L109
+
+.L109:
+	store.32    $40 -> 0[Milestone]
+	call        Pause
+	symaddr.64* %r1125 <- <anon symbol:0x62d0004b2eb0>
+	push.64*    %r1125
+	call.32     %r1126 <- printf
+	store.32    $0 -> 0[RMult]
+	store.32    $0 -> 0[RDiv]
+	store.32    $0 -> 0[RAddSub]
+	load.f64    %r1127 <- 0[Radix]
+	load.f64    %r1128 <- 0[Two]
+	divu.f64    %r1129 <- %r1127, %r1128
+	store.f64   %r1129 -> 0[RadixD2]
+	store.f64   %r1128 -> 0[A1]
+	store.32    $0 -> 0[Done]
+	phisrc.f64  %phi195(Radix) <- %r1127
+	phisrc.f64  %phi411(A1) <- %r1128
+	phisrc.f64  %phi633 <- %r1128
+	phisrc.f64  %phi636 <- %r1127
+	phisrc.f64  %phi748 <- %r1128
+	phisrc.f64  %phi751 <- %r1127
+	phisrc.f64  %phi865 <- %r1128
+	phisrc.f64  %phi868 <- %r1127
+	phisrc.f64  %phi981 <- %r1128
+	phisrc.f64  %phi983 <- %r1127
+	phisrc.f64  %phi1096 <- %r1128
+	phisrc.f64  %phi1098 <- %r1127
+	phisrc.f64  %phi1211 <- %r1128
+	phisrc.f64  %phi1213 <- %r1127
+	br          .L110
+
+.L110:
+	load.f64    %r1131(AInvrse) <- 0[Radix]
+	phisrc.f64  %phi418(AInvrse) <- %r1131(AInvrse)
+	br          .L113
+
+.L113:
+	phi.f64     %r1132 <- %phi418(AInvrse), %phi419(AInvrse)
+	store.f64   %r1132 -> 0[X]
+	load.f64    %r1134 <- 0[A1]
+	divu.f64    %r1135(AInvrse) <- %r1132, %r1134
+	store.f64   %r1135(AInvrse) -> 0[AInvrse]
+	push.f64    %r1135(AInvrse)
+	call.f64    %r1137 <- floor
+	load.f64    %r1138 <- 0[AInvrse]
+	setne.32    %r1139 <- %r1137, %r1138
+	phisrc.f64  %phi419(AInvrse) <- %r1138
+	br          %r1139, .L115, .L113
+
+.L115:
+	load.f64    %r1140(X) <- 0[X]
+	load.f64    %r1141(One) <- 0[One]
+	seteq.32    %r1142 <- %r1140(X), %r1141(One)
+	load.f64    %r1143(A1) <- 0[A1]
+	load.f64    %r1144 <- 0[Three]
+	setgt.32    %r1145 <- %r1143(A1), %r1144
+	or-bool.32  %r1146 <- %r1142, %r1145
+	store.32    %r1146 -> 0[Done]
+	phisrc.f64  %phi67(One) <- %r1141(One)
+	phisrc.f64  %phi408(A1) <- %r1143(A1)
+	phisrc.f64  %phi412(A1) <- %r1143(A1)
+	phisrc.f64  %phi634(A1) <- %r1143(A1)
+	phisrc.f64  %phi749(A1) <- %r1143(A1)
+	phisrc.f64  %phi866(A1) <- %r1143(A1)
+	br          %r1146, .L112, .L116
+
+.L116:
+	load.f64    %r1148 <- 0[Nine]
+	add.f64     %r1150 <- %r1148, %r1141(One)
+	store.f64   %r1150 -> 0[A1]
+	phisrc.f64  %phi68(One) <- %r1141(One)
+	phisrc.f64  %phi409(A1) <- %r1150
+	phisrc.f64  %phi413(A1) <- %r1150
+	phisrc.f64  %phi635 <- %r1150
+	phisrc.f64  %phi750 <- %r1150
+	phisrc.f64  %phi867 <- %r1150
+	phisrc.f64  %phi982 <- %r1150
+	phisrc.f64  %phi1097 <- %r1150
+	phisrc.f64  %phi1212 <- %r1150
+	br          .L110
+
+.L112:
+	phi.f64     %r1153(One) <- %phi67(One), %phi68(One)
+	seteq.32    %r1154 <- %r1140(X), %r1153(One)
+	br          %r1154, .L118, .L119
+
+.L118:
+	load.f64    %r1155 <- 0[Radix]
+	store.f64   %r1155 -> 0[A1]
+	phisrc.f64  %phi410(A1) <- %r1155
+	br          .L119
+
+.L119:
+	phi.f64     %r1157 <- %phi408(A1), %phi409(A1), %phi410(A1)
+	divu.f64    %r1158 <- %r1153(One), %r1157
+	store.f64   %r1158 -> 0[AInvrse]
+	store.f64   %r1157 -> 0[X]
+	store.f64   %r1158 -> 0[Y]
+	store.32    $0 -> 0[Done]
+	phisrc.f64  %phi244(Y) <- %r1158
+	phisrc.f64  %phi313(X) <- %r1157
+	br          .L120
+
+.L120:
+	phi.f64     %r1161 <- %phi313(X), %phi314(X)
+	phi.f64     %r1162 <- %phi244(Y), %phi245(Y)
+	mulu.f64    %r1163 <- %r1161, %r1162
+	load.f64    %r1164 <- 0[Half]
+	sub.f64     %r1165 <- %r1163, %r1164
+	store.f64   %r1165 -> 0[Z]
+	push.32     $0
+	seteq.32    %r1168 <- %r1165, %r1164
+	push.32     %r1168
+	symaddr.64* %r1169 <- <anon symbol:0x62d0004b3250>
+	push.64*    %r1169
+	call        TstCond
+	load.f64    %r1170 <- 0[X]
+	load.f64    %r1171 <- 0[Radix]
+	seteq.32    %r1172(Done) <- %r1170, %r1171
+	store.32    %r1172(Done) -> 0[Done]
+	store.f64   %r1171 -> 0[X]
+	load.f64    %r1174(One) <- 0[One]
+	divu.f64    %r1176 <- %r1174(One), %r1171
+	store.f64   %r1176 -> 0[Y]
+	phisrc.f64  %phi245(Y) <- %r1176
+	phisrc.f64  %phi314(X) <- %r1171
+	br          %r1172(Done), .L122, .L120
+
+.L122:
+	load.f64    %r1179 <- 0[U2]
+	add.f64     %r1180 <- %r1174(One), %r1179
+	store.f64   %r1180 -> 0[Y2]
+	sub.f64     %r1183 <- %r1174(One), %r1179
+	store.f64   %r1183 -> 0[Y1]
+	load.f64    %r1184 <- 0[OneAndHalf]
+	sub.f64     %r1186 <- %r1184, %r1179
+	add.f64     %r1189 <- %r1184, %r1179
+	sub.f64     %r1192 <- %r1186, %r1179
+	mulu.f64    %r1194 <- %r1192, %r1180
+	mulu.f64    %r1197 <- %r1189, %r1183
+	sub.f64     %r1200 <- %r1194, %r1186
+	store.f64   %r1200 -> 0[Z]
+	sub.f64     %r1203 <- %r1197, %r1186
+	store.f64   %r1203 -> 0[T]
+	mulu.f64    %r1206 <- %r1186, %r1180
+	add.f64     %r1209 <- %r1189, %r1179
+	mulu.f64    %r1211 <- %r1209, %r1183
+	sub.f64     %r1214 <- %r1206, %r1184
+	store.f64   %r1214 -> 0[X]
+	sub.f64     %r1217 <- %r1211, %r1184
+	store.f64   %r1217 -> 0[Y]
+	load.f64    %r1219 <- 0[Zero]
+	seteq.32    %r1220 <- %r1214, %r1219
+	seteq.32    %r1223 <- %r1217, %r1219
+	and-bool.32 %r1224 <- %r1220, %r1223
+	seteq.32    %r1227 <- %r1200, %r1219
+	and-bool.32 %r1228 <- %r1224, %r1227
+	setle.32    %r1231 <- %r1203, %r1219
+	and-bool.32 %r1232 <- %r1228, %r1231
+	br          %r1232, .L123, .L124
+
+.L123:
+	mulu.f64    %r1237 <- %r1189, %r1180
+	mulu.f64    %r1252 <- %r1186, %r1183
+	add.f64     %r1256 <- %r1209, %r1179
+	sub.f64     %r1257 <- %r1237, %r1256
+	store.f64   %r1257 -> 0[X]
+	mulu.f64    %r1260 <- %r1192, %r1183
+	mulu.f64    %r1263 <- %r1209, %r1180
+	store.f64   %r1263 -> 0[S]
+	sub.f64     %r1266 <- %r1252, %r1192
+	store.f64   %r1266 -> 0[T]
+	sub.f64     %r1269 <- %r1179, %r1192
+	add.f64     %r1271 <- %r1269, %r1260
+	store.f64   %r1271 -> 0[Y]
+	add.f64     %r1277 <- %r1256, %r1179
+	sub.f64     %r1278 <- %r1263, %r1277
+	store.f64   %r1278 -> 0[Z]
+	add.f64     %r1281 <- %r1180, %r1179
+	mulu.f64    %r1283 <- %r1281, %r1183
+	mulu.f64    %r1286 <- %r1180, %r1183
+	sub.f64     %r1289 <- %r1283, %r1180
+	store.f64   %r1289 -> 0[StickyBit]
+	load.f64    %r1291 <- 0[Half]
+	sub.f64     %r1292 <- %r1286, %r1291
+	store.f64   %r1292 -> 0[Y1]
+	seteq.32    %r1295 <- %r1257, %r1219
+	seteq.32    %r1298 <- %r1271, %r1219
+	and-bool.32 %r1299 <- %r1295, %r1298
+	seteq.32    %r1302 <- %r1278, %r1219
+	and-bool.32 %r1303 <- %r1299, %r1302
+	seteq.32    %r1306 <- %r1266, %r1219
+	and-bool.32 %r1307 <- %r1303, %r1306
+	seteq.32    %r1310 <- %r1289, %r1219
+	and-bool.32 %r1311 <- %r1307, %r1310
+	seteq.32    %r1314 <- %r1292, %r1291
+	and-bool.32 %r1315 <- %r1311, %r1314
+	br          %r1315, .L125, .L126
+
+.L125:
+	store.32    $1 -> 0[RMult]
+	symaddr.64* %r1316 <- <anon symbol:0x62d0004b35f0>
+	push.64*    %r1316
+	call.32     %r1317 <- printf
+	br          .L127
+
+.L126:
+	add.f64     %r1320 <- %r1257, %r1179
+	seteq.32    %r1322 <- %r1320, %r1219
+	setlt.32    %r1325 <- %r1271, %r1219
+	and-bool.32 %r1326 <- %r1322, %r1325
+	add.f64     %r1329 <- %r1278, %r1179
+	seteq.32    %r1331 <- %r1329, %r1219
+	and-bool.32 %r1332 <- %r1326, %r1331
+	setlt.32    %r1335 <- %r1266, %r1219
+	and-bool.32 %r1336 <- %r1332, %r1335
+	add.f64     %r1339 <- %r1289, %r1179
+	seteq.32    %r1341 <- %r1339, %r1219
+	and-bool.32 %r1342 <- %r1336, %r1341
+	setlt.32    %r1345 <- %r1292, %r1291
+	and-bool.32 %r1346 <- %r1342, %r1345
+	br          %r1346, .L128, .L129
+
+.L128:
+	store.32    $2 -> 0[RMult]
+	symaddr.64* %r1347 <- <anon symbol:0x62d0004b3990>
+	push.64*    %r1347
+	call.32     %r1348 <- printf
+	br          .L127
+
+.L129:
+	symaddr.64* %r1349 <- <anon symbol:0x62d0004b3d30>
+	push.64*    %r1349
+	call.32     %r1350 <- printf
+	br          .L127
+
+.L127:
+	load.32     %r1351 <- 0[RMult]
+	seteq.32    %r1352 <- %r1351, $1
+	load.32     %r1353 <- 0[GMult]
+	seteq.32    %r1354 <- %r1353, $0
+	and-bool.32 %r1355 <- %r1352, %r1354
+	br          %r1355, .L131, .L133
+
+.L131:
+	symaddr.64* %r1356 <- <anon symbol:0x62d0004b40d0>
+	push.64*    %r1356
+	call        notify
+	br          .L133
+
+.L124:
+	symaddr.64* %r1357 <- <anon symbol:0x62d0004b4470>
+	push.64*    %r1357
+	call.32     %r1358 <- printf
+	br          .L133
+
+.L133:
+	store.32    $45 -> 0[Milestone]
+	load.f64    %r1359 <- 0[One]
+	load.f64    %r1360 <- 0[U2]
+	add.f64     %r1361 <- %r1359, %r1360
+	store.f64   %r1361 -> 0[Y2]
+	sub.f64     %r1364 <- %r1359, %r1360
+	store.f64   %r1364 -> 0[Y1]
+	load.f64    %r1365 <- 0[OneAndHalf]
+	add.f64     %r1367 <- %r1365, %r1360
+	add.f64     %r1369 <- %r1367, %r1360
+	divu.f64    %r1372 <- %r1369, %r1361
+	sub.f64     %r1375 <- %r1365, %r1360
+	sub.f64     %r1377 <- %r1375, %r1360
+	sub.f64     %r1380 <- %r1377, %r1360
+	divu.f64    %r1382 <- %r1380, %r1364
+	add.f64     %r1385 <- %r1369, %r1360
+	divu.f64    %r1387 <- %r1385, %r1361
+	sub.f64     %r1390 <- %r1372, %r1365
+	store.f64   %r1390 -> 0[X]
+	sub.f64     %r1393 <- %r1382, %r1377
+	store.f64   %r1393 -> 0[Y]
+	divu.f64    %r1396 <- %r1377, %r1364
+	sub.f64     %r1401 <- %r1387, %r1367
+	store.f64   %r1401 -> 0[Z]
+	sub.f64     %r1404 <- %r1360, %r1365
+	add.f64     %r1406 <- %r1404, %r1396
+	store.f64   %r1406 -> 0[T]
+	load.f64    %r1408 <- 0[Zero]
+	setgt.32    %r1409 <- %r1390, %r1408
+	setgt.32    %r1412 <- %r1393, %r1408
+	or-bool.32  %r1413 <- %r1409, %r1412
+	setgt.32    %r1416 <- %r1401, %r1408
+	or-bool.32  %r1417 <- %r1413, %r1416
+	setgt.32    %r1420 <- %r1406, %r1408
+	or-bool.32  %r1421 <- %r1417, %r1420
+	phisrc.f64  %phi64(One) <- %r1359
+	phisrc.f64  %phi632 <- %r1359
+	phisrc.f64  %phi747 <- %r1359
+	phisrc.f64  %phi864 <- %r1359
+	phisrc.f64  %phi980 <- %r1359
+	phisrc.f64  %phi1095 <- %r1359
+	phisrc.f64  %phi1210 <- %r1359
+	br          %r1421, .L135, .L134
+
+.L134:
+	divu.f64    %r1424 <- %r1365, %r1361
+	sub.f64     %r1433 <- %r1424, %r1375
+	store.f64   %r1433 -> 0[X]
+	divu.f64    %r1436 <- %r1365, %r1364
+	divu.f64    %r1439 <- %r1375, %r1364
+	sub.f64     %r1444 <- %r1436, %r1369
+	store.f64   %r1444 -> 0[T]
+	sub.f64     %r1447 <- %r1439, %r1367
+	store.f64   %r1447 -> 0[Y]
+	divu.f64    %r1450 <- %r1367, %r1361
+	add.f64     %r1453 <- %r1361, %r1360
+	divu.f64    %r1455 <- %r1453, %r1361
+	sub.f64     %r1458 <- %r1450, %r1365
+	store.f64   %r1458 -> 0[Z]
+	sub.f64     %r1461 <- %r1455, %r1361
+	store.f64   %r1461 -> 0[Y2]
+	load.f64    %r1462 <- 0[F9]
+	load.f64    %r1463 <- 0[U1]
+	sub.f64     %r1464 <- %r1462, %r1463
+	divu.f64    %r1466(Y1) <- %r1464, %r1462
+	store.f64   %r1466(Y1) -> 0[Y1]
+	seteq.32    %r1469 <- %r1433, %r1408
+	seteq.32    %r1472 <- %r1447, %r1408
+	and-bool.32 %r1473 <- %r1469, %r1472
+	seteq.32    %r1476 <- %r1458, %r1408
+	and-bool.32 %r1477 <- %r1473, %r1476
+	seteq.32    %r1480 <- %r1444, %r1408
+	and-bool.32 %r1481 <- %r1477, %r1480
+	seteq.32    %r1484 <- %r1461, %r1408
+	and-bool.32 %r1485 <- %r1481, %r1484
+	and-bool.32 %r1489 <- %r1485, %r1484
+	phisrc.f64  %phi335(F9) <- %r1462
+	phisrc.f64  %phi379(Y1) <- %r1466(Y1)
+	br          %r1489, .L138, .L137
+
+.L138:
+	load.f64    %r1491 <- 0[Half]
+	sub.f64     %r1492 <- %r1466(Y1), %r1491
+	sub.f64     %r1495 <- %r1462, %r1491
+	seteq.32    %r1496 <- %r1492, %r1495
+	phisrc.f64  %phi336(F9) <- %r1462
+	phisrc.f64  %phi380(Y1) <- %r1466(Y1)
+	br          %r1496, .L136, .L137
+
+.L136:
+	store.32    $1 -> 0[RDiv]
+	symaddr.64* %r1497 <- <anon symbol:0x62d0004b4810>
+	push.64*    %r1497
+	call.32     %r1498 <- printf
+	load.32     %r1499 <- 0[GDiv]
+	br          %r1499, .L135, .L139
+
+.L139:
+	symaddr.64* %r1501 <- <anon symbol:0x62d0004b4bb0>
+	push.64*    %r1501
+	call        notify
+	br          .L135
+
+.L137:
+	setlt.32    %r1504 <- %r1433, %r1408
+	setlt.32    %r1507 <- %r1447, %r1408
+	and-bool.32 %r1508 <- %r1504, %r1507
+	setlt.32    %r1511 <- %r1458, %r1408
+	and-bool.32 %r1512 <- %r1508, %r1511
+	setlt.32    %r1515 <- %r1444, %r1408
+	and-bool.32 %r1516 <- %r1512, %r1515
+	setlt.32    %r1519 <- %r1461, %r1408
+	and-bool.32 %r1520 <- %r1516, %r1519
+	br          %r1520, .L144, .L135
+
+.L144:
+	phi.f64     %r1521 <- %phi379(Y1), %phi380(Y1)
+	load.f64    %r1522 <- 0[Half]
+	sub.f64     %r1523 <- %r1521, %r1522
+	phi.f64     %r1524 <- %phi335(F9), %phi336(F9)
+	sub.f64     %r1526 <- %r1524, %r1522
+	setlt.32    %r1527 <- %r1523, %r1526
+	br          %r1527, .L142, .L135
+
+.L142:
+	store.32    $2 -> 0[RDiv]
+	symaddr.64* %r1528 <- <anon symbol:0x62d0004b4f50>
+	push.64*    %r1528
+	call.32     %r1529 <- printf
+	br          .L135
+
+.L135:
+	load.32     %r1530 <- 0[RDiv]
+	br          %r1530, .L146, .L145
+
+.L145:
+	symaddr.64* %r1532 <- <anon symbol:0x62d0004b52f0>
+	push.64*    %r1532
+	call.32     %r1533 <- printf
+	br          .L146
+
+.L146:
+	load.f64    %r1534 <- 0[One]
+	load.f64    %r1535 <- 0[Radix]
+	divu.f64    %r1536 <- %r1534, %r1535
+	store.f64   %r1536 -> 0[BInvrse]
+	push.32     $0
+	mulu.f64    %r1539 <- %r1536, %r1535
+	load.f64    %r1540 <- 0[Half]
+	sub.f64     %r1541 <- %r1539, %r1540
+	seteq.32    %r1543 <- %r1541, %r1540
+	push.32     %r1543
+	symaddr.64* %r1544 <- <anon symbol:0x62d0004b5690>
+	push.64*    %r1544
+	call        TstCond
+	store.32    $50 -> 0[Milestone]
+	push.32     $0
+	load.f64    %r1545 <- 0[F9]
+	load.f64    %r1546 <- 0[U1]
+	add.f64     %r1547 <- %r1545, %r1546
+	load.f64    %r1548 <- 0[Half]
+	sub.f64     %r1549 <- %r1547, %r1548
+	seteq.32    %r1551 <- %r1549, %r1548
+	br          %r1551, .L147, .L148
+
+.L147:
+	load.f64    %r1552 <- 0[BMinusU2]
+	load.f64    %r1553 <- 0[U2]
+	add.f64     %r1554 <- %r1552, %r1553
+	load.f64    %r1555 <- 0[One]
+	sub.f64     %r1556 <- %r1554, %r1555
+	load.f64    %r1557 <- 0[Radix]
+	sub.f64     %r1559 <- %r1557, %r1555
+	seteq.32    %r1560 <- %r1556, %r1559
+	phisrc.32   %phi9 <- %r1560
+	br          .L149
+
+.L148:
+	phisrc.32   %phi10 <- $0
+	br          .L149
+
+.L149:
+	phi.32      %r1561 <- %phi9, %phi10
+	push.32     %r1561
+	symaddr.64* %r1562 <- <anon symbol:0x62d0004b5a30>
+	push.64*    %r1562
+	call        TstCond
+	load.f64    %r1563 <- 0[One]
+	load.f64    %r1564 <- 0[U1]
+	mulu.f64    %r1566 <- %r1564, %r1564
+	sub.f64     %r1567 <- %r1563, %r1566
+	load.f64    %r1569 <- 0[U2]
+	sub.f64     %r1572 <- %r1563, %r1569
+	mulu.f64    %r1573 <- %r1569, %r1572
+	add.f64     %r1574 <- %r1563, %r1573
+	load.f64    %r1575 <- 0[F9]
+	load.f64    %r1576 <- 0[Half]
+	sub.f64     %r1577 <- %r1575, %r1576
+	store.f64   %r1577 -> 0[Z]
+	sub.f64     %r1580 <- %r1567, %r1576
+	sub.f64     %r1582 <- %r1580, %r1577
+	store.f64   %r1582 -> 0[X]
+	sub.f64     %r1585 <- %r1574, %r1563
+	store.f64   %r1585 -> 0[Y]
+	load.f64    %r1587 <- 0[Zero]
+	seteq.32    %r1588 <- %r1582, %r1587
+	seteq.32    %r1591 <- %r1585, %r1587
+	and-bool.32 %r1592 <- %r1588, %r1591
+	phisrc.f64  %phi30(Zero) <- %r1587
+	phisrc.f64  %phi63(One) <- %r1563
+	phisrc.f64  %phi115(Half) <- %r1576
+	phisrc.f64  %phi174(U2) <- %r1569
+	phisrc.f64  %phi260(U1) <- %r1564
+	phisrc.f64  %phi334(F9) <- %r1575
+	phisrc.f64  %phi626 <- %r1575
+	phisrc.f64  %phi627 <- %r1564
+	phisrc.f64  %phi628 <- %r1587
+	phisrc.f64  %phi629 <- %r1563
+	phisrc.f64  %phi630 <- %r1569
+	phisrc.f64  %phi631 <- %r1576
+	phisrc.f64  %phi741 <- %r1575
+	phisrc.f64  %phi742 <- %r1564
+	phisrc.f64  %phi743 <- %r1587
+	phisrc.f64  %phi744 <- %r1563
+	phisrc.f64  %phi745 <- %r1569
+	phisrc.f64  %phi746 <- %r1576
+	phisrc.f64  %phi858 <- %r1575
+	phisrc.f64  %phi859 <- %r1564
+	phisrc.f64  %phi860 <- %r1587
+	phisrc.f64  %phi861 <- %r1563
+	phisrc.f64  %phi862 <- %r1569
+	phisrc.f64  %phi863 <- %r1576
+	phisrc.f64  %phi974 <- %r1575
+	phisrc.f64  %phi975 <- %r1564
+	phisrc.f64  %phi976 <- %r1587
+	phisrc.f64  %phi977 <- %r1563
+	phisrc.f64  %phi978 <- %r1569
+	phisrc.f64  %phi979 <- %r1576
+	phisrc.f64  %phi1089 <- %r1575
+	phisrc.f64  %phi1090 <- %r1564
+	phisrc.f64  %phi1091 <- %r1587
+	phisrc.f64  %phi1092 <- %r1563
+	phisrc.f64  %phi1093 <- %r1569
+	phisrc.f64  %phi1094 <- %r1576
+	phisrc.f64  %phi1204 <- %r1575
+	phisrc.f64  %phi1205 <- %r1564
+	phisrc.f64  %phi1206 <- %r1587
+	phisrc.f64  %phi1207 <- %r1563
+	phisrc.f64  %phi1208 <- %r1569
+	phisrc.f64  %phi1209 <- %r1576
+	br          %r1592, .L150, .L151
+
+.L150:
+	store.32    $2 -> 0[RAddSub]
+	symaddr.64* %r1593 <- <anon symbol:0x62d0004b5dd0>
+	push.64*    %r1593
+	call.32     %r1594 <- printf
+	br          .L151
+
+.L151:
+	load.32     %r1595 <- 0[GAddSub]
+	seteq.32    %r1596 <- %r1595, $1
+	br          %r1596, .L152, .L153
+
+.L152:
+	load.f64    %r1597 <- 0[Half]
+	load.f64    %r1598 <- 0[U2]
+	add.f64     %r1599 <- %r1597, %r1598
+	mulu.f64    %r1601 <- %r1599, %r1598
+	sub.f64     %r1604 <- %r1597, %r1598
+	mulu.f64    %r1606 <- %r1604, %r1598
+	load.f64    %r1607 <- 0[One]
+	add.f64     %r1609 <- %r1607, %r1601
+	add.f64     %r1612 <- %r1607, %r1606
+	add.f64     %r1615 <- %r1607, %r1598
+	sub.f64     %r1617 <- %r1615, %r1609
+	store.f64   %r1617 -> 0[X]
+	sub.f64     %r1620 <- %r1607, %r1612
+	store.f64   %r1620 -> 0[Y]
+	load.f64    %r1622 <- 0[Zero]
+	seteq.32    %r1623 <- %r1617, %r1622
+	seteq.32    %r1626 <- %r1620, %r1622
+	and-bool.32 %r1627 <- %r1623, %r1626
+	br          %r1627, .L154, .L155
+
+.L154:
+	load.f64    %r1631 <- 0[U1]
+	mulu.f64    %r1632 <- %r1599, %r1631
+	mulu.f64    %r1637 <- %r1604, %r1631
+	sub.f64     %r1640 <- %r1607, %r1632
+	sub.f64     %r1643 <- %r1607, %r1637
+	load.f64    %r1644 <- 0[F9]
+	sub.f64     %r1646 <- %r1644, %r1640
+	store.f64   %r1646 -> 0[X]
+	sub.f64     %r1649 <- %r1607, %r1643
+	store.f64   %r1649 -> 0[Y]
+	seteq.32    %r1652 <- %r1646, %r1622
+	seteq.32    %r1655 <- %r1649, %r1622
+	and-bool.32 %r1656 <- %r1652, %r1655
+	br          %r1656, .L156, .L157
+
+.L156:
+	store.32    $1 -> 0[RAddSub]
+	symaddr.64* %r1657 <- <anon symbol:0x62d0004b6170>
+	push.64*    %r1657
+	call.32     %r1658 <- printf
+	load.32     %r1659 <- 0[GAddSub]
+	phisrc.32   %phi406(GAddSub) <- %r1659
+	phisrc.32   %phi624 <- %r1659
+	phisrc.32   %phi739 <- %r1659
+	br          %r1659, .L162, .L158
+
+.L158:
+	symaddr.64* %r1661 <- <anon symbol:0x62d0004b6510>
+	push.64*    %r1661
+	call        notify
+	br          .L162
+
+.L157:
+	symaddr.64* %r1662 <- <anon symbol:0x62d0004b68b0>
+	push.64*    %r1662
+	call.32     %r1663 <- printf
+	br          .L162
+
+.L155:
+	symaddr.64* %r1664 <- <anon symbol:0x62d0004b6c50>
+	push.64*    %r1664
+	call.32     %r1665 <- printf
+	br          .L162
+
+.L153:
+	symaddr.64* %r1666 <- <anon symbol:0x62d0004b6ff0>
+	push.64*    %r1666
+	call.32     %r1667 <- printf
+	br          .L162
+
+.L162:
+	load.f64    %r1668 <- 0[One]
+	store.f64   %r1668 -> 0[S]
+	load.f64    %r1670 <- 0[Half]
+	add.f64     %r1673 <- %r1668, %r1670
+	mulu.f64    %r1674 <- %r1670, %r1673
+	add.f64     %r1675 <- %r1668, %r1674
+	store.f64   %r1675 -> 0[X]
+	load.f64    %r1677 <- 0[U2]
+	add.f64     %r1678 <- %r1668, %r1677
+	mulu.f64    %r1680 <- %r1678, %r1670
+	store.f64   %r1680 -> 0[Y]
+	sub.f64     %r1683 <- %r1675, %r1680
+	store.f64   %r1683 -> 0[Z]
+	sub.f64     %r1686 <- %r1680, %r1675
+	store.f64   %r1686 -> 0[T]
+	add.f64     %r1689 <- %r1683, %r1686
+	store.f64   %r1689 -> 0[StickyBit]
+	load.f64    %r1691(Zero) <- 0[Zero]
+	setne.32    %r1692 <- %r1689, %r1691(Zero)
+	phisrc.f64  %phi27(Zero) <- %r1691(Zero)
+	phisrc.f64  %phi625(Zero) <- %r1691(Zero)
+	phisrc.f64  %phi740(Zero) <- %r1691(Zero)
+	phisrc.f64  %phi857(Zero) <- %r1691(Zero)
+	phisrc.f64  %phi973(Zero) <- %r1691(Zero)
+	phisrc.f64  %phi1088(Zero) <- %r1691(Zero)
+	phisrc.f64  %phi1203(Zero) <- %r1691(Zero)
+	br          %r1692, .L163, .L164
+
+.L163:
+	store.f64   %r1691(Zero) -> 0[S]
+	push.32     $3
+	symaddr.64* %r1694 <- <anon symbol:0x62d0004b7390>
+	push.64*    %r1694
+	call        BadCond
+	br          .L164
+
+.L164:
+	load.f64    %r1695 <- 0[Zero]
+	store.f64   %r1695 -> 0[StickyBit]
+	load.32     %r1696 <- 0[GMult]
+	seteq.32    %r1697 <- %r1696, $1
+	load.32     %r1698 <- 0[GDiv]
+	seteq.32    %r1699 <- %r1698, $1
+	and-bool.32 %r1700 <- %r1697, %r1699
+	load.32     %r1701 <- 0[GAddSub]
+	seteq.32    %r1702 <- %r1701, $1
+	and-bool.32 %r1703 <- %r1700, %r1702
+	load.32     %r1704 <- 0[RMult]
+	seteq.32    %r1705 <- %r1704, $1
+	and-bool.32 %r1706 <- %r1703, %r1705
+	load.32     %r1707 <- 0[RDiv]
+	seteq.32    %r1708 <- %r1707, $1
+	and-bool.32 %r1709 <- %r1706, %r1708
+	load.32     %r1710 <- 0[RAddSub]
+	seteq.32    %r1711 <- %r1710, $1
+	and-bool.32 %r1712 <- %r1709, %r1711
+	load.f64    %r1713 <- 0[RadixD2]
+	push.f64    %r1713
+	call.f64    %r1714 <- floor
+	load.f64    %r1715 <- 0[RadixD2]
+	seteq.32    %r1716 <- %r1714, %r1715
+	and-bool.32 %r1717 <- %r1712, %r1716
+	br          %r1717, .L165, .L166
+
+.L165:
+	symaddr.64* %r1718 <- <anon symbol:0x62d0004b7730>
+	push.64*    %r1718
+	call.32     %r1719 <- printf
+	load.f64    %r1720 <- 0[Half]
+	load.f64    %r1721(U1) <- 0[U1]
+	add.f64     %r1722 <- %r1720, %r1721(U1)
+	load.f64    %r1723 <- 0[U2]
+	mulu.f64    %r1724 <- %r1722, %r1723
+	store.f64   %r1724 -> 0[X]
+	mulu.f64    %r1727 <- %r1720, %r1723
+	store.f64   %r1727 -> 0[Y]
+	load.f64    %r1728 <- 0[One]
+	add.f64     %r1730 <- %r1728, %r1727
+	store.f64   %r1730 -> 0[Z]
+	add.f64     %r1733 <- %r1728, %r1724
+	store.f64   %r1733 -> 0[T]
+	sub.f64     %r1736 <- %r1730, %r1728
+	load.f64    %r1737(Zero) <- 0[Zero]
+	setle.32    %r1738 <- %r1736, %r1737(Zero)
+	sub.f64     %r1741 <- %r1733, %r1728
+	setge.32    %r1743 <- %r1741, %r1723
+	and-bool.32 %r1744 <- %r1738, %r1743
+	br          %r1744, .L167, .L166
+
+.L167:
+	add.f64     %r1747 <- %r1733, %r1727
+	store.f64   %r1747 -> 0[Z]
+	sub.f64     %r1750 <- %r1747, %r1724
+	store.f64   %r1750 -> 0[Y]
+	sub.f64     %r1753 <- %r1747, %r1733
+	setge.32    %r1755 <- %r1753, %r1723
+	sub.f64     %r1758 <- %r1750, %r1733
+	seteq.32    %r1760 <- %r1758, %r1737(Zero)
+	and-bool.32 %r1761 <- %r1755, %r1760
+	br          %r1761, .L169, .L166
+
+.L169:
+	mulu.f64    %r1766 <- %r1722, %r1721(U1)
+	store.f64   %r1766 -> 0[X]
+	mulu.f64    %r1769 <- %r1720, %r1721(U1)
+	store.f64   %r1769 -> 0[Y]
+	sub.f64     %r1772 <- %r1728, %r1769
+	store.f64   %r1772 -> 0[Z]
+	sub.f64     %r1775 <- %r1728, %r1766
+	store.f64   %r1775 -> 0[T]
+	sub.f64     %r1778 <- %r1772, %r1728
+	seteq.32    %r1780 <- %r1778, %r1737(Zero)
+	load.f64    %r1782(F9) <- 0[F9]
+	sub.f64     %r1783 <- %r1775, %r1782(F9)
+	seteq.32    %r1785 <- %r1783, %r1737(Zero)
+	and-bool.32 %r1786 <- %r1780, %r1785
+	br          %r1786, .L171, .L166
+
+.L171:
+	sub.f64     %r1789 <- %r1720, %r1721(U1)
+	mulu.f64    %r1791 <- %r1789, %r1721(U1)
+	store.f64   %r1791 -> 0[Z]
+	sub.f64     %r1794 <- %r1782(F9), %r1791
+	store.f64   %r1794 -> 0[T]
+	sub.f64     %r1797(Q) <- %r1782(F9), %r1769
+	store.f64   %r1797(Q) -> 0[Q]
+	sub.f64     %r1800 <- %r1794, %r1782(F9)
+	seteq.32    %r1802 <- %r1800, %r1737(Zero)
+	br          %r1802, .L175, .L166
+
+.L175:
+	sub.f64     %r1805 <- %r1782(F9), %r1721(U1)
+	sub.f64     %r1807 <- %r1805, %r1797(Q)
+	seteq.32    %r1809 <- %r1807, %r1737(Zero)
+	br          %r1809, .L173, .L166
+
+.L173:
+	add.f64     %r1812 <- %r1728, %r1723
+	load.f64    %r1813 <- 0[OneAndHalf]
+	mulu.f64    %r1814 <- %r1812, %r1813
+	add.f64     %r1817 <- %r1813, %r1723
+	sub.f64     %r1819 <- %r1817, %r1814
+	add.f64     %r1821 <- %r1819, %r1723
+	store.f64   %r1821 -> 0[T]
+	load.f64    %r1824 <- 0[Radix]
+	divu.f64    %r1825 <- %r1720, %r1824
+	add.f64     %r1826 <- %r1728, %r1825
+	store.f64   %r1826 -> 0[X]
+	mulu.f64    %r1830 <- %r1824, %r1723
+	add.f64     %r1831 <- %r1728, %r1830
+	store.f64   %r1831 -> 0[Y]
+	mulu.f64    %r1834(Z) <- %r1826, %r1831
+	store.f64   %r1834(Z) -> 0[Z]
+	seteq.32    %r1837 <- %r1821, %r1737(Zero)
+	br          %r1837, .L178, .L166
+
+.L178:
+	add.f64     %r1842 <- %r1826, %r1830
+	sub.f64     %r1844 <- %r1842, %r1834(Z)
+	seteq.32    %r1846 <- %r1844, %r1737(Zero)
+	br          %r1846, .L176, .L166
+
+.L176:
+	load.f64    %r1848(Two) <- 0[Two]
+	setne.32    %r1849 <- %r1824, %r1848(Two)
+	br          %r1849, .L179, .L180
+
+.L179:
+	add.f64     %r1852 <- %r1848(Two), %r1723
+	store.f64   %r1852 -> 0[X]
+	divu.f64    %r1855 <- %r1852, %r1848(Two)
+	store.f64   %r1855 -> 0[Y]
+	sub.f64     %r1858 <- %r1855, %r1728
+	seteq.32    %r1860 <- %r1858, %r1737(Zero)
+	br          %r1860, .L181, .L166
+
+.L181:
+	load.f64    %r1861 <- 0[S]
+	store.f64   %r1861 -> 0[StickyBit]
+	br          .L166
+
+.L180:
+	load.f64    %r1862 <- 0[S]
+	store.f64   %r1862 -> 0[StickyBit]
+	br          .L166
+
+.L166:
+	load.f64    %r1863 <- 0[StickyBit]
+	load.f64    %r1864 <- 0[One]
+	seteq.32    %r1865 <- %r1863, %r1864
+	br          %r1865, .L184, .L185
+
+.L184:
+	symaddr.64* %r1866 <- <anon symbol:0x62d0004b7ad0>
+	push.64*    %r1866
+	call.32     %r1867 <- printf
+	br          .L186
+
+.L185:
+	symaddr.64* %r1868 <- <anon symbol:0x62d0004b7e70>
+	push.64*    %r1868
+	call.32     %r1869 <- printf
+	br          .L186
+
+.L186:
+	push.32     $3
+	load.32     %r1870 <- 0[GMult]
+	seteq.32    %r1871 <- %r1870, $0
+	load.32     %r1872 <- 0[GDiv]
+	seteq.32    %r1873 <- %r1872, $0
+	or-bool.32  %r1874 <- %r1871, %r1873
+	load.32     %r1875 <- 0[GAddSub]
+	seteq.32    %r1876 <- %r1875, $0
+	or-bool.32  %r1877 <- %r1874, %r1876
+	load.32     %r1878 <- 0[RMult]
+	seteq.32    %r1879 <- %r1878, $0
+	or-bool.32  %r1880 <- %r1877, %r1879
+	load.32     %r1881 <- 0[RDiv]
+	seteq.32    %r1882 <- %r1881, $0
+	or-bool.32  %r1883 <- %r1880, %r1882
+	load.32     %r1884 <- 0[RAddSub]
+	seteq.32    %r1885 <- %r1884, $0
+	or-bool.32  %r1886 <- %r1883, %r1885
+	seteq.32    %r1887 <- %r1886, $0
+	push.32     %r1887
+	symaddr.64* %r1888 <- <anon symbol:0x62d0004b8210>
+	push.64*    %r1888
+	call        TstCond
+	store.32    $60 -> 0[Milestone]
+	symaddr.64* %r1889 <- <anon symbol:0x62d0004ce5e8>
+	push.64*    %r1889
+	call.32     %r1890 <- printf
+	symaddr.64* %r1891 <- <anon symbol:0x62d0004ce988>
+	push.64*    %r1891
+	call.32     %r1892 <- printf
+	symaddr.64* %r1893 <- <anon symbol:0x62d0004ced28>
+	push.64*    %r1893
+	push.32     $20
+	call.32     %r1894 <- printf
+	set.f64     %r1895 <- 3.000000
+	push.f64    %r1895
+	call.f64    %r1896 <- sqrt
+	store.f64   %r1896 -> 0[Random9]
+	load.f64    %r1897 <- 0[Third]
+	store.f64   %r1897 -> 0[Random1]
+	store.32    $1 -> 0[I]
+	br          .L187
+
+.L187:
+	call.f64    %r1898 <- Random
+	store.f64   %r1898 -> 0[X]
+	call.f64    %r1899 <- Random
+	store.f64   %r1899 -> 0[Y]
+	load.f64    %r1901 <- 0[X]
+	mulu.f64    %r1902 <- %r1899, %r1901
+	mulu.f64    %r1905 <- %r1901, %r1899
+	store.f64   %r1905 -> 0[Z]
+	sub.f64     %r1908(Z9) <- %r1905, %r1902
+	store.f64   %r1908(Z9) -> 0[Z9]
+	load.32     %r1909 <- 0[I]
+	add.32      %r1910(I) <- %r1909, $1
+	store.32    %r1910(I) -> 0[I]
+	setgt.32    %r1912 <- %r1910(I), $20
+	load.f64    %r1914(Zero) <- 0[Zero]
+	setne.32    %r1915 <- %r1908(Z9), %r1914(Zero)
+	or-bool.32  %r1916 <- %r1912, %r1915
+	phisrc.f64  %phi430(Z9) <- %r1908(Z9)
+	br          %r1916, .L189, .L187
+
+.L189:
+	seteq.32    %r1918 <- %r1910(I), $20
+	br          %r1918, .L190, .L191
+
+.L190:
+	load.f64    %r1919 <- 0[One]
+	load.f64    %r1920 <- 0[Half]
+	load.f64    %r1921 <- 0[Three]
+	divu.f64    %r1922 <- %r1920, %r1921
+	add.f64     %r1923 <- %r1919, %r1922
+	store.f64   %r1923 -> 0[Random1]
+	load.f64    %r1924 <- 0[U2]
+	load.f64    %r1925 <- 0[U1]
+	add.f64     %r1926 <- %r1924, %r1925
+	add.f64     %r1928 <- %r1926, %r1919
+	store.f64   %r1928 -> 0[Random2]
+	mulu.f64    %r1931 <- %r1923, %r1928
+	store.f64   %r1931 -> 0[Z]
+	mulu.f64    %r1934 <- %r1928, %r1923
+	store.f64   %r1934 -> 0[Y]
+	sub.f64     %r1957 <- %r1931, %r1931
+	store.f64   %r1957 -> 0[Z9]
+	phisrc.f64  %phi431(Z9) <- %r1957
+	br          .L191
+
+.L191:
+	phi.f64     %r1960 <- %phi430(Z9), %phi431(Z9)
+	seteq.32    %r1962 <- %r1960, %r1914(Zero)
+	or-bool.32  %r1963 <- %r1918, %r1962
+	br          %r1963, .L193, .L192
+
+.L192:
+	push.32     $2
+	symaddr.64* %r1964 <- <anon symbol:0x62d0004cf0c8>
+	push.64*    %r1964
+	call        BadCond
+	br          .L194
+
+.L193:
+	symaddr.64* %r1965 <- <anon symbol:0x62d0004cf468>
+	push.64*    %r1965
+	push.32     $20
+	call.32     %r1966 <- printf
+	br          .L194
+
+.L194:
+	store.32    $70 -> 0[Milestone]
+	symaddr.64* %r1967 <- <anon symbol:0x62d0004cf808>
+	push.64*    %r1967
+	call.32     %r1968 <- printf
+	push.32     $0
+	load.f64    %r1969 <- 0[Zero]
+	push.f64    %r1969
+	call.f64    %r1971 <- sqrt
+	seteq.32    %r1972 <- %r1969, %r1971
+	br          %r1972, .L198, .L196
+
+.L198:
+	load.f64    %r1973 <- 0[Zero]
+	neg.f64     %r1974 <- %r1973
+	push.f64    %r1974
+	call.f64    %r1977 <- sqrt
+	seteq.32    %r1978 <- %r1974, %r1977
+	br          %r1978, .L195, .L196
+
+.L195:
+	load.f64    %r1979 <- 0[One]
+	push.f64    %r1979
+	call.f64    %r1981 <- sqrt
+	seteq.32    %r1982 <- %r1979, %r1981
+	phisrc.32   %phi11 <- %r1982
+	br          .L197
+
+.L196:
+	phisrc.32   %phi12 <- $0
+	br          .L197
+
+.L197:
+	phi.32      %r1983 <- %phi11, %phi12
+	push.32     %r1983
+	symaddr.64* %r1984 <- <anon symbol:0x62d0004cfba8>
+	push.64*    %r1984
+	call        TstCond
+	load.f64    %r1985 <- 0[Zero]
+	store.f64   %r1985 -> 0[MinSqEr]
+	store.f64   %r1985 -> 0[MaxSqEr]
+	store.f64   %r1985 -> 0[J]
+	load.f64    %r1988 <- 0[Radix]
+	store.f64   %r1988 -> 0[X]
+	load.f64    %r1989 <- 0[U2]
+	store.f64   %r1989 -> 0[OneUlp]
+	push.32     $1
+	call        SqXMinX
+	load.f64    %r1990 <- 0[BInvrse]
+	store.f64   %r1990 -> 0[X]
+	load.f64    %r1992 <- 0[U1]
+	mulu.f64    %r1993 <- %r1990, %r1992
+	store.f64   %r1993 -> 0[OneUlp]
+	push.32     $1
+	call        SqXMinX
+	load.f64    %r1994 <- 0[U1]
+	store.f64   %r1994 -> 0[X]
+	mulu.f64    %r1997 <- %r1994, %r1994
+	store.f64   %r1997 -> 0[OneUlp]
+	push.32     $1
+	call        SqXMinX
+	load.f64    %r1998 <- 0[J]
+	load.f64    %r1999 <- 0[Zero]
+	setne.32    %r2000 <- %r1998, %r1999
+	br          %r2000, .L199, .L200
+
+.L199:
+	call        Pause
+	br          .L200
+
+.L200:
+	symaddr.64* %r2001 <- <anon symbol:0x62d0004cff48>
+	push.64*    %r2001
+	push.32     $20
+	call.32     %r2002 <- printf
+	load.f64    %r2003 <- 0[Zero]
+	store.f64   %r2003 -> 0[J]
+	load.f64    %r2004(X) <- 0[Two]
+	store.f64   %r2004(X) -> 0[X]
+	load.f64    %r2005(Y) <- 0[Radix]
+	store.f64   %r2005(Y) -> 0[Y]
+	load.f64    %r2007 <- 0[One]
+	setne.32    %r2008 <- %r2005(Y), %r2007
+	phisrc.f64  %phi58(One) <- %r2007
+	phisrc.f64  %phi238(Y) <- %r2005(Y)
+	phisrc.f64  %phi306(X) <- %r2004(X)
+	phisrc.f64  %phi620 <- %r2007
+	phisrc.f64  %phi621 <- %r2007
+	phisrc.f64  %phi622(X) <- %r2004(X)
+	phisrc.f64  %phi735 <- %r2007
+	phisrc.f64  %phi736 <- %r2007
+	phisrc.f64  %phi737(X) <- %r2004(X)
+	phisrc.f64  %phi853 <- %r2007
+	phisrc.f64  %phi854 <- %r2007
+	phisrc.f64  %phi855(X) <- %r2004(X)
+	phisrc.f64  %phi969 <- %r2007
+	phisrc.f64  %phi970 <- %r2007
+	phisrc.f64  %phi971(X) <- %r2004(X)
+	phisrc.f64  %phi1084 <- %r2007
+	phisrc.f64  %phi1085 <- %r2007
+	phisrc.f64  %phi1086(X) <- %r2004(X)
+	phisrc.f64  %phi1199 <- %r2007
+	phisrc.f64  %phi1200 <- %r2007
+	phisrc.f64  %phi1201(X) <- %r2004(X)
+	br          %r2008, .L203, .L202
+
+.L203:
+	phi.f64     %r2009(X) <- %phi238(Y), %phi239(Y)
+	store.f64   %r2009(X) -> 0[X]
+	mulu.f64    %r2012(Y) <- %r2005(Y), %r2009(X)
+	store.f64   %r2012(Y) -> 0[Y]
+	phisrc.f64  %phi239(Y) <- %r2012(Y)
+	phisrc.f64  %phi623(X) <- %r2009(X)
+	phisrc.f64  %phi738(X) <- %r2009(X)
+	sub.f64     %r2015 <- %r2012(Y), %r2009(X)
+	set.f64     %r2016 <- 20.000000
+	setge.32    %r2017 <- %r2015, %r2016
+	phisrc.f64  %phi307(X) <- %r2009(X)
+	phisrc.f64  %phi856(X) <- %r2009(X)
+	phisrc.f64  %phi972(X) <- %r2009(X)
+	phisrc.f64  %phi1087(X) <- %r2009(X)
+	phisrc.f64  %phi1202(X) <- %r2009(X)
+	br          %r2017, .L202, .L203
+
+.L202:
+	phi.f64     %r2018 <- %phi306(X), %phi307(X)
+	load.f64    %r2019 <- 0[U2]
+	mulu.f64    %r2020 <- %r2018, %r2019
+	store.f64   %r2020 -> 0[OneUlp]
+	store.32    $1 -> 0[I]
+	phisrc.f64  %phi305(X) <- %r2018
+	phisrc.32   %phi352(I) <- $1
+	br          .L209
+
+.L209:
+	phi.32      %r2021 <- %phi352(I), %phi353(I)
+	setle.32    %r2022 <- %r2021, $20
+	br          %r2022, .L206, .L208
+
+.L206:
+	load.f64    %r2023 <- 0[X]
+	load.f64    %r2024 <- 0[One]
+	add.f64     %r2025 <- %r2023, %r2024
+	store.f64   %r2025 -> 0[X]
+	push.32     $2
+	call        SqXMinX
+	load.f64    %r2026 <- 0[J]
+	load.f64    %r2027 <- 0[Zero]
+	setgt.32    %r2028 <- %r2026, %r2027
+	br          %r2028, .L208, .L211
+
+.L211:
+	load.32     %r2029 <- 0[I]
+	add.32      %r2030 <- %r2029, $1
+	store.32    %r2030 -> 0[I]
+	phisrc.32   %phi353(I) <- %r2030
+	br          .L209
+
+.L208:
+	symaddr.64* %r2031 <- <anon symbol:0x62d0004d02e8>
+	push.64*    %r2031
+	call.32     %r2032 <- printf
+	store.32    $0xffffffff -> 0[I]
+	load.f64    %r2033 <- 0[BMinusU2]
+	store.f64   %r2033 -> 0[X]
+	load.f64    %r2034 <- 0[Radix]
+	store.f64   %r2034 -> 0[Y]
+	load.f64    %r2037 <- 0[U2]
+	mulu.f64    %r2038 <- %r2034, %r2037
+	add.f64     %r2039 <- %r2034, %r2038
+	store.f64   %r2039 -> 0[Z]
+	store.32    $0 -> 0[NotMonot]
+	store.32    $0 -> 0[Monot]
+	phisrc.f64  %phi303(X) <- %r2033
+	phisrc.32   %phi351(I) <- $0xffffffff
+	phisrc.32   %phi440(NotMonot) <- $0
+	phisrc.32   %phi443(Monot) <- $0
+	phisrc.f64  %phi614 <- %r2033
+	phisrc.32   %phi616 <- $0xffffffff
+	phisrc.32   %phi617(i) <- $0
+	phisrc.32   %phi618(i) <- $0
+	phisrc.f64  %phi729 <- %r2033
+	phisrc.32   %phi731 <- $0xffffffff
+	phisrc.32   %phi732(i) <- $0
+	phisrc.32   %phi733(i) <- $0
+	phisrc.f64  %phi847 <- %r2033
+	phisrc.32   %phi849 <- $0xffffffff
+	phisrc.32   %phi850(i) <- $0
+	phisrc.32   %phi851(i) <- $0
+	phisrc.f64  %phi963 <- %r2033
+	phisrc.32   %phi965 <- $0xffffffff
+	phisrc.32   %phi966(i) <- $0
+	phisrc.32   %phi967(i) <- $0
+	phisrc.f64  %phi1078 <- %r2033
+	phisrc.32   %phi1080 <- $0xffffffff
+	phisrc.32   %phi1081(i) <- $0
+	phisrc.32   %phi1082(i) <- $0
+	phisrc.f64  %phi1193 <- %r2033
+	phisrc.32   %phi1195 <- $0xffffffff
+	phisrc.32   %phi1196(i) <- $0
+	phisrc.32   %phi1197(i) <- $0
+	br          .L215
+
+.L215:
+	load.32     %r2040 <- 0[NotMonot]
+	load.32     %r2041(Monot) <- 0[Monot]
+	or-bool.32  %r2042 <- %r2040, %r2041(Monot)
+	br          %r2042, .L214, .L212
+
+.L212:
+	load.32     %r2043 <- 0[I]
+	add.32      %r2044 <- %r2043, $1
+	store.32    %r2044 -> 0[I]
+	load.f64    %r2045 <- 0[X]
+	push.f64    %r2045
+	call.f64    %r2046 <- sqrt
+	store.f64   %r2046 -> 0[X]
+	load.f64    %r2047 <- 0[Y]
+	push.f64    %r2047
+	call.f64    %r2048 <- sqrt
+	store.f64   %r2048 -> 0[Q]
+	load.f64    %r2049 <- 0[Z]
+	push.f64    %r2049
+	call.f64    %r2050 <- sqrt
+	store.f64   %r2050 -> 0[Z]
+	load.f64    %r2051 <- 0[X]
+	load.f64    %r2052 <- 0[Q]
+	setgt.32    %r2053 <- %r2051, %r2052
+	setgt.32    %r2056 <- %r2052, %r2050
+	or-bool.32  %r2057 <- %r2053, %r2056
+	phisrc.f64  %phi304(X) <- %r2051
+	phisrc.f64  %phi615 <- %r2051
+	phisrc.f64  %phi730 <- %r2051
+	phisrc.f64  %phi848 <- %r2051
+	phisrc.f64  %phi964 <- %r2051
+	phisrc.f64  %phi1079 <- %r2051
+	phisrc.f64  %phi1194 <- %r2051
+	br          %r2057, .L216, .L217
+
+.L216:
+	store.32    $1 -> 0[NotMonot]
+	phisrc.32   %phi441(NotMonot) <- $1
+	phisrc.32   %phi619(I) <- $1
+	phisrc.32   %phi734(I) <- $1
+	phisrc.32   %phi852(I) <- $1
+	phisrc.32   %phi968(I) <- $1
+	phisrc.32   %phi1083(I) <- $1
+	phisrc.32   %phi1198(I) <- $1
+	br          .L215
+
+.L217:
+	load.f64    %r2059 <- 0[Half]
+	add.f64     %r2060 <- %r2052, %r2059
+	push.f64    %r2060
+	call.f64    %r2061 <- floor
+	store.f64   %r2061 -> 0[Q]
+	load.32     %r2062(I) <- 0[I]
+	setgt.32    %r2063 <- %r2062(I), $0
+	load.f64    %r2064 <- 0[Radix]
+	mulu.f64    %r2067 <- %r2061, %r2061
+	seteq.32    %r2068 <- %r2064, %r2067
+	or-bool.32  %r2069 <- %r2063, %r2068
+	br          %r2069, .L220, .L219
+
+.L219:
+	store.32    $1 -> 0[Monot]
+	br          .L215
+
+.L220:
+	br          %r2063, .L222, .L223
+
+.L222:
+	setgt.32    %r2073 <- %r2062(I), $1
+	br          %r2073, .L224, .L225
+
+.L224:
+	store.32    $1 -> 0[Monot]
+	br          .L215
+
+.L225:
+	load.f64    %r2074 <- 0[Y]
+	load.f64    %r2075 <- 0[BInvrse]
+	mulu.f64    %r2076 <- %r2074, %r2075
+	store.f64   %r2076 -> 0[Y]
+	load.f64    %r2078 <- 0[U1]
+	sub.f64     %r2079 <- %r2076, %r2078
+	store.f64   %r2079 -> 0[X]
+	add.f64     %r2082 <- %r2076, %r2078
+	store.f64   %r2082 -> 0[Z]
+	br          .L215
+
+.L223:
+	store.f64   %r2061 -> 0[Y]
+	load.f64    %r2085 <- 0[U2]
+	sub.f64     %r2086 <- %r2061, %r2085
+	store.f64   %r2086 -> 0[X]
+	add.f64     %r2089 <- %r2061, %r2085
+	store.f64   %r2089 -> 0[Z]
+	br          .L215
+
+.L214:
+	br          %r2041(Monot), .L228, .L229
+
+.L228:
+	symaddr.64* %r2091 <- <anon symbol:0x62d0004d0688>
+	push.64*    %r2091
+	call.32     %r2092 <- printf
+	br          .L230
+
+.L229:
+	push.32     $2
+	symaddr.64* %r2093 <- <anon symbol:0x62d0004d0a28>
+	push.64*    %r2093
+	call        BadCond
+	symaddr.64* %r2094 <- <anon symbol:0x62d0004d0dc8>
+	push.64*    %r2094
+	load.f64    %r2095 <- 0[Y]
+	push.f64    %r2095
+	call.32     %r2096 <- printf
+	br          .L230
+
+.L230:
+	store.32    $80 -> 0[Milestone]
+	load.f64    %r2097 <- 0[MinSqEr]
+	load.f64    %r2098 <- 0[Half]
+	add.f64     %r2099 <- %r2097, %r2098
+	store.f64   %r2099 -> 0[MinSqEr]
+	load.f64    %r2100 <- 0[MaxSqEr]
+	sub.f64     %r2102 <- %r2100, %r2098
+	store.f64   %r2102 -> 0[MaxSqEr]
+	load.f64    %r2103 <- 0[One]
+	load.f64    %r2104 <- 0[U2]
+	add.f64     %r2105 <- %r2103, %r2104
+	push.f64    %r2105
+	call.f64    %r2106 <- sqrt
+	load.f64    %r2107 <- 0[One]
+	sub.f64     %r2108 <- %r2106, %r2107
+	load.f64    %r2109 <- 0[U2]
+	divu.f64    %r2110 <- %r2108, %r2109
+	store.f64   %r2110 -> 0[Y]
+	sub.f64     %r2113 <- %r2110, %r2107
+	load.f64    %r2115(Eight) <- 0[Eight]
+	divu.f64    %r2116 <- %r2109, %r2115(Eight)
+	add.f64     %r2117 <- %r2113, %r2116
+	store.f64   %r2117 -> 0[SqEr]
+	load.f64    %r2119 <- 0[MaxSqEr]
+	setgt.32    %r2120 <- %r2117, %r2119
+	br          %r2120, .L231, .L232
+
+.L231:
+	store.f64   %r2117 -> 0[MaxSqEr]
+	br          .L232
+
+.L232:
+	add.f64     %r2126 <- %r2110, %r2116
+	store.f64   %r2126 -> 0[SqEr]
+	load.f64    %r2128 <- 0[MinSqEr]
+	setlt.32    %r2129 <- %r2126, %r2128
+	br          %r2129, .L233, .L234
+
+.L233:
+	store.f64   %r2126 -> 0[MinSqEr]
+	br          .L234
+
+.L234:
+	load.f64    %r2131 <- 0[F9]
+	push.f64    %r2131
+	call.f64    %r2132 <- sqrt
+	load.f64    %r2133 <- 0[U2]
+	sub.f64     %r2134 <- %r2132, %r2133
+	load.f64    %r2135(One) <- 0[One]
+	sub.f64     %r2137 <- %r2135(One), %r2133
+	sub.f64     %r2138 <- %r2134, %r2137
+	load.f64    %r2139 <- 0[U1]
+	divu.f64    %r2140 <- %r2138, %r2139
+	store.f64   %r2140 -> 0[Y]
+	load.f64    %r2143(Eight) <- 0[Eight]
+	divu.f64    %r2144 <- %r2139, %r2143(Eight)
+	add.f64     %r2145 <- %r2140, %r2144
+	store.f64   %r2145 -> 0[SqEr]
+	load.f64    %r2147 <- 0[MaxSqEr]
+	setgt.32    %r2148 <- %r2145, %r2147
+	phisrc.f64  %phi437(MaxSqEr) <- %r2147
+	phisrc.f64  %phi582 <- %r2133
+	phisrc.f64  %phi583 <- %r2133
+	phisrc.f64  %phi584 <- %r2147
+	phisrc.f64  %phi610(One) <- %r2135(One)
+	phisrc.f64  %phi611(One) <- %r2135(One)
+	phisrc.f64  %phi612 <- %r2139
+	phisrc.f64  %phi613 <- %r2139
+	phisrc.f64  %phi697 <- %r2133
+	phisrc.f64  %phi698 <- %r2133
+	phisrc.f64  %phi699 <- %r2147
+	phisrc.f64  %phi725(One) <- %r2135(One)
+	phisrc.f64  %phi726(One) <- %r2135(One)
+	phisrc.f64  %phi727 <- %r2139
+	phisrc.f64  %phi728 <- %r2139
+	phisrc.f64  %phi815 <- %r2133
+	phisrc.f64  %phi816 <- %r2133
+	phisrc.f64  %phi817 <- %r2147
+	phisrc.f64  %phi843(One) <- %r2135(One)
+	phisrc.f64  %phi844(One) <- %r2135(One)
+	phisrc.f64  %phi845 <- %r2139
+	phisrc.f64  %phi846 <- %r2139
+	phisrc.f64  %phi931 <- %r2133
+	phisrc.f64  %phi932 <- %r2133
+	phisrc.f64  %phi933 <- %r2147
+	phisrc.f64  %phi959(One) <- %r2135(One)
+	phisrc.f64  %phi960(One) <- %r2135(One)
+	phisrc.f64  %phi961 <- %r2139
+	phisrc.f64  %phi962 <- %r2139
+	phisrc.f64  %phi1046 <- %r2133
+	phisrc.f64  %phi1047 <- %r2133
+	phisrc.f64  %phi1048 <- %r2147
+	phisrc.f64  %phi1074(One) <- %r2135(One)
+	phisrc.f64  %phi1075(One) <- %r2135(One)
+	phisrc.f64  %phi1076 <- %r2139
+	phisrc.f64  %phi1077 <- %r2139
+	phisrc.f64  %phi1161 <- %r2133
+	phisrc.f64  %phi1162 <- %r2133
+	phisrc.f64  %phi1163 <- %r2147
+	phisrc.f64  %phi1189(One) <- %r2135(One)
+	phisrc.f64  %phi1190(One) <- %r2135(One)
+	phisrc.f64  %phi1191 <- %r2139
+	phisrc.f64  %phi1192 <- %r2139
+	br          %r2148, .L235, .L236
+
+.L235:
+	store.f64   %r2145 -> 0[MaxSqEr]
+	phisrc.f64  %phi438(MaxSqEr) <- %r2145
+	phisrc.f64  %phi585 <- %r2145
+	phisrc.f64  %phi700 <- %r2145
+	phisrc.f64  %phi818 <- %r2145
+	phisrc.f64  %phi934 <- %r2145
+	phisrc.f64  %phi1049 <- %r2145
+	phisrc.f64  %phi1164 <- %r2145
+	br          .L236
+
+.L236:
+	add.f64     %r2152 <- %r2140, %r2135(One)
+	add.f64     %r2156 <- %r2152, %r2144
+	store.f64   %r2156 -> 0[SqEr]
+	load.f64    %r2158 <- 0[MinSqEr]
+	setlt.32    %r2159 <- %r2156, %r2158
+	phisrc.f64  %phi56(One) <- %r2135(One)
+	phisrc.f64  %phi255(U1) <- %r2139
+	phisrc.f64  %phi434(MinSqEr) <- %r2158
+	phisrc.f64  %phi586 <- %r2158
+	phisrc.f64  %phi701 <- %r2158
+	phisrc.f64  %phi819 <- %r2158
+	phisrc.f64  %phi935 <- %r2158
+	phisrc.f64  %phi1050 <- %r2158
+	phisrc.f64  %phi1165 <- %r2158
+	br          %r2159, .L237, .L238
+
+.L237:
+	store.f64   %r2156 -> 0[MinSqEr]
+	phisrc.f64  %phi435(MinSqEr) <- %r2156
+	phisrc.f64  %phi587 <- %r2156
+	phisrc.f64  %phi702 <- %r2156
+	phisrc.f64  %phi820 <- %r2156
+	phisrc.f64  %phi936 <- %r2156
+	phisrc.f64  %phi1051 <- %r2156
+	phisrc.f64  %phi1166 <- %r2156
+	br          .L238
+
+.L238:
+	store.f64   %r2133 -> 0[OneUlp]
+	store.f64   %r2133 -> 0[X]
+	store.32    $1 -> 0[Indx]
+	phisrc.f64  %phi166(U2) <- %r2133
+	phisrc.f64  %phi300(X) <- %r2133
+	phisrc.32   %phi460(Indx) <- $1
+	br          .L242
+
+.L242:
+	phi.32      %r2163 <- %phi460(Indx), %phi461(Indx)
+	setle.32    %r2164 <- %r2163, $3
+	br          %r2164, .L239, .L241
+
+.L239:
+	phi.f64     %r2165 <- %phi300(X), %phi301(X), %phi302(X)
+	load.f64    %r2166 <- 0[U1]
+	add.f64     %r2167 <- %r2165, %r2166
+	add.f64     %r2169 <- %r2167, %r2165
+	load.f64    %r2170 <- 0[F9]
+	add.f64     %r2171 <- %r2169, %r2170
+	push.f64    %r2171
+	call.f64    %r2172 <- sqrt
+	load.f64    %r2174 <- 0[U2]
+	sub.f64     %r2175 <- %r2172, %r2174
+	load.f64    %r2176 <- 0[One]
+	sub.f64     %r2178 <- %r2176, %r2174
+	load.f64    %r2179 <- 0[X]
+	add.f64     %r2180 <- %r2178, %r2179
+	sub.f64     %r2181 <- %r2175, %r2180
+	load.f64    %r2182 <- 0[OneUlp]
+	divu.f64    %r2183 <- %r2181, %r2182
+	store.f64   %r2183 -> 0[Y]
+	load.f64    %r2184(U1) <- 0[U1]
+	sub.f64     %r2186 <- %r2184(U1), %r2179
+	load.f64    %r2187 <- 0[F9]
+	add.f64     %r2188 <- %r2186, %r2187
+	load.f64    %r2189 <- 0[Half]
+	mulu.f64    %r2190 <- %r2188, %r2189
+	mulu.f64    %r2192 <- %r2190, %r2179
+	mulu.f64    %r2194 <- %r2192, %r2179
+	divu.f64    %r2196 <- %r2194, %r2182
+	store.f64   %r2196 -> 0[Z]
+	add.f64     %r2199 <- %r2183, %r2189
+	add.f64     %r2201 <- %r2199, %r2196
+	store.f64   %r2201 -> 0[SqEr]
+	load.f64    %r2203 <- 0[MinSqEr]
+	setlt.32    %r2204 <- %r2201, %r2203
+	br          %r2204, .L243, .L244
+
+.L243:
+	store.f64   %r2201 -> 0[MinSqEr]
+	br          .L244
+
+.L244:
+	sub.f64     %r2208 <- %r2183, %r2189
+	add.f64     %r2210 <- %r2208, %r2196
+	store.f64   %r2210 -> 0[SqEr]
+	load.f64    %r2212 <- 0[MaxSqEr]
+	setgt.32    %r2213 <- %r2210, %r2212
+	br          %r2213, .L245, .L246
+
+.L245:
+	store.f64   %r2210 -> 0[MaxSqEr]
+	br          .L246
+
+.L246:
+	load.32     %r2215 <- 0[Indx]
+	seteq.32    %r2216 <- %r2215, $1
+	seteq.32    %r2218 <- %r2215, $3
+	or-bool.32  %r2219 <- %r2216, %r2218
+	br          %r2219, .L247, .L248
+
+.L247:
+	push.f64    %r2179
+	call.f64    %r2222 <- Sign
+	mulu.f64    %r2223 <- %r2182, %r2222
+	load.f64    %r2224 <- 0[Eight]
+	load.f64    %r2225 <- 0[Nine]
+	load.f64    %r2226 <- 0[OneUlp]
+	push.f64    %r2226
+	call.f64    %r2227 <- sqrt
+	mulu.f64    %r2228 <- %r2225, %r2227
+	divu.f64    %r2229 <- %r2224, %r2228
+	push.f64    %r2229
+	call.f64    %r2230 <- floor
+	mulu.f64    %r2231 <- %r2223, %r2230
+	store.f64   %r2231 -> 0[X]
+	phisrc.f64  %phi301(X) <- %r2231
+	br          .L240
+
+.L248:
+	store.f64   %r2184(U1) -> 0[OneUlp]
+	neg.f64     %r2234 <- %r2184(U1)
+	store.f64   %r2234 -> 0[X]
+	phisrc.f64  %phi302(X) <- %r2234
+	br          .L240
+
+.L240:
+	load.32     %r2235 <- 0[Indx]
+	add.32      %r2236 <- %r2235, $1
+	store.32    %r2236 -> 0[Indx]
+	phisrc.32   %phi461(Indx) <- %r2236
+	br          .L242
+
+.L241:
+	store.32    $85 -> 0[Milestone]
+	store.32    $0 -> 0[SqRWrng]
+	store.32    $0 -> 0[Anomaly]
+	store.32    $0 -> 0[RSqrt]
+	load.f64    %r2237 <- 0[Radix]
+	load.f64    %r2238 <- 0[One]
+	setne.32    %r2239 <- %r2237, %r2238
+	phisrc.f64  %phi189(Radix) <- %r2237
+	phisrc.32   %phi462(SqRWrng) <- $0
+	phisrc.32   %phi463(Anomaly) <- $0
+	phisrc.32   %phi580(i) <- $0
+	phisrc.f64  %phi581 <- %r2237
+	phisrc.32   %phi588(i) <- $0
+	phisrc.32   %phi695(i) <- $0
+	phisrc.f64  %phi696 <- %r2237
+	phisrc.32   %phi703(i) <- $0
+	phisrc.32   %phi813(i) <- $0
+	phisrc.f64  %phi814 <- %r2237
+	phisrc.32   %phi821(i) <- $0
+	phisrc.32   %phi929(i) <- $0
+	phisrc.f64  %phi930 <- %r2237
+	phisrc.32   %phi937(i) <- $0
+	phisrc.32   %phi1044(i) <- $0
+	phisrc.f64  %phi1045 <- %r2237
+	phisrc.32   %phi1052(i) <- $0
+	phisrc.32   %phi1159(i) <- $0
+	phisrc.f64  %phi1160 <- %r2237
+	phisrc.32   %phi1167(i) <- $0
+	br          %r2239, .L250, .L251
+
+.L250:
+	symaddr.64* %r2240 <- <anon symbol:0x62d0004d1168>
+	push.64*    %r2240
+	call.32     %r2241 <- printf
+	load.f64    %r2242 <- 0[Half]
+	load.f64    %r2243 <- 0[Radix]
+	push.f64    %r2243
+	load.f64    %r2244 <- 0[One]
+	load.f64    %r2245 <- 0[Precision]
+	add.f64     %r2246 <- %r2244, %r2245
+	push.f64    %r2245
+	call.f64    %r2248 <- floor
+	sub.f64     %r2249 <- %r2246, %r2248
+	push.f64    %r2249
+	call.f64    %r2250 <- pow
+	add.f64     %r2251 <- %r2242, %r2250
+	push.f64    %r2251
+	call.f64    %r2252 <- floor
+	store.f64   %r2252 -> 0[D]
+	load.f64    %r2254 <- 0[Radix]
+	divu.f64    %r2255 <- %r2252, %r2254
+	store.f64   %r2255 -> 0[X]
+	load.f64    %r2257 <- 0[A1]
+	divu.f64    %r2258 <- %r2252, %r2257
+	store.f64   %r2258 -> 0[Y]
+	push.f64    %r2255
+	call.f64    %r2261 <- floor
+	setne.32    %r2262 <- %r2255, %r2261
+	load.f64    %r2263 <- 0[Y]
+	push.f64    %r2263
+	call.f64    %r2265 <- floor
+	setne.32    %r2266 <- %r2263, %r2265
+	or-bool.32  %r2267 <- %r2262, %r2266
+	br          %r2267, .L252, .L253
+
+.L252:
+	store.32    $1 -> 0[Anomaly]
+	phisrc.32   %phi465(Anomaly) <- $1
+	phisrc.32   %phi590(I) <- $1
+	phisrc.32   %phi705(I) <- $1
+	phisrc.32   %phi823(I) <- $1
+	phisrc.32   %phi939(I) <- $1
+	phisrc.32   %phi1054(I) <- $1
+	phisrc.32   %phi1169(I) <- $1
+	br          .L254
+
+.L253:
+	load.f64    %r2268 <- 0[Zero]
+	store.f64   %r2268 -> 0[X]
+	store.f64   %r2268 -> 0[Z2]
+	load.f64    %r2270(Y2) <- 0[One]
+	store.f64   %r2270(Y2) -> 0[Y]
+	store.f64   %r2270(Y2) -> 0[Y2]
+	load.f64    %r2272 <- 0[Radix]
+	sub.f64     %r2274 <- %r2272, %r2270(Y2)
+	store.f64   %r2274 -> 0[Z1]
+	load.f64    %r2275 <- 0[Four]
+	load.f64    %r2276 <- 0[D]
+	mulu.f64    %r2277 <- %r2275, %r2276
+	store.f64   %r2277 -> 0[FourD]
+	phisrc.f64  %phi191(Radix) <- %r2272
+	phisrc.f64  %phi230(Y) <- %r2270(Y2)
+	phisrc.f64  %phi232(Y) <- %r2270(Y2)
+	phisrc.f64  %phi297(X) <- %r2268
+	phisrc.f64  %phi359(Z2) <- %r2268
+	phisrc.f64  %phi422(Y2) <- %r2270(Y2)
+	phisrc.f64  %phi478(D) <- %r2276
+	phisrc.f64  %phi482(FourD) <- %r2277
+	phisrc.f64  %phi597 <- %r2276
+	phisrc.f64  %phi598 <- %r2277
+	phisrc.f64  %phi599(Y2) <- %r2270(Y2)
+	phisrc.f64  %phi602 <- %r2268
+	phisrc.f64  %phi605(Y2) <- %r2270(Y2)
+	phisrc.f64  %phi608 <- %r2272
+	phisrc.f64  %phi609 <- %r2268
+	phisrc.f64  %phi712 <- %r2276
+	phisrc.f64  %phi713 <- %r2277
+	phisrc.f64  %phi714(Y2) <- %r2270(Y2)
+	phisrc.f64  %phi717 <- %r2268
+	phisrc.f64  %phi720(Y2) <- %r2270(Y2)
+	phisrc.f64  %phi723 <- %r2272
+	phisrc.f64  %phi724 <- %r2268
+	phisrc.f64  %phi830 <- %r2276
+	phisrc.f64  %phi831 <- %r2277
+	phisrc.f64  %phi832(Y2) <- %r2270(Y2)
+	phisrc.f64  %phi835 <- %r2268
+	phisrc.f64  %phi838(Y2) <- %r2270(Y2)
+	phisrc.f64  %phi841 <- %r2272
+	phisrc.f64  %phi842 <- %r2268
+	phisrc.f64  %phi946 <- %r2276
+	phisrc.f64  %phi947 <- %r2277
+	phisrc.f64  %phi948(Y2) <- %r2270(Y2)
+	phisrc.f64  %phi951 <- %r2268
+	phisrc.f64  %phi954(Y2) <- %r2270(Y2)
+	phisrc.f64  %phi957 <- %r2272
+	phisrc.f64  %phi958 <- %r2268
+	phisrc.f64  %phi1061 <- %r2276
+	phisrc.f64  %phi1062 <- %r2277
+	phisrc.f64  %phi1063(Y2) <- %r2270(Y2)
+	phisrc.f64  %phi1066 <- %r2268
+	phisrc.f64  %phi1069(Y2) <- %r2270(Y2)
+	phisrc.f64  %phi1072 <- %r2272
+	phisrc.f64  %phi1073 <- %r2268
+	phisrc.f64  %phi1176 <- %r2276
+	phisrc.f64  %phi1177 <- %r2277
+	phisrc.f64  %phi1178(Y2) <- %r2270(Y2)
+	phisrc.f64  %phi1181 <- %r2268
+	phisrc.f64  %phi1184(Y2) <- %r2270(Y2)
+	phisrc.f64  %phi1187 <- %r2272
+	phisrc.f64  %phi1188 <- %r2268
+	br          .L255
+
+.L255:
+	phi.f64     %r2278 <- %phi422(Y2), %phi423(Y2), %phi424(Y2)
+	load.f64    %r2279 <- 0[Z2]
+	setgt.32    %r2280 <- %r2278, %r2279
+	phisrc.f64  %phi358(Z2) <- %r2279
+	phisrc.f64  %phi421(Y2) <- %r2278
+	phisrc.f64  %phi596 <- %r2279
+	phisrc.f64  %phi711 <- %r2279
+	phisrc.f64  %phi829 <- %r2279
+	phisrc.f64  %phi945 <- %r2279
+	phisrc.f64  %phi1060 <- %r2279
+	phisrc.f64  %phi1175 <- %r2279
+	br          %r2280, .L258, .L259
+
+.L258:
+	load.f64    %r2281(Q) <- 0[Radix]
+	store.f64   %r2281(Q) -> 0[Q]
+	phi.f64     %r2282(Y1) <- %phi232(Y), %phi233(Y)
+	store.f64   %r2282(Y1) -> 0[Y1]
+	phisrc.f64  %phi377(Y1) <- %r2282(Y1)
+	phisrc.f64  %phi394(Q) <- %r2281(Q)
+	br          .L260
+
+.L260:
+	phi.f64     %r2283 <- %phi394(Q), %phi395(Q)
+	load.f64    %r2284 <- 0[Half]
+	phi.f64     %r2286 <- %phi377(Y1), %phi378(Y1)
+	divu.f64    %r2287 <- %r2283, %r2286
+	sub.f64     %r2288 <- %r2284, %r2287
+	push.f64    %r2288
+	call.f64    %r2289 <- floor
+	load.f64    %r2290 <- 0[Y1]
+	mulu.f64    %r2291 <- %r2289, %r2290
+	add.f64     %r2292 <- %r2283, %r2291
+	push.f64    %r2292
+	call.f64    %r2293 <- fabs
+	store.f64   %r2293 -> 0[X1]
+	load.f64    %r2294(Q) <- 0[Y1]
+	store.f64   %r2294(Q) -> 0[Q]
+	store.f64   %r2293 -> 0[Y1]
+	phisrc.f64  %phi378(Y1) <- %r2293
+	phisrc.f64  %phi395(Q) <- %r2294(Q)
+	load.f64    %r2297 <- 0[Zero]
+	setle.32    %r2298 <- %r2293, %r2297
+	br          %r2298, .L262, .L260
+
+.L262:
+	load.f64    %r2300 <- 0[One]
+	setle.32    %r2301 <- %r2294(Q), %r2300
+	br          %r2301, .L263, .L259
+
+.L263:
+	load.f64    %r2302 <- 0[Y2]
+	store.f64   %r2302 -> 0[Z2]
+	load.f64    %r2303 <- 0[Y]
+	store.f64   %r2303 -> 0[Z]
+	br          .L259
+
+.L259:
+	load.f64    %r2304 <- 0[Y]
+	load.f64    %r2305 <- 0[Two]
+	add.f64     %r2306(Y) <- %r2304, %r2305
+	store.f64   %r2306(Y) -> 0[Y]
+	load.f64    %r2307 <- 0[X]
+	load.f64    %r2308(Eight) <- 0[Eight]
+	add.f64     %r2309 <- %r2307, %r2308(Eight)
+	store.f64   %r2309 -> 0[X]
+	load.f64    %r2310 <- 0[Y2]
+	add.f64     %r2312 <- %r2310, %r2309
+	store.f64   %r2312 -> 0[Y2]
+	load.f64    %r2314(FourD) <- 0[FourD]
+	setge.32    %r2315 <- %r2312, %r2314(FourD)
+	phisrc.f64  %phi231(Y) <- %r2306(Y)
+	phisrc.f64  %phi233(Y) <- %r2306(Y)
+	phisrc.f64  %phi298(X) <- %r2309
+	phisrc.f64  %phi423(Y2) <- %r2312
+	phisrc.f64  %phi479(FourD) <- %r2314(FourD)
+	phisrc.f64  %phi600 <- %r2312
+	phisrc.f64  %phi603 <- %r2309
+	phisrc.f64  %phi604 <- %r2309
+	phisrc.f64  %phi606(Y) <- %r2306(Y)
+	phisrc.f64  %phi607(Y) <- %r2306(Y)
+	phisrc.f64  %phi715 <- %r2312
+	phisrc.f64  %phi718 <- %r2309
+	phisrc.f64  %phi719 <- %r2309
+	phisrc.f64  %phi721(Y) <- %r2306(Y)
+	phisrc.f64  %phi722(Y) <- %r2306(Y)
+	phisrc.f64  %phi833 <- %r2312
+	phisrc.f64  %phi836 <- %r2309
+	phisrc.f64  %phi837 <- %r2309
+	phisrc.f64  %phi839(Y) <- %r2306(Y)
+	phisrc.f64  %phi840(Y) <- %r2306(Y)
+	phisrc.f64  %phi949 <- %r2312
+	phisrc.f64  %phi952 <- %r2309
+	phisrc.f64  %phi953 <- %r2309
+	phisrc.f64  %phi955(Y) <- %r2306(Y)
+	phisrc.f64  %phi956(Y) <- %r2306(Y)
+	phisrc.f64  %phi1064 <- %r2312
+	phisrc.f64  %phi1067 <- %r2309
+	phisrc.f64  %phi1068 <- %r2309
+	phisrc.f64  %phi1070(Y) <- %r2306(Y)
+	phisrc.f64  %phi1071(Y) <- %r2306(Y)
+	phisrc.f64  %phi1179 <- %r2312
+	phisrc.f64  %phi1182 <- %r2309
+	phisrc.f64  %phi1183 <- %r2309
+	phisrc.f64  %phi1185(Y) <- %r2306(Y)
+	phisrc.f64  %phi1186(Y) <- %r2306(Y)
+	br          %r2315, .L265, .L256
+
+.L265:
+	sub.f64     %r2318 <- %r2312, %r2314(FourD)
+	store.f64   %r2318 -> 0[Y2]
+	phisrc.f64  %phi424(Y2) <- %r2318
+	phisrc.f64  %phi480(FourD) <- %r2314(FourD)
+	phisrc.f64  %phi601 <- %r2318
+	phisrc.f64  %phi716 <- %r2318
+	phisrc.f64  %phi834 <- %r2318
+	phisrc.f64  %phi950 <- %r2318
+	phisrc.f64  %phi1065 <- %r2318
+	phisrc.f64  %phi1180 <- %r2318
+	br          .L256
+
+.L256:
+	load.f64    %r2320 <- 0[D]
+	setge.32    %r2321 <- %r2306(Y), %r2320
+	br          %r2321, .L257, .L255
+
+.L257:
+	phi.f64     %r2322 <- %phi479(FourD), %phi480(FourD)
+	load.f64    %r2323 <- 0[Z2]
+	sub.f64     %r2324 <- %r2322, %r2323
+	load.f64    %r2326 <- 0[Z]
+	mulu.f64    %r2328 <- %r2326, %r2326
+	add.f64     %r2329 <- %r2324, %r2328
+	divu.f64    %r2331 <- %r2329, %r2322
+	store.f64   %r2331 -> 0[Q]
+	divu.f64    %r2334 <- %r2324, %r2308(Eight)
+	store.f64   %r2334 -> 0[X8]
+	push.f64    %r2331
+	call.f64    %r2337 <- floor
+	setne.32    %r2338 <- %r2331, %r2337
+	br          %r2338, .L267, .L268
+
+.L267:
+	store.32    $1 -> 0[Anomaly]
+	phisrc.32   %phi466(Anomaly) <- $1
+	phisrc.32   %phi591(I) <- $1
+	phisrc.32   %phi706(I) <- $1
+	phisrc.32   %phi824(I) <- $1
+	phisrc.32   %phi940(I) <- $1
+	phisrc.32   %phi1055(I) <- $1
+	phisrc.32   %phi1170(I) <- $1
+	br          .L254
+
+.L268:
+	store.32    $0 -> 0[Break]
+	br          .L270
+
+.L270:
+	load.f64    %r2339 <- 0[Z1]
+	load.f64    %r2340 <- 0[Z]
+	mulu.f64    %r2341 <- %r2339, %r2340
+	store.f64   %r2341 -> 0[X]
+	load.f64    %r2344 <- 0[Radix]
+	divu.f64    %r2345 <- %r2341, %r2344
+	push.f64    %r2345
+	call.f64    %r2346 <- floor
+	load.f64    %r2347(Radix) <- 0[Radix]
+	mulu.f64    %r2348 <- %r2346, %r2347(Radix)
+	sub.f64     %r2349 <- %r2341, %r2348
+	store.f64   %r2349 -> 0[X]
+	load.f64    %r2351(One) <- 0[One]
+	seteq.32    %r2352 <- %r2349, %r2351(One)
+	br          %r2352, .L273, .L274
+
+.L273:
+	store.32    $1 -> 0[Break]
+	phisrc.32   %phi487(Break) <- $1
+	phisrc.32   %phi595(I) <- $1
+	phisrc.32   %phi710(I) <- $1
+	phisrc.32   %phi828(I) <- $1
+	phisrc.32   %phi944(I) <- $1
+	phisrc.32   %phi1059(I) <- $1
+	phisrc.32   %phi1174(I) <- $1
+	br          .L271
+
+.L274:
+	load.f64    %r2353 <- 0[Z1]
+	sub.f64     %r2355 <- %r2353, %r2351(One)
+	store.f64   %r2355 -> 0[Z1]
+	br          .L271
+
+.L271:
+	load.32     %r2356(Break) <- 0[Break]
+	load.f64    %r2357(Z1) <- 0[Z1]
+	load.f64    %r2358(Zero) <- 0[Zero]
+	setle.32    %r2359 <- %r2357(Z1), %r2358(Zero)
+	or-bool.32  %r2360 <- %r2356(Break), %r2359
+	br          %r2360, .L272, .L270
+
+.L272:
+	seteq.32    %r2365 <- %r2356(Break), $0
+	and-bool.32 %r2366 <- %r2359, %r2365
+	br          %r2366, .L276, .L277
+
+.L276:
+	store.32    $1 -> 0[Anomaly]
+	phisrc.32   %phi467(Anomaly) <- $1
+	phisrc.32   %phi592(I) <- $1
+	phisrc.32   %phi707(I) <- $1
+	phisrc.32   %phi825(I) <- $1
+	phisrc.32   %phi941(I) <- $1
+	phisrc.32   %phi1056(I) <- $1
+	phisrc.32   %phi1171(I) <- $1
+	br          .L254
+
+.L277:
+	load.f64    %r2368 <- 0[RadixD2]
+	setgt.32    %r2369 <- %r2357(Z1), %r2368
+	br          %r2369, .L279, .L281
+
+.L279:
+	sub.f64     %r2372 <- %r2357(Z1), %r2347(Radix)
+	store.f64   %r2372 -> 0[Z1]
+	br          .L281
+
+.L281:
+	call        NewD
+	load.f64    %r2373 <- 0[U2]
+	load.f64    %r2374(D) <- 0[D]
+	mulu.f64    %r2375 <- %r2373, %r2374(D)
+	load.f64    %r2376 <- 0[F9]
+	setge.32    %r2377 <- %r2375, %r2376
+	br          %r2377, .L283, .L281
+
+.L283:
+	load.f64    %r2379 <- 0[Radix]
+	mulu.f64    %r2380 <- %r2374(D), %r2379
+	sub.f64     %r2382 <- %r2380, %r2374(D)
+	load.f64    %r2383 <- 0[W]
+	sub.f64     %r2385 <- %r2383, %r2374(D)
+	setne.32    %r2386 <- %r2382, %r2385
+	br          %r2386, .L284, .L285
+
+.L284:
+	store.32    $1 -> 0[Anomaly]
+	phisrc.32   %phi468(Anomaly) <- $1
+	phisrc.32   %phi593(I) <- $1
+	phisrc.32   %phi708(I) <- $1
+	phisrc.32   %phi826(I) <- $1
+	phisrc.32   %phi942(I) <- $1
+	phisrc.32   %phi1057(I) <- $1
+	phisrc.32   %phi1172(I) <- $1
+	br          .L254
+
+.L285:
+	store.f64   %r2374(D) -> 0[Z2]
+	store.32    $0 -> 0[I]
+	load.f64    %r2389 <- 0[One]
+	load.f64    %r2390 <- 0[Z]
+	add.f64     %r2391 <- %r2389, %r2390
+	load.f64    %r2392 <- 0[Half]
+	mulu.f64    %r2393 <- %r2391, %r2392
+	add.f64     %r2394 <- %r2374(D), %r2393
+	store.f64   %r2394 -> 0[Y]
+	add.f64     %r2397 <- %r2374(D), %r2390
+	load.f64    %r2398 <- 0[Q]
+	add.f64     %r2399 <- %r2397, %r2398
+	store.f64   %r2399 -> 0[X]
+	call        SR3750
+	load.f64    %r2400 <- 0[D]
+	load.f64    %r2401 <- 0[One]
+	load.f64    %r2402 <- 0[Z]
+	sub.f64     %r2403 <- %r2401, %r2402
+	load.f64    %r2404 <- 0[Half]
+	mulu.f64    %r2405 <- %r2403, %r2404
+	add.f64     %r2406 <- %r2400, %r2405
+	add.f64     %r2408 <- %r2406, %r2400
+	store.f64   %r2408 -> 0[Y]
+	sub.f64     %r2411 <- %r2400, %r2402
+	add.f64     %r2413 <- %r2411, %r2400
+	load.f64    %r2415 <- 0[Q]
+	add.f64     %r2416 <- %r2413, %r2415
+	add.f64     %r2418 <- %r2416, %r2413
+	store.f64   %r2418 -> 0[X]
+	call        SR3750
+	call        NewD
+	load.f64    %r2419(D) <- 0[D]
+	load.f64    %r2420 <- 0[Z2]
+	sub.f64     %r2421 <- %r2419(D), %r2420
+	load.f64    %r2422 <- 0[W]
+	sub.f64     %r2424 <- %r2422, %r2420
+	setne.32    %r2425 <- %r2421, %r2424
+	br          %r2425, .L287, .L288
+
+.L287:
+	store.32    $1 -> 0[Anomaly]
+	phisrc.32   %phi469(Anomaly) <- $1
+	phisrc.32   %phi594(I) <- $1
+	phisrc.32   %phi709(I) <- $1
+	phisrc.32   %phi827(I) <- $1
+	phisrc.32   %phi943(I) <- $1
+	phisrc.32   %phi1058(I) <- $1
+	phisrc.32   %phi1173(I) <- $1
+	br          .L254
+
+.L288:
+	load.f64    %r2430 <- 0[One]
+	load.f64    %r2431 <- 0[Z]
+	sub.f64     %r2432 <- %r2430, %r2431
+	load.f64    %r2433 <- 0[Half]
+	mulu.f64    %r2434 <- %r2432, %r2433
+	add.f64     %r2435 <- %r2420, %r2434
+	add.f64     %r2436 <- %r2421, %r2435
+	store.f64   %r2436 -> 0[Y]
+	sub.f64     %r2442 <- %r2420, %r2431
+	load.f64    %r2443 <- 0[Q]
+	add.f64     %r2444 <- %r2442, %r2443
+	add.f64     %r2445 <- %r2421, %r2444
+	store.f64   %r2445 -> 0[X]
+	call        SR3750
+	load.f64    %r2446 <- 0[One]
+	load.f64    %r2447 <- 0[Z]
+	add.f64     %r2448 <- %r2446, %r2447
+	load.f64    %r2449 <- 0[Half]
+	mulu.f64    %r2450 <- %r2448, %r2449
+	store.f64   %r2450 -> 0[Y]
+	load.f64    %r2451 <- 0[Q]
+	store.f64   %r2451 -> 0[X]
+	call        SR3750
+	load.32     %r2452 <- 0[I]
+	br          %r2452, .L254, .L290
+
+.L290:
+	store.32    $1 -> 0[Anomaly]
+	br          .L254
+
+.L254:
+	load.32     %r2454 <- 0[I]
+	seteq.32    %r2455 <- %r2454, $0
+	load.32     %r2456 <- 0[Anomaly]
+	or-bool.32  %r2457 <- %r2455, %r2456
+	phisrc.32   %phi464(Anomaly) <- %r2456
+	phisrc.32   %phi589 <- %r2456
+	phisrc.32   %phi704 <- %r2456
+	phisrc.32   %phi822 <- %r2456
+	phisrc.32   %phi938 <- %r2456
+	phisrc.32   %phi1053 <- %r2456
+	phisrc.32   %phi1168 <- %r2456
+	br          %r2457, .L292, .L251
+
+.L292:
+	push.32     $0
+	symaddr.64* %r2458 <- <anon symbol:0x62d0004d1508>
+	push.64*    %r2458
+	call        BadCond
+	symaddr.64* %r2459 <- <anon symbol:0x62d0004d18a8>
+	push.64*    %r2459
+	load.f64    %r2460 <- 0[W]
+	push.f64    %r2460
+	call.32     %r2461 <- printf
+	symaddr.64* %r2462 <- <anon symbol:0x62d0004d1c48>
+	push.64*    %r2462
+	call.32     %r2463 <- printf
+	store.32    $1 -> 0[SqRWrng]
+	br          .L251
+
+.L251:
+	load.32     %r2464 <- 0[Anomaly]
+	br          %r2464, .L295, .L294
+
+.L294:
+	load.f64    %r2465(MinSqEr) <- 0[MinSqEr]
+	load.f64    %r2466 <- 0[Zero]
+	setlt.32    %r2467 <- %r2465(MinSqEr), %r2466
+	load.f64    %r2468(MaxSqEr) <- 0[MaxSqEr]
+	setgt.32    %r2470 <- %r2468(MaxSqEr), %r2466
+	or-bool.32  %r2471 <- %r2467, %r2470
+	br          %r2471, .L297, .L296
+
+.L296:
+	store.32    $1 -> 0[RSqrt]
+	symaddr.64* %r2472 <- <anon symbol:0x62d0004d1fe8>
+	push.64*    %r2472
+	call.32     %r2473 <- printf
+	br          .L295
+
+.L297:
+	load.f64    %r2475 <- 0[U2]
+	add.f64     %r2476 <- %r2468(MaxSqEr), %r2475
+	load.f64    %r2478 <- 0[Half]
+	sub.f64     %r2479 <- %r2475, %r2478
+	setgt.32    %r2480 <- %r2476, %r2479
+	setgt.32    %r2483 <- %r2465(MinSqEr), %r2478
+	or-bool.32  %r2484 <- %r2480, %r2483
+	load.f64    %r2486 <- 0[Radix]
+	add.f64     %r2487 <- %r2465(MinSqEr), %r2486
+	setlt.32    %r2489 <- %r2487, %r2478
+	or-bool.32  %r2490 <- %r2484, %r2489
+	br          %r2490, .L299, .L300
+
+.L299:
+	store.32    $1 -> 0[SqRWrng]
+	br          .L295
+
+.L300:
+	store.32    $2 -> 0[RSqrt]
+	symaddr.64* %r2491 <- <anon symbol:0x62d0004d2388>
+	push.64*    %r2491
+	call.32     %r2492 <- printf
+	br          .L295
+
+.L295:
+	load.32     %r2493 <- 0[SqRWrng]
+	br          %r2493, .L302, .L303
+
+.L302:
+	symaddr.64* %r2494 <- <anon symbol:0x62d0004d2728>
+	push.64*    %r2494
+	call.32     %r2495 <- printf
+	symaddr.64* %r2496 <- <anon symbol:0x62d0004d2ac8>
+	push.64*    %r2496
+	load.f64    %r2497 <- 0[MinSqEr]
+	load.f64    %r2498 <- 0[Half]
+	sub.f64     %r2499 <- %r2497, %r2498
+	push.f64    %r2499
+	call.32     %r2500 <- printf
+	symaddr.64* %r2501 <- <anon symbol:0x62d0004d2e68>
+	push.64*    %r2501
+	load.f64    %r2502 <- 0[Half]
+	load.f64    %r2503 <- 0[MaxSqEr]
+	add.f64     %r2504 <- %r2502, %r2503
+	push.f64    %r2504
+	call.32     %r2505 <- printf
+	push.32     $1
+	load.f64    %r2506 <- 0[MaxSqEr]
+	load.f64    %r2507 <- 0[MinSqEr]
+	sub.f64     %r2508 <- %r2506, %r2507
+	load.f64    %r2509 <- 0[Radix]
+	mulu.f64    %r2511 <- %r2509, %r2509
+	setlt.32    %r2512 <- %r2508, %r2511
+	push.32     %r2512
+	symaddr.64* %r2513 <- <anon symbol:0x62d0004d3208>
+	push.64*    %r2513
+	call        TstCond
+	br          .L303
+
+.L303:
+	store.32    $90 -> 0[Milestone]
+	call        Pause
+	symaddr.64* %r2514 <- <anon symbol:0x62d0004d35a8>
+	push.64*    %r2514
+	call.32     %r2515 <- printf
+	store.32    $0 -> 0[N]
+	store.32    $0 -> 0[I]
+	load.f64    %r2516 <- 0[Zero]
+	neg.f64     %r2517 <- %r2516
+	store.f64   %r2517 -> 0[Z]
+	store.32    $3 -> 0[M]
+	store.32    $0 -> 0[Break]
+	br          .L304
+
+.L304:
+	load.f64    %r2518 <- 0[One]
+	store.f64   %r2518 -> 0[X]
+	call        SR3980
+	load.32     %r2519 <- 0[I]
+	setle.32    %r2520 <- %r2519, $10
+	br          %r2520, .L307, .L308
+
+.L307:
+	store.32    $0x3ff -> 0[I]
+	call        SR3980
+	br          .L308
+
+.L308:
+	load.f64    %r2521 <- 0[Z]
+	load.f64    %r2522(MinusOne) <- 0[MinusOne]
+	seteq.32    %r2523 <- %r2521, %r2522(MinusOne)
+	br          %r2523, .L309, .L310
+
+.L309:
+	store.32    $1 -> 0[Break]
+	phisrc.32   %phi485(Break) <- $1
+	phisrc.32   %phi579(I) <- $1
+	phisrc.32   %phi694(I) <- $1
+	phisrc.32   %phi812(I) <- $1
+	phisrc.32   %phi928(I) <- $1
+	phisrc.32   %phi1043(I) <- $1
+	phisrc.32   %phi1158(I) <- $1
+	br          .L305
+
+.L310:
+	store.f64   %r2522(MinusOne) -> 0[Z]
+	store.32    $0xfffffffc -> 0[I]
+	br          .L305
+
+.L305:
+	load.32     %r2525 <- 0[Break]
+	br          %r2525, .L306, .L304
+
+.L306:
+	call        PrintIfNPositive
+	load.32     %r2526 <- 0[N]
+	store.32    %r2526 -> 0[N1]
+	store.32    $0 -> 0[N]
+	load.f64    %r2527 <- 0[A1]
+	store.f64   %r2527 -> 0[Z]
+	load.f64    %r2528 <- 0[Two]
+	load.f64    %r2529 <- 0[W]
+	push.f64    %r2529
+	call.f64    %r2530 <- log
+	mulu.f64    %r2531 <- %r2528, %r2530
+	load.f64    %r2532 <- 0[A1]
+	push.f64    %r2532
+	call.f64    %r2533 <- log
+	divu.f64    %r2534 <- %r2531, %r2533
+	push.f64    %r2534
+	call.f64    %r2535 <- floor
+	cast.32     %r2536 <- (64) %r2535
+	store.32    %r2536 -> 0[M]
+	store.32    $0 -> 0[Break]
+	br          .L312
+
+.L312:
+	load.f64    %r2537 <- 0[Z]
+	store.f64   %r2537 -> 0[X]
+	store.32    $1 -> 0[I]
+	call        SR3980
+	load.f64    %r2538 <- 0[Z]
+	load.f64    %r2539(AInvrse) <- 0[AInvrse]
+	seteq.32    %r2540 <- %r2538, %r2539(AInvrse)
+	br          %r2540, .L315, .L316
+
+.L315:
+	store.32    $1 -> 0[Break]
+	phisrc.32   %phi484(Break) <- $1
+	phisrc.32   %phi578(I) <- $1
+	phisrc.32   %phi693(I) <- $1
+	phisrc.32   %phi811(I) <- $1
+	phisrc.32   %phi927(I) <- $1
+	phisrc.32   %phi1042(I) <- $1
+	phisrc.32   %phi1157(I) <- $1
+	br          .L313
+
+.L316:
+	store.f64   %r2539(AInvrse) -> 0[Z]
+	br          .L313
+
+.L313:
+	load.32     %r2542 <- 0[Break]
+	br          %r2542, .L314, .L312
+
+.L314:
+	store.32    $100 -> 0[Milestone]
+	store.32    $20 -> 0[M]
+	load.f64    %r2543(Z) <- 0[Three]
+	store.f64   %r2543(Z) -> 0[Z]
+	phisrc.f64  %phi155(Z) <- %r2543(Z)
+	br          .L318
+
+.L318:
+	phi.f64     %r2544 <- %phi155(Z), %phi156(Z)
+	store.f64   %r2544 -> 0[X]
+	store.32    $1 -> 0[I]
+	call        SR3980
+	br          .L321
+
+.L321:
+	load.f64    %r2545 <- 0[Z]
+	load.f64    %r2546 <- 0[Two]
+	add.f64     %r2547(Z) <- %r2545, %r2546
+	store.f64   %r2547(Z) -> 0[Z]
+	load.f64    %r2548 <- 0[Three]
+	divu.f64    %r2551 <- %r2547(Z), %r2548
+	push.f64    %r2551
+	call.f64    %r2552 <- floor
+	mulu.f64    %r2553 <- %r2548, %r2552
+	load.f64    %r2554(Z) <- 0[Z]
+	seteq.32    %r2555 <- %r2553, %r2554(Z)
+	phisrc.f64  %phi156(Z) <- %r2554(Z)
+	br          %r2555, .L321, .L319
+
+.L319:
+	load.f64    %r2557 <- 0[Eight]
+	load.f64    %r2558 <- 0[Three]
+	mulu.f64    %r2559 <- %r2557, %r2558
+	setlt.32    %r2560 <- %r2554(Z), %r2559
+	br          %r2560, .L318, .L320
+
+.L320:
+	load.32     %r2561 <- 0[N]
+	setgt.32    %r2562 <- %r2561, $0
+	br          %r2562, .L324, .L325
+
+.L324:
+	symaddr.64* %r2563 <- <anon symbol:0x62d0004d3948>
+	push.64*    %r2563
+	call.32     %r2564 <- printf
+	symaddr.64* %r2565 <- <anon symbol:0x62d0004d3ce8>
+	push.64*    %r2565
+	call.32     %r2566 <- printf
+	br          .L325
+
+.L325:
+	call        PrintIfNPositive
+	load.32     %r2567 <- 0[N1]
+	load.32     %r2568 <- 0[N]
+	add.32      %r2570 <- %r2568, %r2567
+	store.32    %r2570 -> 0[N]
+	phisrc.32   %phi488(N) <- %r2570
+	phisrc.32   %phi577 <- %r2570
+	phisrc.32   %phi692 <- %r2570
+	phisrc.32   %phi810 <- %r2570
+	phisrc.32   %phi926 <- %r2570
+	phisrc.32   %phi1041 <- %r2570
+	phisrc.32   %phi1156 <- %r2570
+	br          %r2570, .L327, .L326
+
+.L326:
+	symaddr.64* %r2574 <- <anon symbol:0x62d0004d4088>
+	push.64*    %r2574
+	call.32     %r2575 <- printf
+	br          .L327
+
+.L327:
+	load.32     %r2576 <- 0[N]
+	setgt.32    %r2577 <- %r2576, $0
+	br          %r2577, .L328, .L329
+
+.L328:
+	call        Pause
+	br          .L330
+
+.L329:
+	symaddr.64* %r2578 <- <anon symbol:0x62d0004d4428>
+	push.64*    %r2578
+	call.32     %r2579 <- printf
+	br          .L330
+
+.L330:
+	store.32    $110 -> 0[Milestone]
+	symaddr.64* %r2580 <- <anon symbol:0x62d0004d47c8>
+	push.64*    %r2580
+	call.32     %r2581 <- printf
+	load.f64    %r2582 <- 0[U1]
+	store.f64   %r2582 -> 0[D]
+	load.f64    %r2583 <- 0[Precision]
+	push.f64    %r2583
+	call.f64    %r2585 <- floor
+	setne.32    %r2586 <- %r2583, %r2585
+	br          %r2586, .L331, .L332
+
+.L331:
+	load.f64    %r2587(BInvrse) <- 0[BInvrse]
+	load.f64    %r2588(X) <- 0[Precision]
+	phisrc.f64  %phi295(X) <- %r2588(X)
+	phisrc.f64  %phi473(D) <- %r2587(BInvrse)
+	br          .L333
+
+.L333:
+	phi.f64     %r2589 <- %phi473(D), %phi474(D)
+	mulu.f64    %r2591 <- %r2589, %r2587(BInvrse)
+	store.f64   %r2591 -> 0[D]
+	phi.f64     %r2592 <- %phi295(X), %phi296(X)
+	load.f64    %r2593 <- 0[One]
+	sub.f64     %r2594(X) <- %r2592, %r2593
+	store.f64   %r2594(X) -> 0[X]
+	phisrc.f64  %phi296(X) <- %r2594(X)
+	phisrc.f64  %phi474(D) <- %r2591
+	load.f64    %r2596 <- 0[Zero]
+	setgt.32    %r2597 <- %r2594(X), %r2596
+	br          %r2597, .L333, .L332
+
+.L332:
+	load.f64    %r2598(One) <- 0[One]
+	load.f64    %r2599(Z) <- 0[D]
+	phisrc.f64  %phi151(Z) <- %r2599(Z)
+	phisrc.f64  %phi227(Y) <- %r2598(One)
+	br          .L336
+
+.L336:
+	phi.f64     %r2600(C) <- %phi227(Y), %phi228(Y)
+	store.f64   %r2600(C) -> 0[C]
+	phi.f64     %r2601 <- %phi151(Z), %phi152(Z)
+	store.f64   %r2601 -> 0[Y]
+	mulu.f64    %r2604(Z) <- %r2601, %r2601
+	store.f64   %r2604(Z) -> 0[Z]
+	phisrc.f64  %phi152(Z) <- %r2604(Z)
+	phisrc.f64  %phi228(Y) <- %r2601
+	setgt.32    %r2607 <- %r2601, %r2604(Z)
+	add.f64     %r2610 <- %r2604(Z), %r2604(Z)
+	setgt.32    %r2612 <- %r2610, %r2604(Z)
+	and-bool.32 %r2613 <- %r2607, %r2612
+	br          %r2613, .L336, .L338
+
+.L338:
+	mulu.f64    %r2617(Z) <- %r2600(C), %r2599(Z)
+	phisrc.f64  %phi148(Z) <- %r2617(Z)
+	phisrc.f64  %phi224(Y) <- %r2600(C)
+	br          .L339
+
+.L339:
+	phi.f64     %r2618(C) <- %phi224(Y), %phi225(Y)
+	store.f64   %r2618(C) -> 0[C]
+	phi.f64     %r2619 <- %phi148(Z), %phi149(Z)
+	store.f64   %r2619 -> 0[Y]
+	mulu.f64    %r2622(Z) <- %r2619, %r2599(Z)
+	store.f64   %r2622(Z) -> 0[Z]
+	phisrc.f64  %phi149(Z) <- %r2622(Z)
+	phisrc.f64  %phi225(Y) <- %r2619
+	setgt.32    %r2625 <- %r2619, %r2622(Z)
+	add.f64     %r2628 <- %r2622(Z), %r2622(Z)
+	setgt.32    %r2630 <- %r2628, %r2622(Z)
+	and-bool.32 %r2631 <- %r2625, %r2630
+	br          %r2631, .L339, .L341
+
+.L341:
+	load.f64    %r2632(Radix) <- 0[Radix]
+	load.f64    %r2633(Two) <- 0[Two]
+	setlt.32    %r2634 <- %r2632(Radix), %r2633(Two)
+	phisrc.f64  %phi186(Radix) <- %r2632(Radix)
+	br          %r2634, .L342, .L343
+
+.L342:
+	store.f64   %r2633(Two) -> 0[HInvrse]
+	phisrc.f64  %phi494(HInvrse) <- %r2633(Two)
+	phisrc.f64  %phi575(Two) <- %r2633(Two)
+	phisrc.f64  %phi690(Two) <- %r2633(Two)
+	phisrc.f64  %phi808(Two) <- %r2633(Two)
+	phisrc.f64  %phi924(Two) <- %r2633(Two)
+	phisrc.f64  %phi1039(Two) <- %r2633(Two)
+	phisrc.f64  %phi1154(Two) <- %r2633(Two)
+	br          .L344
+
+.L343:
+	store.f64   %r2632(Radix) -> 0[HInvrse]
+	phisrc.f64  %phi187(Radix) <- %r2632(Radix)
+	phisrc.f64  %phi495(HInvrse) <- %r2632(Radix)
+	phisrc.f64  %phi576(Radix) <- %r2632(Radix)
+	phisrc.f64  %phi691(Radix) <- %r2632(Radix)
+	phisrc.f64  %phi809(Radix) <- %r2632(Radix)
+	phisrc.f64  %phi925(Radix) <- %r2632(Radix)
+	phisrc.f64  %phi1040(Radix) <- %r2632(Radix)
+	phisrc.f64  %phi1155(Radix) <- %r2632(Radix)
+	br          .L344
+
+.L344:
+	phi.f64     %r2638 <- %phi494(HInvrse), %phi495(HInvrse)
+	divu.f64    %r2639 <- %r2598(One), %r2638
+	store.f64   %r2639 -> 0[H]
+	divu.f64    %r2642 <- %r2598(One), %r2618(C)
+	store.f64   %r2642 -> 0[CInvrse]
+	mulu.f64    %r2646(Z) <- %r2618(C), %r2639
+	phisrc.f64  %phi145(Z) <- %r2646(Z)
+	phisrc.f64  %phi272(E0) <- %r2618(C)
+	phisrc.f64  %phi493(HInvrse) <- %r2638
+	phisrc.f64  %phi503(CInvrse) <- %r2642
+	phisrc.f64  %phi567 <- %r2639
+	phisrc.f64  %phi569 <- %r2642
+	phisrc.f64  %phi572 <- %r2639
+	phisrc.f64  %phi682 <- %r2639
+	phisrc.f64  %phi684 <- %r2642
+	phisrc.f64  %phi687 <- %r2639
+	phisrc.f64  %phi800 <- %r2639
+	phisrc.f64  %phi802 <- %r2642
+	phisrc.f64  %phi805 <- %r2639
+	phisrc.f64  %phi916 <- %r2639
+	phisrc.f64  %phi918 <- %r2642
+	phisrc.f64  %phi921 <- %r2639
+	phisrc.f64  %phi1031 <- %r2639
+	phisrc.f64  %phi1033 <- %r2642
+	phisrc.f64  %phi1036 <- %r2639
+	phisrc.f64  %phi1146 <- %r2639
+	phisrc.f64  %phi1148 <- %r2642
+	phisrc.f64  %phi1151 <- %r2639
+	br          .L345
+
+.L345:
+	phi.f64     %r2647 <- %phi272(E0), %phi273(E0)
+	store.f64   %r2647 -> 0[Y]
+	phi.f64     %r2648 <- %phi145(Z), %phi146(Z)
+	store.f64   %r2648 -> 0[E0]
+	mulu.f64    %r2651(Z) <- %r2648, %r2639
+	store.f64   %r2651(Z) -> 0[Z]
+	phisrc.f64  %phi146(Z) <- %r2651(Z)
+	phisrc.f64  %phi222(Y) <- %r2647
+	phisrc.f64  %phi273(E0) <- %r2648
+	phisrc.f64  %phi499(H) <- %r2639
+	phisrc.f64  %phi563 <- %r2648
+	phisrc.f64  %phi568 <- %r2647
+	phisrc.f64  %phi678 <- %r2648
+	phisrc.f64  %phi683 <- %r2647
+	setgt.32    %r2654 <- %r2648, %r2651(Z)
+	add.f64     %r2657 <- %r2651(Z), %r2651(Z)
+	setgt.32    %r2659 <- %r2657, %r2651(Z)
+	and-bool.32 %r2660 <- %r2654, %r2659
+	phisrc.f64  %phi796 <- %r2648
+	phisrc.f64  %phi801 <- %r2647
+	phisrc.f64  %phi912 <- %r2648
+	phisrc.f64  %phi917 <- %r2647
+	phisrc.f64  %phi1027 <- %r2648
+	phisrc.f64  %phi1032 <- %r2647
+	phisrc.f64  %phi1142 <- %r2648
+	phisrc.f64  %phi1147 <- %r2647
+	br          %r2660, .L345, .L347
+
+.L347:
+	store.f64   %r2648 -> 0[UfThold]
+	load.f64    %r2662(E1) <- 0[Zero]
+	store.f64   %r2662(E1) -> 0[E1]
+	store.f64   %r2662(E1) -> 0[Q]
+	load.f64    %r2664(U2) <- 0[U2]
+	store.f64   %r2664(U2) -> 0[E9]
+	add.f64     %r2667 <- %r2598(One), %r2664(U2)
+	store.f64   %r2667 -> 0[S]
+	mulu.f64    %r2670 <- %r2618(C), %r2667
+	store.f64   %r2670 -> 0[D]
+	setle.32    %r2673 <- %r2670, %r2618(C)
+	phisrc.f64  %phi16(Zero) <- %r2662(E1)
+	phisrc.f64  %phi269(E0) <- %r2648
+	phisrc.f64  %phi275(E1) <- %r2662(E1)
+	phisrc.f64  %phi276(E1) <- %r2662(E1)
+	phisrc.f64  %phi565(E1) <- %r2662(E1)
+	phisrc.f64  %phi570(E1) <- %r2662(E1)
+	phisrc.f64  %phi680(E1) <- %r2662(E1)
+	phisrc.f64  %phi685(E1) <- %r2662(E1)
+	phisrc.f64  %phi798(E1) <- %r2662(E1)
+	phisrc.f64  %phi803(E1) <- %r2662(E1)
+	phisrc.f64  %phi914(E1) <- %r2662(E1)
+	phisrc.f64  %phi919(E1) <- %r2662(E1)
+	phisrc.f64  %phi1029(E1) <- %r2662(E1)
+	phisrc.f64  %phi1034(E1) <- %r2662(E1)
+	phisrc.f64  %phi1144(E1) <- %r2662(E1)
+	phisrc.f64  %phi1149(E1) <- %r2662(E1)
+	br          %r2673, .L348, .L349
+
+.L348:
+	phi.f64     %r2674 <- %phi186(Radix), %phi187(Radix)
+	mulu.f64    %r2676 <- %r2674, %r2664(U2)
+	store.f64   %r2676 -> 0[E9]
+	add.f64     %r2679 <- %r2598(One), %r2676
+	store.f64   %r2679 -> 0[S]
+	mulu.f64    %r2682 <- %r2618(C), %r2679
+	store.f64   %r2682 -> 0[D]
+	setle.32    %r2685 <- %r2682, %r2618(C)
+	phisrc.f64  %phi428(S) <- %r2679
+	phisrc.f64  %phi566 <- %r2679
+	phisrc.f64  %phi681 <- %r2679
+	phisrc.f64  %phi799 <- %r2679
+	phisrc.f64  %phi915 <- %r2679
+	phisrc.f64  %phi1030 <- %r2679
+	phisrc.f64  %phi1145 <- %r2679
+	br          %r2685, .L350, .L352
+
+.L350:
+	push.32     $0
+	symaddr.64* %r2686 <- <anon symbol:0x62d0004d4b68>
+	push.64*    %r2686
+	call        BadCond
+	load.f64    %r2687 <- 0[E0]
+	store.f64   %r2687 -> 0[Underflow]
+	load.f64    %r2688 <- 0[Zero]
+	store.f64   %r2688 -> 0[Y1]
+	load.f64    %r2689 <- 0[Z]
+	store.f64   %r2689 -> 0[PseudoZero]
+	call        Pause
+	br          .L352
+
+.L349:
+	mulu.f64    %r2693(PseudoZero) <- %r2670, %r2639
+	store.f64   %r2693(PseudoZero) -> 0[PseudoZero]
+	store.f64   %r2662(E1) -> 0[UfThold]
+	phisrc.f64  %phi500(H) <- %r2639
+	phisrc.f64  %phi512(Underflow) <- %r2670
+	phisrc.f64  %phi516(PseudoZero) <- %r2693(PseudoZero)
+	phisrc.f64  %phi573(PseudoZero) <- %r2693(PseudoZero)
+	phisrc.f64  %phi688(PseudoZero) <- %r2693(PseudoZero)
+	phisrc.f64  %phi806(PseudoZero) <- %r2693(PseudoZero)
+	phisrc.f64  %phi922(PseudoZero) <- %r2693(PseudoZero)
+	phisrc.f64  %phi1037(PseudoZero) <- %r2693(PseudoZero)
+	phisrc.f64  %phi1152(PseudoZero) <- %r2693(PseudoZero)
+	br          .L353
+
+.L353:
+	phi.f64     %r2695(Y1) <- %phi512(Underflow), %phi513(Underflow)
+	store.f64   %r2695(Y1) -> 0[Y1]
+	phi.f64     %r2696(Underflow) <- %phi516(PseudoZero), %phi517(PseudoZero)
+	store.f64   %r2696(Underflow) -> 0[Underflow]
+	phi.f64     %r2697 <- %phi276(E1), %phi277(E1)
+	add.f64     %r2699 <- %r2697, %r2697
+	setle.32    %r2701 <- %r2699, %r2697
+	phisrc.f64  %phi510(Underflow) <- %r2696(Underflow)
+	phisrc.f64  %phi515(PseudoZero) <- %r2696(Underflow)
+	phisrc.f64  %phi571(Underflow) <- %r2696(Underflow)
+	phisrc.f64  %phi686(Underflow) <- %r2696(Underflow)
+	phisrc.f64  %phi804(Underflow) <- %r2696(Underflow)
+	phisrc.f64  %phi920(Underflow) <- %r2696(Underflow)
+	phisrc.f64  %phi1035(Underflow) <- %r2696(Underflow)
+	phisrc.f64  %phi1150(Underflow) <- %r2696(Underflow)
+	br          %r2701, .L356, .L357
+
+.L356:
+	load.f64    %r2703 <- 0[HInvrse]
+	mulu.f64    %r2704 <- %r2696(Underflow), %r2703
+	store.f64   %r2704 -> 0[Y2]
+	sub.f64     %r2707 <- %r2695(Y1), %r2704
+	push.f64    %r2707
+	call.f64    %r2708 <- fabs
+	store.f64   %r2708 -> 0[E1]
+	load.f64    %r2709 <- 0[Y1]
+	store.f64   %r2709 -> 0[Q]
+	load.f64    %r2710 <- 0[UfThold]
+	load.f64    %r2711 <- 0[Zero]
+	seteq.32    %r2712 <- %r2710, %r2711
+	load.f64    %r2714 <- 0[Y2]
+	setne.32    %r2715 <- %r2709, %r2714
+	and-bool.32 %r2716 <- %r2712, %r2715
+	phisrc.f64  %phi277(E1) <- %r2708
+	br          %r2716, .L358, .L357
+
+.L358:
+	store.f64   %r2709 -> 0[UfThold]
+	br          .L357
+
+.L357:
+	load.f64    %r2718 <- 0[PseudoZero]
+	load.f64    %r2719 <- 0[H]
+	mulu.f64    %r2720(PseudoZero) <- %r2718, %r2719
+	store.f64   %r2720(PseudoZero) -> 0[PseudoZero]
+	phisrc.f64  %phi517(PseudoZero) <- %r2720(PseudoZero)
+	phisrc.f64  %phi574(PseudoZero) <- %r2720(PseudoZero)
+	phisrc.f64  %phi689(PseudoZero) <- %r2720(PseudoZero)
+	load.f64    %r2721 <- 0[Underflow]
+	setgt.32    %r2723 <- %r2721, %r2720(PseudoZero)
+	add.f64     %r2726 <- %r2720(PseudoZero), %r2720(PseudoZero)
+	setgt.32    %r2728 <- %r2726, %r2720(PseudoZero)
+	and-bool.32 %r2729 <- %r2723, %r2728
+	phisrc.f64  %phi513(Underflow) <- %r2721
+	phisrc.f64  %phi807(PseudoZero) <- %r2720(PseudoZero)
+	phisrc.f64  %phi923(PseudoZero) <- %r2720(PseudoZero)
+	phisrc.f64  %phi1038(PseudoZero) <- %r2720(PseudoZero)
+	phisrc.f64  %phi1153(PseudoZero) <- %r2720(PseudoZero)
+	br          %r2729, .L353, .L352
+
+.L352:
+	load.f64    %r2730 <- 0[PseudoZero]
+	load.f64    %r2731 <- 0[Zero]
+	setne.32    %r2732 <- %r2730, %r2731
+	phisrc.f64  %phi15(Zero) <- %r2731
+	phisrc.f64  %phi564 <- %r2731
+	phisrc.f64  %phi679 <- %r2731
+	phisrc.f64  %phi797 <- %r2731
+	phisrc.f64  %phi913 <- %r2731
+	phisrc.f64  %phi1028 <- %r2731
+	phisrc.f64  %phi1143 <- %r2731
+	br          %r2732, .L360, .L361
+
+.L360:
+	symaddr.64* %r2733 <- <anon symbol:0x62d0004d4f08>
+	push.64*    %r2733
+	call.32     %r2734 <- printf
+	load.f64    %r2735 <- 0[PseudoZero]
+	store.f64   %r2735 -> 0[Z]
+	load.f64    %r2737 <- 0[Zero]
+	setle.32    %r2738 <- %r2735, %r2737
+	br          %r2738, .L362, .L363
+
+.L362:
+	push.32     $0
+	symaddr.64* %r2739 <- <anon symbol:0x62d0004d52a8>
+	push.64*    %r2739
+	call        BadCond
+	symaddr.64* %r2740 <- <anon symbol:0x62d0004d5648>
+	push.64*    %r2740
+	call.32     %r2741 <- printf
+	symaddr.64* %r2742 <- <anon symbol:0x62d0004d59e8>
+	push.64*    %r2742
+	load.f64    %r2743 <- 0[PseudoZero]
+	push.f64    %r2743
+	call.32     %r2744 <- printf
+	load.f64    %r2745 <- 0[PseudoZero]
+	neg.f64     %r2746 <- %r2745
+	store.f64   %r2746 -> 0[X]
+	load.f64    %r2748 <- 0[Zero]
+	setle.32    %r2749 <- %r2746, %r2748
+	br          %r2749, .L364, .L366
+
+.L364:
+	symaddr.64* %r2750 <- <anon symbol:0x62d0004d5d88>
+	push.64*    %r2750
+	call.32     %r2751 <- printf
+	symaddr.64* %r2752 <- <anon symbol:0x62d0004d6128>
+	push.64*    %r2752
+	load.f64    %r2753 <- 0[X]
+	push.f64    %r2753
+	call.32     %r2754 <- printf
+	br          .L366
+
+.L363:
+	push.32     $3
+	symaddr.64* %r2755 <- <anon symbol:0x62d0004e2500>
+	push.64*    %r2755
+	call        BadCond
+	symaddr.64* %r2756 <- <anon symbol:0x62d0004e28a0>
+	push.64*    %r2756
+	load.f64    %r2757 <- 0[PseudoZero]
+	push.f64    %r2757
+	call.32     %r2758 <- printf
+	br          .L366
+
+.L366:
+	call        TstPtUf
+	br          .L361
+
+.L361:
+	store.32    $120 -> 0[Milestone]
+	load.f64    %r2759 <- 0[CInvrse]
+	load.f64    %r2760 <- 0[Y]
+	mulu.f64    %r2761 <- %r2759, %r2760
+	load.f64    %r2763 <- 0[Y1]
+	mulu.f64    %r2764 <- %r2759, %r2763
+	setgt.32    %r2765 <- %r2761, %r2764
+	br          %r2765, .L367, .L368
+
+.L367:
+	load.f64    %r2766 <- 0[H]
+	load.f64    %r2767 <- 0[S]
+	mulu.f64    %r2768 <- %r2766, %r2767
+	store.f64   %r2768 -> 0[S]
+	load.f64    %r2769 <- 0[Underflow]
+	store.f64   %r2769 -> 0[E0]
+	br          .L368
+
+.L368:
+	load.f64    %r2770 <- 0[E1]
+	load.f64    %r2771 <- 0[Zero]
+	seteq.32    %r2772 <- %r2770, %r2771
+	load.f64    %r2774 <- 0[E0]
+	seteq.32    %r2775 <- %r2770, %r2774
+	or-bool.32  %r2776 <- %r2772, %r2775
+	phisrc.f64  %phi268(E0) <- %r2774
+	phisrc.f64  %phi562 <- %r2774
+	phisrc.f64  %phi677 <- %r2774
+	phisrc.f64  %phi795 <- %r2774
+	phisrc.f64  %phi911 <- %r2774
+	phisrc.f64  %phi1026 <- %r2774
+	phisrc.f64  %phi1141 <- %r2774
+	br          %r2776, .L370, .L369
+
+.L369:
+	push.32     $2
+	symaddr.64* %r2777 <- <anon symbol:0x62d0004e2c40>
+	push.64*    %r2777
+	call        BadCond
+	load.f64    %r2778 <- 0[E1]
+	load.f64    %r2779 <- 0[E0]
+	setlt.32    %r2780 <- %r2778, %r2779
+	br          %r2780, .L371, .L372
+
+.L371:
+	symaddr.64* %r2781 <- <anon symbol:0x62d0004e2fe0>
+	push.64*    %r2781
+	call.32     %r2782 <- printf
+	symaddr.64* %r2783 <- <anon symbol:0x62d0004e3380>
+	push.64*    %r2783
+	call.32     %r2784 <- printf
+	load.f64    %r2785 <- 0[PseudoZero]
+	load.f64    %r2786 <- 0[Zero]
+	seteq.32    %r2787 <- %r2785, %r2786
+	br          %r2787, .L373, .L370
+
+.L373:
+	load.f64    %r2788 <- 0[E1]
+	store.f64   %r2788 -> 0[E0]
+	br          .L370
+
+.L372:
+	symaddr.64* %r2789 <- <anon symbol:0x62d0004e3720>
+	push.64*    %r2789
+	call.32     %r2790 <- printf
+	symaddr.64* %r2791 <- <anon symbol:0x62d0004e3ac0>
+	push.64*    %r2791
+	call.32     %r2792 <- printf
+	br          .L370
+
+.L370:
+	symaddr.64* %r2793 <- <anon symbol:0x62d0004e3e60>
+	push.64*    %r2793
+	load.f64    %r2794 <- 0[E0]
+	push.f64    %r2794
+	call.32     %r2795 <- printf
+	load.f64    %r2796 <- 0[E0]
+	store.f64   %r2796 -> 0[Z]
+	call        TstPtUf
+	load.f64    %r2797(E0) <- 0[E0]
+	store.f64   %r2797(E0) -> 0[Underflow]
+	load.32     %r2798 <- 0[N]
+	seteq.32    %r2799 <- %r2798, $1
+	phisrc.f64  %phi508(Underflow) <- %r2797(E0)
+	br          %r2799, .L376, .L377
+
+.L376:
+	load.f64    %r2800 <- 0[Y]
+	store.f64   %r2800 -> 0[Underflow]
+	phisrc.f64  %phi509(Underflow) <- %r2800
+	br          .L377
+
+.L377:
+	store.32    $4 -> 0[I]
+	load.f64    %r2801(E1) <- 0[E1]
+	load.f64    %r2802(Zero) <- 0[Zero]
+	seteq.32    %r2803 <- %r2801(E1), %r2802(Zero)
+	phisrc.32   %phi344(I) <- $4
+	phisrc.32   %phi347(I) <- $4
+	br          %r2803, .L378, .L379
+
+.L378:
+	store.32    $3 -> 0[I]
+	phisrc.32   %phi345(I) <- $3
+	phisrc.32   %phi348(I) <- $3
+	br          .L379
+
+.L379:
+	load.f64    %r2804(UfThold) <- 0[UfThold]
+	seteq.32    %r2806 <- %r2804(UfThold), %r2802(Zero)
+	br          %r2806, .L380, .L381
+
+.L380:
+	phi.32      %r2807 <- %phi347(I), %phi348(I)
+	add.32      %r2808 <- %r2807, $-2
+	store.32    %r2808 -> 0[I]
+	phisrc.32   %phi346(I) <- %r2808
+	br          .L381
+
+.L381:
+	store.32    $1 -> 0[UfNGrad]
+	phi.32      %r2809 <- %phi344(I), %phi345(I), %phi346(I)
+	switch      %r2809, 1 -> .L383, 2 -> .L384, 3 -> .L385, 4 -> .L386, default -> .L382
+
+.L383:
+	phi.f64     %r2810 <- %phi508(Underflow), %phi509(Underflow)
+	store.f64   %r2810 -> 0[UfThold]
+	load.f64    %r2811 <- 0[CInvrse]
+	load.f64    %r2812 <- 0[Q]
+	mulu.f64    %r2813 <- %r2811, %r2812
+	load.f64    %r2815(Y) <- 0[Y]
+	mulu.f64    %r2816 <- %r2811, %r2815(Y)
+	load.f64    %r2817 <- 0[S]
+	mulu.f64    %r2818 <- %r2816, %r2817
+	setne.32    %r2819 <- %r2813, %r2818
+	br          %r2819, .L387, .L388
+
+.L387:
+	store.f64   %r2815(Y) -> 0[UfThold]
+	push.32     $0
+	symaddr.64* %r2821 <- <anon symbol:0x62d0004e4200>
+	push.64*    %r2821
+	call        BadCond
+	symaddr.64* %r2822 <- <anon symbol:0x62d0004e45a0>
+	push.64*    %r2822
+	load.f64    %r2823 <- 0[UfThold]
+	push.f64    %r2823
+	call.32     %r2824 <- printf
+	symaddr.64* %r2825 <- <anon symbol:0x62d0004e4940>
+	push.64*    %r2825
+	load.f64    %r2826 <- 0[C]
+	push.f64    %r2826
+	call.32     %r2827 <- printf
+	symaddr.64* %r2828 <- <anon symbol:0x62d0004e4ce0>
+	push.64*    %r2828
+	call.32     %r2829 <- printf
+	br          .L388
+
+.L388:
+	call        Pause
+	br          .L382
+
+.L384:
+	push.32     $0
+	symaddr.64* %r2830 <- <anon symbol:0x62d0004e5080>
+	push.64*    %r2830
+	call        BadCond
+	symaddr.64* %r2831 <- <anon symbol:0x62d0004e5420>
+	push.64*    %r2831
+	call.32     %r2832 <- printf
+	symaddr.64* %r2833 <- <anon symbol:0x62d0004e57c0>
+	push.64*    %r2833
+	load.f64    %r2834 <- 0[Q]
+	push.f64    %r2834
+	load.f64    %r2835 <- 0[Y2]
+	push.f64    %r2835
+	call.32     %r2836 <- printf
+	symaddr.64* %r2837 <- <anon symbol:0x62d0004e5b60>
+	push.64*    %r2837
+	load.f64    %r2838 <- 0[Q]
+	load.f64    %r2839 <- 0[Y2]
+	sub.f64     %r2840 <- %r2838, %r2839
+	push.f64    %r2840
+	call.f64    %r2841 <- fabs
+	push.f64    %r2841
+	call.32     %r2842 <- printf
+	load.f64    %r2843 <- 0[Q]
+	store.f64   %r2843 -> 0[UfThold]
+	br          .L382
+
+.L385:
+	load.f64    %r2844 <- 0[X]
+	store.f64   %r2844 -> 0[X]
+	br          .L382
+
+.L386:
+	load.f64    %r2845 <- 0[Q]
+	seteq.32    %r2847 <- %r2845, %r2804(UfThold)
+	seteq.32    %r2850 <- %r2801(E1), %r2797(E0)
+	and-bool.32 %r2851 <- %r2847, %r2850
+	load.f64    %r2854 <- 0[E9]
+	divu.f64    %r2855 <- %r2801(E1), %r2854
+	sub.f64     %r2856 <- %r2804(UfThold), %r2855
+	push.f64    %r2856
+	call.f64    %r2857 <- fabs
+	load.f64    %r2858 <- 0[E1]
+	setle.32    %r2859 <- %r2857, %r2858
+	and-bool.32 %r2860 <- %r2851, %r2859
+	br          %r2860, .L389, .L382
+
+.L389:
+	store.32    $0 -> 0[UfNGrad]
+	symaddr.64* %r2861 <- <anon symbol:0x62d0004e5f00>
+	push.64*    %r2861
+	call.32     %r2862 <- printf
+	symaddr.64* %r2863 <- <anon symbol:0x62d0004e62a0>
+	push.64*    %r2863
+	call.32     %r2864 <- printf
+	load.f64    %r2865 <- 0[E0]
+	load.f64    %r2866 <- 0[CInvrse]
+	mulu.f64    %r2867 <- %r2865, %r2866
+	load.f64    %r2869 <- 0[OneAndHalf]
+	load.f64    %r2870 <- 0[U2]
+	add.f64     %r2871 <- %r2869, %r2870
+	mulu.f64    %r2872 <- %r2867, %r2871
+	load.f64    %r2874 <- 0[One]
+	add.f64     %r2876 <- %r2874, %r2870
+	mulu.f64    %r2877 <- %r2866, %r2876
+	store.f64   %r2877 -> 0[X]
+	divu.f64    %r2880 <- %r2872, %r2877
+	store.f64   %r2880 -> 0[Y]
+	seteq.32    %r2883 <- %r2880, %r2865
+	store.32    %r2883 -> 0[IEEE]
+	br          .L382
+
+.L382:
+	load.32     %r2884 <- 0[UfNGrad]
+	br          %r2884, .L391, .L392
+
+.L391:
+	symaddr.64* %r2885 <- <anon symbol:0x62d0004e6640>
+	push.64*    %r2885
+	call.32     %r2886 <- printf
+	symaddr.64* %r2887 <- sigfpe
+	store.64*   %r2887 -> 0[sigsave]
+	symaddr.64* %r2888 <- ovfl_buf
+	push.64*    %r2888
+	call.32     %r2889 <- _setjmp
+	br          %r2889, .L393, .L394
+
+.L393:
+	symaddr.64* %r2890 <- <anon symbol:0x62d0004e6e68>
+	push.64*    %r2890
+	call.32     %r2891 <- printf
+	load.f64    %r2892 <- 0[H]
+	add.f64     %r2894(R) <- %r2892, %r2892
+	store.f64   %r2894(R) -> 0[R]
+	phisrc.f64  %phi403(R) <- %r2894(R)
+	phisrc.f64  %phi498(H) <- %r2892
+	phisrc.f64  %phi561 <- %r2892
+	phisrc.f64  %phi676 <- %r2892
+	phisrc.f64  %phi794 <- %r2892
+	phisrc.f64  %phi910 <- %r2892
+	phisrc.f64  %phi1025 <- %r2892
+	phisrc.f64  %phi1140 <- %r2892
+	br          .L395
+
+.L394:
+	load.f64    %r2895 <- 0[Underflow]
+	load.f64    %r2896 <- 0[UfThold]
+	divu.f64    %r2897 <- %r2895, %r2896
+	push.f64    %r2897
+	call.f64    %r2898 <- sqrt
+	store.f64   %r2898 -> 0[R]
+	phisrc.f64  %phi404(R) <- %r2898
+	br          .L395
+
+.L395:
+	store.64*   $0 -> 0[sigsave]
+	phi.f64     %r2899(R) <- %phi403(R), %phi404(R)
+	load.f64    %r2900(H) <- 0[H]
+	setle.32    %r2901 <- %r2899(R), %r2900(H)
+	br          %r2901, .L396, .L397
+
+.L396:
+	load.f64    %r2903 <- 0[UfThold]
+	mulu.f64    %r2904 <- %r2899(R), %r2903
+	store.f64   %r2904 -> 0[Z]
+	load.f64    %r2906 <- 0[One]
+	mulu.f64    %r2909 <- %r2899(R), %r2900(H)
+	add.f64     %r2912 <- %r2906, %r2900(H)
+	mulu.f64    %r2913 <- %r2909, %r2912
+	add.f64     %r2914 <- %r2906, %r2913
+	mulu.f64    %r2915(X) <- %r2904, %r2914
+	store.f64   %r2915(X) -> 0[X]
+	phisrc.f64  %phi142(Z) <- %r2904
+	phisrc.f64  %phi292(X) <- %r2915(X)
+	br          .L398
+
+.L397:
+	load.f64    %r2916 <- 0[UfThold]
+	store.f64   %r2916 -> 0[Z]
+	load.f64    %r2918 <- 0[One]
+	mulu.f64    %r2921 <- %r2900(H), %r2900(H)
+	add.f64     %r2924 <- %r2918, %r2900(H)
+	mulu.f64    %r2925 <- %r2921, %r2924
+	add.f64     %r2926 <- %r2918, %r2925
+	mulu.f64    %r2927 <- %r2916, %r2926
+	store.f64   %r2927 -> 0[X]
+	phisrc.f64  %phi143(Z) <- %r2916
+	phisrc.f64  %phi293(X) <- %r2927
+	br          .L398
+
+.L398:
+	phi.f64     %r2928 <- %phi292(X), %phi293(X)
+	phi.f64     %r2929 <- %phi142(Z), %phi143(Z)
+	seteq.32    %r2930 <- %r2928, %r2929
+	sub.f64     %r2933 <- %r2928, %r2929
+	load.f64    %r2934 <- 0[Zero]
+	setne.32    %r2935 <- %r2933, %r2934
+	or-bool.32  %r2936 <- %r2930, %r2935
+	br          %r2936, .L392, .L399
+
+.L399:
+	push.32     $3
+	symaddr.64* %r2937 <- <anon symbol:0x62d0004e7208>
+	push.64*    %r2937
+	call        BadCond
+	symaddr.64* %r2938 <- <anon symbol:0x62d0004e75a8>
+	push.64*    %r2938
+	load.f64    %r2939 <- 0[X]
+	push.f64    %r2939
+	load.f64    %r2940 <- 0[Z]
+	push.f64    %r2940
+	call.32     %r2941 <- printf
+	load.f64    %r2942 <- 0[X]
+	load.f64    %r2943 <- 0[Z]
+	sub.f64     %r2944 <- %r2942, %r2943
+	store.f64   %r2944 -> 0[Z9]
+	symaddr.64* %r2945 <- <anon symbol:0x62d0004e7948>
+	push.64*    %r2945
+	push.f64    %r2944
+	call.32     %r2947 <- printf
+	symaddr.64* %r2948 <- <anon symbol:0x62d0004e7ce8>
+	push.64*    %r2948
+	call.32     %r2949 <- printf
+	symaddr.64* %r2950 <- <anon symbol:0x62d0004e8088>
+	push.64*    %r2950
+	call.32     %r2951 <- printf
+	symaddr.64* %r2952 <- <anon symbol:0x62d0004e8428>
+	push.64*    %r2952
+	call.32     %r2953 <- printf
+	symaddr.64* %r2954 <- <anon symbol:0x62d0004e87c8>
+	push.64*    %r2954
+	call.32     %r2955 <- printf
+	symaddr.64* %r2956 <- <anon symbol:0x62d0004e8b68>
+	push.64*    %r2956
+	call.32     %r2957 <- printf
+	symaddr.64* %r2958 <- <anon symbol:0x62d0004e8f08>
+	push.64*    %r2958
+	call.32     %r2959 <- printf
+	store.64*   %r2887 -> 0[sigsave]
+	push.64*    %r2888
+	call.32     %r2962 <- _setjmp
+	br          %r2962, .L401, .L402
+
+.L401:
+	symaddr.64* %r2963 <- <anon symbol:0x62d0004e9648>
+	push.64*    %r2963
+	call.32     %r2964 <- printf
+	br          .L403
+
+.L402:
+	symaddr.64* %r2965 <- <anon symbol:0x62d0004e99e8>
+	push.64*    %r2965
+	load.f64    %r2966 <- 0[X]
+	load.f64    %r2967 <- 0[Z]
+	divu.f64    %r2968 <- %r2966, %r2967
+	load.f64    %r2969 <- 0[Half]
+	sub.f64     %r2970 <- %r2968, %r2969
+	sub.f64     %r2972 <- %r2970, %r2969
+	push.f64    %r2972
+	call.32     %r2973 <- printf
+	br          .L403
+
+.L403:
+	store.64*   $0 -> 0[sigsave]
+	br          .L392
+
+.L392:
+	symaddr.64* %r2974 <- <anon symbol:0x62d0004e9d88>
+	push.64*    %r2974
+	load.f64    %r2975 <- 0[UfThold]
+	push.f64    %r2975
+	symaddr.64* %r2976 <- <anon symbol:0x62d0004ea128>
+	push.64*    %r2976
+	call.32     %r2977 <- printf
+	symaddr.64* %r2978 <- <anon symbol:0x62d00050a500>
+	push.64*    %r2978
+	call.32     %r2979 <- printf
+	symaddr.64* %r2980 <- <anon symbol:0x62d00050a8a0>
+	push.64*    %r2980
+	call.32     %r2981 <- printf
+	load.f64    %r2982 <- 0[U1]
+	mulu.f64    %r2984 <- %r2982, %r2982
+	mulu.f64    %r2987 <- %r2984, %r2984
+	store.f64   %r2987 -> 0[Y]
+	mulu.f64    %r2990 <- %r2987, %r2982
+	store.f64   %r2990 -> 0[Y2]
+	load.f64    %r2992 <- 0[UfThold]
+	setle.32    %r2993 <- %r2990, %r2992
+	phisrc.f64  %phi506(UfThold) <- %r2992
+	phisrc.f64  %phi560 <- %r2992
+	phisrc.f64  %phi675 <- %r2992
+	phisrc.f64  %phi793 <- %r2992
+	phisrc.f64  %phi909 <- %r2992
+	phisrc.f64  %phi1024 <- %r2992
+	phisrc.f64  %phi1139 <- %r2992
+	br          %r2993, .L404, .L405
+
+.L404:
+	load.f64    %r2995 <- 0[E0]
+	setgt.32    %r2996 <- %r2987, %r2995
+	select.32   %r3000 <- %r2996, $5, $4
+	br          %r2996, .L406, .L407
+
+.L406:
+	push.32     $2
+	symaddr.64* %r2997 <- <anon symbol:0x62d00050ac40>
+	push.64*    %r2997
+	call        BadCond
+	store.32    $5 -> 0[I]
+	br          .L408
+
+.L407:
+	push.32     $1
+	symaddr.64* %r2998 <- <anon symbol:0x62d00050afe0>
+	push.64*    %r2998
+	call        BadCond
+	store.32    $4 -> 0[I]
+	br          .L408
+
+.L408:
+	symaddr.64* %r2999 <- <anon symbol:0x62d00050b380>
+	push.64*    %r2999
+	push.32     %r3000
+	call.32     %r3001 <- printf
+	br          .L405
+
+.L405:
+	store.32    $130 -> 0[Milestone]
+	load.f64    %r3002 <- 0[Half]
+	load.f64    %r3003 <- 0[TwoForty]
+	load.f64    %r3004 <- 0[UfThold]
+	push.f64    %r3004
+	call.f64    %r3005 <- log
+	mulu.f64    %r3006 <- %r3003, %r3005
+	load.f64    %r3007 <- 0[HInvrse]
+	push.f64    %r3007
+	call.f64    %r3008 <- log
+	divu.f64    %r3009 <- %r3006, %r3008
+	sub.f64     %r3010 <- %r3002, %r3009
+	push.f64    %r3010
+	call.f64    %r3011 <- floor
+	neg.f64     %r3012 <- %r3011
+	load.f64    %r3013 <- 0[TwoForty]
+	divu.f64    %r3014 <- %r3012, %r3013
+	store.f64   %r3014 -> 0[Y]
+	add.f64     %r3017 <- %r3014, %r3014
+	store.f64   %r3017 -> 0[Y2]
+	symaddr.64* %r3018 <- <anon symbol:0x62d00050b720>
+	push.64*    %r3018
+	call.32     %r3019 <- printf
+	symaddr.64* %r3020 <- <anon symbol:0x62d00050bac0>
+	push.64*    %r3020
+	load.f64    %r3021 <- 0[HInvrse]
+	push.f64    %r3021
+	load.f64    %r3022 <- 0[Y]
+	push.f64    %r3022
+	call.32     %r3023 <- printf
+	symaddr.64* %r3024 <- <anon symbol:0x62d00050be60>
+	push.64*    %r3024
+	load.f64    %r3025 <- 0[HInvrse]
+	push.f64    %r3025
+	load.f64    %r3026 <- 0[Y2]
+	push.f64    %r3026
+	call.32     %r3027 <- printf
+	symaddr.64* %r3028 <- <anon symbol:0x62d00050c200>
+	push.64*    %r3028
+	call.32     %r3029 <- printf
+	symaddr.64* %r3030 <- ovfl_buf
+	push.64*    %r3030
+	call.32     %r3031 <- _setjmp
+	br          %r3031, .L409, .L410
+
+.L409:
+	store.64*   $0 -> 0[sigsave]
+	push.32     $1
+	symaddr.64* %r3032 <- <anon symbol:0x62d00050c770>
+	push.64*    %r3032
+	call        BadCond
+	br          .L411
+
+.L410:
+	symaddr.64* %r3033 <- sigfpe
+	store.64*   %r3033 -> 0[sigsave]
+	load.f64    %r3034 <- 0[HInvrse]
+	push.f64    %r3034
+	load.f64    %r3035 <- 0[Y2]
+	push.f64    %r3035
+	call.f64    %r3036 <- pow
+	store.f64   %r3036 -> 0[V9]
+	store.64*   $0 -> 0[sigsave]
+	symaddr.64* %r3037 <- <anon symbol:0x62d00050cce0>
+	push.64*    %r3037
+	push.f64    %r3036
+	call.32     %r3039 <- printf
+	load.f64    %r3040(V9) <- 0[V9]
+	load.f64    %r3041 <- 0[Zero]
+	setge.32    %r3042 <- %r3040(V9), %r3041
+	br          %r3042, .L414, .L412
+
+.L414:
+	load.f64    %r3044 <- 0[Radix]
+	add.f64     %r3046 <- %r3044, %r3044
+	load.f64    %r3047(E9) <- 0[E9]
+	add.f64     %r3048 <- %r3046, %r3047(E9)
+	load.f64    %r3049(UfThold) <- 0[UfThold]
+	mulu.f64    %r3050 <- %r3048, %r3049(UfThold)
+	setle.32    %r3051 <- %r3040(V9), %r3050
+	br          %r3051, .L413, .L412
+
+.L412:
+	push.32     $1
+	symaddr.64* %r3052 <- <anon symbol:0x62d00050d080>
+	push.64*    %r3052
+	call        BadCond
+	symaddr.64* %r3053 <- <anon symbol:0x62d00050d420>
+	push.64*    %r3053
+	load.f64    %r3054 <- 0[UfThold]
+	push.f64    %r3054
+	call.32     %r3055 <- printf
+	br          .L411
+
+.L413:
+	load.f64    %r3058 <- 0[One]
+	add.f64     %r3060 <- %r3058, %r3047(E9)
+	mulu.f64    %r3061 <- %r3049(UfThold), %r3060
+	setgt.32    %r3062 <- %r3040(V9), %r3061
+	br          %r3062, .L417, .L416
+
+.L416:
+	symaddr.64* %r3063 <- <anon symbol:0x62d00050d7c0>
+	push.64*    %r3063
+	call.32     %r3064 <- printf
+	br          .L411
+
+.L417:
+	push.32     $2
+	symaddr.64* %r3065 <- <anon symbol:0x62d00050db60>
+	push.64*    %r3065
+	call        BadCond
+	symaddr.64* %r3066 <- <anon symbol:0x62d00050df00>
+	push.64*    %r3066
+	load.f64    %r3067 <- 0[UfThold]
+	push.f64    %r3067
+	call.32     %r3068 <- printf
+	br          .L411
+
+.L411:
+	store.32    $140 -> 0[Milestone]
+	symaddr.64* %r3069 <- <anon symbol:0x62d00050e2a0>
+	push.64*    %r3069
+	call.32     %r3070 <- printf
+	load.f64    %r3071(X) <- 0[Zero]
+	load.f64    %r3072 <- 0[Two]
+	load.f64    %r3073 <- 0[Three]
+	mulu.f64    %r3074(Y) <- %r3072, %r3073
+	store.32    $0 -> 0[N]
+	phisrc.f64  %phi218(Y) <- %r3074(Y)
+	phisrc.f64  %phi290(X) <- %r3071(X)
+	phisrc.32   %phi340(I) <- $2
+	phisrc.f64  %phi391(Q) <- %r3071(X)
+	br          .L419
+
+.L419:
+	phi.f64     %r3076 <- %phi290(X), %phi291(X)
+	store.f64   %r3076 -> 0[Z]
+	phi.32      %r3077 <- %phi340(I), %phi341(I)
+	add.32      %r3078 <- %r3077, $1
+	store.32    %r3078 -> 0[I]
+	phi.f64     %r3079 <- %phi218(Y), %phi219(Y)
+	add.32      %r3082 <- %r3078, %r3078
+	fpcast.f64  %r3083 <- (32) %r3082
+	divu.f64    %r3084 <- %r3079, %r3083
+	store.f64   %r3084 -> 0[Y]
+	phi.f64     %r3086 <- %phi391(Q), %phi392(Q)
+	add.f64     %r3087 <- %r3084, %r3086
+	store.f64   %r3087 -> 0[R]
+	add.f64     %r3090 <- %r3076, %r3087
+	store.f64   %r3090 -> 0[X]
+	sub.f64     %r3093 <- %r3076, %r3090
+	add.f64     %r3095 <- %r3093, %r3087
+	store.f64   %r3095 -> 0[Q]
+	phisrc.f64  %phi219(Y) <- %r3084
+	phisrc.f64  %phi291(X) <- %r3090
+	phisrc.32   %phi341(I) <- %r3078
+	phisrc.f64  %phi392(Q) <- %r3095
+	setgt.32    %r3098 <- %r3090, %r3076
+	br          %r3098, .L419, .L421
+
+.L421:
+	load.f64    %r3099 <- 0[OneAndHalf]
+	load.f64    %r3100 <- 0[One]
+	load.f64    %r3101 <- 0[Eight]
+	divu.f64    %r3102 <- %r3100, %r3101
+	add.f64     %r3103 <- %r3099, %r3102
+	load.f64    %r3106 <- 0[ThirtyTwo]
+	mulu.f64    %r3107 <- %r3099, %r3106
+	divu.f64    %r3108 <- %r3090, %r3107
+	add.f64     %r3109 <- %r3103, %r3108
+	store.f64   %r3109 -> 0[Z]
+	mulu.f64    %r3112 <- %r3109, %r3109
+	mulu.f64    %r3115 <- %r3112, %r3112
+	store.f64   %r3115 -> 0[Exp2]
+	load.f64    %r3116 <- 0[F9]
+	store.f64   %r3116 -> 0[X]
+	load.f64    %r3118 <- 0[U1]
+	sub.f64     %r3119 <- %r3116, %r3118
+	store.f64   %r3119 -> 0[Y]
+	symaddr.64* %r3120 <- <anon symbol:0x62d00050e640>
+	push.64*    %r3120
+	push.f64    %r3115
+	call.32     %r3122 <- printf
+	store.32    $1 -> 0[I]
+	br          .L422
+
+.L422:
+	load.f64    %r3123 <- 0[X]
+	load.f64    %r3124 <- 0[BInvrse]
+	sub.f64     %r3125 <- %r3123, %r3124
+	load.f64    %r3127 <- 0[One]
+	add.f64     %r3128 <- %r3123, %r3127
+	sub.f64     %r3132 <- %r3127, %r3124
+	sub.f64     %r3133 <- %r3125, %r3132
+	divu.f64    %r3134 <- %r3128, %r3133
+	store.f64   %r3134 -> 0[Z]
+	push.f64    %r3123
+	push.f64    %r3134
+	call.f64    %r3137 <- pow
+	load.f64    %r3138 <- 0[Exp2]
+	sub.f64     %r3139 <- %r3137, %r3138
+	store.f64   %r3139 -> 0[Q]
+	push.f64    %r3139
+	call.f64    %r3141 <- fabs
+	load.f64    %r3142 <- 0[TwoForty]
+	load.f64    %r3143(U2) <- 0[U2]
+	mulu.f64    %r3144 <- %r3142, %r3143(U2)
+	setgt.32    %r3145 <- %r3141, %r3144
+	br          %r3145, .L426, .L427
+
+.L426:
+	store.32    $1 -> 0[N]
+	load.f64    %r3146 <- 0[X]
+	load.f64    %r3147 <- 0[BInvrse]
+	sub.f64     %r3148 <- %r3146, %r3147
+	load.f64    %r3149 <- 0[One]
+	sub.f64     %r3151 <- %r3149, %r3147
+	sub.f64     %r3152 <- %r3148, %r3151
+	store.f64   %r3152 -> 0[V9]
+	push.32     $2
+	symaddr.64* %r3153 <- <anon symbol:0x62d00050e9e0>
+	push.64*    %r3153
+	call        BadCond
+	symaddr.64* %r3154 <- <anon symbol:0x62d00050ed80>
+	push.64*    %r3154
+	load.f64    %r3155 <- 0[X]
+	push.f64    %r3155
+	load.f64    %r3156 <- 0[Z]
+	push.f64    %r3156
+	call.f64    %r3157 <- pow
+	push.f64    %r3157
+	call.32     %r3158 <- printf
+	symaddr.64* %r3159 <- <anon symbol:0x62d00050f120>
+	push.64*    %r3159
+	load.f64    %r3160 <- 0[V9]
+	push.f64    %r3160
+	load.f64    %r3161 <- 0[Z]
+	push.f64    %r3161
+	call.32     %r3162 <- printf
+	symaddr.64* %r3163 <- <anon symbol:0x62d00050f4c0>
+	push.64*    %r3163
+	load.f64    %r3164 <- 0[Q]
+	push.f64    %r3164
+	call.32     %r3165 <- printf
+	symaddr.64* %r3166 <- <anon symbol:0x62d00050f860>
+	push.64*    %r3166
+	call.32     %r3167 <- printf
+	symaddr.64* %r3168 <- <anon symbol:0x62d00050fc00>
+	push.64*    %r3168
+	call.32     %r3169 <- printf
+	br          .L424
+
+.L427:
+	load.f64    %r3170 <- 0[Y]
+	load.f64    %r3171 <- 0[X]
+	sub.f64     %r3172 <- %r3170, %r3171
+	load.f64    %r3173 <- 0[Two]
+	mulu.f64    %r3174 <- %r3172, %r3173
+	add.f64     %r3176 <- %r3174, %r3170
+	store.f64   %r3170 -> 0[X]
+	store.f64   %r3176 -> 0[Y]
+	load.f64    %r3179 <- 0[One]
+	load.f64    %r3181 <- 0[F9]
+	sub.f64     %r3182 <- %r3170, %r3181
+	mulu.f64    %r3186 <- %r3182, %r3182
+	add.f64     %r3187 <- %r3179, %r3186
+	store.f64   %r3187 -> 0[Z]
+	setgt.32    %r3190 <- %r3187, %r3179
+	load.32     %r3191(I) <- 0[I]
+	setlt.32    %r3192 <- %r3191(I), $20
+	and-bool.32 %r3193 <- %r3190, %r3192
+	br          %r3193, .L429, .L430
+
+.L429:
+	add.32      %r3195 <- %r3191(I), $1
+	store.32    %r3195 -> 0[I]
+	br          .L422
+
+.L430:
+	setgt.32    %r3198 <- %r3170, %r3179
+	br          %r3198, .L432, .L433
+
+.L432:
+	load.32     %r3199 <- 0[N]
+	br          %r3199, .L424, .L434
+
+.L434:
+	symaddr.64* %r3201 <- <anon symbol:0x62d00050ffa0>
+	push.64*    %r3201
+	call.32     %r3202 <- printf
+	br          .L424
+
+.L433:
+	add.f64     %r3205 <- %r3179, %r3143(U2)
+	store.f64   %r3205 -> 0[X]
+	add.f64     %r3208 <- %r3143(U2), %r3143(U2)
+	fpcast.f64  %r3211 <- (64) %r3208
+	add.f64     %r3212 <- %r3211, %r3205
+	fpcast.f64  %r3213 <- (64) %r3212
+	store.f64   %r3213 -> 0[Y]
+	store.32    $1 -> 0[I]
+	br          .L422
+
+.L424:
+	store.32    $150 -> 0[Milestone]
+	symaddr.64* %r3214 <- <anon symbol:0x62d000510340>
+	push.64*    %r3214
+	call.32     %r3215 <- printf
+	store.32    $0 -> 0[N]
+	load.f64    %r3216 <- 0[A1]
+	store.f64   %r3216 -> 0[Z]
+	load.f64    %r3217 <- 0[Half]
+	load.f64    %r3218 <- 0[C]
+	push.f64    %r3218
+	call.f64    %r3219 <- log
+	load.f64    %r3220 <- 0[A1]
+	push.f64    %r3220
+	call.f64    %r3221 <- log
+	divu.f64    %r3222 <- %r3219, %r3221
+	sub.f64     %r3223 <- %r3217, %r3222
+	push.f64    %r3223
+	call.f64    %r3224 <- floor
+	store.f64   %r3224 -> 0[Q]
+	store.32    $0 -> 0[Break]
+	phisrc.f64  %phi390(Q) <- %r3224
+	phisrc.f64  %phi559 <- %r3224
+	phisrc.f64  %phi674 <- %r3224
+	phisrc.f64  %phi792 <- %r3224
+	phisrc.f64  %phi908 <- %r3224
+	phisrc.f64  %phi1023 <- %r3224
+	phisrc.f64  %phi1138 <- %r3224
+	br          .L437
+
+.L437:
+	load.f64    %r3225 <- 0[CInvrse]
+	store.f64   %r3225 -> 0[X]
+	load.f64    %r3226 <- 0[Z]
+	push.f64    %r3226
+	load.f64    %r3227 <- 0[Q]
+	push.f64    %r3227
+	call.f64    %r3228 <- pow
+	store.f64   %r3228 -> 0[Y]
+	call        IsYeqX
+	load.f64    %r3229 <- 0[Q]
+	neg.f64     %r3230 <- %r3229
+	store.f64   %r3230 -> 0[Q]
+	load.f64    %r3231 <- 0[C]
+	store.f64   %r3231 -> 0[X]
+	load.f64    %r3232 <- 0[Z]
+	push.f64    %r3232
+	push.f64    %r3230
+	call.f64    %r3234 <- pow
+	store.f64   %r3234 -> 0[Y]
+	call        IsYeqX
+	load.f64    %r3235 <- 0[Z]
+	load.f64    %r3236 <- 0[One]
+	setlt.32    %r3237 <- %r3235, %r3236
+	br          %r3237, .L440, .L441
+
+.L440:
+	store.32    $1 -> 0[Break]
+	phisrc.32   %phi483(Break) <- $1
+	phisrc.32   %phi558(I) <- $1
+	phisrc.32   %phi673(I) <- $1
+	phisrc.32   %phi791(I) <- $1
+	phisrc.32   %phi907(I) <- $1
+	phisrc.32   %phi1022(I) <- $1
+	phisrc.32   %phi1137(I) <- $1
+	br          .L438
+
+.L441:
+	load.f64    %r3238 <- 0[AInvrse]
+	store.f64   %r3238 -> 0[Z]
+	br          .L438
+
+.L438:
+	load.32     %r3239 <- 0[Break]
+	br          %r3239, .L439, .L437
+
+.L439:
+	call        PrintIfNPositive
+	load.32     %r3240 <- 0[N]
+	br          %r3240, .L444, .L443
+
+.L443:
+	symaddr.64* %r3242 <- <anon symbol:0x62d0005106e0>
+	push.64*    %r3242
+	call.32     %r3243 <- printf
+	br          .L444
+
+.L444:
+	symaddr.64* %r3244 <- <anon symbol:0x62d000510a80>
+	push.64*    %r3244
+	call.32     %r3245 <- printf
+	store.32    $160 -> 0[Milestone]
+	call        Pause
+	symaddr.64* %r3246 <- <anon symbol:0x62d000510e20>
+	push.64*    %r3246
+	call.32     %r3247 <- printf
+	symaddr.64* %r3248 <- <anon symbol:0x62d0005111c0>
+	push.64*    %r3248
+	call.32     %r3249 <- printf
+	load.f64    %r3250 <- 0[CInvrse]
+	neg.f64     %r3251 <- %r3250
+	store.f64   %r3251 -> 0[Y]
+	load.f64    %r3252 <- 0[HInvrse]
+	mulu.f64    %r3254 <- %r3252, %r3251
+	store.f64   %r3254 -> 0[V9]
+	symaddr.64* %r3255 <- sigfpe
+	store.64*   %r3255 -> 0[sigsave]
+	symaddr.64* %r3256 <- ovfl_buf
+	push.64*    %r3256
+	call.32     %r3257 <- _setjmp
+	br          %r3257, .L445, .L448
+
+.L445:
+	store.32    $0 -> 0[I]
+	load.f64    %r3258(V9) <- 0[Y]
+	store.f64   %r3258(V9) -> 0[V9]
+	phisrc.f64  %phi521(V9) <- %r3258(V9)
+	br          .L447
+
+.L448:
+	load.f64    %r3259 <- 0[Y]
+	store.f64   %r3259 -> 0[V]
+	load.f64    %r3260 <- 0[V9]
+	store.f64   %r3260 -> 0[Y]
+	load.f64    %r3261 <- 0[HInvrse]
+	mulu.f64    %r3263(V9) <- %r3261, %r3260
+	store.f64   %r3263(V9) -> 0[V9]
+	setlt.32    %r3266 <- %r3263(V9), %r3260
+	phisrc.f64  %phi522(V9) <- %r3263(V9)
+	phisrc.f64  %phi789(V9) <- %r3263(V9)
+	phisrc.f64  %phi790 <- %r3260
+	phisrc.f64  %phi905(V9) <- %r3263(V9)
+	phisrc.f64  %phi906 <- %r3260
+	phisrc.f64  %phi1020(V9) <- %r3263(V9)
+	phisrc.f64  %phi1021 <- %r3260
+	phisrc.f64  %phi1135(V9) <- %r3263(V9)
+	phisrc.f64  %phi1136 <- %r3260
+	br          %r3266, .L448, .L450
+
+.L450:
+	store.32    $1 -> 0[I]
+	br          .L447
+
+.L447:
+	store.64*   $0 -> 0[sigsave]
+	phi.f64     %r3267 <- %phi521(V9), %phi522(V9)
+	store.f64   %r3267 -> 0[Z]
+	symaddr.64* %r3268 <- <anon symbol:0x62d000511900>
+	push.64*    %r3268
+	call.32     %r3269 <- printf
+	symaddr.64* %r3270 <- <anon symbol:0x62d000511ca0>
+	push.64*    %r3270
+	load.f64    %r3271 <- 0[Y]
+	push.f64    %r3271
+	call.32     %r3272 <- printf
+	load.f64    %r3273 <- 0[Y]
+	neg.f64     %r3274 <- %r3273
+	store.f64   %r3274 -> 0[V9]
+	store.f64   %r3274 -> 0[V0]
+	load.f64    %r3276 <- 0[V]
+	sub.f64     %r3278 <- %r3276, %r3273
+	add.f64     %r3281 <- %r3276, %r3274
+	seteq.32    %r3282 <- %r3278, %r3281
+	br          %r3282, .L451, .L452
+
+.L451:
+	symaddr.64* %r3283 <- <anon symbol:0x62d000512040>
+	push.64*    %r3283
+	call.32     %r3284 <- printf
+	br          .L453
+
+.L452:
+	symaddr.64* %r3285 <- <anon symbol:0x62d000514418>
+	push.64*    %r3285
+	call.32     %r3286 <- printf
+	push.32     $3
+	symaddr.64* %r3287 <- <anon symbol:0x62d0005147b8>
+	push.64*    %r3287
+	call        BadCond
+	br          .L453
+
+.L453:
+	load.f64    %r3288 <- 0[Z]
+	load.f64    %r3289 <- 0[Y]
+	setne.32    %r3290 <- %r3288, %r3289
+	phisrc.f64  %phi213(Y) <- %r3289
+	phisrc.f64  %phi557 <- %r3289
+	phisrc.f64  %phi672 <- %r3289
+	phisrc.f64  %phi788 <- %r3289
+	phisrc.f64  %phi904 <- %r3289
+	phisrc.f64  %phi1019 <- %r3289
+	phisrc.f64  %phi1134 <- %r3289
+	br          %r3290, .L454, .L455
+
+.L454:
+	push.32     $1
+	symaddr.64* %r3291 <- <anon symbol:0x62d000514b58>
+	push.64*    %r3291
+	call        BadCond
+	symaddr.64* %r3292 <- <anon symbol:0x62d000514ef8>
+	push.64*    %r3292
+	load.f64    %r3293 <- 0[Y]
+	push.f64    %r3293
+	load.f64    %r3294 <- 0[Z]
+	push.f64    %r3294
+	call.32     %r3295 <- printf
+	br          .L455
+
+.L455:
+	load.32     %r3296 <- 0[I]
+	br          %r3296, .L456, .L457
+
+.L456:
+	load.f64    %r3297 <- 0[V]
+	load.f64    %r3298 <- 0[HInvrse]
+	load.f64    %r3299 <- 0[U2]
+	mulu.f64    %r3300 <- %r3298, %r3299
+	sub.f64     %r3302 <- %r3300, %r3298
+	mulu.f64    %r3303 <- %r3297, %r3302
+	store.f64   %r3303 -> 0[Y]
+	load.f64    %r3305 <- 0[One]
+	sub.f64     %r3307 <- %r3305, %r3298
+	mulu.f64    %r3309 <- %r3307, %r3299
+	mulu.f64    %r3311 <- %r3309, %r3297
+	add.f64     %r3312 <- %r3303, %r3311
+	store.f64   %r3312 -> 0[Z]
+	load.f64    %r3314(V0) <- 0[V0]
+	setlt.32    %r3315 <- %r3312, %r3314(V0)
+	phisrc.f64  %phi215(Y) <- %r3303
+	phisrc.f64  %phi530(V) <- %r3297
+	br          %r3315, .L458, .L459
+
+.L458:
+	store.f64   %r3312 -> 0[Y]
+	phisrc.f64  %phi216(Y) <- %r3312
+	br          .L459
+
+.L459:
+	phi.f64     %r3317(Y) <- %phi215(Y), %phi216(Y)
+	setlt.32    %r3319 <- %r3317(Y), %r3314(V0)
+	br          %r3319, .L460, .L461
+
+.L460:
+	store.f64   %r3317(Y) -> 0[V]
+	phisrc.f64  %phi531(V) <- %r3317(Y)
+	br          .L461
+
+.L461:
+	phi.f64     %r3322(V) <- %phi530(V), %phi531(V)
+	sub.f64     %r3323 <- %r3314(V0), %r3322(V)
+	setlt.32    %r3325 <- %r3323, %r3314(V0)
+	phisrc.f64  %phi527(V) <- %r3322(V)
+	br          %r3325, .L462, .L464
+
+.L462:
+	store.f64   %r3314(V0) -> 0[V]
+	phisrc.f64  %phi528(V) <- %r3314(V0)
+	br          .L464
+
+.L457:
+	load.f64    %r3327 <- 0[Y]
+	load.f64    %r3328 <- 0[HInvrse]
+	load.f64    %r3329 <- 0[U2]
+	mulu.f64    %r3330 <- %r3328, %r3329
+	sub.f64     %r3332 <- %r3330, %r3328
+	mulu.f64    %r3333 <- %r3327, %r3332
+	load.f64    %r3335 <- 0[One]
+	sub.f64     %r3337 <- %r3335, %r3328
+	mulu.f64    %r3339 <- %r3337, %r3329
+	mulu.f64    %r3341 <- %r3339, %r3327
+	add.f64     %r3342 <- %r3333, %r3341
+	store.f64   %r3342 -> 0[V]
+	phisrc.f64  %phi529(V) <- %r3342
+	br          .L464
+
+.L464:
+	symaddr.64* %r3343 <- <anon symbol:0x62d000515298>
+	push.64*    %r3343
+	phi.f64     %r3344 <- %phi527(V), %phi528(V), %phi529(V)
+	push.f64    %r3344
+	call.32     %r3345 <- printf
+	load.32     %r3346 <- 0[I]
+	br          %r3346, .L465, .L466
+
+.L465:
+	symaddr.64* %r3347 <- <anon symbol:0x62d000515638>
+	push.64*    %r3347
+	load.f64    %r3348 <- 0[V0]
+	push.f64    %r3348
+	call.32     %r3349 <- printf
+	br          .L467
+
+.L466:
+	symaddr.64* %r3350 <- <anon symbol:0x62d0005159d8>
+	push.64*    %r3350
+	call.32     %r3351 <- printf
+	br          .L467
+
+.L467:
+	load.f64    %r3352 <- 0[V]
+	load.f64    %r3353 <- 0[One]
+	mulu.f64    %r3354 <- %r3352, %r3353
+	store.f64   %r3354 -> 0[V9]
+	symaddr.64* %r3355 <- <anon symbol:0x62d000515d78>
+	push.64*    %r3355
+	push.f64    %r3354
+	call.32     %r3357 <- printf
+	load.f64    %r3358 <- 0[V]
+	load.f64    %r3359 <- 0[One]
+	divu.f64    %r3360 <- %r3358, %r3359
+	store.f64   %r3360 -> 0[V9]
+	symaddr.64* %r3361 <- <anon symbol:0x62d000516118>
+	push.64*    %r3361
+	push.f64    %r3360
+	call.32     %r3363 <- printf
+	symaddr.64* %r3364 <- <anon symbol:0x62d0005164b8>
+	push.64*    %r3364
+	call.32     %r3365 <- printf
+	symaddr.64* %r3366 <- <anon symbol:0x62d000516858>
+	push.64*    %r3366
+	call.32     %r3367 <- printf
+	store.32    $170 -> 0[Milestone]
+	load.f64    %r3368 <- 0[V]
+	neg.f64     %r3369 <- %r3368
+	setlt.32    %r3371 <- %r3369, %r3368
+	load.f64    %r3372 <- 0[V0]
+	neg.f64     %r3373 <- %r3372
+	setlt.32    %r3375 <- %r3373, %r3372
+	and-bool.32 %r3376 <- %r3371, %r3375
+	load.f64    %r3377 <- 0[UfThold]
+	neg.f64     %r3378 <- %r3377
+	setlt.32    %r3380 <- %r3378, %r3368
+	and-bool.32 %r3381 <- %r3376, %r3380
+	setlt.32    %r3384 <- %r3377, %r3368
+	and-bool.32 %r3385 <- %r3381, %r3384
+	br          %r3385, .L469, .L468
+
+.L468:
+	push.32     $0
+	symaddr.64* %r3386 <- <anon symbol:0x62d000516bf8>
+	push.64*    %r3386
+	call        BadCond
+	symaddr.64* %r3387 <- <anon symbol:0x62d000516f98>
+	push.64*    %r3387
+	load.f64    %r3388 <- 0[V]
+	push.f64    %r3388
+	load.f64    %r3389 <- 0[V0]
+	push.f64    %r3389
+	load.f64    %r3390 <- 0[UfThold]
+	push.f64    %r3390
+	call.32     %r3391 <- printf
+	br          .L469
+
+.L469:
+	store.32    $175 -> 0[Milestone]
+	symaddr.64* %r3392 <- <anon symbol:0x62d000517338>
+	push.64*    %r3392
+	call.32     %r3393 <- printf
+	store.32    $1 -> 0[Indx]
+	phisrc.32   %phi458(Indx) <- $1
+	phisrc.32   %phi552(I) <- $1
+	phisrc.32   %phi667(I) <- $1
+	phisrc.32   %phi783(I) <- $1
+	phisrc.32   %phi899(I) <- $1
+	phisrc.32   %phi1014(I) <- $1
+	phisrc.32   %phi1129(I) <- $1
+	br          .L473
+
+.L473:
+	phi.32      %r3394(Indx) <- %phi458(Indx), %phi459(Indx)
+	setle.32    %r3395 <- %r3394(Indx), $3
+	br          %r3395, .L470, .L472
+
+.L470:
+	phisrc.32   %phi456(Indx) <- %r3394(Indx)
+	switch      %r3394(Indx), 1 -> .L475, 2 -> .L476, 3 -> .L477, default -> .L474
+
+.L475:
+	load.f64    %r3397 <- 0[UfThold]
+	store.f64   %r3397 -> 0[Z]
+	phisrc.f64  %phi137(Z) <- %r3397
+	phisrc.f64  %phi554 <- %r3397
+	phisrc.f64  %phi669 <- %r3397
+	phisrc.f64  %phi785 <- %r3397
+	phisrc.f64  %phi901 <- %r3397
+	phisrc.f64  %phi1016 <- %r3397
+	phisrc.f64  %phi1131 <- %r3397
+	br          .L474
+
+.L476:
+	load.f64    %r3398 <- 0[E0]
+	store.f64   %r3398 -> 0[Z]
+	phisrc.f64  %phi138(Z) <- %r3398
+	phisrc.f64  %phi555 <- %r3398
+	phisrc.f64  %phi670 <- %r3398
+	phisrc.f64  %phi786 <- %r3398
+	phisrc.f64  %phi902 <- %r3398
+	phisrc.f64  %phi1017 <- %r3398
+	phisrc.f64  %phi1132 <- %r3398
+	br          .L474
+
+.L477:
+	load.f64    %r3399 <- 0[PseudoZero]
+	store.f64   %r3399 -> 0[Z]
+	phisrc.f64  %phi139(Z) <- %r3399
+	phisrc.f64  %phi556 <- %r3399
+	phisrc.f64  %phi671 <- %r3399
+	phisrc.f64  %phi787 <- %r3399
+	phisrc.f64  %phi903 <- %r3399
+	phisrc.f64  %phi1018 <- %r3399
+	phisrc.f64  %phi1133 <- %r3399
+	br          .L474
+
+.L474:
+	load.f64    %r3400(Z) <- 0[Z]
+	load.f64    %r3401 <- 0[Zero]
+	setne.32    %r3402 <- %r3400(Z), %r3401
+	br          %r3402, .L478, .L471
+
+.L478:
+	push.f64    %r3400(Z)
+	call.f64    %r3404 <- sqrt
+	store.f64   %r3404 -> 0[V9]
+	mulu.f64    %r3407 <- %r3404, %r3404
+	store.f64   %r3407 -> 0[Y]
+	load.f64    %r3409(One) <- 0[One]
+	load.f64    %r3410(Radix) <- 0[Radix]
+	load.f64    %r3411(E9) <- 0[E9]
+	mulu.f64    %r3412 <- %r3410(Radix), %r3411(E9)
+	sub.f64     %r3413 <- %r3409(One), %r3412
+	divu.f64    %r3414 <- %r3407, %r3413
+	load.f64    %r3415(Z) <- 0[Z]
+	setlt.32    %r3416 <- %r3414, %r3415(Z)
+	br          %r3416, .L480, .L482
+
+.L482:
+	add.f64     %r3422 <- %r3409(One), %r3412
+	mulu.f64    %r3424 <- %r3422, %r3415(Z)
+	setgt.32    %r3425 <- %r3407, %r3424
+	br          %r3425, .L480, .L471
+
+.L480:
+	load.f64    %r3427 <- 0[U1]
+	setgt.32    %r3428 <- %r3404, %r3427
+	br          %r3428, .L483, .L484
+
+.L483:
+	push.32     $1
+	symaddr.64* %r3429 <- <anon symbol:0x62d0005176d8>
+	push.64*    %r3429
+	call        BadCond
+	br          .L485
+
+.L484:
+	push.32     $2
+	symaddr.64* %r3430 <- <anon symbol:0x62d000517a78>
+	push.64*    %r3430
+	call        BadCond
+	br          .L485
+
+.L485:
+	symaddr.64* %r3431 <- <anon symbol:0x62d000517e18>
+	push.64*    %r3431
+	load.f64    %r3432 <- 0[Z]
+	push.f64    %r3432
+	call.32     %r3433 <- printf
+	symaddr.64* %r3434 <- <anon symbol:0x62d0005181b8>
+	push.64*    %r3434
+	load.f64    %r3435 <- 0[Y]
+	push.f64    %r3435
+	call.32     %r3436 <- printf
+	br          .L471
+
+.L471:
+	load.32     %r3437 <- 0[Indx]
+	add.32      %r3438 <- %r3437, $1
+	store.32    %r3438 -> 0[Indx]
+	phisrc.32   %phi459(Indx) <- %r3438
+	phisrc.32   %phi553 <- %r3438
+	phisrc.32   %phi668 <- %r3438
+	phisrc.32   %phi784 <- %r3438
+	phisrc.32   %phi900 <- %r3438
+	phisrc.32   %phi1015 <- %r3438
+	phisrc.32   %phi1130 <- %r3438
+	br          .L473
+
+.L472:
+	store.32    $180 -> 0[Milestone]
+	store.32    $1 -> 0[Indx]
+	phisrc.32   %phi454(Indx) <- $1
+	br          .L489
+
+.L489:
+	phi.32      %r3439(Indx) <- %phi454(Indx), %phi455(Indx)
+	setle.32    %r3440 <- %r3439(Indx), $2
+	br          %r3440, .L486, .L488
+
+.L486:
+	seteq.32    %r3442 <- %r3439(Indx), $1
+	br          %r3442, .L490, .L491
+
+.L490:
+	load.f64    %r3443(Z) <- 0[V]
+	store.f64   %r3443(Z) -> 0[Z]
+	phisrc.f64  %phi133(Z) <- %r3443(Z)
+	br          .L492
+
+.L491:
+	load.f64    %r3444 <- 0[V0]
+	store.f64   %r3444 -> 0[Z]
+	phisrc.f64  %phi134(Z) <- %r3444
+	br          .L492
+
+.L492:
+	phi.f64     %r3445 <- %phi133(Z), %phi134(Z)
+	push.f64    %r3445
+	call.f64    %r3446 <- sqrt
+	load.f64    %r3447 <- 0[One]
+	load.f64    %r3448 <- 0[Radix]
+	load.f64    %r3449 <- 0[E9]
+	mulu.f64    %r3450 <- %r3448, %r3449
+	sub.f64     %r3451 <- %r3447, %r3450
+	mulu.f64    %r3453 <- %r3451, %r3446
+	store.f64   %r3453 -> 0[X]
+	mulu.f64    %r3456 <- %r3446, %r3453
+	store.f64   %r3456 -> 0[V9]
+	load.f64    %r3459 <- 0[Two]
+	mulu.f64    %r3461 <- %r3459, %r3448
+	mulu.f64    %r3463 <- %r3461, %r3449
+	sub.f64     %r3464 <- %r3447, %r3463
+	load.f64    %r3465 <- 0[Z]
+	mulu.f64    %r3466 <- %r3464, %r3465
+	setlt.32    %r3467 <- %r3456, %r3466
+	setgt.32    %r3470 <- %r3456, %r3465
+	or-bool.32  %r3471 <- %r3467, %r3470
+	br          %r3471, .L493, .L487
+
+.L493:
+	store.f64   %r3456 -> 0[Y]
+	load.f64    %r3474 <- 0[W]
+	setlt.32    %r3475 <- %r3453, %r3474
+	br          %r3475, .L495, .L496
+
+.L495:
+	push.32     $1
+	symaddr.64* %r3476 <- <anon symbol:0x62d000518558>
+	push.64*    %r3476
+	call        BadCond
+	br          .L497
+
+.L496:
+	push.32     $2
+	symaddr.64* %r3477 <- <anon symbol:0x62d0005188f8>
+	push.64*    %r3477
+	call        BadCond
+	br          .L497
+
+.L497:
+	symaddr.64* %r3478 <- <anon symbol:0x62d000518c98>
+	push.64*    %r3478
+	load.f64    %r3479 <- 0[Z]
+	push.f64    %r3479
+	call.32     %r3480 <- printf
+	symaddr.64* %r3481 <- <anon symbol:0x62d000519038>
+	push.64*    %r3481
+	load.f64    %r3482 <- 0[Y]
+	push.f64    %r3482
+	call.32     %r3483 <- printf
+	br          .L487
+
+.L487:
+	load.32     %r3484 <- 0[Indx]
+	add.32      %r3485 <- %r3484, $1
+	store.32    %r3485 -> 0[Indx]
+	phisrc.32   %phi455(Indx) <- %r3485
+	br          .L489
+
+.L488:
+	store.32    $190 -> 0[Milestone]
+	call        Pause
+	load.f64    %r3486 <- 0[UfThold]
+	load.f64    %r3487 <- 0[V]
+	mulu.f64    %r3488 <- %r3486, %r3487
+	store.f64   %r3488 -> 0[X]
+	load.f64    %r3489 <- 0[Radix]
+	mulu.f64    %r3491 <- %r3489, %r3489
+	store.f64   %r3491 -> 0[Y]
+	mulu.f64    %r3494 <- %r3488, %r3491
+	load.f64    %r3495 <- 0[One]
+	setlt.32    %r3496 <- %r3494, %r3495
+	setgt.32    %r3499 <- %r3488, %r3491
+	or-bool.32  %r3500 <- %r3496, %r3499
+	phisrc.f64  %phi48(One) <- %r3495
+	phisrc.f64  %phi184(Radix) <- %r3489
+	phisrc.f64  %phi504(UfThold) <- %r3486
+	phisrc.f64  %phi526(V) <- %r3487
+	phisrc.f64  %phi548 <- %r3489
+	phisrc.f64  %phi549 <- %r3486
+	phisrc.f64  %phi550 <- %r3487
+	phisrc.f64  %phi551 <- %r3495
+	phisrc.f64  %phi663 <- %r3489
+	phisrc.f64  %phi664 <- %r3486
+	phisrc.f64  %phi665 <- %r3487
+	phisrc.f64  %phi666 <- %r3495
+	phisrc.f64  %phi779 <- %r3489
+	phisrc.f64  %phi780 <- %r3486
+	phisrc.f64  %phi781 <- %r3487
+	phisrc.f64  %phi782 <- %r3495
+	phisrc.f64  %phi895 <- %r3489
+	phisrc.f64  %phi896 <- %r3486
+	phisrc.f64  %phi897 <- %r3487
+	phisrc.f64  %phi898 <- %r3495
+	phisrc.f64  %phi1010 <- %r3489
+	phisrc.f64  %phi1011 <- %r3486
+	phisrc.f64  %phi1012 <- %r3487
+	phisrc.f64  %phi1013 <- %r3495
+	phisrc.f64  %phi1125 <- %r3489
+	phisrc.f64  %phi1126 <- %r3486
+	phisrc.f64  %phi1127 <- %r3487
+	phisrc.f64  %phi1128 <- %r3495
+	br          %r3500, .L498, .L499
+
+.L498:
+	load.f64    %r3504 <- 0[U1]
+	setlt.32    %r3505 <- %r3494, %r3504
+	divu.f64    %r3509 <- %r3491, %r3504
+	setgt.32    %r3510 <- %r3488, %r3509
+	or-bool.32  %r3511 <- %r3505, %r3510
+	br          %r3511, .L500, .L501
+
+.L500:
+	push.32     $2
+	symaddr.64* %r3512 <- <anon symbol:0x62d0005193d8>
+	push.64*    %r3512
+	call        BadCond
+	br          .L502
+
+.L501:
+	push.32     $3
+	symaddr.64* %r3513 <- <anon symbol:0x62d000519778>
+	push.64*    %r3513
+	call        BadCond
+	br          .L502
+
+.L502:
+	symaddr.64* %r3514 <- <anon symbol:0x62d000519b18>
+	push.64*    %r3514
+	load.f64    %r3515 <- 0[X]
+	push.f64    %r3515
+	symaddr.64* %r3516 <- <anon symbol:0x62d000519eb8>
+	push.64*    %r3516
+	call.32     %r3517 <- printf
+	br          .L499
+
+.L499:
+	store.32    $200 -> 0[Milestone]
+	store.32    $1 -> 0[Indx]
+	phisrc.32   %phi451(Indx) <- $1
+	br          .L506
+
+.L506:
+	phi.32      %r3518(Indx) <- %phi451(Indx), %phi452(Indx)
+	setle.32    %r3519 <- %r3518(Indx), $5
+	br          %r3519, .L503, .L505
+
+.L503:
+	load.f64    %r3520 <- 0[F9]
+	store.f64   %r3520 -> 0[X]
+	phisrc.f64  %phi284(X) <- %r3520
+	switch      %r3518(Indx), 2 -> .L508, 3 -> .L509, 4 -> .L510, 5 -> .L511, default -> .L507
+
+.L508:
+	load.f64    %r3522 <- 0[One]
+	load.f64    %r3523 <- 0[U2]
+	add.f64     %r3524(X) <- %r3522, %r3523
+	store.f64   %r3524(X) -> 0[X]
+	phisrc.f64  %phi280(X) <- %r3524(X)
+	br          .L507
+
+.L509:
+	load.f64    %r3525 <- 0[V]
+	store.f64   %r3525 -> 0[X]
+	phisrc.f64  %phi281(X) <- %r3525
+	br          .L507
+
+.L510:
+	load.f64    %r3526 <- 0[UfThold]
+	store.f64   %r3526 -> 0[X]
+	phisrc.f64  %phi282(X) <- %r3526
+	br          .L507
+
+.L511:
+	load.f64    %r3527 <- 0[Radix]
+	store.f64   %r3527 -> 0[X]
+	phisrc.f64  %phi283(X) <- %r3527
+	br          .L507
+
+.L507:
+	phi.f64     %r3528 <- %phi280(X), %phi281(X), %phi282(X), %phi283(X), %phi284(X)
+	store.f64   %r3528 -> 0[Y]
+	symaddr.64* %r3529 <- sigfpe
+	store.64*   %r3529 -> 0[sigsave]
+	symaddr.64* %r3530 <- ovfl_buf
+	push.64*    %r3530
+	call.32     %r3531 <- _setjmp
+	br          %r3531, .L512, .L513
+
+.L512:
+	symaddr.64* %r3532 <- <anon symbol:0x62d00051a5f8>
+	push.64*    %r3532
+	load.f64    %r3533 <- 0[X]
+	push.f64    %r3533
+	call.32     %r3534 <- printf
+	br          .L514
+
+.L513:
+	load.f64    %r3535 <- 0[Y]
+	load.f64    %r3536 <- 0[X]
+	divu.f64    %r3537 <- %r3535, %r3536
+	load.f64    %r3538 <- 0[Half]
+	sub.f64     %r3539 <- %r3537, %r3538
+	sub.f64     %r3541 <- %r3539, %r3538
+	store.f64   %r3541 -> 0[V9]
+	load.f64    %r3543 <- 0[Zero]
+	seteq.32    %r3544 <- %r3541, %r3543
+	br          %r3544, .L504, .L516
+
+.L516:
+	load.f64    %r3546 <- 0[U1]
+	neg.f64     %r3547 <- %r3546
+	seteq.32    %r3548 <- %r3541, %r3547
+	load.32     %r3549 <- 0[Indx]
+	setlt.32    %r3550 <- %r3549, $5
+	and-bool.32 %r3551 <- %r3548, %r3550
+	br          %r3551, .L517, .L518
+
+.L517:
+	push.32     $3
+	symaddr.64* %r3552 <- <anon symbol:0x62d00051a998>
+	push.64*    %r3552
+	call        BadCond
+	br          .L519
+
+.L518:
+	push.32     $1
+	symaddr.64* %r3553 <- <anon symbol:0x62d00051ad38>
+	push.64*    %r3553
+	call        BadCond
+	br          .L519
+
+.L519:
+	symaddr.64* %r3554 <- <anon symbol:0x62d00051b0d8>
+	push.64*    %r3554
+	load.f64    %r3555 <- 0[X]
+	push.f64    %r3555
+	call.32     %r3556 <- printf
+	symaddr.64* %r3557 <- <anon symbol:0x62d00051b478>
+	push.64*    %r3557
+	load.f64    %r3558 <- 0[V9]
+	push.f64    %r3558
+	call.32     %r3559 <- printf
+	br          .L514
+
+.L514:
+	store.64*   $0 -> 0[sigsave]
+	br          .L504
+
+.L504:
+	load.32     %r3560 <- 0[Indx]
+	add.32      %r3561 <- %r3560, $1
+	store.32    %r3561 -> 0[Indx]
+	phisrc.32   %phi452(Indx) <- %r3561
+	br          .L506
+
+.L505:
+	store.32    $210 -> 0[Milestone]
+	load.f64    %r3562 <- 0[Zero]
+	store.f64   %r3562 -> 0[MyZero]
+	symaddr.64* %r3563 <- <anon symbol:0x62d00051b818>
+	push.64*    %r3563
+	call.32     %r3564 <- printf
+	symaddr.64* %r3565 <- <anon symbol:0x62d00051bbb8>
+	push.64*    %r3565
+	call.32     %r3566 <- printf
+	symaddr.64* %r3567 <- sigfpe
+	store.64*   %r3567 -> 0[sigsave]
+	symaddr.64* %r3568 <- <anon symbol:0x62d00051c128>
+	push.64*    %r3568
+	call.32     %r3569 <- printf
+	symaddr.64* %r3570 <- ovfl_buf
+	push.64*    %r3570
+	call.32     %r3571 <- _setjmp
+	br          %r3571, .L521, .L520
+
+.L520:
+	symaddr.64* %r3572 <- <anon symbol:0x62d0005286d0>
+	push.64*    %r3572
+	load.f64    %r3573 <- 0[One]
+	load.f64    %r3574 <- 0[MyZero]
+	divu.f64    %r3575 <- %r3573, %r3574
+	push.f64    %r3575
+	call.32     %r3576 <- printf
+	br          .L521
+
+.L521:
+	symaddr.64* %r3577 <- sigfpe
+	store.64*   %r3577 -> 0[sigsave]
+	symaddr.64* %r3578 <- <anon symbol:0x62d000528c40>
+	push.64*    %r3578
+	call.32     %r3579 <- printf
+	symaddr.64* %r3580 <- ovfl_buf
+	push.64*    %r3580
+	call.32     %r3581 <- _setjmp
+	br          %r3581, .L523, .L522
+
+.L522:
+	symaddr.64* %r3582 <- <anon symbol:0x62d0005291b0>
+	push.64*    %r3582
+	load.f64    %r3583 <- 0[Zero]
+	load.f64    %r3584 <- 0[MyZero]
+	divu.f64    %r3585 <- %r3583, %r3584
+	push.f64    %r3585
+	call.32     %r3586 <- printf
+	br          .L523
+
+.L523:
+	store.64*   $0 -> 0[sigsave]
+	store.32    $220 -> 0[Milestone]
+	call        Pause
+	symaddr.64* %r3587 <- <anon symbol:0x62d000529550>
+	push.64*    %r3587
+	call.32     %r3588 <- printf
+	phisrc.32   %phi539(i) <- $0
+	br          .L527
+
+.L527:
+	phi.32      %r3589(i) <- %phi539(i), %phi540(i)
+	setlt.32    %r3590 <- %r3589(i), $4
+	br          %r3590, .L524, .L526
+
+.L524:
+	symaddr.64* %r3591 <- ErrCnt
+	scast.64    %r3593 <- (32) %r3589(i)
+	muls.64     %r3594 <- %r3593, $4
+	add.64*     %r3595 <- %r3591, %r3594
+	load.32     %r3596 <- 0[%r3595]
+	br          %r3596, .L528, .L525
+
+.L528:
+	symaddr.64* %r3597 <- <anon symbol:0x62d000529ba8>
+	push.64*    %r3597
+	symaddr.64* %r3598 <- msg
+	muls.64     %r3601 <- %r3593, $8
+	add.64*     %r3602 <- %r3598, %r3601
+	load.64*    %r3603 <- 0[%r3602]
+	push.64*    %r3603
+	push.32     %r3596
+	call.32     %r3610 <- printf
+	br          .L525
+
+.L525:
+	add.32      %r3612 <- %r3589(i), $1
+	phisrc.32   %phi540(i) <- %r3612
+	br          .L527
+
+.L526:
+	symaddr.64* %r3613 <- <anon symbol:0x62d00052a4b8>
+	push.64*    %r3613
+	call.32     %r3614 <- printf
+	load.32     %r3615(ErrCnt) <- 0[ErrCnt]
+	load.32     %r3616(ErrCnt) <- 4[ErrCnt]
+	add.32      %r3617 <- %r3615(ErrCnt), %r3616(ErrCnt)
+	load.32     %r3618(ErrCnt) <- 8[ErrCnt]
+	add.32      %r3619 <- %r3617, %r3618(ErrCnt)
+	load.32     %r3620(ErrCnt) <- 12[ErrCnt]
+	add.32      %r3621 <- %r3619, %r3620(ErrCnt)
+	setgt.32    %r3622 <- %r3621, $0
+	phisrc.32   %phi545(ErrCnt) <- %r3618(ErrCnt)
+	phisrc.32   %phi546(ErrCnt) <- %r3616(ErrCnt)
+	phisrc.32   %phi547(ErrCnt) <- %r3615(ErrCnt)
+	phisrc.32   %phi660(ErrCnt) <- %r3618(ErrCnt)
+	phisrc.32   %phi661(ErrCnt) <- %r3616(ErrCnt)
+	phisrc.32   %phi662(ErrCnt) <- %r3615(ErrCnt)
+	phisrc.32   %phi775(ErrCnt) <- %r3618(ErrCnt)
+	phisrc.32   %phi776(ErrCnt) <- %r3616(ErrCnt)
+	phisrc.32   %phi777(ErrCnt) <- %r3615(ErrCnt)
+	phisrc.32   %phi892(ErrCnt) <- %r3618(ErrCnt)
+	phisrc.32   %phi893(ErrCnt) <- %r3616(ErrCnt)
+	phisrc.32   %phi894(ErrCnt) <- %r3615(ErrCnt)
+	phisrc.32   %phi1007(ErrCnt) <- %r3618(ErrCnt)
+	phisrc.32   %phi1008(ErrCnt) <- %r3616(ErrCnt)
+	phisrc.32   %phi1009(ErrCnt) <- %r3615(ErrCnt)
+	phisrc.32   %phi1122(ErrCnt) <- %r3618(ErrCnt)
+	phisrc.32   %phi1123(ErrCnt) <- %r3616(ErrCnt)
+	phisrc.32   %phi1124(ErrCnt) <- %r3615(ErrCnt)
+	br          %r3622, .L530, .L531
+
+.L530:
+	seteq.32    %r3628 <- %r3619, $0
+	setgt.32    %r3630 <- %r3620(ErrCnt), $0
+	and-bool.32 %r3631 <- %r3628, %r3630
+	phisrc.32   %phi126(ErrCnt) <- %r3618(ErrCnt)
+	phisrc.32   %phi127(ErrCnt) <- %r3616(ErrCnt)
+	phisrc.32   %phi128(ErrCnt) <- %r3615(ErrCnt)
+	br          %r3631, .L532, .L533
+
+.L532:
+	symaddr.64* %r3632 <- <anon symbol:0x62d00052be18>
+	push.64*    %r3632
+	call.32     %r3633 <- printf
+	symaddr.64* %r3634 <- <anon symbol:0x62d00052c1b8>
+	push.64*    %r3634
+	call.32     %r3635 <- printf
+	br          .L533
+
+.L533:
+	load.32     %r3636 <- 0[ErrCnt]
+	load.32     %r3637 <- 4[ErrCnt]
+	add.32      %r3638 <- %r3636, %r3637
+	seteq.32    %r3639 <- %r3638, $0
+	load.32     %r3640 <- 8[ErrCnt]
+	setgt.32    %r3641 <- %r3640, $0
+	and-bool.32 %r3642 <- %r3639, %r3641
+	phisrc.32   %phi124(ErrCnt) <- %r3637
+	phisrc.32   %phi125(ErrCnt) <- %r3636
+	phisrc.32   %phi543 <- %r3637
+	phisrc.32   %phi544 <- %r3636
+	phisrc.32   %phi658 <- %r3637
+	phisrc.32   %phi659 <- %r3636
+	phisrc.32   %phi773 <- %r3637
+	phisrc.32   %phi774 <- %r3636
+	phisrc.32   %phi890 <- %r3637
+	phisrc.32   %phi891 <- %r3636
+	phisrc.32   %phi1005 <- %r3637
+	phisrc.32   %phi1006 <- %r3636
+	phisrc.32   %phi1120 <- %r3637
+	phisrc.32   %phi1121 <- %r3636
+	br          %r3642, .L534, .L535
+
+.L534:
+	symaddr.64* %r3643 <- <anon symbol:0x62d00052cd80>
+	push.64*    %r3643
+	call.32     %r3644 <- printf
+	symaddr.64* %r3645 <- <anon symbol:0x62d00052d120>
+	push.64*    %r3645
+	call.32     %r3646 <- printf
+	br          .L535
+
+.L535:
+	load.32     %r3647 <- 0[ErrCnt]
+	load.32     %r3648 <- 4[ErrCnt]
+	add.32      %r3649 <- %r3647, %r3648
+	setgt.32    %r3650 <- %r3649, $0
+	phisrc.32   %phi123(ErrCnt) <- %r3647
+	phisrc.32   %phi542 <- %r3647
+	phisrc.32   %phi657 <- %r3647
+	phisrc.32   %phi772 <- %r3647
+	phisrc.32   %phi889 <- %r3647
+	phisrc.32   %phi1004 <- %r3647
+	phisrc.32   %phi1119 <- %r3647
+	br          %r3650, .L536, .L537
+
+.L536:
+	symaddr.64* %r3651 <- <anon symbol:0x62d00052da30>
+	push.64*    %r3651
+	call.32     %r3652 <- printf
+	symaddr.64* %r3653 <- <anon symbol:0x62d00052ddd0>
+	push.64*    %r3653
+	call.32     %r3654 <- printf
+	br          .L537
+
+.L537:
+	load.32     %r3655 <- 0[ErrCnt]
+	setgt.32    %r3656 <- %r3655, $0
+	br          %r3656, .L538, .L540
+
+.L538:
+	symaddr.64* %r3657 <- <anon symbol:0x62d00052e428>
+	push.64*    %r3657
+	call.32     %r3658 <- printf
+	symaddr.64* %r3659 <- <anon symbol:0x62d00052e7c8>
+	push.64*    %r3659
+	call.32     %r3660 <- printf
+	br          .L540
+
+.L531:
+	symaddr.64* %r3661 <- <anon symbol:0x62d00052eb68>
+	push.64*    %r3661
+	call.32     %r3662 <- printf
+	load.32     %r3663 <- 0[RMult]
+	seteq.32    %r3664 <- %r3663, $1
+	load.32     %r3665 <- 0[RDiv]
+	seteq.32    %r3666 <- %r3665, $1
+	and-bool.32 %r3667 <- %r3664, %r3666
+	load.32     %r3668 <- 0[RAddSub]
+	seteq.32    %r3669 <- %r3668, $1
+	and-bool.32 %r3670 <- %r3667, %r3669
+	load.32     %r3671 <- 0[RSqrt]
+	seteq.32    %r3672 <- %r3671, $1
+	and-bool.32 %r3673 <- %r3670, %r3672
+	br          %r3673, .L542, .L541
+
+.L541:
+	symaddr.64* %r3674 <- <anon symbol:0x62d00052ef08>
+	push.64*    %r3674
+	call.32     %r3675 <- printf
+	br          .L540
+
+.L542:
+	load.f64    %r3676 <- 0[StickyBit]
+	load.f64    %r3677(One) <- 0[One]
+	setge.32    %r3678 <- %r3676, %r3677(One)
+	br          %r3678, .L546, .L545
+
+.L546:
+	load.f64    %r3679 <- 0[Radix]
+	load.f64    %r3680 <- 0[Two]
+	sub.f64     %r3681 <- %r3679, %r3680
+	load.f64    %r3683 <- 0[Nine]
+	sub.f64     %r3684 <- %r3679, %r3683
+	sub.f64     %r3686 <- %r3684, %r3677(One)
+	mulu.f64    %r3687 <- %r3681, %r3686
+	load.f64    %r3688 <- 0[Zero]
+	seteq.32    %r3689 <- %r3687, %r3688
+	br          %r3689, .L544, .L545
+
+.L544:
+	symaddr.64* %r3690 <- <anon symbol:0x62d00052f2a8>
+	push.64*    %r3690
+	call.32     %r3691 <- printf
+	symaddr.64* %r3692 <- <anon symbol:0x62d00052f648>
+	push.64*    %r3692
+	call.32     %r3693 <- printf
+	load.f64    %r3694 <- 0[Radix]
+	load.f64    %r3695(Two) <- 0[Two]
+	seteq.32    %r3696 <- %r3694, %r3695(Two)
+	br          %r3696, .L549, .L548
+
+.L549:
+	load.f64    %r3697 <- 0[Precision]
+	load.f64    %r3698 <- 0[Four]
+	load.f64    %r3699 <- 0[Three]
+	mulu.f64    %r3700 <- %r3698, %r3699
+	mulu.f64    %r3702 <- %r3700, %r3695(Two)
+	sub.f64     %r3703 <- %r3697, %r3702
+	load.f64    %r3705 <- 0[TwentySeven]
+	sub.f64     %r3706 <- %r3697, %r3705
+	sub.f64     %r3708 <- %r3706, %r3705
+	load.f64    %r3709 <- 0[One]
+	add.f64     %r3710 <- %r3708, %r3709
+	mulu.f64    %r3711 <- %r3703, %r3710
+	load.f64    %r3712 <- 0[Zero]
+	seteq.32    %r3713 <- %r3711, %r3712
+	br          %r3713, .L547, .L548
+
+.L547:
+	symaddr.64* %r3714 <- <anon symbol:0x62d00052f9e8>
+	push.64*    %r3714
+	call.32     %r3715 <- printf
+	br          .L550
+
+.L548:
+	symaddr.64* %r3716 <- <anon symbol:0x62d00052fd88>
+	push.64*    %r3716
+	call.32     %r3717 <- printf
+	br          .L550
+
+.L550:
+	load.32     %r3718 <- 0[IEEE]
+	br          %r3718, .L551, .L552
+
+.L551:
+	symaddr.64* %r3719 <- <anon symbol:0x62d000530128>
+	push.64*    %r3719
+	call.32     %r3720 <- printf
+	br          .L545
+
+.L552:
+	symaddr.64* %r3721 <- <anon symbol:0x62d00053c500>
+	push.64*    %r3721
+	call.32     %r3722 <- printf
+	symaddr.64* %r3723 <- <anon symbol:0x62d00053c8a0>
+	push.64*    %r3723
+	call.32     %r3724 <- printf
+	br          .L545
+
+.L545:
+	symaddr.64* %r3725 <- <anon symbol:0x62d00053cc40>
+	push.64*    %r3725
+	call.32     %r3726 <- printf
+	br          .L540
+
+.L540:
+	load.32     %r3727(fpecount) <- 0[fpecount]
+	br          %r3727(fpecount), .L554, .L555
+
+.L554:
+	symaddr.64* %r3728 <- <anon symbol:0x62d00053cfe0>
+	push.64*    %r3728
+	push.32     %r3727(fpecount)
+	call.32     %r3730 <- printf
+	br          .L555
+
+.L555:
+	symaddr.64* %r3731 <- <anon symbol:0x62d00053d380>
+	push.64*    %r3731
+	call.32     %r3732 <- printf
+	ret.32      $0
+
+
+Sign:
+.L557:
+	<entry-point>
+	set.f64     %r3734 <- 1.000000
+	set.f64     %r3735 <- -1.000000
+	set.f64     %r3737 <- 0.000000
+	setge.32    %r3738 <- %arg1, %r3737
+	select.f64  %r3739 <- %r3738, %r3734, %r3735
+	phisrc.f64  %phi1234(return) <- %r3739
+	phi.f64     %r3740 <- %phi1234(return)
+	ret.f64     %r3739
+
+
+Pause:
+.L559:
+	<entry-point>
+	symaddr.64* %r3741 <- <anon symbol:0x62d00053d720>
+	push.64*    %r3741
+	load.32     %r3742 <- 0[Milestone]
+	push.32     %r3742
+	call.32     %r3743 <- printf
+	symaddr.64* %r3744 <- <anon symbol:0x62d00053dac0>
+	push.64*    %r3744
+	load.32     %r3745 <- 0[PageNo]
+	push.32     %r3745
+	call.32     %r3746 <- printf
+	load.32     %r3747 <- 0[Milestone]
+	add.32      %r3748 <- %r3747, $1
+	store.32    %r3748 -> 0[Milestone]
+	load.32     %r3749 <- 0[PageNo]
+	add.32      %r3750 <- %r3749, $1
+	store.32    %r3750 -> 0[PageNo]
+	ret
+
+
+TstCond:
+.L561:
+	<entry-point>
+	br          %arg2, .L563, .L562
+
+.L562:
+	push.32     %arg1
+	push.64*    %arg3
+	call        BadCond
+	symaddr.64* %r3754 <- <anon symbol:0x62d00053de60>
+	push.64*    %r3754
+	call.32     %r3755 <- printf
+	br          .L563
+
+.L563:
+	ret
+
+
+BadCond:
+.L564:
+	<entry-point>
+	symaddr.64* %r3756 <- ErrCnt
+	scast.64    %r3758 <- (32) %arg1
+	muls.64     %r3759 <- %r3758, $4
+	add.64*     %r3760 <- %r3756, %r3759
+	load.32     %r3761 <- 0[%r3760]
+	add.32      %r3762 <- %r3761, $1
+	store.32    %r3762 -> 0[%r3760]
+	symaddr.64* %r3768 <- <anon symbol:0x62d00053e770>
+	push.64*    %r3768
+	symaddr.64* %r3769 <- msg2
+	muls.64     %r3772 <- %r3758, $8
+	add.64*     %r3773 <- %r3769, %r3772
+	load.64*    %r3774 <- 0[%r3773]
+	push.64*    %r3774
+	push.64*    %arg2
+	call.32     %r3776 <- printf
+	ret
+
+
+Random:
+.L566:
+	<entry-point>
+	load.f64    %r3777 <- 0[Random1]
+	load.f64    %r3778 <- 0[Random9]
+	add.f64     %r3779 <- %r3777, %r3778
+	mulu.f64    %r3782 <- %r3779, %r3779
+	mulu.f64    %r3785 <- %r3782, %r3782
+	mulu.f64    %r3788 <- %r3779, %r3785
+	push.f64    %r3788
+	call.f64    %r3791 <- floor
+	sub.f64     %r3792 <- %r3788, %r3791
+	set.f64     %r3795 <- 0.000005
+	mulu.f64    %r3796 <- %r3788, %r3795
+	add.f64     %r3797 <- %r3792, %r3796
+	store.f64   %r3797 -> 0[Random1]
+	phisrc.f64  %phi1235(return) <- %r3797
+	phi.f64     %r3799 <- %phi1235(return)
+	ret.f64     %r3797
+
+
+SqXMinX:
+.L568:
+	<entry-point>
+	load.f64    %r3800 <- 0[X]
+	load.f64    %r3801 <- 0[BInvrse]
+	mulu.f64    %r3802 <- %r3800, %r3801
+	sub.f64     %r3805 <- %r3800, %r3802
+	mulu.f64    %r3808 <- %r3800, %r3800
+	push.f64    %r3808
+	call.f64    %r3809 <- sqrt
+	sub.f64     %r3811 <- %r3809, %r3802
+	sub.f64     %r3813 <- %r3811, %r3805
+	load.f64    %r3814 <- 0[OneUlp]
+	divu.f64    %r3815 <- %r3813, %r3814
+	store.f64   %r3815 -> 0[SqEr]
+	load.f64    %r3817 <- 0[Zero]
+	setne.32    %r3818 <- %r3815, %r3817
+	br          %r3818, .L569, .L570
+
+.L569:
+	load.f64    %r3820 <- 0[MinSqEr]
+	setlt.32    %r3821 <- %r3815, %r3820
+	phisrc.f64  %phi1237(SqEr) <- %r3815
+	br          %r3821, .L571, .L572
+
+.L571:
+	store.f64   %r3815 -> 0[MinSqEr]
+	phisrc.f64  %phi1238(SqEr) <- %r3815
+	br          .L572
+
+.L572:
+	phi.f64     %r3823(SqEr) <- %phi1237(SqEr), %phi1238(SqEr)
+	load.f64    %r3824 <- 0[MaxSqEr]
+	setgt.32    %r3825 <- %r3823(SqEr), %r3824
+	br          %r3825, .L573, .L574
+
+.L573:
+	store.f64   %r3823(SqEr) -> 0[MaxSqEr]
+	br          .L574
+
+.L574:
+	load.f64    %r3827 <- 0[J]
+	set.f64     %r3828 <- 1.000000
+	add.f64     %r3829 <- %r3827, %r3828
+	store.f64   %r3829 -> 0[J]
+	push.32     %arg1
+	symaddr.64* %r3831 <- <anon symbol:0x62d00053edc8>
+	push.64*    %r3831
+	call        BadCond
+	symaddr.64* %r3832 <- <anon symbol:0x62d00053f168>
+	push.64*    %r3832
+	load.f64    %r3833 <- 0[X]
+	mulu.f64    %r3835 <- %r3833, %r3833
+	push.f64    %r3835
+	push.f64    %r3833
+	load.f64    %r3837 <- 0[OneUlp]
+	load.f64    %r3838 <- 0[SqEr]
+	mulu.f64    %r3839 <- %r3837, %r3838
+	push.f64    %r3839
+	call.32     %r3840 <- printf
+	symaddr.64* %r3841 <- <anon symbol:0x62d00053f508>
+	push.64*    %r3841
+	call.32     %r3842 <- printf
+	br          .L570
+
+.L570:
+	ret
+
+
+NewD:
+.L575:
+	<entry-point>
+	load.f64    %r3843 <- 0[Z1]
+	load.f64    %r3844 <- 0[Q]
+	mulu.f64    %r3845 <- %r3843, %r3844
+	store.f64   %r3845 -> 0[X]
+	load.f64    %r3846 <- 0[Half]
+	load.f64    %r3848 <- 0[Radix]
+	divu.f64    %r3849 <- %r3845, %r3848
+	sub.f64     %r3850 <- %r3846, %r3849
+	push.f64    %r3850
+	call.f64    %r3851 <- floor
+	load.f64    %r3852 <- 0[Radix]
+	mulu.f64    %r3853 <- %r3851, %r3852
+	load.f64    %r3854 <- 0[X]
+	add.f64     %r3855 <- %r3853, %r3854
+	store.f64   %r3855 -> 0[X]
+	load.f64    %r3856 <- 0[Q]
+	load.f64    %r3858 <- 0[Z]
+	mulu.f64    %r3859 <- %r3855, %r3858
+	sub.f64     %r3860 <- %r3856, %r3859
+	divu.f64    %r3862 <- %r3860, %r3852
+	mulu.f64    %r3865 <- %r3855, %r3855
+	load.f64    %r3866 <- 0[D]
+	divu.f64    %r3868 <- %r3866, %r3852
+	mulu.f64    %r3869 <- %r3865, %r3868
+	add.f64     %r3870 <- %r3862, %r3869
+	store.f64   %r3870 -> 0[Q]
+	load.f64    %r3872 <- 0[Two]
+	mulu.f64    %r3874 <- %r3872, %r3855
+	mulu.f64    %r3876 <- %r3874, %r3866
+	sub.f64     %r3877 <- %r3858, %r3876
+	store.f64   %r3877 -> 0[Z]
+	load.f64    %r3879 <- 0[Zero]
+	setle.32    %r3880 <- %r3877, %r3879
+	br          %r3880, .L576, .L577
+
+.L576:
+	neg.f64     %r3882 <- %r3877
+	store.f64   %r3882 -> 0[Z]
+	load.f64    %r3883 <- 0[Z1]
+	neg.f64     %r3884 <- %r3883
+	store.f64   %r3884 -> 0[Z1]
+	br          .L577
+
+.L577:
+	mulu.f64    %r3887 <- %r3852, %r3866
+	store.f64   %r3887 -> 0[D]
+	ret
+
+
+SR3750:
+.L579:
+	<entry-point>
+	load.f64    %r3888(X) <- 0[X]
+	load.f64    %r3889 <- 0[Radix]
+	sub.f64     %r3890 <- %r3888(X), %r3889
+	load.f64    %r3891(Z2) <- 0[Z2]
+	sub.f64     %r3893 <- %r3891(Z2), %r3889
+	setlt.32    %r3894 <- %r3890, %r3893
+	br          %r3894, .L581, .L582
+
+.L582:
+	sub.f64     %r3897 <- %r3888(X), %r3891(Z2)
+	load.f64    %r3898 <- 0[W]
+	sub.f64     %r3900 <- %r3898, %r3891(Z2)
+	setgt.32    %r3901 <- %r3897, %r3900
+	br          %r3901, .L581, .L580
+
+.L580:
+	load.32     %r3902 <- 0[I]
+	add.32      %r3903 <- %r3902, $1
+	store.32    %r3903 -> 0[I]
+	load.f64    %r3905 <- 0[D]
+	mulu.f64    %r3906 <- %r3888(X), %r3905
+	push.f64    %r3906
+	call.f64    %r3907 <- sqrt
+	load.f64    %r3909 <- 0[Z2]
+	sub.f64     %r3910 <- %r3907, %r3909
+	load.f64    %r3911 <- 0[Y]
+	sub.f64     %r3913 <- %r3911, %r3909
+	sub.f64     %r3914 <- %r3910, %r3913
+	store.f64   %r3914 -> 0[Y2]
+	load.f64    %r3915 <- 0[X8]
+	load.f64    %r3917 <- 0[Half]
+	sub.f64     %r3918 <- %r3911, %r3917
+	divu.f64    %r3919 <- %r3915, %r3918
+	mulu.f64    %r3923 <- %r3917, %r3919
+	mulu.f64    %r3925 <- %r3923, %r3919
+	sub.f64     %r3926 <- %r3919, %r3925
+	store.f64   %r3926 -> 0[X2]
+	add.f64     %r3929 <- %r3914, %r3917
+	sub.f64     %r3932 <- %r3917, %r3926
+	add.f64     %r3933 <- %r3929, %r3932
+	store.f64   %r3933 -> 0[SqEr]
+	load.f64    %r3935 <- 0[MinSqEr]
+	setlt.32    %r3936 <- %r3933, %r3935
+	br          %r3936, .L583, .L584
+
+.L583:
+	store.f64   %r3933 -> 0[MinSqEr]
+	br          .L584
+
+.L584:
+	sub.f64     %r3940 <- %r3914, %r3926
+	store.f64   %r3940 -> 0[SqEr]
+	load.f64    %r3942 <- 0[MaxSqEr]
+	setgt.32    %r3943 <- %r3940, %r3942
+	br          %r3943, .L585, .L581
+
+.L585:
+	store.f64   %r3940 -> 0[MaxSqEr]
+	br          .L581
+
+.L581:
+	ret
+
+
+IsYeqX:
+.L587:
+	<entry-point>
+	load.f64    %r3945 <- 0[Y]
+	load.f64    %r3946 <- 0[X]
+	setne.32    %r3947 <- %r3945, %r3946
+	br          %r3947, .L588, .L589
+
+.L588:
+	load.32     %r3948 <- 0[N]
+	setle.32    %r3949 <- %r3948, $0
+	phisrc.32   %phi1251(N) <- %r3948
+	phisrc.32   %phi1252 <- %r3948
+	br          %r3949, .L590, .L591
+
+.L590:
+	load.f64    %r3950 <- 0[Z]
+	load.f64    %r3951 <- 0[Zero]
+	seteq.32    %r3952 <- %r3950, %r3951
+	load.f64    %r3953 <- 0[Q]
+	setle.32    %r3955 <- %r3953, %r3951
+	and-bool.32 %r3956 <- %r3952, %r3955
+	br          %r3956, .L592, .L593
+
+.L592:
+	symaddr.64* %r3957 <- <anon symbol:0x62d00053f8a8>
+	push.64*    %r3957
+	call.32     %r3958 <- printf
+	br          .L594
+
+.L593:
+	push.32     $2
+	symaddr.64* %r3959 <- <anon symbol:0x62d00053fc48>
+	push.64*    %r3959
+	call        BadCond
+	br          .L594
+
+.L594:
+	symaddr.64* %r3960 <- <anon symbol:0x62d00053ffe8>
+	push.64*    %r3960
+	load.f64    %r3961 <- 0[Z]
+	push.f64    %r3961
+	load.f64    %r3962 <- 0[Q]
+	push.f64    %r3962
+	call.32     %r3963 <- printf
+	symaddr.64* %r3964 <- <anon symbol:0x62d000540388>
+	push.64*    %r3964
+	load.f64    %r3965 <- 0[Y]
+	push.f64    %r3965
+	call.32     %r3966 <- printf
+	symaddr.64* %r3967 <- <anon symbol:0x62d000540728>
+	push.64*    %r3967
+	load.f64    %r3968 <- 0[X]
+	push.f64    %r3968
+	call.32     %r3969 <- printf
+	symaddr.64* %r3970 <- <anon symbol:0x62d000540ac8>
+	push.64*    %r3970
+	load.f64    %r3971 <- 0[Y]
+	load.f64    %r3972 <- 0[X]
+	sub.f64     %r3973 <- %r3971, %r3972
+	push.f64    %r3973
+	call.32     %r3974 <- printf
+	br          .L591
+
+.L591:
+	load.32     %r3975 <- 0[N]
+	add.32      %r3976 <- %r3975, $1
+	store.32    %r3976 -> 0[N]
+	br          .L589
+
+.L589:
+	ret
+
+
+SR3980:
+.L595:
+	<entry-point>
+	br          .L596
+
+.L596:
+	load.32     %r3977 <- 0[I]
+	fpcast.f64  %r3978 <- (32) %r3977
+	store.f64   %r3978 -> 0[Q]
+	load.f64    %r3979 <- 0[Z]
+	push.f64    %r3979
+	push.f64    %r3978
+	call.f64    %r3981 <- pow
+	store.f64   %r3981 -> 0[Y]
+	call        IsYeqX
+	load.32     %r3982 <- 0[I]
+	add.32      %r3983 <- %r3982, $1
+	store.32    %r3983 -> 0[I]
+	load.32     %r3984 <- 0[M]
+	setgt.32    %r3985 <- %r3983, %r3984
+	br          %r3985, .L598, .L600
+
+.L600:
+	load.f64    %r3986 <- 0[Z]
+	load.f64    %r3987 <- 0[X]
+	mulu.f64    %r3988(X) <- %r3986, %r3987
+	store.f64   %r3988(X) -> 0[X]
+	load.f64    %r3990 <- 0[W]
+	setlt.32    %r3991 <- %r3988(X), %r3990
+	br          %r3991, .L596, .L598
+
+.L598:
+	ret
+
+
+PrintIfNPositive:
+.L601:
+	<entry-point>
+	load.32     %r3992(N) <- 0[N]
+	setgt.32    %r3993 <- %r3992(N), $0
+	br          %r3993, .L602, .L603
+
+.L602:
+	symaddr.64* %r3994 <- <anon symbol:0x62d000540e68>
+	push.64*    %r3994
+	push.32     %r3992(N)
+	call.32     %r3996 <- printf
+	br          .L603
+
+.L603:
+	ret
+
+
+TstPtUf:
+.L604:
+	<entry-point>
+	store.32    $0 -> 0[N]
+	load.f64    %r3997 <- 0[Z]
+	load.f64    %r3998 <- 0[Zero]
+	setne.32    %r3999 <- %r3997, %r3998
+	br          %r3999, .L605, .L606
+
+.L605:
+	symaddr.64* %r4000 <- <anon symbol:0x62d000541208>
+	push.64*    %r4000
+	call.32     %r4001 <- printf
+	symaddr.64* %r4002 <- <anon symbol:0x62d0005415a8>
+	push.64*    %r4002
+	call.32     %r4003 <- printf
+	symaddr.64* %r4004 <- sigfpe
+	store.64*   %r4004 -> 0[sigsave]
+	symaddr.64* %r4005 <- ovfl_buf
+	push.64*    %r4005
+	call.32     %r4006 <- _setjmp
+	br          %r4006, .L609, .L608
+
+.L608:
+	load.f64    %r4007 <- 0[Z]
+	add.f64     %r4009 <- %r4007, %r4007
+	divu.f64    %r4011 <- %r4009, %r4007
+	store.f64   %r4011 -> 0[Q9]
+	symaddr.64* %r4012 <- <anon symbol:0x62d000541ce8>
+	push.64*    %r4012
+	push.f64    %r4011
+	call.32     %r4014 <- printf
+	load.f64    %r4015 <- 0[Q9]
+	load.f64    %r4016 <- 0[Two]
+	sub.f64     %r4017 <- %r4015, %r4016
+	push.f64    %r4017
+	call.f64    %r4018 <- fabs
+	load.f64    %r4019 <- 0[Radix]
+	load.f64    %r4020 <- 0[U2]
+	mulu.f64    %r4021 <- %r4019, %r4020
+	setlt.32    %r4022 <- %r4018, %r4021
+	br          %r4022, .L610, .L611
+
+.L610:
+	symaddr.64* %r4023 <- <anon symbol:0x62d000542088>
+	push.64*    %r4023
+	call.32     %r4024 <- printf
+	symaddr.64* %r4025 <- <anon symbol:0x62d000542428>
+	push.64*    %r4025
+	call.32     %r4026 <- printf
+	br          .L612
+
+.L611:
+	load.f64    %r4027 <- 0[Q9]
+	load.f64    %r4028 <- 0[One]
+	setlt.32    %r4029 <- %r4027, %r4028
+	load.f64    %r4031 <- 0[Two]
+	setgt.32    %r4032 <- %r4027, %r4031
+	or-bool.32  %r4033 <- %r4029, %r4032
+	br          %r4033, .L609, .L614
+
+.L609:
+	store.32    $1 -> 0[N]
+	load.32     %r4034 <- 4[ErrCnt]
+	add.32      %r4035 <- %r4034, $1
+	store.32    %r4035 -> 4[ErrCnt]
+	symaddr.64* %r4036 <- <anon symbol:0x62d000542d38>
+	push.64*    %r4036
+	call.32     %r4037 <- printf
+	br          .L612
+
+.L614:
+	store.32    $1 -> 0[N]
+	load.32     %r4038 <- 8[ErrCnt]
+	add.32      %r4039 <- %r4038, $1
+	store.32    %r4039 -> 8[ErrCnt]
+	symaddr.64* %r4040 <- <anon symbol:0x62d000543648>
+	push.64*    %r4040
+	call.32     %r4041 <- printf
+	br          .L612
+
+.L612:
+	store.64*   $0 -> 0[sigsave]
+	load.f64    %r4042 <- 0[Z]
+	load.f64    %r4043 <- 0[One]
+	mulu.f64    %r4044 <- %r4042, %r4043
+	store.f64   %r4044 -> 0[Random1]
+	mulu.f64    %r4048 <- %r4043, %r4042
+	store.f64   %r4048 -> 0[Random2]
+	divu.f64    %r4052 <- %r4042, %r4043
+	store.f64   %r4052 -> 0[V9]
+	seteq.32    %r4055 <- %r4042, %r4044
+	seteq.32    %r4058 <- %r4042, %r4048
+	and-bool.32 %r4059 <- %r4055, %r4058
+	seteq.32    %r4062 <- %r4042, %r4052
+	and-bool.32 %r4063 <- %r4059, %r4062
+	br          %r4063, .L616, .L617
+
+.L616:
+	load.32     %r4064 <- 0[N]
+	setgt.32    %r4065 <- %r4064, $0
+	br          %r4065, .L618, .L606
+
+.L618:
+	call        Pause
+	br          .L606
+
+.L617:
+	store.32    $1 -> 0[N]
+	push.32     $2
+	symaddr.64* %r4066 <- <anon symbol:0x62d0005439e8>
+	push.64*    %r4066
+	call        BadCond
+	symaddr.64* %r4067 <- <anon symbol:0x62d000543d88>
+	push.64*    %r4067
+	load.f64    %r4068 <- 0[Z]
+	push.f64    %r4068
+	call.32     %r4069 <- printf
+	load.f64    %r4070 <- 0[Z]
+	load.f64    %r4071(Random1) <- 0[Random1]
+	setne.32    %r4072 <- %r4070, %r4071(Random1)
+	phisrc.f64  %phi1256(Z) <- %r4070
+	phisrc.f64  %phi1259(Random1) <- %r4071(Random1)
+	phisrc.f64  %phi1266(Random1) <- %r4071(Random1)
+	phisrc.f64  %phi1267 <- %r4070
+	phisrc.f64  %phi1271(Random1) <- %r4071(Random1)
+	phisrc.f64  %phi1272 <- %r4070
+	br          %r4072, .L621, .L622
+
+.L621:
+	symaddr.64* %r4073 <- <anon symbol:0x62d000544128>
+	push.64*    %r4073
+	push.f64    %r4071(Random1)
+	call.32     %r4075 <- printf
+	br          .L622
+
+.L622:
+	load.f64    %r4076 <- 0[Z]
+	load.f64    %r4077 <- 0[Random2]
+	seteq.32    %r4078 <- %r4076, %r4077
+	load.f64    %r4080 <- 0[Random1]
+	seteq.32    %r4081 <- %r4077, %r4080
+	or-bool.32  %r4082 <- %r4078, %r4081
+	phisrc.f64  %phi1255(Z) <- %r4076
+	phisrc.f64  %phi1258(Random1) <- %r4080
+	phisrc.f64  %phi1261(Random2) <- %r4077
+	phisrc.f64  %phi1263 <- %r4080
+	phisrc.f64  %phi1264 <- %r4077
+	phisrc.f64  %phi1265 <- %r4076
+	phisrc.f64  %phi1268 <- %r4080
+	phisrc.f64  %phi1269 <- %r4077
+	phisrc.f64  %phi1270 <- %r4076
+	br          %r4082, .L624, .L623
+
+.L623:
+	symaddr.64* %r4083 <- <anon symbol:0x62d000532500>
+	push.64*    %r4083
+	push.f64    %r4077
+	call.32     %r4085 <- printf
+	br          .L624
+
+.L624:
+	load.f64    %r4086 <- 0[Z]
+	load.f64    %r4087(V9) <- 0[V9]
+	seteq.32    %r4088 <- %r4086, %r4087(V9)
+	br          %r4088, .L626, .L625
+
+.L625:
+	symaddr.64* %r4089 <- <anon symbol:0x62d0005328a0>
+	push.64*    %r4089
+	push.f64    %r4087(V9)
+	call.32     %r4091 <- printf
+	br          .L626
+
+.L626:
+	load.f64    %r4092 <- 0[Random2]
+	load.f64    %r4093 <- 0[Random1]
+	setne.32    %r4094 <- %r4092, %r4093
+	br          %r4094, .L627, .L628
+
+.L627:
+	load.32     %r4095 <- 8[ErrCnt]
+	add.32      %r4096 <- %r4095, $1
+	store.32    %r4096 -> 8[ErrCnt]
+	push.32     $2
+	symaddr.64* %r4097 <- <anon symbol:0x62d0005331b0>
+	push.64*    %r4097
+	call        BadCond
+	symaddr.64* %r4098 <- <anon symbol:0x62d000533550>
+	push.64*    %r4098
+	load.f64    %r4099 <- 0[Random2]
+	push.f64    %r4099
+	call.32     %r4100 <- printf
+	symaddr.64* %r4101 <- <anon symbol:0x62d0005338f0>
+	push.64*    %r4101
+	load.f64    %r4102 <- 0[Random1]
+	push.f64    %r4102
+	call.32     %r4103 <- printf
+	br          .L628
+
+.L628:
+	call        Pause
+	br          .L606
+
+.L606:
+	ret
+
+
+notify:
+.L629:
+	<entry-point>
+	symaddr.64* %r4104 <- <anon symbol:0x62d000533c90>
+	push.64*    %r4104
+	push.64*    %arg1
+	call.32     %r4106 <- printf
+	symaddr.64* %r4107 <- <anon symbol:0x62d000534030>
+	push.64*    %r4107
+	call.32     %r4108 <- printf
+	ret
+
+
+msglist:
+.L631:
+	<entry-point>
+	phisrc.64*  %phi1274(s) <- %arg1
+	br          .L635
+
+.L635:
+	phi.64*     %r4109(s) <- %phi1274(s), %phi1275(s)
+	load*       %r4110 <- 0[%r4109(s)]
+	br          %r4110, .L632, .L634
+
+.L632:
+	symaddr.64* %r4111 <- <anon symbol:0x62d0005344b8>
+	push.64*    %r4111
+	add.64*     %r4113 <- %r4109(s), $8
+	load.64*    %r4114 <- 0[%r4109(s)]
+	push.64*    %r4114
+	call.32     %r4115 <- printf
+	phisrc.64*  %phi1275(s) <- %r4113
+	br          .L635
+
+.L634:
+	ret
+
+
+Instructions:
+.L636:
+	<entry-point>
+	ret
+
+
+Heading:
+.L638:
+	<entry-point>
+	ret
+
+
+Characteristics:
+.L640:
+	<entry-point>
+	ret
+
+
+History:
+.L642:
+	<entry-point>
+	ret
+
+

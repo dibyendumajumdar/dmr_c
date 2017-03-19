@@ -1,7 +1,7 @@
 PrintAll:
 .L0:
 	<entry-point>
-	symaddr.64* %r1 <- <anon symbol:0000017A0BF17AB8>
+	symaddr.64* %r1 <- <anon symbol:000002351BF27AB8>
 	push.64*    %r1
 	call.32     %r2 <- printf
 	phisrc.32   %phi11(i) <- $0
@@ -13,7 +13,7 @@ PrintAll:
 	br          %r4, .L1, .L3
 
 .L1:
-	symaddr.64* %r5 <- <anon symbol:0000017A0BF17E38>
+	symaddr.64* %r5 <- <anon symbol:000002351BF27E38>
 	push.64*    %r5
 	symaddr.64* %r6 <- A
 	scast.64    %r8 <- (32) %r3(i)
@@ -27,10 +27,10 @@ PrintAll:
 	br          .L4
 
 .L3:
-	symaddr.64* %r15 <- <anon symbol:0000017A0BF18458>
+	symaddr.64* %r15 <- <anon symbol:000002351BF28458>
 	push.64*    %r15
 	call.32     %r16 <- printf
-	symaddr.64* %r17 <- <anon symbol:0000017A0BF187D8>
+	symaddr.64* %r17 <- <anon symbol:000002351BF287D8>
 	push.64*    %r17
 	call.32     %r18 <- printf
 	phisrc.32   %phi7(i) <- $0
@@ -42,7 +42,7 @@ PrintAll:
 	br          %r20, .L5, .L7
 
 .L5:
-	symaddr.64* %r21 <- <anon symbol:0000017A0BF18B58>
+	symaddr.64* %r21 <- <anon symbol:000002351BF28B58>
 	push.64*    %r21
 	symaddr.64* %r22 <- B
 	scast.64    %r24 <- (32) %r19(i)
@@ -56,10 +56,10 @@ PrintAll:
 	br          .L8
 
 .L7:
-	symaddr.64* %r31 <- <anon symbol:0000017A0BF19178>
+	symaddr.64* %r31 <- <anon symbol:000002351BF29178>
 	push.64*    %r31
 	call.32     %r32 <- printf
-	symaddr.64* %r33 <- <anon symbol:0000017A0BF194F8>
+	symaddr.64* %r33 <- <anon symbol:000002351BF294F8>
 	push.64*    %r33
 	call.32     %r34 <- printf
 	phisrc.32   %phi3(i) <- $0
@@ -71,7 +71,7 @@ PrintAll:
 	br          %r36, .L9, .L11
 
 .L9:
-	symaddr.64* %r37 <- <anon symbol:0000017A0BF19878>
+	symaddr.64* %r37 <- <anon symbol:000002351BF29878>
 	push.64*    %r37
 	symaddr.64* %r38 <- C
 	scast.64    %r40 <- (32) %r35(i)
@@ -85,10 +85,10 @@ PrintAll:
 	br          .L12
 
 .L11:
-	symaddr.64* %r47 <- <anon symbol:0000017A0BF19E98>
+	symaddr.64* %r47 <- <anon symbol:000002351BF29E98>
 	push.64*    %r47
 	call.32     %r48 <- printf
-	symaddr.64* %r49 <- <anon symbol:0000017A0BF1A218>
+	symaddr.64* %r49 <- <anon symbol:000002351BF2A218>
 	push.64*    %r49
 	call.32     %r50 <- printf
 	ret
@@ -247,15 +247,15 @@ main:
 	br          .L42
 
 .L41:
-	symaddr.64* %r145 <- <anon symbol:0000017A0BF1B2B8>
+	symaddr.64* %r145 <- <anon symbol:000002351BF2B2B8>
 	push.64*    %r145
 	push.32     $4
 	call.32     %r146 <- printf
-	symaddr.64* %r147 <- <anon symbol:0000017A0BF1B638>
+	symaddr.64* %r147 <- <anon symbol:000002351BF2B638>
 	push.64*    %r147
 	call.32     %r148 <- printf
 	call        PrintAll
-	symaddr.64* %r149 <- <anon symbol:0000017A0BF1B9B8>
+	symaddr.64* %r149 <- <anon symbol:000002351BF2B9B8>
 	push.64*    %r149
 	call.32     %r150 <- printf
 	push.32     $4

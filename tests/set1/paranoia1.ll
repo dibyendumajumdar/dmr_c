@@ -30,24 +30,24 @@ define internal void @BadCond(i32 %ARG1, i8* %ARG2) {
 L0:
   %R3 = sext i32 %ARG1 to i64
   %R4 = mul i64 %R3, 4
-  %0 = getelementptr inbounds i8, i8* bitcast ([4 x i32]* @ErrCnt to i8*), i64 %R4
-  %1 = bitcast i8* %0 to i32*
-  %2 = bitcast i32* %1 to i8*
-  %3 = getelementptr inbounds i8, i8* %2, i64 0
-  %4 = bitcast i8* %3 to i32*
-  %load_target = load i32, i32* %4
+  %R5 = add i64 ptrtoint ([4 x i32]* @ErrCnt to i64), %R4
+  %0 = inttoptr i64 %R5 to i32*
+  %1 = ptrtoint i32* %0 to i64
+  %2 = add i64 %1, 0
+  %3 = inttoptr i64 %2 to i32*
+  %load_target = load i32, i32* %3
   %R7 = add i32 %load_target, 1
-  %5 = bitcast i32* %1 to i8*
-  %6 = getelementptr inbounds i8, i8* %5, i64 0
-  %7 = bitcast i8* %6 to i32*
-  store i32 %R7, i32* %7
+  %4 = ptrtoint i32* %0 to i64
+  %5 = add i64 %4, 0
+  %6 = inttoptr i64 %5 to i32*
+  store i32 %R7, i32* %6
   %R17 = mul i64 %R3, 8
-  %8 = getelementptr inbounds i8, i8* bitcast ([4 x i8*]* @msg2 to i8*), i64 %R17
-  %9 = bitcast i8* %8 to i8**
-  %10 = bitcast i8** %9 to i8*
-  %11 = getelementptr inbounds i8, i8* %10, i64 0
-  %12 = bitcast i8* %11 to i8**
-  %load_target1 = load i8*, i8** %12
+  %R18 = add i64 ptrtoint ([4 x i8*]* @msg2 to i64), %R17
+  %7 = inttoptr i64 %R18 to i8**
+  %8 = ptrtoint i8** %7 to i64
+  %9 = add i64 %8, 0
+  %10 = inttoptr i64 %9 to i8**
+  %load_target1 = load i8*, i8** %10
   %R21 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([8 x i8], [8 x i8]* @.str, i64 0, i64 0), i8* %load_target1, i8* %ARG2)
   ret void
 }
@@ -72,9 +72,9 @@ define i32 @main() {
 L4:
   %0 = alloca i32
   store i8* getelementptr inbounds ([8 x i8], [8 x i8]* @.str.2, i64 0, i64 0), i8** getelementptr inbounds ([4 x i8*], [4 x i8*]* @msg2, i32 0, i32 0)
-  store i8* getelementptr inbounds ([15 x i8], [15 x i8]* @.str.3, i64 0, i64 0), i8** bitcast (i8* getelementptr inbounds (i8, i8* bitcast ([4 x i8*]* @msg2 to i8*), i64 8) to i8**)
-  store i8* getelementptr inbounds ([7 x i8], [7 x i8]* @.str.4, i64 0, i64 0), i8** bitcast (i8* getelementptr inbounds (i8, i8* bitcast ([4 x i8*]* @msg2 to i8*), i64 16) to i8**)
-  store i8* getelementptr inbounds ([5 x i8], [5 x i8]* @.str.5, i64 0, i64 0), i8** bitcast (i8* getelementptr inbounds (i8, i8* bitcast ([4 x i8*]* @msg2 to i8*), i64 24) to i8**)
+  store i8* getelementptr inbounds ([15 x i8], [15 x i8]* @.str.3, i64 0, i64 0), i8** inttoptr (i64 add (i64 ptrtoint ([4 x i8*]* @msg2 to i64), i64 8) to i8**)
+  store i8* getelementptr inbounds ([7 x i8], [7 x i8]* @.str.4, i64 0, i64 0), i8** inttoptr (i64 add (i64 ptrtoint ([4 x i8*]* @msg2 to i64), i64 16) to i8**)
+  store i8* getelementptr inbounds ([5 x i8], [5 x i8]* @.str.5, i64 0, i64 0), i8** inttoptr (i64 add (i64 ptrtoint ([4 x i8*]* @msg2 to i64), i64 24) to i8**)
   store double 0.000000e+00, double* @Zero
   store double 1.000000e+00, double* @One
   store double 2.000000e+00, double* @Two

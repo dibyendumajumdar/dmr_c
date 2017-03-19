@@ -6,7 +6,7 @@ main:
 	store.f64   %r3 -> 0[Two]
 	divu.f64    %r6 <- $1, %r3
 	store.f64   %r6 -> 0[Half]
-	symaddr.64* %r7 <- <anon symbol:0000026729484E08>
+	symaddr.64* %r7 <- <anon symbol:0000028D820C3E88>
 	push.64*    %r7
 	push.f64    %r6
 	call.32     %r9 <- printf

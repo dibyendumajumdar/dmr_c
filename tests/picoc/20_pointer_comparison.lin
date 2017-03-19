@@ -5,30 +5,30 @@ main:
 	symaddr.64* %r2 <- b
 	store.32    $12 -> 0[a]
 	store.32    $34 -> 0[b]
-	symaddr.64* %r3 <- <anon symbol:0000027BE20C7C18>
+	symaddr.64* %r3 <- <anon symbol:0000019BD2494158>
 	push.64*    %r3
 	push.32     $12
 	call.32     %r6 <- printf
-	symaddr.64* %r7 <- <anon symbol:0000027BE20C8078>
+	symaddr.64* %r7 <- <anon symbol:0000019BD24945B8>
 	push.64*    %r7
 	load.32     %r9 <- 0[b]
 	push.32     %r9
 	call.32     %r10 <- printf
-	symaddr.64* %r11 <- <anon symbol:0000027BE20C84D8>
+	symaddr.64* %r11 <- <anon symbol:0000019BD2494A18>
 	push.64*    %r11
 	seteq.32    %r14 <- %r1, %r2
 	push.32     %r14
 	call.32     %r15 <- printf
-	symaddr.64* %r16 <- <anon symbol:0000027BE20C8858>
+	symaddr.64* %r16 <- <anon symbol:0000019BD2494D98>
 	push.64*    %r16
 	setne.32    %r19 <- %r1, %r2
 	push.32     %r19
 	call.32     %r20 <- printf
-	symaddr.64* %r22 <- <anon symbol:0000027BE20C8BD8>
+	symaddr.64* %r22 <- <anon symbol:0000019BD2495118>
 	push.64*    %r22
 	push.32     $1
 	call.32     %r26 <- printf
-	symaddr.64* %r27 <- <anon symbol:0000027BE20C8F58>
+	symaddr.64* %r27 <- <anon symbol:0000019BD2495498>
 	push.64*    %r27
 	push.32     $0
 	call.32     %r31 <- printf

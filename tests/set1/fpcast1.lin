@@ -27,7 +27,7 @@ f3:
 main:
 .L6:
 	<entry-point>
-	symaddr.64* %r6 <- <anon symbol:000001DA38EE6FB8>
+	symaddr.64* %r6 <- <anon symbol:0000018CFB385458>
 	push.64*    %r6
 	push.f64    $97
 	call.32     %r7 <- printf

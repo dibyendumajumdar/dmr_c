@@ -10,7 +10,7 @@ main:
 	br          %r2, .L1, .L5
 
 .L1:
-	symaddr.64* %r3 <- <anon symbol:0000025BA7586538>
+	symaddr.64* %r3 <- <anon symbol:000002756DCC7538>
 	push.64*    %r3
 	push.32     %r1(Count)
 	call.32     %r5 <- printf

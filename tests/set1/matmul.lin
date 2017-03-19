@@ -248,7 +248,7 @@ main:
 	push.64*    %r178
 	push.64*    %r180
 	call.64*    %r184 <- mm_mul
-	symaddr.64* %r185 <- <anon symbol:00000166276ECAB8>
+	symaddr.64* %r185 <- <anon symbol:000001F623F0DA78>
 	push.64*    %r185
 	load.64*    %r192 <- 4000[%r184]
 	add.64*     %r197 <- %r192, $0xfa0

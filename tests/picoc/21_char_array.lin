@@ -1,8 +1,8 @@
 main:
 .L0:
 	<entry-point>
-	symaddr.64* %r1(b) <- <anon symbol:0000017E5AB155E8>
-	symaddr.64* %r2 <- <anon symbol:0000017E5AB15968>
+	symaddr.64* %r1(b) <- <anon symbol:0000020C68EF5898>
+	symaddr.64* %r2 <- <anon symbol:0000020C68EF5C18>
 	push.64*    %r2
 	push.64*    %r1(b)
 	call.32     %r4 <- printf
@@ -15,7 +15,7 @@ main:
 	br          %r10, .L1, .L3
 
 .L1:
-	symaddr.64* %r13 <- <anon symbol:0000017E5AB15EA8>
+	symaddr.64* %r13 <- <anon symbol:0000020C68EF6158>
 	push.64*    %r13
 	scast.32    %r16 <- (8) %r10
 	push.32     %r16
@@ -48,7 +48,7 @@ main:
 
 .L7:
 	store.8     $0 -> 0[%r33]
-	symaddr.64* %r36 <- <anon symbol:0000017E5AB16A08>
+	symaddr.64* %r36 <- <anon symbol:0000020C68EF6CB8>
 	push.64*    %r36
 	push.64*    %r23
 	call.32     %r38 <- printf

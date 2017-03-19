@@ -9,49 +9,45 @@ source_filename = "sparse"
 
 define internal i32 @close(%struct.UpVal* %ARG1) {
 L0:
-  %0 = bitcast %struct.UpVal* %ARG1 to i8*
-  %1 = getelementptr inbounds i8, i8* %0, inttoptr (i64 24 to i8*)
-  %2 = bitcast i8* %1 to %struct.UpVal*
-  %3 = bitcast %struct.UpVal* %ARG1 to %struct.lua_TValue**
-  %4 = bitcast %struct.lua_TValue** %3 to i8*
-  %5 = getelementptr inbounds i8, i8* %4, i64 16
-  %6 = bitcast i8* %5 to %struct.lua_TValue**
-  %7 = bitcast %struct.UpVal* %2 to %struct.lua_TValue*
-  store %struct.lua_TValue* %7, %struct.lua_TValue** %6
-  %8 = bitcast %struct.UpVal* %ARG1 to i32*
-  %9 = bitcast i32* %8 to i8*
-  %10 = getelementptr inbounds i8, i8* %9, i64 32
-  %11 = bitcast i8* %10 to i32*
-  %load_target = load i32, i32* %11
+  %0 = ptrtoint %struct.UpVal* %ARG1 to i64
+  %R2 = add i64 %0, 24
+  %1 = inttoptr i64 %R2 to i8*
+  %2 = ptrtoint %struct.UpVal* %ARG1 to i64
+  %3 = add i64 %2, 16
+  %4 = inttoptr i64 %3 to %struct.lua_TValue**
+  %5 = bitcast i8* %1 to %struct.lua_TValue*
+  store %struct.lua_TValue* %5, %struct.lua_TValue** %4
+  %6 = ptrtoint %struct.UpVal* %ARG1 to i64
+  %7 = add i64 %6, 32
+  %8 = inttoptr i64 %7 to i32*
+  %load_target = load i32, i32* %8
   ret i32 %load_target
 }
 
 define i32 @main() {
 L1:
-  %uv_000001D81102C5C8 = alloca %struct.UpVal
-  %0 = bitcast %struct.UpVal* %uv_000001D81102C5C8 to i32*
-  %1 = bitcast i32* %0 to i8*
-  %2 = getelementptr inbounds i8, i8* %1, i64 32
-  %3 = bitcast i8* %2 to i32*
-  store i32 5, i32* %3
-  %R9 = call i32 @close(%struct.UpVal* %uv_000001D81102C5C8)
-  %4 = bitcast %struct.UpVal* %uv_000001D81102C5C8 to %struct.lua_TValue**
-  %5 = bitcast %struct.lua_TValue** %4 to i8*
-  %6 = getelementptr inbounds i8, i8* %5, i64 16
-  %7 = bitcast i8* %6 to %struct.lua_TValue**
-  %load_target = load %struct.lua_TValue*, %struct.lua_TValue** %7
-  %8 = bitcast %struct.UpVal* %uv_000001D81102C5C8 to i8*
-  %9 = getelementptr inbounds i8, i8* %8, inttoptr (i64 24 to i8*)
-  %10 = bitcast i8* %9 to %struct.UpVal*
-  %11 = ptrtoint %struct.lua_TValue* %load_target to i64
-  %12 = ptrtoint %struct.UpVal* %10 to i64
-  %R14 = icmp eq i64 %11, %12
+  %uv_0000029CF5A3E928 = alloca %struct.UpVal
+  %0 = ptrtoint %struct.UpVal* %uv_0000029CF5A3E928 to i64
+  %1 = add i64 %0, 32
+  %2 = inttoptr i64 %1 to i32*
+  store i32 5, i32* %2
+  %R9 = call i32 @close(%struct.UpVal* %uv_0000029CF5A3E928)
+  %3 = ptrtoint %struct.UpVal* %uv_0000029CF5A3E928 to i64
+  %4 = add i64 %3, 16
+  %5 = inttoptr i64 %4 to %struct.lua_TValue**
+  %load_target = load %struct.lua_TValue*, %struct.lua_TValue** %5
+  %6 = ptrtoint %struct.UpVal* %uv_0000029CF5A3E928 to i64
+  %R12 = add i64 %6, 24
+  %7 = inttoptr i64 %R12 to i8*
+  %8 = ptrtoint %struct.lua_TValue* %load_target to i64
+  %9 = ptrtoint i8* %7 to i64
+  %R14 = icmp eq i64 %8, %9
   %R141 = zext i1 %R14 to i32
   %R16 = icmp eq i32 %R9, 5
   %R162 = zext i1 %R16 to i32
-  %13 = icmp ne i32 %R141, 0
-  %14 = icmp ne i32 %R162, 0
-  %R17 = and i1 %13, %14
+  %10 = icmp ne i32 %R141, 0
+  %11 = icmp ne i32 %R162, 0
+  %R17 = and i1 %10, %11
   %R173 = zext i1 %R17 to i32
   %R18 = icmp eq i32 %R173, 0
   %R184 = zext i1 %R18 to i32

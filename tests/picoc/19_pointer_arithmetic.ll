@@ -8,13 +8,13 @@ source_filename = "sparse"
 
 define i32 @main() {
 L0:
-  %a_000001FAB8ADE078 = alloca i32
-  %0 = bitcast i32* %a_000001FAB8ADE078 to i8*
-  %1 = getelementptr inbounds i8, i8* %0, i64 0
-  %2 = bitcast i8* %1 to i32*
+  %a_000002ED5BEDD4F8 = alloca i32
+  %0 = ptrtoint i32* %a_000002ED5BEDD4F8 to i64
+  %1 = add i64 %0, 0
+  %2 = inttoptr i64 %1 to i32*
   store i32 42, i32* %2
   %R5 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @.str, i64 0, i64 0), i32 42)
-  %cond = icmp ne i32* %a_000001FAB8ADE078, null
+  %cond = icmp ne i32* %a_000002ED5BEDD4F8, null
   br i1 %cond, label %L2, label %L1
 
 L1:                                               ; preds = %L0

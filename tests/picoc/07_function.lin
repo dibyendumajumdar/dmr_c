@@ -8,7 +8,7 @@ myfunc:
 vfunc:
 .L2:
 	<entry-point>
-	symaddr.64* %r5 <- <anon symbol:000002180AED5188>
+	symaddr.64* %r5 <- <anon symbol:000002499CFB44F8>
 	push.64*    %r5
 	push.32     %arg1
 	call.32     %r7 <- printf
@@ -18,7 +18,7 @@ vfunc:
 qfunc:
 .L4:
 	<entry-point>
-	symaddr.64* %r8 <- <anon symbol:000002180AED5508>
+	symaddr.64* %r8 <- <anon symbol:000002499CFB4878>
 	push.64*    %r8
 	call.32     %r9 <- printf
 	ret
@@ -27,13 +27,13 @@ qfunc:
 main:
 .L6:
 	<entry-point>
-	symaddr.64* %r10 <- <anon symbol:000002180AED5888>
+	symaddr.64* %r10 <- <anon symbol:000002499CFB4BF8>
 	push.64*    %r10
 	push.32     $3
 	call.32     %r11 <- myfunc
 	push.32     %r11
 	call.32     %r12 <- printf
-	symaddr.64* %r13 <- <anon symbol:000002180AED5C08>
+	symaddr.64* %r13 <- <anon symbol:000002499CFB4F78>
 	push.64*    %r13
 	push.32     $4
 	call.32     %r14 <- myfunc

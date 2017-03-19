@@ -33,7 +33,7 @@ main:
 	br          %r11, .L6, .L10
 
 .L6:
-	symaddr.64* %r12 <- <anon symbol:0000022F30DB4D38>
+	symaddr.64* %r12 <- <anon symbol:000001A08DE078B8>
 	push.64*    %r12
 	push.32     %r10(Count)
 	call.32     %r14 <- factorial

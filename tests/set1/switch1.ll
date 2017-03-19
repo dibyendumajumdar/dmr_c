@@ -6,12 +6,14 @@ source_filename = "sparse"
 
 define i32 @main(i32 %ARG1, i8** %ARG2) {
 L0:
-  %0 = bitcast i8** %ARG2 to i8*
-  %1 = getelementptr inbounds i8, i8* %0, i64 0
-  %2 = bitcast i8* %1 to i8**
+  %0 = ptrtoint i8** %ARG2 to i64
+  %1 = add i64 %0, 0
+  %2 = inttoptr i64 %1 to i8**
   %load_target = load i8*, i8** %2
-  %3 = getelementptr inbounds i8, i8* %load_target, i64 0
-  %load_target1 = load i8, i8* %3
+  %3 = ptrtoint i8* %load_target to i64
+  %4 = add i64 %3, 0
+  %5 = inttoptr i64 %4 to i8*
+  %load_target1 = load i8, i8* %5
   switch i8 %load_target1, label %L2 [
     i8 115, label %L1
   ]

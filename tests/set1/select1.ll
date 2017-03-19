@@ -9,22 +9,21 @@ source_filename = "sparse"
 
 define internal %struct.lua_TValue* @select(%union.Closure* %ARG1, i32 %ARG2) {
 L0:
-  %0 = bitcast %union.Closure* %ARG1 to i8*
-  %1 = getelementptr inbounds i8, i8* %0, %struct.lua_TValue* inttoptr (i64 8 to %struct.lua_TValue*)
-  %2 = bitcast i8* %1 to %union.Closure*
+  %0 = ptrtoint %union.Closure* %ARG1 to i64
+  %R3 = add i64 %0, 8
+  %1 = inttoptr i64 %R3 to %struct.lua_TValue*
   %R9 = icmp eq i32 %ARG2, 1
   %R91 = zext i1 %R9 to i32
   %cond = icmp ne i32 %R91, 0
-  %src2 = bitcast %union.Closure* %2 to %struct.lua_TValue*
-  %select = select i1 %cond, %struct.lua_TValue* %src2, %struct.lua_TValue* @luaO_nilobject_
+  %select = select i1 %cond, %struct.lua_TValue* %1, %struct.lua_TValue* @luaO_nilobject_
   ret %struct.lua_TValue* %select
 }
 
 define i32 @main() {
 L1:
-  %cl_0000025BD1A4DAC8 = alloca %union.Closure
+  %cl_000001A52E4103E8 = alloca %union.Closure
   %0 = alloca i32
-  %R13 = call %struct.lua_TValue* @select(%union.Closure* %cl_0000025BD1A4DAC8, i32 0)
+  %R13 = call %struct.lua_TValue* @select(%union.Closure* %cl_000001A52E4103E8, i32 0)
   %1 = ptrtoint %struct.lua_TValue* %R13 to i64
   %R15 = icmp eq i64 %1, ptrtoint (%struct.lua_TValue* @luaO_nilobject_ to i64)
   %R151 = zext i1 %R15 to i32
@@ -32,7 +31,7 @@ L1:
   br i1 %cond, label %L2, label %L3
 
 L2:                                               ; preds = %L1
-  %R17 = call %struct.lua_TValue* @select(%union.Closure* %cl_0000025BD1A4DAC8, i32 1)
+  %R17 = call %struct.lua_TValue* @select(%union.Closure* %cl_000001A52E4103E8, i32 1)
   %2 = ptrtoint %struct.lua_TValue* %R17 to i64
   %R19 = icmp ne i64 %2, ptrtoint (%struct.lua_TValue* @luaO_nilobject_ to i64)
   %R192 = zext i1 %R19 to i32

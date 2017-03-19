@@ -1,23 +1,23 @@
 main:
 .L0:
 	<entry-point>
-	symaddr.64* %r1 <- <anon symbol:000001EB5EB53DC8>
+	symaddr.64* %r1 <- <anon symbol:000001B6B68A4B98>
 	push.64*    %r1
 	push.32     $0x6068
 	call.32     %r2 <- printf
-	symaddr.64* %r3 <- <anon symbol:000001EB5EB54148>
+	symaddr.64* %r3 <- <anon symbol:000001B6B68A4F18>
 	push.64*    %r3
 	push.32     $0x53977
 	call.32     %r4 <- printf
-	symaddr.64* %r5 <- <anon symbol:000001EB5EB544C8>
+	symaddr.64* %r5 <- <anon symbol:000001B6B68A5298>
 	push.64*    %r5
 	push.32     $0x2468ac
 	call.32     %r6 <- printf
-	symaddr.64* %r7 <- <anon symbol:000001EB5EB54848>
+	symaddr.64* %r7 <- <anon symbol:000001B6B68A5618>
 	push.64*    %r7
 	push.32     $0x2468ac
 	call.32     %r8 <- printf
-	symaddr.64* %r9 <- <anon symbol:000001EB5EB54BC8>
+	symaddr.64* %r9 <- <anon symbol:000001B6B68A5998>
 	push.64*    %r9
 	push.32     $0x555
 	call.32     %r10 <- printf

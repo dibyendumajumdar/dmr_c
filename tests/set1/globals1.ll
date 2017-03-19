@@ -5,9 +5,9 @@ source_filename = "sparse"
 
 define internal i32 @value(i32* %ARG1) {
 L0:
-  %0 = bitcast i32* %ARG1 to i8*
-  %1 = getelementptr inbounds i8, i8* %0, i64 0
-  %2 = bitcast i8* %1 to i32*
+  %0 = ptrtoint i32* %ARG1 to i64
+  %1 = add i64 %0, 0
+  %2 = inttoptr i64 %1 to i32*
   %load_target = load i32, i32* %2
   ret i32 %load_target
 }

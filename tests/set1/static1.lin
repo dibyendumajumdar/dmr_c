@@ -13,7 +13,7 @@ main:
 	call.32     %r4 <- staticint
 	call.32     %r5 <- staticint
 	add.32      %r8 <- %r4, %r5
-	symaddr.64* %r10 <- <anon symbol:00000244CD066CD8>
+	symaddr.64* %r10 <- <anon symbol:0000022CC1AF6CE8>
 	push.64*    %r10
 	push.32     %r8
 	load.64*    %r12 <- 0[s]

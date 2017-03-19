@@ -1,9 +1,11 @@
 print:
 .L0:
 	<entry-point>
-	symaddr.64  %r1 <- <anon symbol:000001DD85681C78>
+	symaddr.64* %r1 <- <anon symbol:000001C21BDC4ED8>
+	push.64*    %r1
 	load.32     %r3 <- 0[%arg1]
-	call.32     %r4 <- printf, %r1, %r3
+	push.32     %r3
+	call.32     %r4 <- printf
 	load.32     %r6 <- 0[%arg1]
 	ret.32      %r6
 
@@ -12,8 +14,9 @@ main:
 .L2:
 	<entry-point>
 	store.32    $0xffffffff -> 0[escapelist]
-	symaddr.64  %r8 <- escapelist
-	call.32     %r9 <- print, %r8
+	symaddr.64* %r8 <- escapelist
+	push.64*    %r8
+	call.32     %r9 <- print
 	setne.32    %r11 <- %r9, $0xffffffff
 	ret.32      %r11
 

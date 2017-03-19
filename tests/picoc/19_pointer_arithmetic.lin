@@ -3,26 +3,26 @@ main:
 	<entry-point>
 	store.32    $42 -> 0[a]
 	symaddr.64* %r1 <- a
-	symaddr.64* %r2 <- <anon symbol:0000024FE9884DA8>
+	symaddr.64* %r2 <- <anon symbol:00000297D5A54498>
 	push.64*    %r2
 	push.32     $42
 	call.32     %r5 <- printf
 	br          %r1, .L2, .L1
 
 .L1:
-	symaddr.64* %r8 <- <anon symbol:0000024FE9885208>
+	symaddr.64* %r8 <- <anon symbol:00000297D5A548F8>
 	push.64*    %r8
 	call.32     %r9 <- printf
 	br          .L4
 
 .L2:
-	symaddr.64* %r10 <- <anon symbol:0000024FE9885588>
+	symaddr.64* %r10 <- <anon symbol:00000297D5A54C78>
 	push.64*    %r10
 	call.32     %r11 <- printf
 	br          .L4
 
 .L4:
-	symaddr.64* %r14 <- <anon symbol:0000024FE9885908>
+	symaddr.64* %r14 <- <anon symbol:00000297D5A54FF8>
 	push.64*    %r14
 	call.32     %r15 <- printf
 	ret.32      $0

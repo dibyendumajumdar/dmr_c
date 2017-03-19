@@ -14,25 +14,25 @@ source_filename = "sparse"
 
 define i32 @main() {
 L0:
-  %a_000001B13C41D538 = alloca i32
-  %0 = bitcast i32* %a_000001B13C41D538 to i8*
-  %1 = getelementptr inbounds i8, i8* %0, i64 0
-  %2 = bitcast i8* %1 to i32*
+  %a_00000290208BD438 = alloca i32
+  %0 = ptrtoint i32* %a_00000290208BD438 to i64
+  %1 = add i64 %0, 0
+  %2 = inttoptr i64 %1 to i32*
   store i32 42, i32* %2
   %R5 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([8 x i8], [8 x i8]* @.str, i64 0, i64 0), i32 42)
   store i32 12, i32* getelementptr inbounds (%struct.ziggy, %struct.ziggy* @bolshevic, i32 0, i32 0)
-  store i32 34, i32* bitcast (i8* getelementptr inbounds (i8, i8* bitcast (%struct.ziggy* @bolshevic to i8*), i64 4) to i32*)
-  store i32 56, i32* bitcast (i8* getelementptr inbounds (i8, i8* bitcast (%struct.ziggy* @bolshevic to i8*), i64 8) to i32*)
+  store i32 34, i32* inttoptr (i64 add (i64 ptrtoint (%struct.ziggy* @bolshevic to i64), i64 4) to i32*)
+  store i32 56, i32* inttoptr (i64 add (i64 ptrtoint (%struct.ziggy* @bolshevic to i64), i64 8) to i32*)
   %R8 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([18 x i8], [18 x i8]* @.str.1, i64 0, i64 0), i32 12)
-  %load_target = load i32, i32* bitcast (i8* getelementptr inbounds (i8, i8* bitcast (%struct.ziggy* @bolshevic to i8*), i64 4) to i32*)
+  %load_target = load i32, i32* inttoptr (i64 add (i64 ptrtoint (%struct.ziggy* @bolshevic to i64), i64 4) to i32*)
   %R11 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([18 x i8], [18 x i8]* @.str.2, i64 0, i64 0), i32 %load_target)
-  %load_target1 = load i32, i32* bitcast (i8* getelementptr inbounds (i8, i8* bitcast (%struct.ziggy* @bolshevic to i8*), i64 8) to i32*)
+  %load_target1 = load i32, i32* inttoptr (i64 add (i64 ptrtoint (%struct.ziggy* @bolshevic to i64), i64 8) to i32*)
   %R14 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([18 x i8], [18 x i8]* @.str.3, i64 0, i64 0), i32 %load_target1)
   %load_target2 = load i32, i32* getelementptr inbounds (%struct.ziggy, %struct.ziggy* @bolshevic, i32 0, i32 0)
   %R19 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([14 x i8], [14 x i8]* @.str.4, i64 0, i64 0), i32 %load_target2)
-  %load_target3 = load i32, i32* bitcast (i8* getelementptr inbounds (i8, i8* bitcast (%struct.ziggy* @bolshevic to i8*), i64 4) to i32*)
+  %load_target3 = load i32, i32* inttoptr (i64 add (i64 ptrtoint (%struct.ziggy* @bolshevic to i64), i64 4) to i32*)
   %R23 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([14 x i8], [14 x i8]* @.str.5, i64 0, i64 0), i32 %load_target3)
-  %load_target4 = load i32, i32* bitcast (i8* getelementptr inbounds (i8, i8* bitcast (%struct.ziggy* @bolshevic to i8*), i64 8) to i32*)
+  %load_target4 = load i32, i32* inttoptr (i64 add (i64 ptrtoint (%struct.ziggy* @bolshevic to i64), i64 8) to i32*)
   %R27 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([14 x i8], [14 x i8]* @.str.6, i64 0, i64 0), i32 %load_target4)
   ret i32 0
 }

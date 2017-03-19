@@ -28,7 +28,7 @@ main:
 	br          %r6, .L9, .L6
 
 .L9:
-	symaddr.64* %r7 <- <anon symbol:00000247A3044F18>
+	symaddr.64* %r7 <- <anon symbol:0000014C1C364138>
 	push.64*    %r7
 	push.32     %r1(x)
 	push.32     %r3(y)

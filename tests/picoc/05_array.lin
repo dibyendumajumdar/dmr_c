@@ -31,7 +31,7 @@ main:
 	br          %r15, .L5, .L9
 
 .L5:
-	symaddr.64* %r16 <- <anon symbol:000001FE73C14FD8>
+	symaddr.64* %r16 <- <anon symbol:0000025FDF367B08>
 	push.64*    %r16
 	symaddr.64* %r17 <- Array
 	scast.64    %r19 <- (32) %r14(Count)

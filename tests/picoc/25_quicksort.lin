@@ -119,7 +119,7 @@ main:
 	br          %r71, .L15, .L17
 
 .L15:
-	symaddr.64* %r72 <- <anon symbol:0000018FF0288D78>
+	symaddr.64* %r72 <- <anon symbol:000002A6519D9A68>
 	push.64*    %r72
 	symaddr.64* %r73 <- array
 	scast.64    %r75 <- (32) %r70(i)
@@ -133,7 +133,7 @@ main:
 	br          .L18
 
 .L17:
-	symaddr.64* %r82 <- <anon symbol:0000018FF0289398>
+	symaddr.64* %r82 <- <anon symbol:000002A6519DA088>
 	push.64*    %r82
 	call.32     %r83 <- printf
 	push.32     $0
@@ -148,7 +148,7 @@ main:
 	br          %r85, .L19, .L21
 
 .L19:
-	symaddr.64* %r86 <- <anon symbol:0000018FF0289718>
+	symaddr.64* %r86 <- <anon symbol:000002A6519DA408>
 	push.64*    %r86
 	symaddr.64* %r87 <- array
 	scast.64    %r89 <- (32) %r84(i)
@@ -162,7 +162,7 @@ main:
 	br          .L22
 
 .L21:
-	symaddr.64* %r96 <- <anon symbol:0000018FF0289D38>
+	symaddr.64* %r96 <- <anon symbol:000002A6519DAA28>
 	push.64*    %r96
 	call.32     %r97 <- printf
 	ret.32      $0

@@ -1,7 +1,7 @@
 variadic:
 .L0:
 	<entry-point>
-	symaddr.64* %r1 <- <anon symbol:00000277F6223FB8>
+	symaddr.64* %r1 <- <anon symbol:0000022F693D4FC8>
 	push.64*    %r1
 	push.32     %arg1
 	call.32     %r3 <- printf

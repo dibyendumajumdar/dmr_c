@@ -15,7 +15,7 @@ main:
 	add.64*     %r6 <- %r3, %r5
 	load.8      %r7 <- 0[%r6]
 	scast.32    %r8 <- (8) %r7
-	symaddr.64* %r9 <- <anon symbol:000001D2B8814008>
+	symaddr.64* %r9 <- <anon symbol:00000186B7F850D8>
 	push.64*    %r9
 	push.32     %r8
 	call.32     %r11 <- printf

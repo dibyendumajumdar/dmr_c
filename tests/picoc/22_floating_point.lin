@@ -2,32 +2,32 @@ main:
 .L0:
 	<entry-point>
 	set.f32     %r1 <- 69.120003
-	symaddr.64* %r2 <- <anon symbol:000001C911384C28>
+	symaddr.64* %r2 <- <anon symbol:000001F8F4AF4F18>
 	push.64*    %r2
 	fpcast.f64  %r4 <- (32) %r1
 	push.f64    %r4
 	call.32     %r5 <- printf
-	symaddr.64* %r6 <- <anon symbol:000001C911384FA8>
+	symaddr.64* %r6 <- <anon symbol:000001F8F4AF5298>
 	push.64*    %r6
 	set.f64     %r7 <- 69.120000
 	push.f64    %r7
 	call.32     %r8 <- printf
-	symaddr.64* %r9 <- <anon symbol:000001C911385328>
+	symaddr.64* %r9 <- <anon symbol:000001F8F4AF5618>
 	push.64*    %r9
 	set.f64     %r10 <- -44.440000
 	push.f64    %r10
 	call.32     %r11 <- printf
-	symaddr.64* %r12 <- <anon symbol:000001C9113856A8>
+	symaddr.64* %r12 <- <anon symbol:000001F8F4AF5998>
 	push.64*    %r12
 	set.f64     %r13 <- 700.665200
 	push.f64    %r13
 	call.32     %r14 <- printf
-	symaddr.64* %r15 <- <anon symbol:000001C911385A28>
+	symaddr.64* %r15 <- <anon symbol:000001F8F4AF5D18>
 	push.64*    %r15
 	set.f64     %r16 <- 0.217330
 	push.f64    %r16
 	call.32     %r17 <- printf
-	symaddr.64* %r18 <- <anon symbol:000001C911385DA8>
+	symaddr.64* %r18 <- <anon symbol:000001F8F4AF6098>
 	push.64*    %r18
 	push.32     $1
 	push.32     $1
@@ -36,7 +36,7 @@ main:
 	push.32     $0
 	push.32     $1
 	call.32     %r19 <- printf
-	symaddr.64* %r20 <- <anon symbol:000001C911386128>
+	symaddr.64* %r20 <- <anon symbol:000001F8F4AF6418>
 	push.64*    %r20
 	push.32     $0
 	push.32     $1
@@ -45,7 +45,7 @@ main:
 	push.32     $0
 	push.32     $0
 	call.32     %r21 <- printf
-	symaddr.64* %r22 <- <anon symbol:000001C9113864A8>
+	symaddr.64* %r22 <- <anon symbol:000001F8F4AF6798>
 	push.64*    %r22
 	push.32     $0
 	push.32     $0
@@ -59,7 +59,7 @@ main:
 	fpcast.f64  %r27 <- (32) %r24
 	add.f64     %r28 <- %r27, %r25
 	fpcast.f32  %r29 <- (64) %r28
-	symaddr.64* %r30 <- <anon symbol:000001C911386828>
+	symaddr.64* %r30 <- <anon symbol:000001F8F4AF6B18>
 	push.64*    %r30
 	fpcast.f64  %r32 <- (32) %r29
 	push.f64    %r32
@@ -69,7 +69,7 @@ main:
 	fpcast.f64  %r37 <- (32) %r34
 	sub.f64     %r38 <- %r37, %r35
 	fpcast.f32  %r39 <- (64) %r38
-	symaddr.64* %r40 <- <anon symbol:000001C911386BA8>
+	symaddr.64* %r40 <- <anon symbol:000001F8F4AF6E98>
 	push.64*    %r40
 	fpcast.f64  %r42 <- (32) %r39
 	push.f64    %r42
@@ -79,7 +79,7 @@ main:
 	fpcast.f64  %r47 <- (32) %r44
 	mulu.f64    %r48 <- %r47, %r45
 	fpcast.f32  %r49 <- (64) %r48
-	symaddr.64* %r50 <- <anon symbol:000001C911386F28>
+	symaddr.64* %r50 <- <anon symbol:000001F8F4AF7218>
 	push.64*    %r50
 	fpcast.f64  %r52 <- (32) %r49
 	push.f64    %r52
@@ -89,27 +89,27 @@ main:
 	fpcast.f64  %r57 <- (32) %r54
 	divu.f64    %r58 <- %r57, %r55
 	fpcast.f32  %r59 <- (64) %r58
-	symaddr.64* %r60 <- <anon symbol:000001C9113872A8>
+	symaddr.64* %r60 <- <anon symbol:000001F8F4AF7598>
 	push.64*    %r60
 	fpcast.f64  %r62 <- (32) %r59
 	push.f64    %r62
 	call.32     %r63 <- printf
-	symaddr.64* %r64 <- <anon symbol:000001C911387628>
+	symaddr.64* %r64 <- <anon symbol:000001F8F4AF7918>
 	push.64*    %r64
 	set.f64     %r65 <- 12.340000
 	push.f64    %r65
 	call.32     %r66 <- printf
-	symaddr.64* %r67 <- <anon symbol:000001C9113879A8>
+	symaddr.64* %r67 <- <anon symbol:000001F8F4AF7C98>
 	push.64*    %r67
 	set.f64     %r68 <- -12.340000
 	push.f64    %r68
 	call.32     %r69 <- printf
-	symaddr.64* %r70 <- <anon symbol:000001C911387D28>
+	symaddr.64* %r70 <- <anon symbol:000001F8F4AF8018>
 	push.64*    %r70
 	fpcast.f64  %r72 <- (32) $2
 	push.f64    %r72
 	call.32     %r73 <- printf
-	symaddr.64* %r74 <- <anon symbol:000001C9113880A8>
+	symaddr.64* %r74 <- <anon symbol:000001F8F4AF8398>
 	push.64*    %r74
 	push.f64    $2
 	call.f64    %r75 <- sin

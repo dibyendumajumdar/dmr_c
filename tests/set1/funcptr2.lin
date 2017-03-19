@@ -1,7 +1,7 @@
 myfunc:
 .L0:
 	<entry-point>
-	symaddr.64* %r1 <- <anon symbol:000001B533618578>
+	symaddr.64* %r1 <- <anon symbol:0000016D100586B8>
 	push.64*    %r1
 	push.64*    %arg1
 	push.32     %arg2
@@ -23,7 +23,7 @@ calling:
 main:
 .L4:
 	<entry-point>
-	symaddr.64* %r12 <- <anon symbol:000001B5336190D8>
+	symaddr.64* %r12 <- <anon symbol:0000016D10059218>
 	store.64*   %r12 -> 0[base_funcs]
 	symaddr.64* %r13 <- myfunc
 	store.64*   %r13 -> 8[base_funcs]

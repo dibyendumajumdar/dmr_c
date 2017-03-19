@@ -20,10 +20,11 @@ L1:                                               ; preds = %L4, %L0
   %1 = load i16, i16* %0
   %R3 = zext i16 %1 to i64
   %R4 = mul i64 %R3, 4
-  %2 = getelementptr inbounds i8, i8* getelementptr inbounds ([10 x %union.memory_word], [10 x %union.memory_word]* @mem, i32 0, i32 0, i32 0, i32 0), i64 %R4
-  %3 = bitcast i8* %2 to %union.memory_word*
-  %4 = bitcast %union.memory_word* %3 to i8*
-  %5 = getelementptr inbounds i8, i8* %4, i64 0
+  %R5 = add i64 ptrtoint ([10 x %union.memory_word]* @mem to i64), %R4
+  %2 = inttoptr i64 %R5 to %union.memory_word*
+  %3 = ptrtoint %union.memory_word* %2 to i64
+  %4 = add i64 %3, 0
+  %5 = inttoptr i64 %4 to i8*
   %load_target = load i8, i8* %5
   %R7 = zext i8 %load_target to i32
   %R8 = icmp ne i32 %R7, 2
@@ -36,13 +37,12 @@ L2:                                               ; preds = %L1
   %R12 = add i32 %R11, 2
   %R13 = sext i32 %R12 to i64
   %R14 = mul i64 %R13, 4
-  %6 = getelementptr inbounds i8, i8* getelementptr inbounds ([10 x %union.memory_word], [10 x %union.memory_word]* @mem, i32 0, i32 0, i32 0, i32 0), i64 %R14
-  %7 = bitcast i8* %6 to %union.memory_word*
-  %8 = bitcast %union.memory_word* %7 to i32*
-  %9 = bitcast i32* %8 to i8*
-  %10 = getelementptr inbounds i8, i8* %9, i64 0
-  %11 = bitcast i8* %10 to i32*
-  %load_target2 = load i32, i32* %11
+  %R15 = add i64 ptrtoint ([10 x %union.memory_word]* @mem to i64), %R14
+  %6 = inttoptr i64 %R15 to %union.memory_word*
+  %7 = ptrtoint %union.memory_word* %6 to i64
+  %8 = add i64 %7, 0
+  %9 = inttoptr i64 %8 to i32*
+  %load_target2 = load i32, i32* %9
   %load_target3 = load i32, i32* @fewest_demerits
   %R19 = icmp ult i32 %load_target2, %load_target3
   %R194 = zext i1 %R19 to i32
@@ -54,11 +54,10 @@ L3:                                               ; preds = %L2
   br label %L4
 
 L4:                                               ; preds = %L3, %L2, %L1
-  %12 = bitcast %union.memory_word* %3 to i16*
-  %13 = bitcast i16* %12 to i8*
-  %14 = getelementptr inbounds i8, i8* %13, i64 2
-  %15 = bitcast i8* %14 to i16*
-  %load_target6 = load i16, i16* %15
+  %10 = ptrtoint %union.memory_word* %2 to i64
+  %11 = add i64 %10, 2
+  %12 = inttoptr i64 %11 to i16*
+  %load_target6 = load i16, i16* %12
   store i16 %load_target6, i16* %0
   %R28 = zext i16 %load_target6 to i32
   %R29 = icmp ne i32 %R28, 65494
@@ -72,13 +71,12 @@ L5:                                               ; preds = %L4
   %R33 = add i32 %R32, 1
   %R34 = sext i32 %R33 to i64
   %R35 = mul i64 %R34, 4
-  %16 = getelementptr inbounds i8, i8* getelementptr inbounds ([10 x %union.memory_word], [10 x %union.memory_word]* @mem, i32 0, i32 0, i32 0, i32 0), i64 %R35
-  %17 = bitcast i8* %16 to %union.memory_word*
-  %18 = bitcast %union.memory_word* %17 to i16*
-  %19 = bitcast i16* %18 to i8*
-  %20 = getelementptr inbounds i8, i8* %19, i64 0
-  %21 = bitcast i8* %20 to i16*
-  %load_target10 = load i16, i16* %21
+  %R36 = add i64 ptrtoint ([10 x %union.memory_word]* @mem to i64), %R35
+  %13 = inttoptr i64 %R36 to %union.memory_word*
+  %14 = ptrtoint %union.memory_word* %13 to i64
+  %15 = add i64 %14, 0
+  %16 = inttoptr i64 %15 to i16*
+  %load_target10 = load i16, i16* %16
   store i16 %load_target10, i16* @best_line
   ret void
 }
@@ -86,9 +84,9 @@ L5:                                               ; preds = %L4
 define i32 @main() {
 L6:
   store i8 0, i8* getelementptr inbounds ([10 x %union.memory_word], [10 x %union.memory_word]* @mem, i32 0, i32 0, i32 0, i32 0)
-  store i16 -42, i16* bitcast (i8* getelementptr inbounds ([10 x %union.memory_word], [10 x %union.memory_word]* @mem, i32 0, i32 0, i32 0, i64 2) to i16*)
-  store i16 456, i16* bitcast (i8* getelementptr inbounds (i8, i8* getelementptr inbounds ([10 x %union.memory_word], [10 x %union.memory_word]* @mem, i32 0, i32 0, i32 0, i32 0), i64 4) to i16*)
-  store i32 30, i32* bitcast (i8* getelementptr inbounds (i8, i8* getelementptr inbounds ([10 x %union.memory_word], [10 x %union.memory_word]* @mem, i32 0, i32 0, i32 0, i32 0), i64 8) to i32*)
+  store i16 -42, i16* inttoptr (i64 add (i64 ptrtoint ([10 x %union.memory_word]* @mem to i64), i64 2) to i16*)
+  store i16 456, i16* inttoptr (i64 add (i64 ptrtoint ([10 x %union.memory_word]* @mem to i64), i64 4) to i16*)
+  store i32 30, i32* inttoptr (i64 add (i64 ptrtoint ([10 x %union.memory_word]* @mem to i64), i64 8) to i32*)
   call void @foo(i16 0)
   %load_target = load i16, i16* @best_line
   %R39 = zext i16 %load_target to i32

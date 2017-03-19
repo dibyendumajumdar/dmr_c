@@ -3,10 +3,10 @@ main:
 	<entry-point>
 	symaddr.64* %r1 <- a
 	push.64*    %r1
-	symaddr.64* %r2 <- <anon symbol:0000012880C750A8>
+	symaddr.64* %r2 <- <anon symbol:000001CE7CEE5558>
 	push.64*    %r2
 	call.64*    %r3 <- strcpy
-	symaddr.64* %r4 <- <anon symbol:0000012880C75428>
+	symaddr.64* %r4 <- <anon symbol:000001CE7CEE58D8>
 	push.64*    %r4
 	add.64*     %r6 <- %r1, $1
 	push.64*    %r6

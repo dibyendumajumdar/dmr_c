@@ -14,8 +14,10 @@ L0:
 define i32 @main(i32 %ARG1, i8** %ARG2) {
 L1:
   %R10 = call i8* @incr(i8* getelementptr inbounds ([6 x i8], [6 x i8]* @.str, i64 0, i64 0))
-  %0 = getelementptr inbounds i8, i8* %R10, i64 0
-  %load_target = load i8, i8* %0
+  %0 = ptrtoint i8* %R10 to i64
+  %1 = add i64 %0, 0
+  %2 = inttoptr i64 %1 to i8*
+  %load_target = load i8, i8* %2
   %R13 = sext i8 %load_target to i32
   %R15 = icmp ne i32 %R13, 101
   %R151 = zext i1 %R15 to i32

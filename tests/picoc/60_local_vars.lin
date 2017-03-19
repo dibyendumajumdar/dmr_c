@@ -1,7 +1,7 @@
 foo:
 .L0:
 	<entry-point>
-	symaddr.64* %r1 <- <anon symbol:000001DE299B6478>
+	symaddr.64* %r1 <- <anon symbol:0000018695805678>
 	push.64*    %r1
 	call.32     %r2 <- printf
 	phisrc.32   %phi3(i) <- $0
@@ -13,7 +13,7 @@ foo:
 	br          %r4, .L1, .L5
 
 .L1:
-	symaddr.64* %r7 <- <anon symbol:000001DE299B67F8>
+	symaddr.64* %r7 <- <anon symbol:00000186958059F8>
 	push.64*    %r7
 	push.32     %r3(i)
 	call.32     %r9 <- printf
@@ -22,11 +22,11 @@ foo:
 	br          .L4
 
 .L5:
-	symaddr.64* %r12 <- <anon symbol:000001DE299B6B78>
+	symaddr.64* %r12 <- <anon symbol:0000018695805D78>
 	push.64*    %r12
 	push.32     $5
 	call.32     %r13 <- printf
-	symaddr.64* %r14 <- <anon symbol:000001DE299B6EF8>
+	symaddr.64* %r14 <- <anon symbol:00000186958060F8>
 	push.64*    %r14
 	call.32     %r15 <- printf
 	phisrc.32   %phi7(i) <- $0
@@ -38,7 +38,7 @@ foo:
 	br          %r17, .L11, .L13
 
 .L11:
-	symaddr.64* %r18 <- <anon symbol:000001DE299B7278>
+	symaddr.64* %r18 <- <anon symbol:0000018695806478>
 	push.64*    %r18
 	push.32     %r16(i)
 	call.32     %r20 <- printf
@@ -70,7 +70,7 @@ foo:
 	br          %r30, .L19, .L21
 
 .L19:
-	symaddr.64* %r32 <- <anon symbol:000001DE299B75F8>
+	symaddr.64* %r32 <- <anon symbol:00000186958067F8>
 	push.64*    %r32
 	push.32     %r29(i)
 	call.32     %r34 <- printf
@@ -85,7 +85,7 @@ foo:
 main:
 .L23:
 	<entry-point>
-	symaddr.64* %r37 <- <anon symbol:000001DE299B7978>
+	symaddr.64* %r37 <- <anon symbol:0000018695806B78>
 	push.64*    %r37
 	call.32     %r38 <- printf
 	phisrc.32   %phi20(i) <- $0
@@ -97,7 +97,7 @@ main:
 	br          %r40, .L24, .L26
 
 .L24:
-	symaddr.64* %r43 <- <anon symbol:000001DE299B7CF8>
+	symaddr.64* %r43 <- <anon symbol:0000018695806EF8>
 	push.64*    %r43
 	push.32     %r39(i)
 	call.32     %r45 <- printf
@@ -106,7 +106,7 @@ main:
 	br          .L27
 
 .L26:
-	symaddr.64* %r48 <- <anon symbol:000001DE299B8078>
+	symaddr.64* %r48 <- <anon symbol:0000018695807278>
 	push.64*    %r48
 	call.32     %r49 <- printf
 	phisrc.32   %phi24(i) <- $0
@@ -118,7 +118,7 @@ main:
 	br          %r51, .L28, .L30
 
 .L28:
-	symaddr.64* %r52 <- <anon symbol:000001DE299B83F8>
+	symaddr.64* %r52 <- <anon symbol:00000186958075F8>
 	push.64*    %r52
 	push.32     %r50(i)
 	call.32     %r54 <- printf

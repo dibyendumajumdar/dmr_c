@@ -10,7 +10,7 @@ main:
 	br          %r2, .L1, .L5
 
 .L1:
-	symaddr.64* %r3 <- <anon symbol:000001B49A6A4B08>
+	symaddr.64* %r3 <- <anon symbol:0000015231E749D8>
 	push.64*    %r3
 	muls.32     %r6 <- %r1(Count), %r1(Count)
 	muls.32     %r8 <- %r1(Count), $3

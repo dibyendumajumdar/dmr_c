@@ -6,7 +6,7 @@ main:
 	br          .L1
 
 .L1:
-	symaddr.64* %r1 <- <anon symbol:00000253213566D8>
+	symaddr.64* %r1 <- <anon symbol:00000285F73D3BE8>
 	push.64*    %r1
 	phi.32      %r2 <- %phi3(a), %phi4(a)
 	push.32     %r2

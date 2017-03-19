@@ -6,7 +6,7 @@ main:
 	switch      %r4, 115 -> .L2, default -> .L3
 
 .L2:
-	symaddr.64* %r5 <- <anon symbol:000001D0E8046348>
+	symaddr.64* %r5 <- <anon symbol:0000027567725588>
 	push.64*    %r5
 	scast.32    %r8 <- (8) %r4
 	push.32     %r8
@@ -17,7 +17,7 @@ main:
 	br          %r4, .L4, .L6
 
 .L4:
-	symaddr.64* %r12 <- <anon symbol:000001D0E8046888>
+	symaddr.64* %r12 <- <anon symbol:0000027567725AC8>
 	push.64*    %r12
 	scast.32    %r15 <- (8) %r4
 	push.32     %r15

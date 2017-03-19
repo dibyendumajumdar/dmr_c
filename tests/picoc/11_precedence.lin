@@ -1,65 +1,65 @@
 main:
 .L0:
 	<entry-point>
-	symaddr.64* %r1 <- <anon symbol:0000020F4F0F4E08>
+	symaddr.64* %r1 <- <anon symbol:000002B7813E4178>
 	push.64*    %r1
 	push.32     $134
 	call.32     %r5 <- printf
-	symaddr.64* %r6 <- <anon symbol:0000020F4F0F5188>
+	symaddr.64* %r6 <- <anon symbol:000002B7813E44F8>
 	push.64*    %r6
 	push.32     $134
 	call.32     %r10 <- printf
-	symaddr.64* %r11 <- <anon symbol:0000020F4F0F5508>
+	symaddr.64* %r11 <- <anon symbol:000002B7813E4878>
 	push.64*    %r11
 	push.32     $0
 	call.32     %r17 <- printf
-	symaddr.64* %r18 <- <anon symbol:0000020F4F0F5888>
+	symaddr.64* %r18 <- <anon symbol:000002B7813E4BF8>
 	push.64*    %r18
 	push.32     $1
 	call.32     %r24 <- printf
-	symaddr.64* %r25 <- <anon symbol:0000020F4F0F5C08>
+	symaddr.64* %r25 <- <anon symbol:000002B7813E4F78>
 	push.64*    %r25
 	push.32     $1
 	call.32     %r31 <- printf
-	symaddr.64* %r32 <- <anon symbol:0000020F4F0F5F88>
+	symaddr.64* %r32 <- <anon symbol:000002B7813E52F8>
 	push.64*    %r32
 	push.32     $1
 	call.32     %r38 <- printf
-	symaddr.64* %r39 <- <anon symbol:0000020F4F0F6308>
+	symaddr.64* %r39 <- <anon symbol:000002B7813E5678>
 	push.64*    %r39
 	push.32     $1
 	call.32     %r45 <- printf
-	symaddr.64* %r46 <- <anon symbol:0000020F4F0F6688>
+	symaddr.64* %r46 <- <anon symbol:000002B7813E59F8>
 	push.64*    %r46
 	push.32     $46
 	call.32     %r54 <- printf
-	symaddr.64* %r55 <- <anon symbol:0000020F4F0F6A08>
+	symaddr.64* %r55 <- <anon symbol:000002B7813E5D78>
 	push.64*    %r55
 	push.32     $1
 	push.32     $0
 	call.32     %r62 <- printf
-	symaddr.64* %r63 <- <anon symbol:0000020F4F0F6D88>
+	symaddr.64* %r63 <- <anon symbol:000002B7813E60F8>
 	push.64*    %r63
 	push.32     $0
 	push.32     $1
 	call.32     %r70 <- printf
-	symaddr.64* %r71 <- <anon symbol:0000020F4F0F7108>
+	symaddr.64* %r71 <- <anon symbol:000002B7813E6478>
 	push.64*    %r71
 	push.32     $1
 	call.32     %r79 <- printf
-	symaddr.64* %r80 <- <anon symbol:0000020F4F0F7488>
+	symaddr.64* %r80 <- <anon symbol:000002B7813E67F8>
 	push.64*    %r80
 	push.32     $0x77c
 	call.32     %r88 <- printf
-	symaddr.64* %r89 <- <anon symbol:0000020F4F0F7808>
+	symaddr.64* %r89 <- <anon symbol:000002B7813E6B78>
 	push.64*    %r89
 	push.32     $0x77c
 	call.32     %r97 <- printf
-	symaddr.64* %r98 <- <anon symbol:0000020F4F0F7B88>
+	symaddr.64* %r98 <- <anon symbol:000002B7813E6EF8>
 	push.64*    %r98
 	push.32     $64
 	call.32     %r99 <- printf
-	symaddr.64* %r100 <- <anon symbol:0000020F4F0F7F08>
+	symaddr.64* %r100 <- <anon symbol:000002B7813E7278>
 	push.64*    %r100
 	push.32     $4
 	call.32     %r101 <- printf

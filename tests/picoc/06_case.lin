@@ -10,28 +10,28 @@ main:
 	br          %r2, .L1, .L9
 
 .L1:
-	symaddr.64* %r3 <- <anon symbol:000001B895974FA8>
+	symaddr.64* %r3 <- <anon symbol:0000010A134D5098>
 	push.64*    %r3
 	push.32     %r1(Count)
 	call.32     %r5 <- printf
 	switch      %r1(Count), 1 -> .L6, 2 -> .L7, default -> .L8
 
 .L6:
-	symaddr.64* %r7 <- <anon symbol:000001B895975328>
+	symaddr.64* %r7 <- <anon symbol:0000010A134D5418>
 	push.64*    %r7
 	push.32     $1
 	call.32     %r8 <- printf
 	br          .L2
 
 .L7:
-	symaddr.64* %r9 <- <anon symbol:000001B8959756A8>
+	symaddr.64* %r9 <- <anon symbol:0000010A134D5798>
 	push.64*    %r9
 	push.32     $2
 	call.32     %r10 <- printf
 	br          .L2
 
 .L8:
-	symaddr.64* %r11 <- <anon symbol:000001B895975A28>
+	symaddr.64* %r11 <- <anon symbol:0000010A134D5B18>
 	push.64*    %r11
 	push.32     $0
 	call.32     %r12 <- printf

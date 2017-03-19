@@ -2,38 +2,38 @@ main:
 .L0:
 	<entry-point>
 	store.32    $42 -> 0[a]
-	symaddr.64* %r2 <- <anon symbol:0000029463A453C8>
+	symaddr.64* %r2 <- <anon symbol:000001D5E85345F8>
 	push.64*    %r2
 	push.32     $42
 	call.32     %r5 <- printf
 	store.32    $12 -> 0[bolshevic]
 	store.32    $34 -> 4[bolshevic]
 	store.32    $56 -> 8[bolshevic]
-	symaddr.64* %r6 <- <anon symbol:0000029463A45AC8>
+	symaddr.64* %r6 <- <anon symbol:000001D5E8534CF8>
 	push.64*    %r6
 	push.32     $12
 	call.32     %r8 <- printf
-	symaddr.64* %r9 <- <anon symbol:0000029463A45F28>
+	symaddr.64* %r9 <- <anon symbol:000001D5E8535158>
 	push.64*    %r9
 	load.32     %r10 <- 4[bolshevic]
 	push.32     %r10
 	call.32     %r11 <- printf
-	symaddr.64* %r12 <- <anon symbol:0000029463A46388>
+	symaddr.64* %r12 <- <anon symbol:000001D5E85355B8>
 	push.64*    %r12
 	load.32     %r13 <- 8[bolshevic]
 	push.32     %r13
 	call.32     %r14 <- printf
-	symaddr.64* %r16 <- <anon symbol:0000029463A469A8>
+	symaddr.64* %r16 <- <anon symbol:000001D5E8535BD8>
 	push.64*    %r16
 	load.32     %r18 <- 0[bolshevic]
 	push.32     %r18
 	call.32     %r19 <- printf
-	symaddr.64* %r20 <- <anon symbol:0000029463A46E08>
+	symaddr.64* %r20 <- <anon symbol:000001D5E8536038>
 	push.64*    %r20
 	load.32     %r22 <- 4[bolshevic]
 	push.32     %r22
 	call.32     %r23 <- printf
-	symaddr.64* %r24 <- <anon symbol:0000029463A47268>
+	symaddr.64* %r24 <- <anon symbol:000001D5E8536498>
 	push.64*    %r24
 	load.32     %r26 <- 8[bolshevic]
 	push.32     %r26

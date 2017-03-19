@@ -65,13 +65,13 @@ main:
 	br          %r40, .L9, .L10
 
 .L9:
-	symaddr.64* %r41 <- <anon symbol:00000216E20202A8>
+	symaddr.64* %r41 <- <anon symbol:0000020CF0970138>
 	push.64*    %r41
 	call.32     %r42 <- printf
 	br          .L12
 
 .L10:
-	symaddr.64* %r43 <- <anon symbol:00000216E2020628>
+	symaddr.64* %r43 <- <anon symbol:0000020CF09704B8>
 	push.64*    %r43
 	push.32     %r39
 	call.32     %r46 <- printf

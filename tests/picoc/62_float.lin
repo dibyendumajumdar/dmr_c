@@ -1,7 +1,7 @@
 main:
 .L0:
 	<entry-point>
-	symaddr.64* %r5 <- <anon symbol:000001F5F80F4A88>
+	symaddr.64* %r5 <- <anon symbol:000002A46C7D74E8>
 	push.64*    %r5
 	set.f64     %r6 <- 3.140000
 	push.f64    %r6

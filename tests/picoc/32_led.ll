@@ -1,15 +1,19 @@
 ; ModuleID = 'out.bc'
 source_filename = "sparse"
 
-@d_0000020BD45239E8 = internal global [32 x i32] zeroinitializer
+@d_00000230874C0F78 = internal global [32 x i32] zeroinitializer
 @.str = private constant [4 x i8] c"%s\0A\00"
 
 define internal void @topline(i32 %ARG1, i8* %ARG2) {
 L0:
   %0 = alloca i8*
-  %1 = getelementptr inbounds i8, i8* %ARG2, inttoptr (i64 1 to i8*)
-  %2 = getelementptr inbounds i8, i8* %ARG2, i64 0
-  store i8 32, i8* %2
+  %1 = ptrtoint i8* %ARG2 to i64
+  %R2 = add i64 %1, 1
+  %2 = inttoptr i64 %R2 to i8*
+  %3 = ptrtoint i8* %ARG2 to i64
+  %4 = add i64 %3, 0
+  %5 = inttoptr i64 %4 to i8*
+  store i8 32, i8* %5
   switch i32 %ARG1, label %L2 [
     i32 0, label %L1
     i32 2, label %L1
@@ -21,23 +25,33 @@ L0:
   ]
 
 L1:                                               ; preds = %L0, %L0, %L0, %L0, %L0, %L0, %L0
-  %3 = getelementptr inbounds i8, i8* %1, inttoptr (i64 1 to i8*)
-  %4 = getelementptr inbounds i8, i8* %ARG2, i64 1
-  store i8 95, i8* %4
-  store i8* %3, i8** %0
+  %6 = ptrtoint i8* %2 to i64
+  %R5 = add i64 %6, 1
+  %7 = inttoptr i64 %R5 to i8*
+  %8 = ptrtoint i8* %ARG2 to i64
+  %9 = add i64 %8, 1
+  %10 = inttoptr i64 %9 to i8*
+  store i8 95, i8* %10
+  store i8* %7, i8** %0
   br label %L3
 
 L2:                                               ; preds = %L0
-  %5 = getelementptr inbounds i8, i8* %1, inttoptr (i64 1 to i8*)
-  %6 = getelementptr inbounds i8, i8* %ARG2, i64 1
-  store i8 32, i8* %6
-  store i8* %5, i8** %0
+  %11 = ptrtoint i8* %2 to i64
+  %R7 = add i64 %11, 1
+  %12 = inttoptr i64 %R7 to i8*
+  %13 = ptrtoint i8* %ARG2 to i64
+  %14 = add i64 %13, 1
+  %15 = inttoptr i64 %14 to i8*
+  store i8 32, i8* %15
+  store i8* %12, i8** %0
   br label %L3
 
 L3:                                               ; preds = %L2, %L1
-  %7 = load i8*, i8** %0
-  %8 = getelementptr inbounds i8, i8* %7, i64 0
-  store i8 32, i8* %8
+  %16 = load i8*, i8** %0
+  %17 = ptrtoint i8* %16 to i64
+  %18 = add i64 %17, 0
+  %19 = inttoptr i64 %18 to i8*
+  store i8 32, i8* %19
   ret void
 }
 
@@ -57,19 +71,27 @@ L4:
   ]
 
 L5:                                               ; preds = %L4, %L4, %L4, %L4, %L4, %L4
-  %4 = getelementptr inbounds i8, i8* %ARG2, inttoptr (i64 1 to i8*)
-  %5 = getelementptr inbounds i8, i8* %ARG2, i64 0
-  store i8 124, i8* %5
-  store i8* %4, i8** %1
-  store i8* %4, i8** %0
+  %4 = ptrtoint i8* %ARG2 to i64
+  %R12 = add i64 %4, 1
+  %5 = inttoptr i64 %R12 to i8*
+  %6 = ptrtoint i8* %ARG2 to i64
+  %7 = add i64 %6, 0
+  %8 = inttoptr i64 %7 to i8*
+  store i8 124, i8* %8
+  store i8* %5, i8** %1
+  store i8* %5, i8** %0
   br label %L7
 
 L6:                                               ; preds = %L4
-  %6 = getelementptr inbounds i8, i8* %ARG2, inttoptr (i64 1 to i8*)
-  %7 = getelementptr inbounds i8, i8* %ARG2, i64 0
-  store i8 32, i8* %7
-  store i8* %6, i8** %1
-  store i8* %6, i8** %0
+  %9 = ptrtoint i8* %ARG2 to i64
+  %R14 = add i64 %9, 1
+  %10 = inttoptr i64 %R14 to i8*
+  %11 = ptrtoint i8* %ARG2 to i64
+  %12 = add i64 %11, 0
+  %13 = inttoptr i64 %12 to i8*
+  store i8 32, i8* %13
+  store i8* %10, i8** %1
+  store i8* %10, i8** %0
   br label %L7
 
 L7:                                               ; preds = %L6, %L5
@@ -84,21 +106,29 @@ L7:                                               ; preds = %L6, %L5
   ]
 
 L8:                                               ; preds = %L7, %L7, %L7, %L7, %L7, %L7, %L7
-  %8 = load i8*, i8** %0
-  %9 = getelementptr inbounds i8, i8* %8, inttoptr (i64 1 to i8*)
-  %10 = getelementptr inbounds i8, i8* %8, i64 0
-  store i8 95, i8* %10
-  store i8* %9, i8** %3
-  store i8* %9, i8** %2
+  %14 = load i8*, i8** %0
+  %15 = ptrtoint i8* %14 to i64
+  %R17 = add i64 %15, 1
+  %16 = inttoptr i64 %R17 to i8*
+  %17 = ptrtoint i8* %14 to i64
+  %18 = add i64 %17, 0
+  %19 = inttoptr i64 %18 to i8*
+  store i8 95, i8* %19
+  store i8* %16, i8** %3
+  store i8* %16, i8** %2
   br label %L10
 
 L9:                                               ; preds = %L7
-  %11 = load i8*, i8** %1
-  %12 = getelementptr inbounds i8, i8* %11, inttoptr (i64 1 to i8*)
-  %13 = getelementptr inbounds i8, i8* %11, i64 0
-  store i8 32, i8* %13
-  store i8* %12, i8** %3
-  store i8* %12, i8** %2
+  %20 = load i8*, i8** %1
+  %21 = ptrtoint i8* %20 to i64
+  %R19 = add i64 %21, 1
+  %22 = inttoptr i64 %R19 to i8*
+  %23 = ptrtoint i8* %20 to i64
+  %24 = add i64 %23, 0
+  %25 = inttoptr i64 %24 to i8*
+  store i8 32, i8* %25
+  store i8* %22, i8** %3
+  store i8* %22, i8** %2
   br label %L10
 
 L10:                                              ; preds = %L9, %L8
@@ -114,15 +144,19 @@ L10:                                              ; preds = %L9, %L8
   ]
 
 L11:                                              ; preds = %L10, %L10, %L10, %L10, %L10, %L10, %L10, %L10
-  %14 = load i8*, i8** %2
-  %15 = getelementptr inbounds i8, i8* %14, i64 0
-  store i8 124, i8* %15
+  %26 = load i8*, i8** %2
+  %27 = ptrtoint i8* %26 to i64
+  %28 = add i64 %27, 0
+  %29 = inttoptr i64 %28 to i8*
+  store i8 124, i8* %29
   br label %L13
 
 L12:                                              ; preds = %L10
-  %16 = load i8*, i8** %3
-  %17 = getelementptr inbounds i8, i8* %16, i64 0
-  store i8 32, i8* %17
+  %30 = load i8*, i8** %3
+  %31 = ptrtoint i8* %30 to i64
+  %32 = add i64 %31, 0
+  %33 = inttoptr i64 %32 to i8*
+  store i8 32, i8* %33
   br label %L13
 
 L13:                                              ; preds = %L12, %L11
@@ -143,19 +177,27 @@ L14:
   ]
 
 L15:                                              ; preds = %L14, %L14, %L14, %L14
-  %4 = getelementptr inbounds i8, i8* %ARG2, inttoptr (i64 1 to i8*)
-  %5 = getelementptr inbounds i8, i8* %ARG2, i64 0
-  store i8 124, i8* %5
-  store i8* %4, i8** %1
-  store i8* %4, i8** %0
+  %4 = ptrtoint i8* %ARG2 to i64
+  %R27 = add i64 %4, 1
+  %5 = inttoptr i64 %R27 to i8*
+  %6 = ptrtoint i8* %ARG2 to i64
+  %7 = add i64 %6, 0
+  %8 = inttoptr i64 %7 to i8*
+  store i8 124, i8* %8
+  store i8* %5, i8** %1
+  store i8* %5, i8** %0
   br label %L17
 
 L16:                                              ; preds = %L14
-  %6 = getelementptr inbounds i8, i8* %ARG2, inttoptr (i64 1 to i8*)
-  %7 = getelementptr inbounds i8, i8* %ARG2, i64 0
-  store i8 32, i8* %7
-  store i8* %6, i8** %1
-  store i8* %6, i8** %0
+  %9 = ptrtoint i8* %ARG2 to i64
+  %R29 = add i64 %9, 1
+  %10 = inttoptr i64 %R29 to i8*
+  %11 = ptrtoint i8* %ARG2 to i64
+  %12 = add i64 %11, 0
+  %13 = inttoptr i64 %12 to i8*
+  store i8 32, i8* %13
+  store i8* %10, i8** %1
+  store i8* %10, i8** %0
   br label %L17
 
 L17:                                              ; preds = %L16, %L15
@@ -169,21 +211,29 @@ L17:                                              ; preds = %L16, %L15
   ]
 
 L18:                                              ; preds = %L17, %L17, %L17, %L17, %L17, %L17
-  %8 = load i8*, i8** %0
-  %9 = getelementptr inbounds i8, i8* %8, inttoptr (i64 1 to i8*)
-  %10 = getelementptr inbounds i8, i8* %8, i64 0
-  store i8 95, i8* %10
-  store i8* %9, i8** %3
-  store i8* %9, i8** %2
+  %14 = load i8*, i8** %0
+  %15 = ptrtoint i8* %14 to i64
+  %R32 = add i64 %15, 1
+  %16 = inttoptr i64 %R32 to i8*
+  %17 = ptrtoint i8* %14 to i64
+  %18 = add i64 %17, 0
+  %19 = inttoptr i64 %18 to i8*
+  store i8 95, i8* %19
+  store i8* %16, i8** %3
+  store i8* %16, i8** %2
   br label %L20
 
 L19:                                              ; preds = %L17
-  %11 = load i8*, i8** %1
-  %12 = getelementptr inbounds i8, i8* %11, inttoptr (i64 1 to i8*)
-  %13 = getelementptr inbounds i8, i8* %11, i64 0
-  store i8 32, i8* %13
-  store i8* %12, i8** %3
-  store i8* %12, i8** %2
+  %20 = load i8*, i8** %1
+  %21 = ptrtoint i8* %20 to i64
+  %R34 = add i64 %21, 1
+  %22 = inttoptr i64 %R34 to i8*
+  %23 = ptrtoint i8* %20 to i64
+  %24 = add i64 %23, 0
+  %25 = inttoptr i64 %24 to i8*
+  store i8 32, i8* %25
+  store i8* %22, i8** %3
+  store i8* %22, i8** %2
   br label %L20
 
 L20:                                              ; preds = %L19, %L18
@@ -200,15 +250,19 @@ L20:                                              ; preds = %L19, %L18
   ]
 
 L21:                                              ; preds = %L20, %L20, %L20, %L20, %L20, %L20, %L20, %L20, %L20
-  %14 = load i8*, i8** %2
-  %15 = getelementptr inbounds i8, i8* %14, i64 0
-  store i8 124, i8* %15
+  %26 = load i8*, i8** %2
+  %27 = ptrtoint i8* %26 to i64
+  %28 = add i64 %27, 0
+  %29 = inttoptr i64 %28 to i8*
+  store i8 124, i8* %29
   br label %L23
 
 L22:                                              ; preds = %L20
-  %16 = load i8*, i8** %3
-  %17 = getelementptr inbounds i8, i8* %16, i64 0
-  store i8 32, i8* %17
+  %30 = load i8*, i8** %3
+  %31 = ptrtoint i8* %30 to i64
+  %32 = add i64 %31, 0
+  %33 = inttoptr i64 %32 to i8*
+  store i8 32, i8* %33
   br label %L23
 
 L23:                                              ; preds = %L22, %L21
@@ -245,12 +299,12 @@ L26:                                              ; preds = %L25
   %R49 = add i32 %10, 1
   %R50 = sext i32 %10 to i64
   %R51 = mul i64 %R50, 4
-  %11 = getelementptr inbounds i8, i8* bitcast ([32 x i32]* @d_0000020BD45239E8 to i8*), i64 %R51
-  %12 = bitcast i8* %11 to i32*
-  %13 = bitcast i32* %12 to i8*
-  %14 = getelementptr inbounds i8, i8* %13, i64 0
-  %15 = bitcast i8* %14 to i32*
-  store i32 %R45, i32* %15
+  %R52 = add i64 ptrtoint ([32 x i32]* @d_00000230874C0F78 to i64), %R51
+  %11 = inttoptr i64 %R52 to i32*
+  %12 = ptrtoint i32* %11 to i64
+  %13 = add i64 %12, 0
+  %14 = inttoptr i64 %13 to i32*
+  store i32 %R45, i32* %14
   %R54 = icmp sge i32 %R49, 32
   %R542 = zext i1 %R54 to i32
   store i32 %R49, i32* %2
@@ -264,126 +318,150 @@ L27:                                              ; preds = %L26
   br label %L25
 
 L28:                                              ; preds = %L26, %L25
-  %16 = load i32, i32* %2
-  %R58 = add i32 %16, -1
+  %15 = load i32, i32* %2
+  %R58 = add i32 %15, -1
   store i32 %R58, i32* %3
   br label %L29
 
 L29:                                              ; preds = %L30, %L28
-  %17 = load i32, i32* %3
-  %R60 = icmp sge i32 %17, 0
+  %16 = load i32, i32* %3
+  %R60 = icmp sge i32 %16, 0
   %R604 = zext i1 %R60 to i32
-  %18 = load i8*, i8** %4
+  %17 = load i8*, i8** %4
   %cond5 = icmp ne i32 %R604, 0
   br i1 %cond5, label %L30, label %L31
 
 L30:                                              ; preds = %L29
-  %R63 = sext i32 %17 to i64
+  %R63 = sext i32 %16 to i64
   %R64 = mul i64 %R63, 4
-  %19 = getelementptr inbounds i8, i8* bitcast ([32 x i32]* @d_0000020BD45239E8 to i8*), i64 %R64
-  %20 = bitcast i8* %19 to i32*
-  %21 = bitcast i32* %20 to i8*
-  %22 = getelementptr inbounds i8, i8* %21, i64 0
-  %23 = bitcast i8* %22 to i32*
-  %load_target = load i32, i32* %23
-  call void @topline(i32 %load_target, i8* %18)
-  %R69 = ptrtoint i8* %18 to i64
+  %R65 = add i64 ptrtoint ([32 x i32]* @d_00000230874C0F78 to i64), %R64
+  %18 = inttoptr i64 %R65 to i32*
+  %19 = ptrtoint i32* %18 to i64
+  %20 = add i64 %19, 0
+  %21 = inttoptr i64 %20 to i32*
+  %load_target = load i32, i32* %21
+  call void @topline(i32 %load_target, i8* %17)
+  %R69 = ptrtoint i8* %17 to i64
   %R70 = add i64 %R69, 3
   %R71 = inttoptr i64 %R70 to i8*
-  %24 = getelementptr inbounds i8, i8* %R71, inttoptr (i64 1 to i8*)
-  %25 = getelementptr inbounds i8, i8* %R71, i64 0
-  store i8 32, i8* %25
-  store i8* %24, i8** %4
-  %R75 = add i32 %17, -1
+  %22 = ptrtoint i8* %R71 to i64
+  %R73 = add i64 %22, 1
+  %23 = inttoptr i64 %R73 to i8*
+  %24 = ptrtoint i8* %R71 to i64
+  %25 = add i64 %24, 0
+  %26 = inttoptr i64 %25 to i8*
+  store i8 32, i8* %26
+  store i8* %23, i8** %4
+  %R75 = add i32 %16, -1
   store i32 %R75, i32* %3
   br label %L29
 
 L31:                                              ; preds = %L29
-  %26 = getelementptr inbounds i8, i8* %18, inttoptr (i64 1 to i8*)
-  %27 = getelementptr inbounds i8, i8* %18, i64 0
-  store i8 10, i8* %27
-  store i8* %26, i8** %6
+  %27 = ptrtoint i8* %17 to i64
+  %R77 = add i64 %27, 1
+  %28 = inttoptr i64 %R77 to i8*
+  %29 = ptrtoint i8* %17 to i64
+  %30 = add i64 %29, 0
+  %31 = inttoptr i64 %30 to i8*
+  store i8 10, i8* %31
+  store i8* %28, i8** %6
   store i32 %R58, i32* %5
   br label %L32
 
 L32:                                              ; preds = %L33, %L31
-  %28 = load i32, i32* %5
-  %R81 = icmp sge i32 %28, 0
+  %32 = load i32, i32* %5
+  %R81 = icmp sge i32 %32, 0
   %R816 = zext i1 %R81 to i32
-  %29 = load i8*, i8** %6
+  %33 = load i8*, i8** %6
   %cond7 = icmp ne i32 %R816, 0
   br i1 %cond7, label %L33, label %L34
 
 L33:                                              ; preds = %L32
-  %R84 = sext i32 %28 to i64
+  %R84 = sext i32 %32 to i64
   %R85 = mul i64 %R84, 4
-  %30 = getelementptr inbounds i8, i8* bitcast ([32 x i32]* @d_0000020BD45239E8 to i8*), i64 %R85
-  %31 = bitcast i8* %30 to i32*
-  %32 = bitcast i32* %31 to i8*
-  %33 = getelementptr inbounds i8, i8* %32, i64 0
-  %34 = bitcast i8* %33 to i32*
-  %load_target8 = load i32, i32* %34
-  call void @midline(i32 %load_target8, i8* %29)
-  %R90 = ptrtoint i8* %29 to i64
+  %R86 = add i64 ptrtoint ([32 x i32]* @d_00000230874C0F78 to i64), %R85
+  %34 = inttoptr i64 %R86 to i32*
+  %35 = ptrtoint i32* %34 to i64
+  %36 = add i64 %35, 0
+  %37 = inttoptr i64 %36 to i32*
+  %load_target8 = load i32, i32* %37
+  call void @midline(i32 %load_target8, i8* %33)
+  %R90 = ptrtoint i8* %33 to i64
   %R91 = add i64 %R90, 3
   %R92 = inttoptr i64 %R91 to i8*
-  %35 = getelementptr inbounds i8, i8* %R92, inttoptr (i64 1 to i8*)
-  %36 = getelementptr inbounds i8, i8* %R92, i64 0
-  store i8 32, i8* %36
-  store i8* %35, i8** %6
-  %R96 = add i32 %28, -1
+  %38 = ptrtoint i8* %R92 to i64
+  %R94 = add i64 %38, 1
+  %39 = inttoptr i64 %R94 to i8*
+  %40 = ptrtoint i8* %R92 to i64
+  %41 = add i64 %40, 0
+  %42 = inttoptr i64 %41 to i8*
+  store i8 32, i8* %42
+  store i8* %39, i8** %6
+  %R96 = add i32 %32, -1
   store i32 %R96, i32* %5
   br label %L32
 
 L34:                                              ; preds = %L32
-  %37 = getelementptr inbounds i8, i8* %29, inttoptr (i64 1 to i8*)
-  %38 = getelementptr inbounds i8, i8* %29, i64 0
-  store i8 10, i8* %38
-  store i8* %37, i8** %8
+  %43 = ptrtoint i8* %33 to i64
+  %R98 = add i64 %43, 1
+  %44 = inttoptr i64 %R98 to i8*
+  %45 = ptrtoint i8* %33 to i64
+  %46 = add i64 %45, 0
+  %47 = inttoptr i64 %46 to i8*
+  store i8 10, i8* %47
+  store i8* %44, i8** %8
   store i32 %R58, i32* %7
   br label %L35
 
 L35:                                              ; preds = %L36, %L34
-  %39 = load i32, i32* %7
-  %R102 = icmp sge i32 %39, 0
+  %48 = load i32, i32* %7
+  %R102 = icmp sge i32 %48, 0
   %R1029 = zext i1 %R102 to i32
-  %40 = load i8*, i8** %8
+  %49 = load i8*, i8** %8
   %cond10 = icmp ne i32 %R1029, 0
   br i1 %cond10, label %L36, label %L37
 
 L36:                                              ; preds = %L35
-  %R105 = sext i32 %39 to i64
+  %R105 = sext i32 %48 to i64
   %R106 = mul i64 %R105, 4
-  %41 = getelementptr inbounds i8, i8* bitcast ([32 x i32]* @d_0000020BD45239E8 to i8*), i64 %R106
-  %42 = bitcast i8* %41 to i32*
-  %43 = bitcast i32* %42 to i8*
-  %44 = getelementptr inbounds i8, i8* %43, i64 0
-  %45 = bitcast i8* %44 to i32*
-  %load_target11 = load i32, i32* %45
-  call void @botline(i32 %load_target11, i8* %40)
-  %R111 = ptrtoint i8* %40 to i64
+  %R107 = add i64 ptrtoint ([32 x i32]* @d_00000230874C0F78 to i64), %R106
+  %50 = inttoptr i64 %R107 to i32*
+  %51 = ptrtoint i32* %50 to i64
+  %52 = add i64 %51, 0
+  %53 = inttoptr i64 %52 to i32*
+  %load_target11 = load i32, i32* %53
+  call void @botline(i32 %load_target11, i8* %49)
+  %R111 = ptrtoint i8* %49 to i64
   %R112 = add i64 %R111, 3
   %R113 = inttoptr i64 %R112 to i8*
-  %46 = getelementptr inbounds i8, i8* %R113, inttoptr (i64 1 to i8*)
-  %47 = getelementptr inbounds i8, i8* %R113, i64 0
-  store i8 32, i8* %47
-  store i8* %46, i8** %8
-  %R117 = add i32 %39, -1
+  %54 = ptrtoint i8* %R113 to i64
+  %R115 = add i64 %54, 1
+  %55 = inttoptr i64 %R115 to i8*
+  %56 = ptrtoint i8* %R113 to i64
+  %57 = add i64 %56, 0
+  %58 = inttoptr i64 %57 to i8*
+  store i8 32, i8* %58
+  store i8* %55, i8** %8
+  %R117 = add i32 %48, -1
   store i32 %R117, i32* %7
   br label %L35
 
 L37:                                              ; preds = %L35
-  %48 = getelementptr inbounds i8, i8* %40, i64 0
-  store i8 10, i8* %48
-  %49 = getelementptr inbounds i8, i8* %40, i64 1
-  store i8 0, i8* %49
+  %59 = ptrtoint i8* %49 to i64
+  %60 = add i64 %59, 0
+  %61 = inttoptr i64 %60 to i8*
+  store i8 10, i8* %61
+  %62 = ptrtoint i8* %49 to i64
+  %63 = add i64 %62, 1
+  %64 = inttoptr i64 %63 to i8*
+  store i8 0, i8* %64
   ret void
 }
 
 define i32 @main() {
 L38:
-  %buf_0000020BD4524708 = alloca [160 x i8]
-  %R121 = bitcast [160 x i8]* %buf_0000020BD4524708 to i8*
+  %buf_00000230874C1C98 = alloca [160 x i8]
+  %R121 = bitcast [160 x i8]* %buf_00000230874C1C98 to i8*
   call void @print_led(i32 1234567, i8* %R121)
   %R124 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @.str, i64 0, i64 0), i8* %R121)
   ret i32 0

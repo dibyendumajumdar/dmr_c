@@ -8,7 +8,7 @@ BadCond:
 	load.32     %r6 <- 0[%r5]
 	add.32      %r7 <- %r6, $1
 	store.32    %r7 -> 0[%r5]
-	symaddr.64* %r13 <- <anon symbol:0000018D4D6773A8>
+	symaddr.64* %r13 <- <anon symbol:000001DA217C6548>
 	push.64*    %r13
 	symaddr.64* %r14 <- msg2
 	muls.64     %r17 <- %r3, $8
@@ -29,7 +29,7 @@ TstCond:
 	push.32     %arg1
 	push.64*    %arg3
 	call        BadCond
-	symaddr.64* %r25 <- <anon symbol:0000018D4D6779C8>
+	symaddr.64* %r25 <- <anon symbol:000001DA217C6B68>
 	push.64*    %r25
 	call.32     %r26 <- printf
 	br          .L4
@@ -41,13 +41,13 @@ TstCond:
 main:
 .L5:
 	<entry-point>
-	symaddr.64* %r27 <- <anon symbol:0000018D4D677FE8>
+	symaddr.64* %r27 <- <anon symbol:000001DA217C7188>
 	store.64*   %r27 -> 0[msg2]
-	symaddr.64* %r28 <- <anon symbol:0000018D4D678608>
+	symaddr.64* %r28 <- <anon symbol:000001DA217C77A8>
 	store.64*   %r28 -> 8[msg2]
-	symaddr.64* %r29 <- <anon symbol:0000018D4D678C28>
+	symaddr.64* %r29 <- <anon symbol:000001DA217C7DC8>
 	store.64*   %r29 -> 16[msg2]
-	symaddr.64* %r30 <- <anon symbol:0000018D4D679248>
+	symaddr.64* %r30 <- <anon symbol:000001DA217C83E8>
 	store.64*   %r30 -> 24[msg2]
 	store.f64   $0 -> 0[Zero]
 	store.f64   $1 -> 0[One]
@@ -112,7 +112,7 @@ main:
 .L8:
 	phi.32      %r100 <- %phi1, %phi2
 	push.32     %r100
-	symaddr.64* %r101 <- <anon symbol:0000018D4D6795C8>
+	symaddr.64* %r101 <- <anon symbol:000001DA217C8768>
 	push.64*    %r101
 	call        TstCond
 	push.32     $0
@@ -123,7 +123,7 @@ main:
 	load.f64    %r107 <- 0[Zero]
 	seteq.32    %r108 <- %r106, %r107
 	push.32     %r108
-	symaddr.64* %r109 <- <anon symbol:0000018D4D679948>
+	symaddr.64* %r109 <- <anon symbol:000001DA217C8AE8>
 	push.64*    %r109
 	call        TstCond
 	ret.32      $0

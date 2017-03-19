@@ -274,7 +274,7 @@ main:
 	symaddr.64* %r121 <- buf
 	push.64*    %r121
 	call        print_led
-	symaddr.64* %r122 <- <anon symbol:000001F538B6C6F8>
+	symaddr.64* %r122 <- <anon symbol:000001FCE240E228>
 	push.64*    %r122
 	push.64*    %r121
 	call.32     %r124 <- printf

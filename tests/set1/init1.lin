@@ -9,7 +9,7 @@ main:
 	set.f64     %r3 <- 65.780000
 	push.f64    %r3
 	call.32     %r4 <- printf
-	symaddr.64* %r5 <- <anon symbol:000001EA9D047078>
+	symaddr.64* %r5 <- <anon symbol:0000021E75129098>
 	add.64*     %r9 <- %r5, $1
 	push.64*    %r9
 	push.32     $6

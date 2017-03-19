@@ -10,7 +10,7 @@ incr:
 main:
 .L2:
 	<entry-point>
-	symaddr.64* %r8 <- <anon symbol:000001BCFA085188>
+	symaddr.64* %r8 <- <anon symbol:0000022157234508>
 	push.64*    %r8
 	call.64*    %r10 <- incr
 	load.8      %r12 <- 0[%r10]

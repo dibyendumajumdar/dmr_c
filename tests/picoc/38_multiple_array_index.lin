@@ -50,7 +50,7 @@ main:
 	br          %r22, .L9, .L17
 
 .L9:
-	symaddr.64* %r23 <- <anon symbol:000002112A8373E8>
+	symaddr.64* %r23 <- <anon symbol:000001F447D54C48>
 	push.64*    %r23
 	push.32     %r21(x)
 	call.32     %r25 <- printf
@@ -63,7 +63,7 @@ main:
 	br          %r27, .L13, .L15
 
 .L13:
-	symaddr.64* %r28 <- <anon symbol:000002112A837768>
+	symaddr.64* %r28 <- <anon symbol:000001F447D54FC8>
 	push.64*    %r28
 	symaddr.64* %r29 <- a
 	scast.64    %r31 <- (32) %r21(x)
@@ -80,7 +80,7 @@ main:
 	br          .L16
 
 .L15:
-	symaddr.64* %r42 <- <anon symbol:000002112A838028>
+	symaddr.64* %r42 <- <anon symbol:000001F447D55888>
 	push.64*    %r42
 	call.32     %r43 <- printf
 	add.32      %r45 <- %r21(x), $1

@@ -59,12 +59,12 @@ L1:                                               ; preds = %L2, %L0
 L2:                                               ; preds = %L1
   %R8 = sext i32 %3 to i64
   %R9 = mul i64 %R8, 4
-  %4 = getelementptr inbounds i8, i8* bitcast ([4 x i32]* @A to i8*), i64 %R9
-  %5 = bitcast i8* %4 to i32*
-  %6 = bitcast i32* %5 to i8*
-  %7 = getelementptr inbounds i8, i8* %6, i64 0
-  %8 = bitcast i8* %7 to i32*
-  %load_target = load i32, i32* %8
+  %R10 = add i64 ptrtoint ([4 x i32]* @A to i64), %R9
+  %4 = inttoptr i64 %R10 to i32*
+  %5 = ptrtoint i32* %4 to i64
+  %6 = add i64 %5, 0
+  %7 = inttoptr i64 %6 to i32*
+  %load_target = load i32, i32* %7
   %R12 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([5 x i8], [5 x i8]* @.str.1, i64 0, i64 0), i32 %load_target)
   %R14 = add i32 %3, 1
   store i32 %R14, i32* %0
@@ -77,23 +77,23 @@ L3:                                               ; preds = %L1
   br label %L4
 
 L4:                                               ; preds = %L5, %L3
-  %9 = load i32, i32* %1
-  %R20 = icmp slt i32 %9, 4
+  %8 = load i32, i32* %1
+  %R20 = icmp slt i32 %8, 4
   %R202 = zext i1 %R20 to i32
   %cond3 = icmp ne i32 %R202, 0
   br i1 %cond3, label %L5, label %L6
 
 L5:                                               ; preds = %L4
-  %R24 = sext i32 %9 to i64
+  %R24 = sext i32 %8 to i64
   %R25 = mul i64 %R24, 4
-  %10 = getelementptr inbounds i8, i8* bitcast ([4 x i32]* @B to i8*), i64 %R25
-  %11 = bitcast i8* %10 to i32*
-  %12 = bitcast i32* %11 to i8*
-  %13 = getelementptr inbounds i8, i8* %12, i64 0
-  %14 = bitcast i8* %13 to i32*
-  %load_target4 = load i32, i32* %14
+  %R26 = add i64 ptrtoint ([4 x i32]* @B to i64), %R25
+  %9 = inttoptr i64 %R26 to i32*
+  %10 = ptrtoint i32* %9 to i64
+  %11 = add i64 %10, 0
+  %12 = inttoptr i64 %11 to i32*
+  %load_target4 = load i32, i32* %12
   %R28 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([5 x i8], [5 x i8]* @.str.4, i64 0, i64 0), i32 %load_target4)
-  %R30 = add i32 %9, 1
+  %R30 = add i32 %8, 1
   store i32 %R30, i32* %1
   br label %L4
 
@@ -104,23 +104,23 @@ L6:                                               ; preds = %L4
   br label %L7
 
 L7:                                               ; preds = %L8, %L6
-  %15 = load i32, i32* %2
-  %R36 = icmp slt i32 %15, 4
+  %13 = load i32, i32* %2
+  %R36 = icmp slt i32 %13, 4
   %R365 = zext i1 %R36 to i32
   %cond6 = icmp ne i32 %R365, 0
   br i1 %cond6, label %L8, label %L9
 
 L8:                                               ; preds = %L7
-  %R40 = sext i32 %15 to i64
+  %R40 = sext i32 %13 to i64
   %R417 = mul i64 %R40, 4
-  %16 = getelementptr inbounds i8, i8* bitcast ([4 x i32]* @C to i8*), i64 %R417
-  %17 = bitcast i8* %16 to i32*
-  %18 = bitcast i32* %17 to i8*
-  %19 = getelementptr inbounds i8, i8* %18, i64 0
-  %20 = bitcast i8* %19 to i32*
-  %load_target8 = load i32, i32* %20
+  %R42 = add i64 ptrtoint ([4 x i32]* @C to i64), %R417
+  %14 = inttoptr i64 %R42 to i32*
+  %15 = ptrtoint i32* %14 to i64
+  %16 = add i64 %15, 0
+  %17 = inttoptr i64 %16 to i32*
+  %load_target8 = load i32, i32* %17
   %R44 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([5 x i8], [5 x i8]* @.str.7, i64 0, i64 0), i32 %load_target8)
-  %R46 = add i32 %15, 1
+  %R46 = add i32 %13, 1
   store i32 %R46, i32* %2
   br label %L7
 
@@ -150,13 +150,13 @@ L11:                                              ; preds = %L13, %L10
 L12:                                              ; preds = %L11
   %R55 = sext i32 %2 to i64
   %R56 = mul i64 %R55, 4
-  %3 = bitcast i32* %ARG1 to i8*
-  %4 = getelementptr inbounds i8, i8* %3, i64 %R56
-  %5 = bitcast i8* %4 to i32*
-  %6 = bitcast i32* %5 to i8*
-  %7 = getelementptr inbounds i8, i8* %6, i64 0
-  %8 = bitcast i8* %7 to i32*
-  %load_target = load i32, i32* %8
+  %3 = ptrtoint i32* %ARG1 to i64
+  %R57 = add i64 %3, %R56
+  %4 = inttoptr i64 %R57 to i32*
+  %5 = ptrtoint i32* %4 to i64
+  %6 = add i64 %5, 0
+  %7 = inttoptr i64 %6 to i32*
+  %load_target = load i32, i32* %7
   %cond2 = icmp ne i32 %load_target, 0
   br i1 %cond2, label %L14, label %L13
 
@@ -166,64 +166,64 @@ L13:                                              ; preds = %L12
   br label %L11
 
 L14:                                              ; preds = %L16, %L12, %L11
-  %9 = load i32, i32* %1
-  %R63 = icmp slt i32 %9, 4
+  %8 = load i32, i32* %1
+  %R63 = icmp slt i32 %8, 4
   %R633 = zext i1 %R63 to i32
   %cond4 = icmp ne i32 %R633, 0
   br i1 %cond4, label %L15, label %L17
 
 L15:                                              ; preds = %L14
-  %R66 = sext i32 %9 to i64
+  %R66 = sext i32 %8 to i64
   %R67 = mul i64 %R66, 4
-  %10 = bitcast i32* %ARG2 to i8*
-  %11 = getelementptr inbounds i8, i8* %10, i64 %R67
-  %12 = bitcast i8* %11 to i32*
-  %13 = bitcast i32* %12 to i8*
-  %14 = getelementptr inbounds i8, i8* %13, i64 0
-  %15 = bitcast i8* %14 to i32*
-  %load_target5 = load i32, i32* %15
+  %9 = ptrtoint i32* %ARG2 to i64
+  %R68 = add i64 %9, %R67
+  %10 = inttoptr i64 %R68 to i32*
+  %11 = ptrtoint i32* %10 to i64
+  %12 = add i64 %11, 0
+  %13 = inttoptr i64 %12 to i32*
+  %load_target5 = load i32, i32* %13
   %cond6 = icmp ne i32 %load_target5, 0
   br i1 %cond6, label %L17, label %L16
 
 L16:                                              ; preds = %L15
-  %R72 = add i32 %9, 1
+  %R72 = add i32 %8, 1
   store i32 %R72, i32* %1
   br label %L14
 
 L17:                                              ; preds = %L15, %L14
   %R75 = sext i32 %2 to i64
   %R76 = mul i64 %R75, 4
-  %16 = bitcast i32* %ARG1 to i8*
-  %17 = getelementptr inbounds i8, i8* %16, i64 %R76
-  %18 = bitcast i8* %17 to i32*
-  %19 = bitcast i32* %18 to i8*
-  %20 = getelementptr inbounds i8, i8* %19, i64 0
-  %21 = bitcast i8* %20 to i32*
-  %load_target7 = load i32, i32* %21
-  %R81 = add i32 %9, -1
+  %14 = ptrtoint i32* %ARG1 to i64
+  %R77 = add i64 %14, %R76
+  %15 = inttoptr i64 %R77 to i32*
+  %16 = ptrtoint i32* %15 to i64
+  %17 = add i64 %16, 0
+  %18 = inttoptr i64 %17 to i32*
+  %load_target7 = load i32, i32* %18
+  %R81 = add i32 %8, -1
   %R82 = sext i32 %R81 to i64
   %R83 = mul i64 %R82, 4
-  %22 = bitcast i32* %ARG2 to i8*
-  %23 = getelementptr inbounds i8, i8* %22, i64 %R83
-  %24 = bitcast i8* %23 to i32*
-  %25 = bitcast i32* %24 to i8*
-  %26 = getelementptr inbounds i8, i8* %25, i64 0
-  %27 = bitcast i8* %26 to i32*
-  store i32 %load_target7, i32* %27
+  %19 = ptrtoint i32* %ARG2 to i64
+  %R84 = add i64 %19, %R83
+  %20 = inttoptr i64 %R84 to i32*
+  %21 = ptrtoint i32* %20 to i64
+  %22 = add i64 %21, 0
+  %23 = inttoptr i64 %22 to i32*
+  store i32 %load_target7, i32* %23
   %R87 = sext i32 %2 to i64
   %R88 = mul i64 %R87, 4
-  %28 = bitcast i32* %ARG1 to i8*
-  %29 = getelementptr inbounds i8, i8* %28, i64 %R88
-  %30 = bitcast i8* %29 to i32*
-  %31 = bitcast i32* %30 to i8*
-  %32 = getelementptr inbounds i8, i8* %31, i64 0
-  %33 = bitcast i8* %32 to i32*
-  store i32 0, i32* %33
+  %24 = ptrtoint i32* %ARG1 to i64
+  %R89 = add i64 %24, %R88
+  %25 = inttoptr i64 %R89 to i32*
+  %26 = ptrtoint i32* %25 to i64
+  %27 = add i64 %26, 0
+  %28 = inttoptr i64 %27 to i32*
+  store i32 0, i32* %28
   call void @PrintAll()
-  %34 = bitcast i32* %24 to i8*
-  %35 = getelementptr inbounds i8, i8* %34, i64 0
-  %36 = bitcast i8* %35 to i32*
-  %load_target8 = load i32, i32* %36
+  %29 = ptrtoint i32* %20 to i64
+  %30 = add i64 %29, 0
+  %31 = inttoptr i64 %30 to i32*
+  %load_target8 = load i32, i32* %31
   ret i32 %load_target8
 }
 
@@ -246,12 +246,12 @@ L24:                                              ; preds = %L23
   %R119 = add i32 %3, 1
   %R122 = sext i32 %3 to i64
   %R123 = mul i64 %R122, 4
-  %4 = getelementptr inbounds i8, i8* bitcast ([4 x i32]* @A to i8*), i64 %R123
-  %5 = bitcast i8* %4 to i32*
-  %6 = bitcast i32* %5 to i8*
-  %7 = getelementptr inbounds i8, i8* %6, i64 0
-  %8 = bitcast i8* %7 to i32*
-  store i32 %R119, i32* %8
+  %R124 = add i64 ptrtoint ([4 x i32]* @A to i64), %R123
+  %4 = inttoptr i64 %R124 to i32*
+  %5 = ptrtoint i32* %4 to i64
+  %6 = add i64 %5, 0
+  %7 = inttoptr i64 %6 to i32*
+  store i32 %R119, i32* %7
   store i32 %R119, i32* %0
   br label %L23
 
@@ -260,22 +260,22 @@ L25:                                              ; preds = %L23
   br label %L26
 
 L26:                                              ; preds = %L27, %L25
-  %9 = load i32, i32* %1
-  %R128 = icmp slt i32 %9, 4
+  %8 = load i32, i32* %1
+  %R128 = icmp slt i32 %8, 4
   %R1282 = zext i1 %R128 to i32
   %cond3 = icmp ne i32 %R1282, 0
   br i1 %cond3, label %L27, label %L28
 
 L27:                                              ; preds = %L26
-  %R131 = sext i32 %9 to i64
+  %R131 = sext i32 %8 to i64
   %R132 = mul i64 %R131, 4
-  %10 = getelementptr inbounds i8, i8* bitcast ([4 x i32]* @B to i8*), i64 %R132
-  %11 = bitcast i8* %10 to i32*
-  %12 = bitcast i32* %11 to i8*
-  %13 = getelementptr inbounds i8, i8* %12, i64 0
-  %14 = bitcast i8* %13 to i32*
-  store i32 0, i32* %14
-  %R135 = add i32 %9, 1
+  %R133 = add i64 ptrtoint ([4 x i32]* @B to i64), %R132
+  %9 = inttoptr i64 %R133 to i32*
+  %10 = ptrtoint i32* %9 to i64
+  %11 = add i64 %10, 0
+  %12 = inttoptr i64 %11 to i32*
+  store i32 0, i32* %12
+  %R135 = add i32 %8, 1
   store i32 %R135, i32* %1
   br label %L26
 
@@ -284,22 +284,22 @@ L28:                                              ; preds = %L26
   br label %L29
 
 L29:                                              ; preds = %L30, %L28
-  %15 = load i32, i32* %2
-  %R137 = icmp slt i32 %15, 4
+  %13 = load i32, i32* %2
+  %R137 = icmp slt i32 %13, 4
   %R1374 = zext i1 %R137 to i32
   %cond5 = icmp ne i32 %R1374, 0
   br i1 %cond5, label %L30, label %L31
 
 L30:                                              ; preds = %L29
-  %R140 = sext i32 %15 to i64
+  %R140 = sext i32 %13 to i64
   %R141 = mul i64 %R140, 4
-  %16 = getelementptr inbounds i8, i8* bitcast ([4 x i32]* @C to i8*), i64 %R141
-  %17 = bitcast i8* %16 to i32*
-  %18 = bitcast i32* %17 to i8*
-  %19 = getelementptr inbounds i8, i8* %18, i64 0
-  %20 = bitcast i8* %19 to i32*
-  store i32 0, i32* %20
-  %R144 = add i32 %15, 1
+  %R142 = add i64 ptrtoint ([4 x i32]* @C to i64), %R141
+  %14 = inttoptr i64 %R142 to i32*
+  %15 = ptrtoint i32* %14 to i64
+  %16 = add i64 %15, 0
+  %17 = inttoptr i64 %16 to i32*
+  store i32 0, i32* %17
+  %R144 = add i32 %13, 1
   store i32 %R144, i32* %2
   br label %L29
 

@@ -925,7 +925,7 @@ static void output_op_store(struct dmr_C *C, struct function *fn, struct instruc
 
 	addr = calc_memop_addr(C, fn, insn);
 
-	target_in = pseudo_to_value(C, fn, insn, insn->target);
+	target_in = pseudo_to_rvalue(C, fn, insn, insn->target);
 	desttype = insn_symbol_type(C, fn->module, insn);
 
 	/* Cast to the right type - to resolve issue with union types */

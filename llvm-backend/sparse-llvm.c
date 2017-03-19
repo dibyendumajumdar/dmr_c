@@ -281,7 +281,7 @@ static LLVMLinkage function_linkage(struct dmr_C *C, struct symbol *sym)
 	return LLVMExternalLinkage;
 }
 
-static LLVMValueRef build_cast(struct dmr_C *C, struct function *fn, LLVMValueRef val, LLVMTypeRef dtype, const char *target_name)
+static LLVMValueRef build_cast(struct dmr_C *C, struct function *fn, LLVMValueRef val, LLVMTypeRef dtype, const char *target_name, int unsigned_cast)
 {
 	LLVMTypeRef valtype = LLVMTypeOf(val);
 	LLVMTypeKind valkind = LLVMGetTypeKind(valtype);
@@ -302,7 +302,7 @@ static LLVMValueRef build_cast(struct dmr_C *C, struct function *fn, LLVMValueRe
 			else if (target_width == val_width)
 				op = LLVMBitCast;
 			else
-				op = LLVMSExt;
+				op = unsigned_cast ? LLVMZExt : LLVMSExt;
 			break;
 		}
 		case LLVMFloatTypeKind:
@@ -333,7 +333,7 @@ static LLVMValueRef build_cast(struct dmr_C *C, struct function *fn, LLVMValueRe
 	case LLVMDoubleTypeKind: {
 		switch (valkind) {
 		case LLVMIntegerTypeKind:
-			op = LLVMSIToFP;
+			op = unsigned_cast ? LLVMUIToFP : LLVMSIToFP;
 			break;
 		case LLVMFloatTypeKind: {
 			if (dkind == LLVMFloatTypeKind)
@@ -597,7 +597,7 @@ static LLVMValueRef pseudo_to_rvalue(struct dmr_C *C, struct function *fn, struc
 	LLVMValueRef val = pseudo_to_value(C, fn, insn, pseudo);
 	LLVMTypeRef dtype = symbol_type(C, fn->module, insn->type);
 
-	return build_cast(C, fn, val, dtype, "");
+	return build_cast(C, fn, val, dtype, "", 0);
 }
 
 static LLVMValueRef value_to_ivalue(struct dmr_C *C, struct function *fn, LLVMValueRef val)
@@ -738,14 +738,14 @@ static void output_op_binary(struct dmr_C *C, struct function *fn, struct instru
 	case OP_SHL:
 		assert(!symbol_is_fp_type(C, insn->type));
 		if (LLVMGetIntTypeWidth(LLVMTypeOf(rhs)) < LLVMGetIntTypeWidth(LLVMTypeOf(lhs))) {
-			rhs = build_cast(C, fn, rhs, LLVMTypeOf(lhs), "");
+			rhs = build_cast(C, fn, rhs, LLVMTypeOf(lhs), "", 1);
 		}
 		target = LLVMBuildShl(fn->builder, lhs, rhs, target_name);
 		break;
 	case OP_LSR:
 		assert(!symbol_is_fp_type(C, insn->type));
 		if (LLVMGetIntTypeWidth(LLVMTypeOf(rhs)) < LLVMGetIntTypeWidth(LLVMTypeOf(lhs))) {
-			rhs = build_cast(C, fn, rhs, LLVMTypeOf(lhs), "");
+			rhs = build_cast(C, fn, rhs, LLVMTypeOf(lhs), "", 1);
 		}
 		target = LLVMBuildLShr(fn->builder, lhs, rhs, target_name);
 		break;
@@ -823,12 +823,9 @@ static void output_op_compare(struct dmr_C *C, struct function *fn, struct instr
 	LLVMValueRef lhs, rhs, target;
 	char target_name[64];
 
-	if (insn->src1->type == PSEUDO_VAL)
-		lhs = val_to_value(C, fn, insn->src1->value, pseudo_type(C, insn->src2));
-	else
-		lhs = pseudo_to_value(C, fn, insn, insn->src1);
+	lhs = pseudo_to_value(C, fn, insn, insn->src1);
 	if (insn->src2->type == PSEUDO_VAL)
-		rhs = val_to_value(C, fn, insn->src2->value, pseudo_type(C, insn->src1));
+		rhs = constant_value(C, fn, insn->src2->value, LLVMTypeOf(lhs));
 	else
 		rhs = pseudo_to_value(C, fn, insn, insn->src2);
 
@@ -837,17 +834,10 @@ static void output_op_compare(struct dmr_C *C, struct function *fn, struct instr
 	LLVMTypeRef dst_type = insn_symbol_type(C, fn->module, insn);
 
 	switch  (LLVMGetTypeKind(LLVMTypeOf(lhs))) {
-	case LLVMPointerTypeKind: {
-		lhs = LLVMBuildPtrToInt(fn->builder, lhs, LLVMIntType(C->target->bits_in_pointer), "");
-		if (LLVMGetTypeKind(LLVMTypeOf(rhs)) == LLVMPointerTypeKind) {
-			rhs = LLVMBuildPtrToInt(fn->builder, rhs, LLVMIntType(C->target->bits_in_pointer), "");
-		}
-		LLVMIntPredicate op = translate_op(insn->opcode);
-		target = LLVMBuildICmp(fn->builder, op, lhs, rhs, target_name);
-		break;
-	}
+	case LLVMPointerTypeKind:
 	case LLVMIntegerTypeKind: {
 		LLVMIntPredicate op = translate_op(insn->opcode);
+
 		target = LLVMBuildICmp(fn->builder, op, lhs, rhs, target_name);
 		break;
 	}
@@ -877,7 +867,7 @@ static void output_op_ret(struct dmr_C *C, struct function *fn, struct instructi
 
 	if (pseudo && pseudo != VOID_PSEUDO(C) && LLVMGetTypeKind(fn->return_type) != LLVMVoidTypeKind) {
 		LLVMValueRef result = pseudo_to_value(C, fn, insn, pseudo);
-		result = build_cast(C, fn, result, fn->return_type, "");
+		result = build_cast(C, fn, result, fn->return_type, "", 0);
 		LLVMBuildRet(fn->builder, result);
 	} else
 		LLVMBuildRetVoid(fn->builder);
@@ -929,7 +919,7 @@ static void output_op_store(struct dmr_C *C, struct function *fn, struct instruc
 	desttype = insn_symbol_type(C, fn->module, insn);
 
 	/* Cast to the right type - to resolve issue with union types */
-	target_in = build_cast(C, fn, target_in, desttype, "");
+	target_in = build_cast(C, fn, target_in, desttype, "", 0);
 
 	/* perform store */
 	LLVMBuildStore(fn->builder, target_in, addr);
@@ -967,8 +957,8 @@ static void output_op_sel(struct dmr_C *C, struct function *fn, struct instructi
 	src2 = pseudo_to_value(C, fn, insn, insn->src2);
 	src3 = pseudo_to_value(C, fn, insn, insn->src3);
 	/* make sure the two values are cast to target type */
-	src2 = build_cast(C, fn, src2, desttype, "src2");
-	src3 = build_cast(C, fn, src3, desttype, "src3");
+	src2 = build_cast(C, fn, src2, desttype, "src2", 0);
+	src3 = build_cast(C, fn, src3, desttype, "src3", 0);
 	target = LLVMBuildSelect(fn->builder, src1, src2, src3, "select");
 
 	insn->target->priv = target;
@@ -1036,7 +1026,7 @@ static void output_op_call(struct dmr_C *C, struct function *fn, struct instruct
 		value = pseudo_to_rvalue(C, fn, arg, arg->src);
 		if (atype) {
 			LLVMTypeRef argtype = symbol_type(C, fn->module, atype);
-			value = build_cast(C, fn, value, argtype, "");
+			value = build_cast(C, fn, value, argtype, "", 0);
 		}
 		assert(value);
 		args[i++] = value;
@@ -1076,7 +1066,7 @@ static void output_op_phisrc(struct dmr_C *C, struct function *fn, struct instru
 		ptr = LLVMGetOperand(load, 0);
 		/* store v to alloca */
 		LLVMTypeRef phi_type = insn_symbol_type(C, fn->module, phi);
-		v = build_cast(C, fn, v, phi_type, "");
+		v = build_cast(C, fn, v, phi_type, "", 0);
 		LLVMBuildStore(fn->builder, v, ptr);
 	} END_FOR_EACH_PTR(phi);
 }

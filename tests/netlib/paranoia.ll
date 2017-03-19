@@ -496,13 +496,13 @@ L3:
   %67 = alloca double
   %68 = alloca i32
   store i8* getelementptr inbounds ([24 x i8], [24 x i8]* @.str.1, i64 0, i64 0), i8** getelementptr inbounds ([4 x i8*], [4 x i8*]* @msg, i32 0, i32 0)
-  store i8* getelementptr inbounds ([30 x i8], [30 x i8]* @.str.2, i64 0, i64 0), i8** bitcast (i8* getelementptr inbounds (i8, i8* bitcast ([4 x i8*]* @msg to i8*), i64 8) to i8**)
-  store i8* getelementptr inbounds ([22 x i8], [22 x i8]* @.str.3, i64 0, i64 0), i8** bitcast (i8* getelementptr inbounds (i8, i8* bitcast ([4 x i8*]* @msg to i8*), i64 16) to i8**)
-  store i8* getelementptr inbounds ([20 x i8], [20 x i8]* @.str.4, i64 0, i64 0), i8** bitcast (i8* getelementptr inbounds (i8, i8* bitcast ([4 x i8*]* @msg to i8*), i64 24) to i8**)
+  store i8* getelementptr inbounds ([30 x i8], [30 x i8]* @.str.2, i64 0, i64 0), i8** inttoptr (i64 add (i64 ptrtoint ([4 x i8*]* @msg to i64), i64 8) to i8**)
+  store i8* getelementptr inbounds ([22 x i8], [22 x i8]* @.str.3, i64 0, i64 0), i8** inttoptr (i64 add (i64 ptrtoint ([4 x i8*]* @msg to i64), i64 16) to i8**)
+  store i8* getelementptr inbounds ([20 x i8], [20 x i8]* @.str.4, i64 0, i64 0), i8** inttoptr (i64 add (i64 ptrtoint ([4 x i8*]* @msg to i64), i64 24) to i8**)
   store i8* getelementptr inbounds ([8 x i8], [8 x i8]* @.str.5, i64 0, i64 0), i8** getelementptr inbounds ([4 x i8*], [4 x i8*]* @msg2, i32 0, i32 0)
-  store i8* getelementptr inbounds ([15 x i8], [15 x i8]* @.str.6, i64 0, i64 0), i8** bitcast (i8* getelementptr inbounds (i8, i8* bitcast ([4 x i8*]* @msg2 to i8*), i64 8) to i8**)
-  store i8* getelementptr inbounds ([7 x i8], [7 x i8]* @.str.7, i64 0, i64 0), i8** bitcast (i8* getelementptr inbounds (i8, i8* bitcast ([4 x i8*]* @msg2 to i8*), i64 16) to i8**)
-  store i8* getelementptr inbounds ([5 x i8], [5 x i8]* @.str.8, i64 0, i64 0), i8** bitcast (i8* getelementptr inbounds (i8, i8* bitcast ([4 x i8*]* @msg2 to i8*), i64 24) to i8**)
+  store i8* getelementptr inbounds ([15 x i8], [15 x i8]* @.str.6, i64 0, i64 0), i8** inttoptr (i64 add (i64 ptrtoint ([4 x i8*]* @msg2 to i64), i64 8) to i8**)
+  store i8* getelementptr inbounds ([7 x i8], [7 x i8]* @.str.7, i64 0, i64 0), i8** inttoptr (i64 add (i64 ptrtoint ([4 x i8*]* @msg2 to i64), i64 16) to i8**)
+  store i8* getelementptr inbounds ([5 x i8], [5 x i8]* @.str.8, i64 0, i64 0), i8** inttoptr (i64 add (i64 ptrtoint ([4 x i8*]* @msg2 to i64), i64 24) to i8**)
   store double 0.000000e+00, double* @Zero
   store double 1.000000e+00, double* @One
   store double 2.000000e+00, double* @Two
@@ -518,9 +518,9 @@ L3:
   store double 5.000000e-01, double* @Half
   store double 1.500000e+00, double* @OneAndHalf
   store i32 0, i32* getelementptr inbounds ([4 x i32], [4 x i32]* @ErrCnt, i32 0, i32 0)
-  store i32 0, i32* bitcast (i8* getelementptr inbounds (i8, i8* bitcast ([4 x i32]* @ErrCnt to i8*), i64 4) to i32*)
-  store i32 0, i32* bitcast (i8* getelementptr inbounds (i8, i8* bitcast ([4 x i32]* @ErrCnt to i8*), i64 8) to i32*)
-  store i32 0, i32* bitcast (i8* getelementptr inbounds (i8, i8* bitcast ([4 x i32]* @ErrCnt to i8*), i64 12) to i32*)
+  store i32 0, i32* inttoptr (i64 add (i64 ptrtoint ([4 x i32]* @ErrCnt to i64), i64 4) to i32*)
+  store i32 0, i32* inttoptr (i64 add (i64 ptrtoint ([4 x i32]* @ErrCnt to i64), i64 8) to i32*)
+  store i32 0, i32* inttoptr (i64 add (i64 ptrtoint ([4 x i32]* @ErrCnt to i64), i64 12) to i32*)
   store i32 1, i32* @PageNo
   store i32 0, i32* @Milestone
   call void @Instructions()
@@ -5598,23 +5598,23 @@ L424:                                             ; preds = %L427, %L423
 L425:                                             ; preds = %L424
   %R3593 = sext i32 %369 to i64
   %R3594 = mul i64 %R3593, 4
-  %370 = getelementptr inbounds i8, i8* bitcast ([4 x i32]* @ErrCnt to i8*), i64 %R3594
-  %371 = bitcast i8* %370 to i32*
-  %372 = bitcast i32* %371 to i8*
-  %373 = getelementptr inbounds i8, i8* %372, i64 0
-  %374 = bitcast i8* %373 to i32*
-  %load_target1363 = load i32, i32* %374
+  %R3595 = add i64 ptrtoint ([4 x i32]* @ErrCnt to i64), %R3594
+  %370 = inttoptr i64 %R3595 to i32*
+  %371 = ptrtoint i32* %370 to i64
+  %372 = add i64 %371, 0
+  %373 = inttoptr i64 %372 to i32*
+  %load_target1363 = load i32, i32* %373
   %cond1364 = icmp ne i32 %load_target1363, 0
   br i1 %cond1364, label %L426, label %L427
 
 L426:                                             ; preds = %L425
   %R3601 = mul i64 %R3593, 8
-  %375 = getelementptr inbounds i8, i8* bitcast ([4 x i8*]* @msg to i8*), i64 %R3601
-  %376 = bitcast i8* %375 to i8**
-  %377 = bitcast i8** %376 to i8*
-  %378 = getelementptr inbounds i8, i8* %377, i64 0
-  %379 = bitcast i8* %378 to i8**
-  %load_target1365 = load i8*, i8** %379
+  %R3602 = add i64 ptrtoint ([4 x i8*]* @msg to i64), %R3601
+  %374 = inttoptr i64 %R3602 to i8**
+  %375 = ptrtoint i8** %374 to i64
+  %376 = add i64 %375, 0
+  %377 = inttoptr i64 %376 to i8**
+  %load_target1365 = load i8*, i8** %377
   %R3610 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([26 x i8], [26 x i8]* @.str.232, i64 0, i64 0), i8* %load_target1365, i32 %load_target1363)
   br label %L427
 
@@ -5626,11 +5626,11 @@ L427:                                             ; preds = %L426, %L425
 L428:                                             ; preds = %L424
   %R3614 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([2 x i8], [2 x i8]* @.str.233, i64 0, i64 0))
   %load_target1366 = load i32, i32* getelementptr inbounds ([4 x i32], [4 x i32]* @ErrCnt, i32 0, i32 0)
-  %load_target1367 = load i32, i32* bitcast (i8* getelementptr inbounds (i8, i8* bitcast ([4 x i32]* @ErrCnt to i8*), i64 4) to i32*)
+  %load_target1367 = load i32, i32* inttoptr (i64 add (i64 ptrtoint ([4 x i32]* @ErrCnt to i64), i64 4) to i32*)
   %R3617 = add i32 %load_target1366, %load_target1367
-  %load_target1368 = load i32, i32* bitcast (i8* getelementptr inbounds (i8, i8* bitcast ([4 x i32]* @ErrCnt to i8*), i64 8) to i32*)
+  %load_target1368 = load i32, i32* inttoptr (i64 add (i64 ptrtoint ([4 x i32]* @ErrCnt to i64), i64 8) to i32*)
   %R3619 = add i32 %R3617, %load_target1368
-  %load_target1369 = load i32, i32* bitcast (i8* getelementptr inbounds (i8, i8* bitcast ([4 x i32]* @ErrCnt to i8*), i64 12) to i32*)
+  %load_target1369 = load i32, i32* inttoptr (i64 add (i64 ptrtoint ([4 x i32]* @ErrCnt to i64), i64 12) to i32*)
   %R3621 = add i32 %R3619, %load_target1369
   %R3622 = icmp sgt i32 %R3621, 0
   %R36221370 = zext i1 %R3622 to i32
@@ -5642,9 +5642,9 @@ L429:                                             ; preds = %L428
   %R36281372 = zext i1 %R3628 to i32
   %R3630 = icmp sgt i32 %load_target1369, 0
   %R36301373 = zext i1 %R3630 to i32
-  %380 = icmp ne i32 %R36281372, 0
-  %381 = icmp ne i32 %R36301373, 0
-  %R3631 = and i1 %380, %381
+  %378 = icmp ne i32 %R36281372, 0
+  %379 = icmp ne i32 %R36301373, 0
+  %R3631 = and i1 %378, %379
   %R36311374 = zext i1 %R3631 to i32
   %cond1375 = icmp ne i32 %R36311374, 0
   br i1 %cond1375, label %L430, label %L431
@@ -5656,16 +5656,16 @@ L430:                                             ; preds = %L429
 
 L431:                                             ; preds = %L430, %L429
   %load_target1376 = load i32, i32* getelementptr inbounds ([4 x i32], [4 x i32]* @ErrCnt, i32 0, i32 0)
-  %load_target1377 = load i32, i32* bitcast (i8* getelementptr inbounds (i8, i8* bitcast ([4 x i32]* @ErrCnt to i8*), i64 4) to i32*)
+  %load_target1377 = load i32, i32* inttoptr (i64 add (i64 ptrtoint ([4 x i32]* @ErrCnt to i64), i64 4) to i32*)
   %R3638 = add i32 %load_target1376, %load_target1377
   %R3639 = icmp eq i32 %R3638, 0
   %R36391378 = zext i1 %R3639 to i32
-  %load_target1379 = load i32, i32* bitcast (i8* getelementptr inbounds (i8, i8* bitcast ([4 x i32]* @ErrCnt to i8*), i64 8) to i32*)
+  %load_target1379 = load i32, i32* inttoptr (i64 add (i64 ptrtoint ([4 x i32]* @ErrCnt to i64), i64 8) to i32*)
   %R3641 = icmp sgt i32 %load_target1379, 0
   %R36411380 = zext i1 %R3641 to i32
-  %382 = icmp ne i32 %R36391378, 0
-  %383 = icmp ne i32 %R36411380, 0
-  %R3642 = and i1 %382, %383
+  %380 = icmp ne i32 %R36391378, 0
+  %381 = icmp ne i32 %R36411380, 0
+  %R3642 = and i1 %380, %381
   %R36421381 = zext i1 %R3642 to i32
   %cond1382 = icmp ne i32 %R36421381, 0
   br i1 %cond1382, label %L432, label %L433
@@ -5677,7 +5677,7 @@ L432:                                             ; preds = %L431
 
 L433:                                             ; preds = %L432, %L431
   %load_target1383 = load i32, i32* getelementptr inbounds ([4 x i32], [4 x i32]* @ErrCnt, i32 0, i32 0)
-  %load_target1384 = load i32, i32* bitcast (i8* getelementptr inbounds (i8, i8* bitcast ([4 x i32]* @ErrCnt to i8*), i64 4) to i32*)
+  %load_target1384 = load i32, i32* inttoptr (i64 add (i64 ptrtoint ([4 x i32]* @ErrCnt to i64), i64 4) to i32*)
   %R3649 = add i32 %load_target1383, %load_target1384
   %R3650 = icmp sgt i32 %R3649, 0
   %R36501385 = zext i1 %R3650 to i32
@@ -5709,23 +5709,23 @@ L437:                                             ; preds = %L428
   %load_target1392 = load i32, i32* @RDiv
   %R3666 = icmp eq i32 %load_target1392, 1
   %R36661393 = zext i1 %R3666 to i32
-  %384 = icmp ne i32 %R36641391, 0
-  %385 = icmp ne i32 %R36661393, 0
-  %R3667 = and i1 %384, %385
+  %382 = icmp ne i32 %R36641391, 0
+  %383 = icmp ne i32 %R36661393, 0
+  %R3667 = and i1 %382, %383
   %R36671394 = zext i1 %R3667 to i32
   %load_target1395 = load i32, i32* @RAddSub
   %R3669 = icmp eq i32 %load_target1395, 1
   %R36691396 = zext i1 %R3669 to i32
-  %386 = icmp ne i32 %R36671394, 0
-  %387 = icmp ne i32 %R36691396, 0
-  %R3670 = and i1 %386, %387
+  %384 = icmp ne i32 %R36671394, 0
+  %385 = icmp ne i32 %R36691396, 0
+  %R3670 = and i1 %384, %385
   %R36701397 = zext i1 %R3670 to i32
   %load_target1398 = load i32, i32* @RSqrt
   %R3672 = icmp eq i32 %load_target1398, 1
   %R36721399 = zext i1 %R3672 to i32
-  %388 = icmp ne i32 %R36701397, 0
-  %389 = icmp ne i32 %R36721399, 0
-  %R3673 = and i1 %388, %389
+  %386 = icmp ne i32 %R36701397, 0
+  %387 = icmp ne i32 %R36721399, 0
+  %R3673 = and i1 %386, %387
   %R36731400 = zext i1 %R3673 to i32
   %cond1401 = icmp ne i32 %R36731400, 0
   br i1 %cond1401, label %L439, label %L438
@@ -5932,17 +5932,17 @@ L495:                                             ; preds = %L493
 
 L496:                                             ; preds = %L495, %L492
   store i32 1, i32* @N
-  %load_target18 = load i32, i32* bitcast (i8* getelementptr inbounds (i8, i8* bitcast ([4 x i32]* @ErrCnt to i8*), i64 4) to i32*)
+  %load_target18 = load i32, i32* inttoptr (i64 add (i64 ptrtoint ([4 x i32]* @ErrCnt to i64), i64 4) to i32*)
   %R4035 = add i32 %load_target18, 1
-  store i32 %R4035, i32* bitcast (i8* getelementptr inbounds (i8, i8* bitcast ([4 x i32]* @ErrCnt to i8*), i64 4) to i32*)
+  store i32 %R4035, i32* inttoptr (i64 add (i64 ptrtoint ([4 x i32]* @ErrCnt to i64), i64 4) to i32*)
   %R4037 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([32 x i8], [32 x i8]* @.str.273, i64 0, i64 0))
   br label %L498
 
 L497:                                             ; preds = %L495
   store i32 1, i32* @N
-  %load_target19 = load i32, i32* bitcast (i8* getelementptr inbounds (i8, i8* bitcast ([4 x i32]* @ErrCnt to i8*), i64 8) to i32*)
+  %load_target19 = load i32, i32* inttoptr (i64 add (i64 ptrtoint ([4 x i32]* @ErrCnt to i64), i64 8) to i32*)
   %R4039 = add i32 %load_target19, 1
-  store i32 %R4039, i32* bitcast (i8* getelementptr inbounds (i8, i8* bitcast ([4 x i32]* @ErrCnt to i8*), i64 8) to i32*)
+  store i32 %R4039, i32* inttoptr (i64 add (i64 ptrtoint ([4 x i32]* @ErrCnt to i64), i64 8) to i32*)
   %R4041 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([19 x i8], [19 x i8]* @.str.274, i64 0, i64 0))
   br label %L498
 
@@ -6040,9 +6040,9 @@ L507:                                             ; preds = %L506, %L505
   br i1 %cond50, label %L508, label %L509
 
 L508:                                             ; preds = %L507
-  %load_target51 = load i32, i32* bitcast (i8* getelementptr inbounds (i8, i8* bitcast ([4 x i32]* @ErrCnt to i8*), i64 8) to i32*)
+  %load_target51 = load i32, i32* inttoptr (i64 add (i64 ptrtoint ([4 x i32]* @ErrCnt to i64), i64 8) to i32*)
   %R4096 = add i32 %load_target51, 1
-  store i32 %R4096, i32* bitcast (i8* getelementptr inbounds (i8, i8* bitcast ([4 x i32]* @ErrCnt to i8*), i64 8) to i32*)
+  store i32 %R4096, i32* inttoptr (i64 add (i64 ptrtoint ([4 x i32]* @ErrCnt to i64), i64 8) to i32*)
   call void @BadCond(i32 2, i8* getelementptr inbounds ([34 x i8], [34 x i8]* @.str.280, i64 0, i64 0))
   %load_target52 = load double, double* @Random2
   %R4100 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([40 x i8], [40 x i8]* @.str.281, i64 0, i64 0), double %load_target52)
@@ -6068,24 +6068,24 @@ define void @BadCond(i32 %ARG1, i8* %ARG2) {
 L457:
   %R3758 = sext i32 %ARG1 to i64
   %R3759 = mul i64 %R3758, 4
-  %0 = getelementptr inbounds i8, i8* bitcast ([4 x i32]* @ErrCnt to i8*), i64 %R3759
-  %1 = bitcast i8* %0 to i32*
-  %2 = bitcast i32* %1 to i8*
-  %3 = getelementptr inbounds i8, i8* %2, i64 0
-  %4 = bitcast i8* %3 to i32*
-  %load_target = load i32, i32* %4
+  %R3760 = add i64 ptrtoint ([4 x i32]* @ErrCnt to i64), %R3759
+  %0 = inttoptr i64 %R3760 to i32*
+  %1 = ptrtoint i32* %0 to i64
+  %2 = add i64 %1, 0
+  %3 = inttoptr i64 %2 to i32*
+  %load_target = load i32, i32* %3
   %R3762 = add i32 %load_target, 1
-  %5 = bitcast i32* %1 to i8*
-  %6 = getelementptr inbounds i8, i8* %5, i64 0
-  %7 = bitcast i8* %6 to i32*
-  store i32 %R3762, i32* %7
+  %4 = ptrtoint i32* %0 to i64
+  %5 = add i64 %4, 0
+  %6 = inttoptr i64 %5 to i32*
+  store i32 %R3762, i32* %6
   %R3772 = mul i64 %R3758, 8
-  %8 = getelementptr inbounds i8, i8* bitcast ([4 x i8*]* @msg2 to i8*), i64 %R3772
-  %9 = bitcast i8* %8 to i8**
-  %10 = bitcast i8** %9 to i8*
-  %11 = getelementptr inbounds i8, i8* %10, i64 0
-  %12 = bitcast i8* %11 to i8**
-  %load_target1 = load i8*, i8** %12
+  %R3773 = add i64 ptrtoint ([4 x i8*]* @msg2 to i64), %R3772
+  %7 = inttoptr i64 %R3773 to i8**
+  %8 = ptrtoint i8** %7 to i64
+  %9 = add i64 %8, 0
+  %10 = inttoptr i64 %9 to i8**
+  %load_target1 = load i8*, i8** %10
   %R3776 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([8 x i8], [8 x i8]* @.str.257, i64 0, i64 0), i8* %load_target1, i8* %ARG2)
   ret void
 }
@@ -6445,23 +6445,23 @@ L512:
 
 L513:                                             ; preds = %L514, %L512
   %1 = load i8**, i8*** %0
-  %2 = bitcast i8** %1 to i8*
-  %3 = getelementptr inbounds i8, i8* %2, i64 0
-  %4 = bitcast i8* %3 to i8**
+  %2 = ptrtoint i8** %1 to i64
+  %3 = add i64 %2, 0
+  %4 = inttoptr i64 %3 to i8**
   %load_target = load i8*, i8** %4
   %cond = icmp ne i8* %load_target, null
   br i1 %cond, label %L514, label %L515
 
 L514:                                             ; preds = %L513
-  %5 = bitcast i8** %1 to i8*
-  %6 = getelementptr inbounds i8, i8* %5, i8** inttoptr (i64 8 to i8**)
-  %7 = bitcast i8* %6 to i8**
-  %8 = bitcast i8** %1 to i8*
-  %9 = getelementptr inbounds i8, i8* %8, i64 0
-  %10 = bitcast i8* %9 to i8**
-  %load_target1 = load i8*, i8** %10
+  %5 = ptrtoint i8** %1 to i64
+  %R4113 = add i64 %5, 8
+  %6 = inttoptr i64 %R4113 to i8**
+  %7 = ptrtoint i8** %1 to i64
+  %8 = add i64 %7, 0
+  %9 = inttoptr i64 %8 to i8**
+  %load_target1 = load i8*, i8** %9
   %R4115 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @.str.285, i64 0, i64 0), i8* %load_target1)
-  store i8** %7, i8*** %0
+  store i8** %6, i8*** %0
   br label %L513
 
 L515:                                             ; preds = %L513

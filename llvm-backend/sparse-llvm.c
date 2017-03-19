@@ -545,11 +545,11 @@ static LLVMValueRef constant_value(struct dmr_C *C, struct function *fn, unsigne
 	switch (kind) {
 	case LLVMPointerTypeKind:
 		itype = LLVMIntType(C->target->bits_in_pointer);
-		result = LLVMConstInt(itype, val, 1);
+		result = LLVMConstInt(itype, val, 0);
 		result = LLVMConstIntToPtr(result, dtype);
 		break;
 	case LLVMIntegerTypeKind:
-		result = LLVMConstInt(dtype, (long long)val, 1);
+		result = LLVMConstInt(dtype, val, 0);
 		break;
 	case LLVMFloatTypeKind:
 	case LLVMDoubleTypeKind:

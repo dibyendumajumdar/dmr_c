@@ -11,11 +11,11 @@ main:
 
 .L1:
 	muls.32     %r5 <- %r1(Count), %r1(Count)
-	symaddr.64  %r6 <- Array
+	symaddr.64* %r6 <- Array
 	add.32      %r8 <- %r1(Count), $-1
 	scast.64    %r9 <- (32) %r8
 	muls.64     %r10 <- %r9, $4
-	add.64      %r11 <- %r6, %r10
+	add.64*     %r11 <- %r6, %r10
 	store.32    %r5 -> 0[%r11]
 	add.32      %r13 <- %r1(Count), $1
 	phisrc.32   %phi9(Count) <- %r13
@@ -31,13 +31,15 @@ main:
 	br          %r15, .L5, .L9
 
 .L5:
-	symaddr.64  %r16 <- <anon symbol:0000014058502058>
-	symaddr.64  %r17 <- Array
+	symaddr.64* %r16 <- <anon symbol:000001FE73C14FD8>
+	push.64*    %r16
+	symaddr.64* %r17 <- Array
 	scast.64    %r19 <- (32) %r14(Count)
 	muls.64     %r20 <- %r19, $4
-	add.64      %r21 <- %r17, %r20
+	add.64*     %r21 <- %r17, %r20
 	load.32     %r22 <- 0[%r21]
-	call.32     %r23 <- printf, %r16, %r22
+	push.32     %r22
+	call.32     %r23 <- printf
 	add.32      %r25 <- %r14(Count), $1
 	phisrc.32   %phi5(Count) <- %r25
 	br          .L8

@@ -1,19 +1,24 @@
 fred:
 .L0:
 	<entry-point>
-	symaddr.64  %r1 <- <anon symbol:0000019D2BCD0848>
-	call.32     %r3 <- printf, %r1, %arg1
+	symaddr.64* %r1 <- <anon symbol:00000234D0D04098>
+	push.64*    %r1
+	push.32     %arg1
+	call.32     %r3 <- printf
 	ret.32      $42
 
 
 main:
 .L2:
 	<entry-point>
-	symaddr.64  %r5 <- fred
-	store.64    %r5 -> 0[f]
-	symaddr.64  %r6 <- <anon symbol:0000019D2BCD0D88>
-	call.32     %r8 <- %r5, $24
-	call.32     %r9 <- printf, %r6, %r8
+	symaddr.64* %r5 <- fred
+	store.64*   %r5 -> 0[f]
+	symaddr.64* %r6 <- <anon symbol:00000234D0D045D8>
+	push.64*    %r6
+	push.32     $24
+	call.32     %r8 <- %r5
+	push.32     %r8
+	call.32     %r9 <- printf
 	ret.32      $0
 
 

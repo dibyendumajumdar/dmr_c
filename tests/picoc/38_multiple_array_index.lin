@@ -22,13 +22,13 @@ main:
 .L5:
 	phi.32      %r5 <- %phi2(b), %phi3(b)
 	add.32      %r6 <- %r5, $1
-	symaddr.64  %r8 <- a
+	symaddr.64* %r8 <- a
 	scast.64    %r10 <- (32) %r1(x)
 	muls.64     %r11 <- %r10, $16
-	add.64      %r12 <- %r8, %r11
+	add.64*     %r12 <- %r8, %r11
 	scast.64    %r14 <- (32) %r3(y)
 	muls.64     %r15 <- %r14, $4
-	add.64      %r16 <- %r12, %r15
+	add.64*     %r16 <- %r12, %r15
 	store.32    %r6 -> 0[%r16]
 	phisrc.32   %phi3(b) <- %r6
 	add.32      %r18 <- %r3(y), $1
@@ -50,8 +50,10 @@ main:
 	br          %r22, .L9, .L17
 
 .L9:
-	symaddr.64  %r23 <- <anon symbol:0000017262C70D38>
-	call.32     %r25 <- printf, %r23, %r21(x)
+	symaddr.64* %r23 <- <anon symbol:000002112A8373E8>
+	push.64*    %r23
+	push.32     %r21(x)
+	call.32     %r25 <- printf
 	phisrc.32   %phi17(y) <- $0
 	br          .L16
 
@@ -61,23 +63,26 @@ main:
 	br          %r27, .L13, .L15
 
 .L13:
-	symaddr.64  %r28 <- <anon symbol:0000017262C710B8>
-	symaddr.64  %r29 <- a
+	symaddr.64* %r28 <- <anon symbol:000002112A837768>
+	push.64*    %r28
+	symaddr.64* %r29 <- a
 	scast.64    %r31 <- (32) %r21(x)
 	muls.64     %r32 <- %r31, $16
-	add.64      %r33 <- %r29, %r32
+	add.64*     %r33 <- %r29, %r32
 	scast.64    %r35 <- (32) %r26(y)
 	muls.64     %r36 <- %r35, $4
-	add.64      %r37 <- %r33, %r36
+	add.64*     %r37 <- %r33, %r36
 	load.32     %r38 <- 0[%r37]
-	call.32     %r39 <- printf, %r28, %r38
+	push.32     %r38
+	call.32     %r39 <- printf
 	add.32      %r41 <- %r26(y), $1
 	phisrc.32   %phi18(y) <- %r41
 	br          .L16
 
 .L15:
-	symaddr.64  %r42 <- <anon symbol:0000017262C71978>
-	call.32     %r43 <- printf, %r42
+	symaddr.64* %r42 <- <anon symbol:000002112A838028>
+	push.64*    %r42
+	call.32     %r43 <- printf
 	add.32      %r45 <- %r21(x), $1
 	phisrc.32   %phi9(x) <- %r45
 	br          .L12

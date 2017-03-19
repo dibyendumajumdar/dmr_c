@@ -1,0 +1,131 @@
+BadCond:
+.L0:
+	<entry-point>
+	symaddr.64* %r1 <- ErrCnt
+	scast.64    %r3 <- (32) %arg1
+	muls.64     %r4 <- %r3, $4
+	add.64*     %r5 <- %r1, %r4
+	load.32     %r6 <- 0[%r5]
+	add.32      %r7 <- %r6, $1
+	store.32    %r7 -> 0[%r5]
+	symaddr.64* %r13 <- <anon symbol:0000018D4D6773A8>
+	push.64*    %r13
+	symaddr.64* %r14 <- msg2
+	muls.64     %r17 <- %r3, $8
+	add.64*     %r18 <- %r14, %r17
+	load.64*    %r19 <- 0[%r18]
+	push.64*    %r19
+	push.64*    %arg2
+	call.32     %r21 <- printf
+	ret
+
+
+TstCond:
+.L2:
+	<entry-point>
+	br          %arg2, .L4, .L3
+
+.L3:
+	push.32     %arg1
+	push.64*    %arg3
+	call        BadCond
+	symaddr.64* %r25 <- <anon symbol:0000018D4D6779C8>
+	push.64*    %r25
+	call.32     %r26 <- printf
+	br          .L4
+
+.L4:
+	ret
+
+
+main:
+.L5:
+	<entry-point>
+	symaddr.64* %r27 <- <anon symbol:0000018D4D677FE8>
+	store.64*   %r27 -> 0[msg2]
+	symaddr.64* %r28 <- <anon symbol:0000018D4D678608>
+	store.64*   %r28 -> 8[msg2]
+	symaddr.64* %r29 <- <anon symbol:0000018D4D678C28>
+	store.64*   %r29 -> 16[msg2]
+	symaddr.64* %r30 <- <anon symbol:0000018D4D679248>
+	store.64*   %r30 -> 24[msg2]
+	store.f64   $0 -> 0[Zero]
+	store.f64   $1 -> 0[One]
+	add.f64     %r33 <- $1, $1
+	store.f64   %r33 -> 0[Two]
+	add.f64     %r36 <- %r33, $1
+	store.f64   %r36 -> 0[Three]
+	add.f64     %r39 <- %r36, $1
+	store.f64   %r39 -> 0[Four]
+	add.f64     %r42 <- %r39, $1
+	store.f64   %r42 -> 0[Five]
+	add.f64     %r45 <- %r39, %r39
+	store.f64   %r45 -> 0[Eight]
+	mulu.f64    %r48 <- %r36, %r36
+	store.f64   %r48 -> 0[Nine]
+	mulu.f64    %r51 <- %r48, %r36
+	store.f64   %r51 -> 0[TwentySeven]
+	mulu.f64    %r54 <- %r39, %r45
+	store.f64   %r54 -> 0[ThirtyTwo]
+	mulu.f64    %r57 <- %r39, %r42
+	mulu.f64    %r59 <- %r57, %r36
+	mulu.f64    %r61 <- %r59, %r39
+	store.f64   %r61 -> 0[TwoForty]
+	neg.f64     %r63 <- $1
+	store.f64   %r63 -> 0[MinusOne]
+	divu.f64    %r66 <- $1, %r33
+	store.f64   %r66 -> 0[Half]
+	add.f64     %r69 <- $1, %r66
+	store.f64   %r69 -> 0[OneAndHalf]
+	push.32     $0
+	set.f64     %r71 <- 0.000000
+	sub.f64     %r73 <- %r71, $1
+	seteq.32    %r74 <- %r63, %r73
+	add.f64     %r77 <- %r63, $1
+	seteq.32    %r79 <- %r77, $0
+	and-bool.32 %r80 <- %r74, %r79
+	add.f64     %r83 <- $1, %r63
+	seteq.32    %r85 <- %r83, $0
+	and-bool.32 %r86 <- %r80, %r85
+	br          %r86, .L9, .L7
+
+.L9:
+	push.f64    $1
+	call.f64    %r89 <- fabs
+	add.f64     %r90 <- %r63, %r89
+	load.f64    %r91(Zero) <- 0[Zero]
+	seteq.32    %r92 <- %r90, %r91(Zero)
+	br          %r92, .L6, .L7
+
+.L6:
+	load.f64    %r93 <- 0[MinusOne]
+	mulu.f64    %r96 <- %r93, %r93
+	add.f64     %r97 <- %r93, %r96
+	seteq.32    %r99 <- %r97, %r91(Zero)
+	phisrc.32   %phi1 <- %r99
+	br          .L8
+
+.L7:
+	phisrc.32   %phi2 <- $0
+	br          .L8
+
+.L8:
+	phi.32      %r100 <- %phi1, %phi2
+	push.32     %r100
+	symaddr.64* %r101 <- <anon symbol:0000018D4D6795C8>
+	push.64*    %r101
+	call        TstCond
+	push.32     $0
+	load.f64    %r102 <- 0[Half]
+	load.f64    %r103 <- 0[MinusOne]
+	add.f64     %r104 <- %r102, %r103
+	add.f64     %r106 <- %r104, %r102
+	load.f64    %r107 <- 0[Zero]
+	seteq.32    %r108 <- %r106, %r107
+	push.32     %r108
+	symaddr.64* %r109 <- <anon symbol:0000018D4D679948>
+	push.64*    %r109
+	call        TstCond
+	ret.32      $0
+
+

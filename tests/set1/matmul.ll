@@ -338,9 +338,12 @@ L31:
   %2 = bitcast i8* %1 to double**
   %load_target = load double*, double** %2
   %3 = bitcast double* %load_target to i8*
-  %4 = getelementptr inbounds i8, i8* %3, i64 4000
+  %4 = getelementptr inbounds i8, i8* %3, double* inttoptr (i64 4000 to double*)
   %5 = bitcast i8* %4 to double*
-  %load_target1 = load double, double* %5
+  %6 = bitcast double* %5 to i8*
+  %7 = getelementptr inbounds i8, i8* %6, i64 0
+  %8 = bitcast i8* %7 to double*
+  %load_target1 = load double, double* %8
   %R199 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([5 x i8], [5 x i8]* @.str, i64 0, i64 0), double %load_target1)
   call void @mm_destroy(i32 1000, double** %R178)
   call void @mm_destroy(i32 1000, double** %R180)

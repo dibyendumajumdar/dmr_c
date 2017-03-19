@@ -1,12 +1,17 @@
 main:
 .L0:
 	<entry-point>
-	symaddr.64  %r5 <- <anon symbol:0000022F425E1878>
-	set.64      %r6 <- 3.140000
-	set.64      %r7 <- 0.001000
-	set.64      %r8 <- 100.000000
-	set.64      %r9 <- 1.333333
-	call.32     %r10 <- printf, %r5, %r6, %r7, %r8, %r9
+	symaddr.64* %r5 <- <anon symbol:000001F5F80F4A88>
+	push.64*    %r5
+	set.f64     %r6 <- 3.140000
+	push.f64    %r6
+	set.f64     %r7 <- 0.001000
+	push.f64    %r7
+	set.f64     %r8 <- 100.000000
+	push.f64    %r8
+	set.f64     %r9 <- 1.333333
+	push.f64    %r9
+	call.32     %r10 <- printf
 	ret.32      $0
 
 

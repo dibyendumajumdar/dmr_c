@@ -1,16 +1,16 @@
 ; ModuleID = 'out.bc'
 source_filename = "sparse"
 
-@x = internal global i32 1
+@x_000002E0BD34DA58 = internal global i32 1
 @"<noident>" = private global [12 x i8] c"hello world\00", align 1
 @s = private global [12 x i8]* @"<noident>", align 8
 @.str = private constant [16 x i8] c"y = %d, s = %s\0A\00"
 
 define internal i32 @staticint() {
 L0:
-  %load_target = load i32, i32* @x
+  %load_target = load i32, i32* @x_000002E0BD34DA58
   %R2 = add i32 %load_target, 1
-  store i32 %R2, i32* @x
+  store i32 %R2, i32* @x_000002E0BD34DA58
   ret i32 %load_target
 }
 

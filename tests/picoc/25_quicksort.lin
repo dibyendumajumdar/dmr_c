@@ -1,14 +1,14 @@
 swap:
 .L0:
 	<entry-point>
-	symaddr.64  %r1 <- array
+	symaddr.64* %r1 <- array
 	scast.64    %r3 <- (32) %arg1
 	muls.64     %r4 <- %r3, $4
-	add.64      %r5 <- %r1, %r4
+	add.64*     %r5 <- %r1, %r4
 	load.32     %r6 <- 0[%r5]
 	scast.64    %r9 <- (32) %arg2
 	muls.64     %r10 <- %r9, $4
-	add.64      %r11 <- %r1, %r10
+	add.64*     %r11 <- %r1, %r10
 	load.32     %r12 <- 0[%r11]
 	store.32    %r12 -> 0[%r5]
 	store.32    %r6 -> 0[%r11]
@@ -18,12 +18,14 @@ swap:
 partition:
 .L2:
 	<entry-point>
-	symaddr.64  %r25 <- array
+	symaddr.64* %r25 <- array
 	scast.64    %r27 <- (32) %arg1
 	muls.64     %r28 <- %r27, $4
-	add.64      %r29 <- %r25, %r28
+	add.64*     %r29 <- %r25, %r28
 	load.32     %r30 <- 0[%r29]
-	call        swap, %arg1, %arg2
+	push.32     %arg1
+	push.32     %arg2
+	call        swap
 	phisrc.32   %phi2(index) <- %arg1
 	phisrc.32   %phi4(index) <- %arg1
 	phisrc.32   %phi10(i) <- %arg1
@@ -37,14 +39,16 @@ partition:
 .L3:
 	scast.64    %r40 <- (32) %r35(i)
 	muls.64     %r41 <- %r40, $4
-	add.64      %r42 <- %r25, %r41
+	add.64*     %r42 <- %r25, %r41
 	load.32     %r43 <- 0[%r42]
 	setlt.32    %r45 <- %r43, %r30
 	br          %r45, .L7, .L4
 
 .L7:
+	push.32     %r35(i)
 	phi.32      %r47 <- %phi4(index), %phi5(index)
-	call        swap, %r35(i), %r47
+	push.32     %r47
+	call        swap
 	add.32      %r50 <- %r47, $1
 	phisrc.32   %phi3(index) <- %r50
 	phisrc.32   %phi5(index) <- %r50
@@ -56,8 +60,10 @@ partition:
 	br          .L6
 
 .L5:
+	push.32     %arg2
 	phi.32      %r55 <- %phi2(index), %phi3(index)
-	call        swap, %arg2, %r55
+	push.32     %r55
+	call        swap
 	ret.32      %r55
 
 
@@ -68,11 +74,17 @@ quicksort:
 	br          %r60, .L13, .L12
 
 .L12:
-	call.32     %r63 <- partition, %arg1, %arg2
+	push.32     %arg1
+	push.32     %arg2
+	call.32     %r63 <- partition
+	push.32     %arg1
 	add.32      %r66 <- %r63, $-1
-	call        quicksort, %arg1, %r66
+	push.32     %r66
+	call        quicksort
 	add.32      %r68 <- %r63, $1
-	call        quicksort, %r68, %arg2
+	push.32     %r68
+	push.32     %arg2
+	call        quicksort
 	br          .L13
 
 .L13:
@@ -107,21 +119,26 @@ main:
 	br          %r71, .L15, .L17
 
 .L15:
-	symaddr.64  %r72 <- <anon symbol:00000201C74E78D8>
-	symaddr.64  %r73 <- array
+	symaddr.64* %r72 <- <anon symbol:0000018FF0288D78>
+	push.64*    %r72
+	symaddr.64* %r73 <- array
 	scast.64    %r75 <- (32) %r70(i)
 	muls.64     %r76 <- %r75, $4
-	add.64      %r77 <- %r73, %r76
+	add.64*     %r77 <- %r73, %r76
 	load.32     %r78 <- 0[%r77]
-	call.32     %r79 <- printf, %r72, %r78
+	push.32     %r78
+	call.32     %r79 <- printf
 	add.32      %r81 <- %r70(i), $1
 	phisrc.32   %phi20(i) <- %r81
 	br          .L18
 
 .L17:
-	symaddr.64  %r82 <- <anon symbol:00000201C74E7EF8>
-	call.32     %r83 <- printf, %r82
-	call        quicksort, $0, $15
+	symaddr.64* %r82 <- <anon symbol:0000018FF0289398>
+	push.64*    %r82
+	call.32     %r83 <- printf
+	push.32     $0
+	push.32     $15
+	call        quicksort
 	phisrc.32   %phi15(i) <- $0
 	br          .L22
 
@@ -131,20 +148,23 @@ main:
 	br          %r85, .L19, .L21
 
 .L19:
-	symaddr.64  %r86 <- <anon symbol:00000201C74E8278>
-	symaddr.64  %r87 <- array
+	symaddr.64* %r86 <- <anon symbol:0000018FF0289718>
+	push.64*    %r86
+	symaddr.64* %r87 <- array
 	scast.64    %r89 <- (32) %r84(i)
 	muls.64     %r90 <- %r89, $4
-	add.64      %r91 <- %r87, %r90
+	add.64*     %r91 <- %r87, %r90
 	load.32     %r92 <- 0[%r91]
-	call.32     %r93 <- printf, %r86, %r92
+	push.32     %r92
+	call.32     %r93 <- printf
 	add.32      %r95 <- %r84(i), $1
 	phisrc.32   %phi16(i) <- %r95
 	br          .L22
 
 .L21:
-	symaddr.64  %r96 <- <anon symbol:00000201C74E8898>
-	call.32     %r97 <- printf, %r96
+	symaddr.64* %r96 <- <anon symbol:0000018FF0289D38>
+	push.64*    %r96
+	call.32     %r97 <- printf
 	ret.32      $0
 
 

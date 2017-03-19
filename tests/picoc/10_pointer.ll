@@ -14,8 +14,8 @@ source_filename = "sparse"
 
 define i32 @main() {
 L0:
-  %a_0000020B7AA49D88 = alloca i32
-  %0 = bitcast i32* %a_0000020B7AA49D88 to i8*
+  %a_000001B13C41D538 = alloca i32
+  %0 = bitcast i32* %a_000001B13C41D538 to i8*
   %1 = getelementptr inbounds i8, i8* %0, i64 0
   %2 = bitcast i8* %1 to i32*
   store i32 42, i32* %2

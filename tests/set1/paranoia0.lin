@@ -1,0 +1,18 @@
+main:
+.L0:
+	<entry-point>
+	store.f64   $1 -> 0[One]
+	add.f64     %r3 <- $1, $1
+	store.f64   %r3 -> 0[Two]
+	divu.f64    %r6 <- $1, %r3
+	store.f64   %r6 -> 0[Half]
+	symaddr.64* %r7 <- <anon symbol:0000026729484E08>
+	push.64*    %r7
+	push.f64    %r6
+	call.32     %r9 <- printf
+	load.f64    %r10 <- 0[Half]
+	set.f64     %r11 <- 0.500000
+	setne.32    %r13 <- %r10, %r11
+	ret.32      %r13
+
+

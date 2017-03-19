@@ -1,15 +1,23 @@
 main:
 .L0:
 	<entry-point>
-	load.64     %r1 <- 0[str]
-	set.64      %r2 <- 1.500000
-	set.64      %r3 <- 65.780000
-	call.32     %r4 <- printf, %r1, $55, %r2, %r3
-	symaddr.64  %r5 <- <anon symbol:000001F2B73D2538>
-	add.64      %r9 <- %r5, $1
-	set.64      %r11 <- 4.200000
-	set.64      %r12 <- 42.340000
-	call.32     %r13 <- printf, %r9, $6, %r11, %r12
+	load.64*    %r1 <- 0[str]
+	push.64*    %r1
+	push.32     $55
+	set.f64     %r2 <- 1.500000
+	push.f64    %r2
+	set.f64     %r3 <- 65.780000
+	push.f64    %r3
+	call.32     %r4 <- printf
+	symaddr.64* %r5 <- <anon symbol:000001EA9D047078>
+	add.64*     %r9 <- %r5, $1
+	push.64*    %r9
+	push.32     $6
+	set.f64     %r11 <- 4.200000
+	push.f64    %r11
+	set.f64     %r12 <- 42.340000
+	push.f64    %r12
+	call.32     %r13 <- printf
 	ret.32      $0
 
 

@@ -8,13 +8,15 @@ init:
 main:
 .L2:
 	<entry-point>
-	symaddr.64  %r2 <- x
-	ptrcast.64  %r3 <- (64) %r2
-	call        init, %r3
+	symaddr.64* %r2 <- x
+	ptrcast.64* %r3 <- (64) %r2
+	push.64*    %r3
+	call        init
 	load.32     %r4 <- 0[x]
-	symaddr.64  %r9 <- x
-	ptrcast.64  %r10 <- (64) %r9
-	call        init, %r10
+	symaddr.64* %r9 <- x
+	ptrcast.64* %r10 <- (64) %r9
+	push.64*    %r10
+	call        init
 	load.32     %r11 <- 0[x]
 	add.32      %r14 <- %r4, %r11
 	setne.32    %r18 <- %r14, $10

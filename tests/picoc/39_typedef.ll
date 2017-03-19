@@ -9,14 +9,14 @@ source_filename = "sparse"
 
 define i32 @main() {
 L0:
-  %b_000001B07CF4C0A8 = alloca %struct.FunStruct
+  %b_00000230EC0BBE38 = alloca %struct.FunStruct
   %R3 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @.str, i64 0, i64 0), i32 1)
-  %0 = bitcast %struct.FunStruct* %b_000001B07CF4C0A8 to i32*
+  %0 = bitcast %struct.FunStruct* %b_00000230EC0BBE38 to i32*
   %1 = bitcast i32* %0 to i8*
   %2 = getelementptr inbounds i8, i8* %1, i64 0
   %3 = bitcast i8* %2 to i32*
   store i32 12, i32* %3
-  %4 = bitcast %struct.FunStruct* %b_000001B07CF4C0A8 to i32*
+  %4 = bitcast %struct.FunStruct* %b_00000230EC0BBE38 to i32*
   %5 = bitcast i32* %4 to i8*
   %6 = getelementptr inbounds i8, i8* %5, i64 4
   %7 = bitcast i8* %6 to i32*

@@ -1,10 +1,14 @@
 main:
 .L0:
 	<entry-point>
-	symaddr.64  %r1 <- <anon symbol:0000020AAAC10B98>
-	call.32     %r3 <- printf, %r1, $12
-	symaddr.64  %r4 <- <anon symbol:0000020AAAC10FF8>
-	call.32     %r6 <- printf, %r4, $34
+	symaddr.64* %r1 <- <anon symbol:0000019B4E787678>
+	push.64*    %r1
+	push.32     $12
+	call.32     %r3 <- printf
+	symaddr.64* %r4 <- <anon symbol:0000019B4E787AD8>
+	push.64*    %r4
+	push.32     $34
+	call.32     %r6 <- printf
 	ret.32      $0
 
 

@@ -1,55 +1,91 @@
 charfunc:
 .L0:
 	<entry-point>
-	symaddr.64  %r1 <- <anon symbol:00000273A1D21C48>
+	symaddr.64* %r1 <- <anon symbol:000002A100375CE8>
+	push.64*    %r1
 	scast.32    %r3 <- (8) %arg1
-	call.32     %r4 <- printf, %r1, %r3
+	push.32     %r3
+	call.32     %r4 <- printf
 	ret
 
 
 intfunc:
 .L2:
 	<entry-point>
-	symaddr.64  %r5 <- <anon symbol:00000273A1D21FC8>
-	call.32     %r7 <- printf, %r5, %arg1
+	symaddr.64* %r5 <- <anon symbol:000002A100376068>
+	push.64*    %r5
+	push.32     %arg1
+	call.32     %r7 <- printf
 	ret
 
 
 floatfunc:
 .L4:
 	<entry-point>
-	symaddr.64  %r8 <- <anon symbol:00000273A1D22348>
-	fpcast.64   %r10 <- (32) %arg1
-	call.32     %r11 <- printf, %r8, %r10
+	symaddr.64* %r8 <- <anon symbol:000002A1003763E8>
+	push.64*    %r8
+	fpcast.f64  %r10 <- (32) %arg1
+	push.f64    %r10
+	call.32     %r11 <- printf
 	ret
 
 
 main:
 .L6:
 	<entry-point>
-	call        charfunc, $97
-	call        charfunc, $98
-	call        charfunc, $99
-	call        intfunc, $97
-	call        intfunc, $98
-	call        intfunc, $99
-	call        floatfunc, $97
-	call        floatfunc, $98
-	set.32      %r12 <- 99.000000
-	call        floatfunc, %r12
-	symaddr.64  %r13 <- <anon symbol:00000273A1D226C8>
-	call.32     %r14 <- printf, %r13, $97, $98, $99
-	symaddr.64  %r15 <- <anon symbol:00000273A1D22A48>
-	call.32     %r16 <- printf, %r15, $97, $98, $99
-	symaddr.64  %r17 <- <anon symbol:00000273A1D22DC8>
-	set.64      %r18 <- 99.000000
-	call.32     %r19 <- printf, %r17, $97, $98, %r18
-	symaddr.64  %r20 <- <anon symbol:00000273A1D23148>
-	call.32     %r21 <- printf, %r20, $97, $97
-	symaddr.64  %r22 <- <anon symbol:00000273A1D234C8>
-	call.32     %r23 <- printf, %r22, $97, $97
-	symaddr.64  %r24 <- <anon symbol:00000273A1D23848>
-	call.32     %r25 <- printf, %r24, $97, $97
+	push.8      $97
+	call        charfunc
+	push.8      $98
+	call        charfunc
+	push.8      $99
+	call        charfunc
+	push.32     $97
+	call        intfunc
+	push.32     $98
+	call        intfunc
+	push.32     $99
+	call        intfunc
+	push.f32    $97
+	call        floatfunc
+	push.f32    $98
+	call        floatfunc
+	set.f32     %r12 <- 99.000000
+	push.f32    %r12
+	call        floatfunc
+	symaddr.64* %r13 <- <anon symbol:000002A100376768>
+	push.64*    %r13
+	push.32     $97
+	push.32     $98
+	push.f64    $99
+	call.32     %r14 <- printf
+	symaddr.64* %r15 <- <anon symbol:000002A100376AE8>
+	push.64*    %r15
+	push.32     $97
+	push.32     $98
+	push.f64    $99
+	call.32     %r16 <- printf
+	symaddr.64* %r17 <- <anon symbol:000002A100376E68>
+	push.64*    %r17
+	push.32     $97
+	push.32     $98
+	set.f64     %r18 <- 99.000000
+	push.f64    %r18
+	call.32     %r19 <- printf
+	symaddr.64* %r20 <- <anon symbol:000002A1003771E8>
+	push.64*    %r20
+	push.32     $97
+	push.32     $97
+	call.32     %r21 <- printf
+	symaddr.64* %r22 <- <anon symbol:000002A100377568>
+	push.64*    %r22
+	push.32     $97
+	push.32     $97
+	call.32     %r23 <- printf
+	symaddr.64* %r24 <- <anon symbol:000002A1003778E8>
+	push.64*    %r24
+	push.f64    $97
+	push.f64    $97
+	call.32     %r25 <- printf
 	ret.32      $0
 
 

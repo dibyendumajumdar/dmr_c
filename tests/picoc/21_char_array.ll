@@ -8,7 +8,7 @@ source_filename = "sparse"
 
 define i32 @main() {
 L0:
-  %destarray_0000025202A1B7A8 = alloca [10 x i8]
+  %destarray_0000018BA284C9F8 = alloca [10 x i8]
   %0 = alloca i8*
   %1 = alloca i8*
   %2 = alloca i8*
@@ -32,7 +32,7 @@ L2:                                               ; preds = %L1
   br label %L1
 
 L3:                                               ; preds = %L1
-  %R23 = bitcast [10 x i8]* %destarray_0000025202A1B7A8 to i8*
+  %R23 = bitcast [10 x i8]* %destarray_0000018BA284C9F8 to i8*
   store i8* %R23, i8** %2
   store i8* getelementptr inbounds ([6 x i8], [6 x i8]* @.str, i64 0, i64 0), i8** %1
   br label %L4

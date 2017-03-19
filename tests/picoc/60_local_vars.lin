@@ -1,8 +1,9 @@
 foo:
 .L0:
 	<entry-point>
-	symaddr.64  %r1 <- <anon symbol:0000027F1F3430B8>
-	call.32     %r2 <- printf, %r1
+	symaddr.64* %r1 <- <anon symbol:000001DE299B6478>
+	push.64*    %r1
+	call.32     %r2 <- printf
 	phisrc.32   %phi3(i) <- $0
 	br          .L4
 
@@ -12,17 +13,22 @@ foo:
 	br          %r4, .L1, .L5
 
 .L1:
-	symaddr.64  %r7 <- <anon symbol:0000027F1F343438>
-	call.32     %r9 <- printf, %r7, %r3(i)
+	symaddr.64* %r7 <- <anon symbol:000001DE299B67F8>
+	push.64*    %r7
+	push.32     %r3(i)
+	call.32     %r9 <- printf
 	add.32      %r11 <- %r3(i), $1
 	phisrc.32   %phi4(i) <- %r11
 	br          .L4
 
 .L5:
-	symaddr.64  %r12 <- <anon symbol:0000027F1F3437B8>
-	call.32     %r13 <- printf, %r12, $5
-	symaddr.64  %r14 <- <anon symbol:0000027F1F343B38>
-	call.32     %r15 <- printf, %r14
+	symaddr.64* %r12 <- <anon symbol:000001DE299B6B78>
+	push.64*    %r12
+	push.32     $5
+	call.32     %r13 <- printf
+	symaddr.64* %r14 <- <anon symbol:000001DE299B6EF8>
+	push.64*    %r14
+	call.32     %r15 <- printf
 	phisrc.32   %phi7(i) <- $0
 	br          .L14
 
@@ -32,8 +38,10 @@ foo:
 	br          %r17, .L11, .L13
 
 .L11:
-	symaddr.64  %r18 <- <anon symbol:0000027F1F343EB8>
-	call.32     %r20 <- printf, %r18, %r16(i)
+	symaddr.64* %r18 <- <anon symbol:000001DE299B7278>
+	push.64*    %r18
+	push.32     %r16(i)
+	call.32     %r20 <- printf
 	add.32      %r22 <- %r16(i), $1
 	phisrc.32   %phi8(i) <- %r22
 	br          .L14
@@ -62,8 +70,10 @@ foo:
 	br          %r30, .L19, .L21
 
 .L19:
-	symaddr.64  %r32 <- <anon symbol:0000027F1F344238>
-	call.32     %r34 <- printf, %r32, %r29(i)
+	symaddr.64* %r32 <- <anon symbol:000001DE299B75F8>
+	push.64*    %r32
+	push.32     %r29(i)
+	call.32     %r34 <- printf
 	add.32      %r36 <- %r29(i), $1
 	phisrc.32   %phi16(i) <- %r36
 	br          .L22
@@ -75,8 +85,9 @@ foo:
 main:
 .L23:
 	<entry-point>
-	symaddr.64  %r37 <- <anon symbol:0000027F1F3445B8>
-	call.32     %r38 <- printf, %r37
+	symaddr.64* %r37 <- <anon symbol:000001DE299B7978>
+	push.64*    %r37
+	call.32     %r38 <- printf
 	phisrc.32   %phi20(i) <- $0
 	br          .L27
 
@@ -86,15 +97,18 @@ main:
 	br          %r40, .L24, .L26
 
 .L24:
-	symaddr.64  %r43 <- <anon symbol:0000027F1F344938>
-	call.32     %r45 <- printf, %r43, %r39(i)
+	symaddr.64* %r43 <- <anon symbol:000001DE299B7CF8>
+	push.64*    %r43
+	push.32     %r39(i)
+	call.32     %r45 <- printf
 	add.32      %r47 <- %r39(i), $1
 	phisrc.32   %phi21(i) <- %r47
 	br          .L27
 
 .L26:
-	symaddr.64  %r48 <- <anon symbol:0000027F1F344CB8>
-	call.32     %r49 <- printf, %r48
+	symaddr.64* %r48 <- <anon symbol:000001DE299B8078>
+	push.64*    %r48
+	call.32     %r49 <- printf
 	phisrc.32   %phi24(i) <- $0
 	br          .L31
 
@@ -104,8 +118,10 @@ main:
 	br          %r51, .L28, .L30
 
 .L28:
-	symaddr.64  %r52 <- <anon symbol:0000027F1F345038>
-	call.32     %r54 <- printf, %r52, %r50(i)
+	symaddr.64* %r52 <- <anon symbol:000001DE299B83F8>
+	push.64*    %r52
+	push.32     %r50(i)
+	call.32     %r54 <- printf
 	add.32      %r56 <- %r50(i), $1
 	phisrc.32   %phi25(i) <- %r56
 	br          .L31

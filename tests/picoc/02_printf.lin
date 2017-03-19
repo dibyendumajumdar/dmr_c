@@ -1,8 +1,9 @@
 main:
 .L0:
 	<entry-point>
-	symaddr.64  %r1 <- <anon symbol:0000015F654919D8>
-	call.32     %r2 <- printf, %r1
+	symaddr.64* %r1 <- <anon symbol:000002FCF2F64B08>
+	push.64*    %r1
+	call.32     %r2 <- printf
 	phisrc.32   %phi4(Count) <- $0xfffffffb
 	br          .L4
 
@@ -12,21 +13,30 @@ main:
 	br          %r4, .L1, .L3
 
 .L1:
-	symaddr.64  %r5 <- <anon symbol:0000015F65491D58>
-	call.32     %r7 <- printf, %r5, %r3(Count)
+	symaddr.64* %r5 <- <anon symbol:000002FCF2F64E88>
+	push.64*    %r5
+	push.32     %r3(Count)
+	call.32     %r7 <- printf
 	add.32      %r9 <- %r3(Count), $1
 	phisrc.32   %phi5(Count) <- %r9
 	br          .L4
 
 .L3:
-	symaddr.64  %r10 <- <anon symbol:0000015F654920D8>
-	symaddr.64  %r11 <- <anon symbol:0000015F65492458>
-	symaddr.64  %r12 <- <anon symbol:0000015F654927D8>
-	call.32     %r13 <- printf, %r10, %r11, %r12
-	symaddr.64  %r14 <- <anon symbol:0000015F65492B58>
-	call.32     %r15 <- printf, %r14, $65
-	symaddr.64  %r16 <- <anon symbol:0000015F65492ED8>
-	call.32     %r17 <- printf, %r16, $97
+	symaddr.64* %r10 <- <anon symbol:000002FCF2F65208>
+	push.64*    %r10
+	symaddr.64* %r11 <- <anon symbol:000002FCF2F65588>
+	push.64*    %r11
+	symaddr.64* %r12 <- <anon symbol:000002FCF2F65908>
+	push.64*    %r12
+	call.32     %r13 <- printf
+	symaddr.64* %r14 <- <anon symbol:000002FCF2F65C88>
+	push.64*    %r14
+	push.32     $65
+	call.32     %r15 <- printf
+	symaddr.64* %r16 <- <anon symbol:000002FCF2F66008>
+	push.64*    %r16
+	push.32     $97
+	call.32     %r17 <- printf
 	ret.32      $0
 
 

@@ -1004,7 +1004,7 @@ L93:                                              ; preds = %L92
 
 L94:                                              ; preds = %L92
   %11 = bitcast %struct.AVLNode_st* %6 to i8*
-  %12 = getelementptr inbounds i8, i8* %11, i64 32
+  %12 = getelementptr inbounds i8, i8* %11, %struct.AVLNode_st* inttoptr (i64 32 to %struct.AVLNode_st*)
   %13 = bitcast i8* %12 to %struct.AVLNode_st*
   %R316 = bitcast %struct.AVLNode_st* %13 to i8*
   store i8* %R316, i8** %1
@@ -1052,7 +1052,7 @@ L100:                                             ; preds = %L99
 
 L101:                                             ; preds = %L99
   %11 = bitcast %struct.AVLNode_st* %6 to i8*
-  %12 = getelementptr inbounds i8, i8* %11, i64 32
+  %12 = getelementptr inbounds i8, i8* %11, %struct.AVLNode_st* inttoptr (i64 32 to %struct.AVLNode_st*)
   %13 = bitcast i8* %12 to %struct.AVLNode_st*
   %R330 = bitcast %struct.AVLNode_st* %13 to i8*
   store i8* %R330, i8** %1
@@ -1158,7 +1158,7 @@ L113:                                             ; preds = %L111, %L110, %L107,
 
 L114:                                             ; preds = %L113
   %34 = bitcast %struct.AVLNode_st* %33 to i8*
-  %35 = getelementptr inbounds i8, i8* %34, i64 32
+  %35 = getelementptr inbounds i8, i8* %34, %struct.AVLNode_st* inttoptr (i64 32 to %struct.AVLNode_st*)
   %36 = bitcast i8* %35 to %struct.AVLNode_st*
   %R360 = bitcast %struct.AVLNode_st* %36 to i8*
   store i8* %R360, i8** %4
@@ -1264,7 +1264,7 @@ L126:                                             ; preds = %L124, %L123, %L120,
 
 L127:                                             ; preds = %L126
   %34 = bitcast %struct.AVLNode_st* %33 to i8*
-  %35 = getelementptr inbounds i8, i8* %34, i64 32
+  %35 = getelementptr inbounds i8, i8* %34, %struct.AVLNode_st* inttoptr (i64 32 to %struct.AVLNode_st*)
   %36 = bitcast i8* %35 to %struct.AVLNode_st*
   %R390 = bitcast %struct.AVLNode_st* %36 to i8*
   store i8* %R390, i8** %4
@@ -1304,15 +1304,17 @@ L132:                                             ; preds = %L131
   %load_target = load %struct.AVLNode_st*, %struct.AVLNode_st** %3
   call void @AVLTree_BackwardApply(%struct.AVLNode_st* %load_target, void (i8*)* %ARG2)
   %4 = bitcast %struct.AVLNode_st* %ARG1 to i8*
-  %5 = getelementptr inbounds i8, i8* %4, i64 32
+  %5 = getelementptr inbounds i8, i8* %4, %struct.AVLNode_st* inttoptr (i64 32 to %struct.AVLNode_st*)
   %6 = bitcast i8* %5 to %struct.AVLNode_st*
   %R404 = bitcast %struct.AVLNode_st* %6 to i8*
-  call void %ARG2(i8* %R404)
-  %7 = bitcast %struct.AVLNode_st* %ARG1 to %struct.AVLNode_st**
-  %8 = bitcast %struct.AVLNode_st** %7 to i8*
-  %9 = getelementptr inbounds i8, i8* %8, i64 8
-  %10 = bitcast i8* %9 to %struct.AVLNode_st**
-  %load_target1 = load %struct.AVLNode_st*, %struct.AVLNode_st** %10
+  %7 = bitcast void (i8*)* %ARG2 to i8*
+  %8 = bitcast i8* %7 to void (i8*)*
+  call void %8(i8* %R404)
+  %9 = bitcast %struct.AVLNode_st* %ARG1 to %struct.AVLNode_st**
+  %10 = bitcast %struct.AVLNode_st** %9 to i8*
+  %11 = getelementptr inbounds i8, i8* %10, i64 8
+  %12 = bitcast i8* %11 to %struct.AVLNode_st**
+  %load_target1 = load %struct.AVLNode_st*, %struct.AVLNode_st** %12
   call void @AVLTree_BackwardApply(%struct.AVLNode_st* %load_target1, void (i8*)* %ARG2)
   br label %L133
 
@@ -1345,15 +1347,17 @@ L136:                                             ; preds = %L135
   %load_target = load %struct.AVLNode_st*, %struct.AVLNode_st** %3
   call void @AVLTree_ForwardApply(%struct.AVLNode_st* %load_target, void (i8*)* %ARG2)
   %4 = bitcast %struct.AVLNode_st* %ARG1 to i8*
-  %5 = getelementptr inbounds i8, i8* %4, i64 32
+  %5 = getelementptr inbounds i8, i8* %4, %struct.AVLNode_st* inttoptr (i64 32 to %struct.AVLNode_st*)
   %6 = bitcast i8* %5 to %struct.AVLNode_st*
   %R420 = bitcast %struct.AVLNode_st* %6 to i8*
-  call void %ARG2(i8* %R420)
-  %7 = bitcast %struct.AVLNode_st* %ARG1 to %struct.AVLNode_st**
-  %8 = bitcast %struct.AVLNode_st** %7 to i8*
-  %9 = getelementptr inbounds i8, i8* %8, i64 16
-  %10 = bitcast i8* %9 to %struct.AVLNode_st**
-  %load_target1 = load %struct.AVLNode_st*, %struct.AVLNode_st** %10
+  %7 = bitcast void (i8*)* %ARG2 to i8*
+  %8 = bitcast i8* %7 to void (i8*)*
+  call void %8(i8* %R420)
+  %9 = bitcast %struct.AVLNode_st* %ARG1 to %struct.AVLNode_st**
+  %10 = bitcast %struct.AVLNode_st** %9 to i8*
+  %11 = getelementptr inbounds i8, i8* %10, i64 16
+  %12 = bitcast i8* %11 to %struct.AVLNode_st**
+  %load_target1 = load %struct.AVLNode_st*, %struct.AVLNode_st** %12
   call void @AVLTree_ForwardApply(%struct.AVLNode_st* %load_target1, void (i8*)* %ARG2)
   br label %L137
 
@@ -1425,10 +1429,12 @@ L141:                                             ; preds = %L140, %L139
 
 L142:                                             ; preds = %L141
   %28 = bitcast %struct.AVLNode_st* %R434 to i8*
-  %29 = getelementptr inbounds i8, i8* %28, i64 32
+  %29 = getelementptr inbounds i8, i8* %28, %struct.AVLNode_st* inttoptr (i64 32 to %struct.AVLNode_st*)
   %30 = bitcast i8* %29 to %struct.AVLNode_st*
   %R446 = bitcast %struct.AVLNode_st* %30 to i8*
-  call void %load_target2(i8* %R446, i8* %ARG2)
+  %31 = bitcast void (i8*, i8*)* %load_target2 to i8*
+  %32 = bitcast i8* %31 to void (i8*, i8*)*
+  call void %32(i8* %R446, i8* %ARG2)
   br label %L143
 
 L143:                                             ; preds = %L142, %L141
@@ -1437,7 +1443,7 @@ L143:                                             ; preds = %L142, %L141
 
 define i8* @AVLTree_Insert(%struct.avltree* %ARG1, i8* %ARG2) {
 L144:
-  %height_changed_000001C154B0F7C8 = alloca i32
+  %height_changed_0000027B4C9BF7C8 = alloca i32
   %0 = alloca %struct.AVLNode_st*
   %1 = alloca %struct.AVLNode_st*
   %2 = alloca %struct.AVLNode_st*
@@ -1468,7 +1474,7 @@ L145:                                             ; preds = %L144
   br label %L164
 
 L146:                                             ; preds = %L144
-  %17 = bitcast i32* %height_changed_000001C154B0F7C8 to i8*
+  %17 = bitcast i32* %height_changed_0000027B4C9BF7C8 to i8*
   %18 = getelementptr inbounds i8, i8* %17, i64 0
   %19 = bitcast i8* %18 to i32*
   store i32 0, i32* %19
@@ -1479,7 +1485,7 @@ L146:                                             ; preds = %L144
 L147:                                             ; preds = %L152, %L146
   %20 = load %struct.AVLNode_st*, %struct.AVLNode_st** %0
   %21 = bitcast %struct.AVLNode_st* %20 to i8*
-  %22 = getelementptr inbounds i8, i8* %21, i64 32
+  %22 = getelementptr inbounds i8, i8* %21, %struct.AVLNode_st* inttoptr (i64 32 to %struct.AVLNode_st*)
   %23 = bitcast i8* %22 to %struct.AVLNode_st*
   %R467 = bitcast %struct.AVLNode_st* %23 to i8*
   %24 = bitcast %struct.avl_vtbl* %load_target1 to i32 (i8*, i8*)**
@@ -1487,36 +1493,38 @@ L147:                                             ; preds = %L152, %L146
   %26 = getelementptr inbounds i8, i8* %25, i64 0
   %27 = bitcast i8* %26 to i32 (i8*, i8*)**
   %load_target2 = load i32 (i8*, i8*)*, i32 (i8*, i8*)** %27
-  %R470 = call i32 %load_target2(i8* %ARG2, i8* %R467)
-  %R472 = icmp slt i32 %R470, 0
-  %R4723 = zext i1 %R472 to i32
-  %cond4 = icmp ne i32 %R4723, 0
-  br i1 %cond4, label %L148, label %L149
+  %R470 = bitcast i32 (i8*, i8*)* %load_target2 to i8*
+  %R4703 = bitcast i8* %R470 to i32 (i8*, i8*)*
+  %R4704 = call i32 %R4703(i8* %ARG2, i8* %R467)
+  %R472 = icmp slt i32 %R4704, 0
+  %R4725 = zext i1 %R472 to i32
+  %cond6 = icmp ne i32 %R4725, 0
+  br i1 %cond6, label %L148, label %L149
 
 L148:                                             ; preds = %L147
   %28 = bitcast %struct.AVLNode_st* %20 to %struct.AVLNode_st**
   %29 = bitcast %struct.AVLNode_st** %28 to i8*
   %30 = getelementptr inbounds i8, i8* %29, i64 8
   %31 = bitcast i8* %30 to %struct.AVLNode_st**
-  %load_target5 = load %struct.AVLNode_st*, %struct.AVLNode_st** %31
-  store %struct.AVLNode_st* %load_target5, %struct.AVLNode_st** %1
-  store %struct.AVLNode_st* %load_target5, %struct.AVLNode_st** %0
+  %load_target7 = load %struct.AVLNode_st*, %struct.AVLNode_st** %31
+  store %struct.AVLNode_st* %load_target7, %struct.AVLNode_st** %1
+  store %struct.AVLNode_st* %load_target7, %struct.AVLNode_st** %0
   br label %L152
 
 L149:                                             ; preds = %L147
-  %R476 = icmp sgt i32 %R470, 0
-  %R4766 = zext i1 %R476 to i32
-  %cond7 = icmp ne i32 %R4766, 0
-  br i1 %cond7, label %L150, label %L151
+  %R476 = icmp sgt i32 %R4704, 0
+  %R4768 = zext i1 %R476 to i32
+  %cond9 = icmp ne i32 %R4768, 0
+  br i1 %cond9, label %L150, label %L151
 
 L150:                                             ; preds = %L149
   %32 = bitcast %struct.AVLNode_st* %20 to %struct.AVLNode_st**
   %33 = bitcast %struct.AVLNode_st** %32 to i8*
   %34 = getelementptr inbounds i8, i8* %33, i64 16
   %35 = bitcast i8* %34 to %struct.AVLNode_st**
-  %load_target8 = load %struct.AVLNode_st*, %struct.AVLNode_st** %35
-  store %struct.AVLNode_st* %load_target8, %struct.AVLNode_st** %1
-  store %struct.AVLNode_st* %load_target8, %struct.AVLNode_st** %0
+  %load_target10 = load %struct.AVLNode_st*, %struct.AVLNode_st** %35
+  store %struct.AVLNode_st* %load_target10, %struct.AVLNode_st** %1
+  store %struct.AVLNode_st* %load_target10, %struct.AVLNode_st** %0
   br label %L152
 
 L151:                                             ; preds = %L149
@@ -1525,8 +1533,8 @@ L151:                                             ; preds = %L149
 
 L152:                                             ; preds = %L150, %L148
   %36 = load %struct.AVLNode_st*, %struct.AVLNode_st** %1
-  %cond9 = icmp ne %struct.AVLNode_st* %36, null
-  br i1 %cond9, label %L147, label %L153
+  %cond11 = icmp ne %struct.AVLNode_st* %36, null
+  br i1 %cond11, label %L147, label %L153
 
 L153:                                             ; preds = %L152
   %R487 = call %struct.AVLNode_st* @AVL_new(%struct.avltree* %ARG1, i8* %ARG2)
@@ -1535,13 +1543,15 @@ L153:                                             ; preds = %L152
   %38 = bitcast i32 (i8*, i8*)** %37 to i8*
   %39 = getelementptr inbounds i8, i8* %38, i64 0
   %40 = bitcast i8* %39 to i32 (i8*, i8*)**
-  %load_target10 = load i32 (i8*, i8*)*, i32 (i8*, i8*)** %40
-  %R494 = call i32 %load_target10(i8* %ARG2, i8* %R491)
-  %R495 = icmp slt i32 %R494, 0
-  %R49511 = zext i1 %R495 to i32
+  %load_target12 = load i32 (i8*, i8*)*, i32 (i8*, i8*)** %40
+  %R494 = bitcast i32 (i8*, i8*)* %load_target12 to i8*
+  %R49413 = bitcast i8* %R494 to i32 (i8*, i8*)*
+  %R49414 = call i32 %R49413(i8* %ARG2, i8* %R491)
+  %R495 = icmp slt i32 %R49414, 0
+  %R49515 = zext i1 %R495 to i32
   store %struct.AVLNode_st* %R487, %struct.AVLNode_st** %7
-  %cond12 = icmp ne i32 %R49511, 0
-  br i1 %cond12, label %L154, label %L155
+  %cond16 = icmp ne i32 %R49515, 0
+  br i1 %cond16, label %L154, label %L155
 
 L154:                                             ; preds = %L153
   call void @AVL_SetLeft(%struct.AVLNode_st* %20, %struct.AVLNode_st* %R487)
@@ -1558,7 +1568,7 @@ L155:                                             ; preds = %L153
   br label %L156
 
 L156:                                             ; preds = %L155, %L154
-  %41 = bitcast i32* %height_changed_000001C154B0F7C8 to i8*
+  %41 = bitcast i32* %height_changed_0000027B4C9BF7C8 to i8*
   %42 = getelementptr inbounds i8, i8* %41, i64 0
   %43 = bitcast i8* %42 to i32*
   store i32 1, i32* %43
@@ -1568,17 +1578,17 @@ L157:                                             ; preds = %L161, %L156
   %44 = load %struct.AVLNode_st*, %struct.AVLNode_st** %2
   %45 = ptrtoint %struct.AVLNode_st* %44 to i64
   %R501 = icmp ne i64 %45, 0
-  %R50113 = zext i1 %R501 to i32
-  %46 = bitcast i32* %height_changed_000001C154B0F7C8 to i8*
+  %R50117 = zext i1 %R501 to i32
+  %46 = bitcast i32* %height_changed_0000027B4C9BF7C8 to i8*
   %47 = getelementptr inbounds i8, i8* %46, i64 0
   %48 = bitcast i8* %47 to i32*
-  %load_target14 = load i32, i32* %48
-  %49 = icmp ne i32 %R50113, 0
-  %50 = icmp ne i32 %load_target14, 0
+  %load_target18 = load i32, i32* %48
+  %49 = icmp ne i32 %R50117, 0
+  %50 = icmp ne i32 %load_target18, 0
   %R503 = and i1 %49, %50
-  %R50315 = zext i1 %R503 to i32
-  %cond16 = icmp ne i32 %R50315, 0
-  br i1 %cond16, label %L158, label %L162
+  %R50319 = zext i1 %R503 to i32
+  %cond20 = icmp ne i32 %R50319, 0
+  br i1 %cond20, label %L158, label %L162
 
 L158:                                             ; preds = %L157
   %51 = load %struct.AVLNode_st*, %struct.AVLNode_st** %3
@@ -1586,21 +1596,21 @@ L158:                                             ; preds = %L157
   %53 = bitcast %struct.AVLNode_st** %52 to i8*
   %54 = getelementptr inbounds i8, i8* %53, i64 8
   %55 = bitcast i8* %54 to %struct.AVLNode_st**
-  %load_target17 = load %struct.AVLNode_st*, %struct.AVLNode_st** %55
+  %load_target21 = load %struct.AVLNode_st*, %struct.AVLNode_st** %55
   %56 = ptrtoint %struct.AVLNode_st* %51 to i64
-  %57 = ptrtoint %struct.AVLNode_st* %load_target17 to i64
+  %57 = ptrtoint %struct.AVLNode_st* %load_target21 to i64
   %R507 = icmp eq i64 %56, %57
-  %R50718 = zext i1 %R507 to i32
-  %cond19 = icmp ne i32 %R50718, 0
-  br i1 %cond19, label %L159, label %L160
+  %R50722 = zext i1 %R507 to i32
+  %cond23 = icmp ne i32 %R50722, 0
+  br i1 %cond23, label %L159, label %L160
 
 L159:                                             ; preds = %L158
-  %R510 = call %struct.AVLNode_st* @AVL_RebalanceHeavierLeft(%struct.AVLNode_st* %44, i32* %height_changed_000001C154B0F7C8)
+  %R510 = call %struct.AVLNode_st* @AVL_RebalanceHeavierLeft(%struct.AVLNode_st* %44, i32* %height_changed_0000027B4C9BF7C8)
   store %struct.AVLNode_st* %R510, %struct.AVLNode_st** %4
   br label %L161
 
 L160:                                             ; preds = %L158
-  %R513 = call %struct.AVLNode_st* @AVL_RebalanceHeavierRight(%struct.AVLNode_st* %44, i32* %height_changed_000001C154B0F7C8)
+  %R513 = call %struct.AVLNode_st* @AVL_RebalanceHeavierRight(%struct.AVLNode_st* %44, i32* %height_changed_0000027B4C9BF7C8)
   store %struct.AVLNode_st* %R513, %struct.AVLNode_st** %4
   br label %L161
 
@@ -1610,15 +1620,15 @@ L161:                                             ; preds = %L160, %L159
   %60 = bitcast %struct.AVLNode_st** %59 to i8*
   %61 = getelementptr inbounds i8, i8* %60, i64 0
   %62 = bitcast i8* %61 to %struct.AVLNode_st**
-  %load_target20 = load %struct.AVLNode_st*, %struct.AVLNode_st** %62
-  store %struct.AVLNode_st* %load_target20, %struct.AVLNode_st** %2
+  %load_target24 = load %struct.AVLNode_st*, %struct.AVLNode_st** %62
+  store %struct.AVLNode_st* %load_target24, %struct.AVLNode_st** %2
   store %struct.AVLNode_st* %58, %struct.AVLNode_st** %5
   store %struct.AVLNode_st* %58, %struct.AVLNode_st** %3
   br label %L157
 
 L162:                                             ; preds = %L157
-  %cond21 = icmp ne %struct.AVLNode_st* %44, null
-  br i1 %cond21, label %L164, label %L163
+  %cond25 = icmp ne %struct.AVLNode_st* %44, null
+  br i1 %cond25, label %L164, label %L163
 
 L163:                                             ; preds = %L162
   %63 = load %struct.AVLNode_st*, %struct.AVLNode_st** %5
@@ -1635,7 +1645,7 @@ L164:                                             ; preds = %L163, %L162, %L145
   store i8* %R521, i8** %68
   %69 = load %struct.AVLNode_st*, %struct.AVLNode_st** %7
   %70 = bitcast %struct.AVLNode_st* %69 to i8*
-  %71 = getelementptr inbounds i8, i8* %70, i64 32
+  %71 = getelementptr inbounds i8, i8* %70, %struct.AVLNode_st* inttoptr (i64 32 to %struct.AVLNode_st*)
   %72 = bitcast i8* %71 to %struct.AVLNode_st*
   %R525 = bitcast %struct.AVLNode_st* %72 to i8*
   store i8* %R525, i8** %8
@@ -1648,7 +1658,7 @@ L165:                                             ; preds = %L164, %L151
 
 define i32 @AVLTree_DeleteObject(%struct.avltree* %ARG1, i8* %ARG2) {
 L166:
-  %height_changed_000001C154B19AA8 = alloca i32
+  %height_changed_0000027B4C9C9AA8 = alloca i32
   %0 = alloca %struct.AVLNode_st*
   %1 = alloca %struct.AVLNode_st*
   %2 = alloca i32
@@ -1658,7 +1668,7 @@ L166:
   %6 = alloca %struct.AVLNode_st*
   %7 = alloca i32
   %R530 = bitcast i8* %ARG2 to %struct.AVLNode_st*
-  %8 = bitcast i32* %height_changed_000001C154B19AA8 to i8*
+  %8 = bitcast i32* %height_changed_0000027B4C9C9AA8 to i8*
   %9 = getelementptr inbounds i8, i8* %8, i64 0
   %10 = bitcast i8* %9 to i32*
   store i32 0, i32* %10
@@ -1716,85 +1726,89 @@ L172:                                             ; preds = %L170
 
 L173:                                             ; preds = %L172
   %31 = bitcast %struct.AVLNode_st* %17 to i8*
-  %32 = getelementptr inbounds i8, i8* %31, i64 32
+  %32 = getelementptr inbounds i8, i8* %31, %struct.AVLNode_st* inttoptr (i64 32 to %struct.AVLNode_st*)
   %33 = bitcast i8* %32 to %struct.AVLNode_st*
   %R554 = bitcast %struct.AVLNode_st* %33 to i8*
   %34 = bitcast %struct.AVLNode_st* %22 to i8*
-  %35 = getelementptr inbounds i8, i8* %34, i64 32
+  %35 = getelementptr inbounds i8, i8* %34, %struct.AVLNode_st* inttoptr (i64 32 to %struct.AVLNode_st*)
   %36 = bitcast i8* %35 to %struct.AVLNode_st*
   %R557 = bitcast %struct.AVLNode_st* %36 to i8*
-  call void %load_target5(i8* %R554, i8* %R557)
+  %37 = bitcast void (i8*, i8*)* %load_target5 to i8*
+  %38 = bitcast i8* %37 to void (i8*, i8*)*
+  call void %38(i8* %R554, i8* %R557)
   br label %L177
 
 L174:                                             ; preds = %L172
-  %37 = bitcast %struct.avl_vtbl* %load_target to void (i8*)**
-  %38 = bitcast void (i8*)** %37 to i8*
-  %39 = getelementptr inbounds i8, i8* %38, i64 24
-  %40 = bitcast i8* %39 to void (i8*)**
-  %load_target7 = load void (i8*)*, void (i8*)** %40
+  %39 = bitcast %struct.avl_vtbl* %load_target to void (i8*)**
+  %40 = bitcast void (i8*)** %39 to i8*
+  %41 = getelementptr inbounds i8, i8* %40, i64 24
+  %42 = bitcast i8* %41 to void (i8*)**
+  %load_target7 = load void (i8*)*, void (i8*)** %42
   %cond8 = icmp ne void (i8*)* %load_target7, null
   br i1 %cond8, label %L175, label %L176
 
 L175:                                             ; preds = %L174
-  %41 = bitcast %struct.AVLNode_st* %17 to i8*
-  %42 = getelementptr inbounds i8, i8* %41, i64 32
-  %43 = bitcast i8* %42 to %struct.AVLNode_st*
-  %R565 = bitcast %struct.AVLNode_st* %43 to i8*
-  call void %load_target7(i8* %R565)
+  %43 = bitcast %struct.AVLNode_st* %17 to i8*
+  %44 = getelementptr inbounds i8, i8* %43, %struct.AVLNode_st* inttoptr (i64 32 to %struct.AVLNode_st*)
+  %45 = bitcast i8* %44 to %struct.AVLNode_st*
+  %R565 = bitcast %struct.AVLNode_st* %45 to i8*
+  %46 = bitcast void (i8*)* %load_target7 to i8*
+  %47 = bitcast i8* %46 to void (i8*)*
+  call void %47(i8* %R565)
   br label %L176
 
 L176:                                             ; preds = %L175, %L174
-  %44 = bitcast %struct.AVLNode_st* %17 to i8*
-  %45 = getelementptr inbounds i8, i8* %44, i64 32
-  %46 = bitcast i8* %45 to %struct.AVLNode_st*
-  %R570 = bitcast %struct.AVLNode_st* %46 to i8*
-  %47 = bitcast %struct.AVLNode_st* %22 to i8*
-  %48 = getelementptr inbounds i8, i8* %47, i64 32
-  %49 = bitcast i8* %48 to %struct.AVLNode_st*
-  %R573 = bitcast %struct.AVLNode_st* %49 to i8*
-  %50 = bitcast %struct.avltree* %ARG1 to i32*
-  %51 = bitcast i32* %50 to i8*
-  %52 = getelementptr inbounds i8, i8* %51, i64 20
-  %53 = bitcast i8* %52 to i32*
-  %load_target9 = load i32, i32* %53
+  %48 = bitcast %struct.AVLNode_st* %17 to i8*
+  %49 = getelementptr inbounds i8, i8* %48, %struct.AVLNode_st* inttoptr (i64 32 to %struct.AVLNode_st*)
+  %50 = bitcast i8* %49 to %struct.AVLNode_st*
+  %R570 = bitcast %struct.AVLNode_st* %50 to i8*
+  %51 = bitcast %struct.AVLNode_st* %22 to i8*
+  %52 = getelementptr inbounds i8, i8* %51, %struct.AVLNode_st* inttoptr (i64 32 to %struct.AVLNode_st*)
+  %53 = bitcast i8* %52 to %struct.AVLNode_st*
+  %R573 = bitcast %struct.AVLNode_st* %53 to i8*
+  %54 = bitcast %struct.avltree* %ARG1 to i32*
+  %55 = bitcast i32* %54 to i8*
+  %56 = getelementptr inbounds i8, i8* %55, i64 20
+  %57 = bitcast i8* %56 to i32*
+  %load_target9 = load i32, i32* %57
   %R576 = call i8* @memcpy(i8* %R570, i8* %R573, i32 %load_target9)
   br label %L177
 
 L177:                                             ; preds = %L176, %L173
-  %54 = bitcast %struct.AVLNode_st* %22 to %struct.AVLNode_st**
-  %55 = bitcast %struct.AVLNode_st** %54 to i8*
-  %56 = getelementptr inbounds i8, i8* %55, i64 0
-  %57 = bitcast i8* %56 to %struct.AVLNode_st**
-  %load_target10 = load %struct.AVLNode_st*, %struct.AVLNode_st** %57
-  %58 = bitcast %struct.AVLNode_st* %load_target10 to %struct.AVLNode_st**
+  %58 = bitcast %struct.AVLNode_st* %22 to %struct.AVLNode_st**
   %59 = bitcast %struct.AVLNode_st** %58 to i8*
-  %60 = getelementptr inbounds i8, i8* %59, i64 8
+  %60 = getelementptr inbounds i8, i8* %59, i64 0
   %61 = bitcast i8* %60 to %struct.AVLNode_st**
-  %load_target11 = load %struct.AVLNode_st*, %struct.AVLNode_st** %61
-  %62 = ptrtoint %struct.AVLNode_st* %22 to i64
-  %63 = ptrtoint %struct.AVLNode_st* %load_target11 to i64
-  %R582 = icmp eq i64 %62, %63
+  %load_target10 = load %struct.AVLNode_st*, %struct.AVLNode_st** %61
+  %62 = bitcast %struct.AVLNode_st* %load_target10 to %struct.AVLNode_st**
+  %63 = bitcast %struct.AVLNode_st** %62 to i8*
+  %64 = getelementptr inbounds i8, i8* %63, i64 8
+  %65 = bitcast i8* %64 to %struct.AVLNode_st**
+  %load_target11 = load %struct.AVLNode_st*, %struct.AVLNode_st** %65
+  %66 = ptrtoint %struct.AVLNode_st* %22 to i64
+  %67 = ptrtoint %struct.AVLNode_st* %load_target11 to i64
+  %R582 = icmp eq i64 %66, %67
   %R58212 = zext i1 %R582 to i32
   %cond13 = icmp ne i32 %R58212, 0
   br i1 %cond13, label %L178, label %L179
 
 L178:                                             ; preds = %L177
-  %64 = bitcast %struct.AVLNode_st* %22 to %struct.AVLNode_st**
-  %65 = bitcast %struct.AVLNode_st** %64 to i8*
-  %66 = getelementptr inbounds i8, i8* %65, i64 8
-  %67 = bitcast i8* %66 to %struct.AVLNode_st**
-  %load_target14 = load %struct.AVLNode_st*, %struct.AVLNode_st** %67
+  %68 = bitcast %struct.AVLNode_st* %22 to %struct.AVLNode_st**
+  %69 = bitcast %struct.AVLNode_st** %68 to i8*
+  %70 = getelementptr inbounds i8, i8* %69, i64 8
+  %71 = bitcast i8* %70 to %struct.AVLNode_st**
+  %load_target14 = load %struct.AVLNode_st*, %struct.AVLNode_st** %71
   call void @AVL_SetLeft(%struct.AVLNode_st* %load_target10, %struct.AVLNode_st* %load_target14)
   store %struct.AVLNode_st* %load_target10, %struct.AVLNode_st** %1
   store i32 1, i32* %2
   br label %L180
 
 L179:                                             ; preds = %L177
-  %68 = bitcast %struct.AVLNode_st* %22 to %struct.AVLNode_st**
-  %69 = bitcast %struct.AVLNode_st** %68 to i8*
-  %70 = getelementptr inbounds i8, i8* %69, i64 8
-  %71 = bitcast i8* %70 to %struct.AVLNode_st**
-  %load_target15 = load %struct.AVLNode_st*, %struct.AVLNode_st** %71
+  %72 = bitcast %struct.AVLNode_st* %22 to %struct.AVLNode_st**
+  %73 = bitcast %struct.AVLNode_st** %72 to i8*
+  %74 = getelementptr inbounds i8, i8* %73, i64 8
+  %75 = bitcast i8* %74 to %struct.AVLNode_st**
+  %load_target15 = load %struct.AVLNode_st*, %struct.AVLNode_st** %75
   call void @AVL_SetRight(%struct.AVLNode_st* %load_target10, %struct.AVLNode_st* %load_target15)
   store %struct.AVLNode_st* %load_target10, %struct.AVLNode_st** %1
   br label %L180
@@ -1806,63 +1820,65 @@ L180:                                             ; preds = %L179, %L178
   br label %L193
 
 L181:                                             ; preds = %L168
-  %72 = bitcast %struct.AVLNode_st* %R530 to %struct.AVLNode_st**
-  %73 = bitcast %struct.AVLNode_st** %72 to i8*
-  %74 = getelementptr inbounds i8, i8* %73, i64 -32
-  %75 = bitcast i8* %74 to %struct.AVLNode_st**
-  %load_target16 = load %struct.AVLNode_st*, %struct.AVLNode_st** %75
+  %76 = bitcast %struct.AVLNode_st* %R530 to %struct.AVLNode_st**
+  %77 = bitcast %struct.AVLNode_st** %76 to i8*
+  %78 = getelementptr inbounds i8, i8* %77, i64 -32
+  %79 = bitcast i8* %78 to %struct.AVLNode_st**
+  %load_target16 = load %struct.AVLNode_st*, %struct.AVLNode_st** %79
   %cond17 = icmp ne %struct.AVLNode_st* %load_target16, null
   br i1 %cond17, label %L182, label %L188
 
 L182:                                             ; preds = %L181
-  %76 = bitcast %struct.AVLNode_st* %load_target16 to %struct.AVLNode_st**
-  %77 = bitcast %struct.AVLNode_st** %76 to i8*
-  %78 = getelementptr inbounds i8, i8* %77, i64 8
-  %79 = bitcast i8* %78 to %struct.AVLNode_st**
-  %load_target18 = load %struct.AVLNode_st*, %struct.AVLNode_st** %79
-  %80 = ptrtoint %struct.AVLNode_st* %17 to i64
-  %81 = ptrtoint %struct.AVLNode_st* %load_target18 to i64
-  %R597 = icmp eq i64 %80, %81
+  %80 = bitcast %struct.AVLNode_st* %load_target16 to %struct.AVLNode_st**
+  %81 = bitcast %struct.AVLNode_st** %80 to i8*
+  %82 = getelementptr inbounds i8, i8* %81, i64 8
+  %83 = bitcast i8* %82 to %struct.AVLNode_st**
+  %load_target18 = load %struct.AVLNode_st*, %struct.AVLNode_st** %83
+  %84 = ptrtoint %struct.AVLNode_st* %17 to i64
+  %85 = ptrtoint %struct.AVLNode_st* %load_target18 to i64
+  %R597 = icmp eq i64 %84, %85
   %R59719 = zext i1 %R597 to i32
   %cond20 = icmp ne i32 %R59719, 0
   br i1 %cond20, label %L183, label %L184
 
 L183:                                             ; preds = %L182
-  %82 = bitcast %struct.AVLNode_st* %R530 to %struct.AVLNode_st**
-  %83 = bitcast %struct.AVLNode_st** %82 to i8*
-  %84 = getelementptr inbounds i8, i8* %83, i64 -16
-  %85 = bitcast i8* %84 to %struct.AVLNode_st**
-  %load_target21 = load %struct.AVLNode_st*, %struct.AVLNode_st** %85
+  %86 = bitcast %struct.AVLNode_st* %R530 to %struct.AVLNode_st**
+  %87 = bitcast %struct.AVLNode_st** %86 to i8*
+  %88 = getelementptr inbounds i8, i8* %87, i64 -16
+  %89 = bitcast i8* %88 to %struct.AVLNode_st**
+  %load_target21 = load %struct.AVLNode_st*, %struct.AVLNode_st** %89
   call void @AVL_SetLeft(%struct.AVLNode_st* %load_target16, %struct.AVLNode_st* %load_target21)
   store %struct.AVLNode_st* %load_target16, %struct.AVLNode_st** %1
   store i32 1, i32* %2
   br label %L185
 
 L184:                                             ; preds = %L182
-  %86 = bitcast %struct.AVLNode_st* %R530 to %struct.AVLNode_st**
-  %87 = bitcast %struct.AVLNode_st** %86 to i8*
-  %88 = getelementptr inbounds i8, i8* %87, i64 -16
-  %89 = bitcast i8* %88 to %struct.AVLNode_st**
-  %load_target22 = load %struct.AVLNode_st*, %struct.AVLNode_st** %89
+  %90 = bitcast %struct.AVLNode_st* %R530 to %struct.AVLNode_st**
+  %91 = bitcast %struct.AVLNode_st** %90 to i8*
+  %92 = getelementptr inbounds i8, i8* %91, i64 -16
+  %93 = bitcast i8* %92 to %struct.AVLNode_st**
+  %load_target22 = load %struct.AVLNode_st*, %struct.AVLNode_st** %93
   call void @AVL_SetRight(%struct.AVLNode_st* %load_target16, %struct.AVLNode_st* %load_target22)
   store %struct.AVLNode_st* %load_target16, %struct.AVLNode_st** %1
   br label %L185
 
 L185:                                             ; preds = %L184, %L183
-  %90 = bitcast %struct.avl_vtbl* %load_target to void (i8*)**
-  %91 = bitcast void (i8*)** %90 to i8*
-  %92 = getelementptr inbounds i8, i8* %91, i64 24
-  %93 = bitcast i8* %92 to void (i8*)**
-  %load_target23 = load void (i8*)*, void (i8*)** %93
+  %94 = bitcast %struct.avl_vtbl* %load_target to void (i8*)**
+  %95 = bitcast void (i8*)** %94 to i8*
+  %96 = getelementptr inbounds i8, i8* %95, i64 24
+  %97 = bitcast i8* %96 to void (i8*)**
+  %load_target23 = load void (i8*)*, void (i8*)** %97
   %cond24 = icmp ne void (i8*)* %load_target23, null
   br i1 %cond24, label %L186, label %L187
 
 L186:                                             ; preds = %L185
-  %94 = bitcast %struct.AVLNode_st* %17 to i8*
-  %95 = getelementptr inbounds i8, i8* %94, i64 32
-  %96 = bitcast i8* %95 to %struct.AVLNode_st*
-  %R609 = bitcast %struct.AVLNode_st* %96 to i8*
-  call void %load_target23(i8* %R609)
+  %98 = bitcast %struct.AVLNode_st* %17 to i8*
+  %99 = getelementptr inbounds i8, i8* %98, %struct.AVLNode_st* inttoptr (i64 32 to %struct.AVLNode_st*)
+  %100 = bitcast i8* %99 to %struct.AVLNode_st*
+  %R609 = bitcast %struct.AVLNode_st* %100 to i8*
+  %101 = bitcast void (i8*)* %load_target23 to i8*
+  %102 = bitcast i8* %101 to void (i8*)*
+  call void %102(i8* %R609)
   br label %L187
 
 L187:                                             ; preds = %L186, %L185
@@ -1872,150 +1888,152 @@ L187:                                             ; preds = %L186, %L185
   br label %L193
 
 L188:                                             ; preds = %L181
-  %97 = bitcast %struct.AVLNode_st* %R530 to %struct.AVLNode_st**
-  %98 = bitcast %struct.AVLNode_st** %97 to i8*
-  %99 = getelementptr inbounds i8, i8* %98, i64 -16
-  %100 = bitcast i8* %99 to %struct.AVLNode_st**
-  %load_target25 = load %struct.AVLNode_st*, %struct.AVLNode_st** %100
+  %103 = bitcast %struct.AVLNode_st* %R530 to %struct.AVLNode_st**
+  %104 = bitcast %struct.AVLNode_st** %103 to i8*
+  %105 = getelementptr inbounds i8, i8* %104, i64 -16
+  %106 = bitcast i8* %105 to %struct.AVLNode_st**
+  %load_target25 = load %struct.AVLNode_st*, %struct.AVLNode_st** %106
   %cond26 = icmp ne %struct.AVLNode_st* %load_target25, null
   br i1 %cond26, label %L189, label %L190
 
 L189:                                             ; preds = %L188
-  %101 = bitcast %struct.AVLNode_st* %load_target25 to %struct.AVLNode_st**
-  %102 = bitcast %struct.AVLNode_st** %101 to i8*
-  %103 = getelementptr inbounds i8, i8* %102, i64 0
-  %104 = bitcast i8* %103 to %struct.AVLNode_st**
-  store %struct.AVLNode_st* null, %struct.AVLNode_st** %104
+  %107 = bitcast %struct.AVLNode_st* %load_target25 to %struct.AVLNode_st**
+  %108 = bitcast %struct.AVLNode_st** %107 to i8*
+  %109 = getelementptr inbounds i8, i8* %108, i64 0
+  %110 = bitcast i8* %109 to %struct.AVLNode_st**
+  store %struct.AVLNode_st* null, %struct.AVLNode_st** %110
   br label %L190
 
 L190:                                             ; preds = %L189, %L188
-  %105 = bitcast %struct.avl_vtbl* %load_target to void (i8*)**
-  %106 = bitcast void (i8*)** %105 to i8*
-  %107 = getelementptr inbounds i8, i8* %106, i64 24
-  %108 = bitcast i8* %107 to void (i8*)**
-  %load_target27 = load void (i8*)*, void (i8*)** %108
+  %111 = bitcast %struct.avl_vtbl* %load_target to void (i8*)**
+  %112 = bitcast void (i8*)** %111 to i8*
+  %113 = getelementptr inbounds i8, i8* %112, i64 24
+  %114 = bitcast i8* %113 to void (i8*)**
+  %load_target27 = load void (i8*)*, void (i8*)** %114
   %cond28 = icmp ne void (i8*)* %load_target27, null
   br i1 %cond28, label %L191, label %L192
 
 L191:                                             ; preds = %L190
-  %109 = bitcast %struct.AVLNode_st* %17 to i8*
-  %110 = getelementptr inbounds i8, i8* %109, i64 32
-  %111 = bitcast i8* %110 to %struct.AVLNode_st*
-  %R623 = bitcast %struct.AVLNode_st* %111 to i8*
-  call void %load_target27(i8* %R623)
+  %115 = bitcast %struct.AVLNode_st* %17 to i8*
+  %116 = getelementptr inbounds i8, i8* %115, %struct.AVLNode_st* inttoptr (i64 32 to %struct.AVLNode_st*)
+  %117 = bitcast i8* %116 to %struct.AVLNode_st*
+  %R623 = bitcast %struct.AVLNode_st* %117 to i8*
+  %118 = bitcast void (i8*)* %load_target27 to i8*
+  %119 = bitcast i8* %118 to void (i8*)*
+  call void %119(i8* %R623)
   br label %L192
 
 L192:                                             ; preds = %L191, %L190
-  %112 = bitcast %struct.avltree* %ARG1 to %struct.allocator_st**
-  %113 = bitcast %struct.allocator_st** %112 to i8*
-  %114 = getelementptr inbounds i8, i8* %113, i64 24
-  %115 = bitcast i8* %114 to %struct.allocator_st**
-  %load_target29 = load %struct.allocator_st*, %struct.allocator_st** %115
+  %120 = bitcast %struct.avltree* %ARG1 to %struct.allocator_st**
+  %121 = bitcast %struct.allocator_st** %120 to i8*
+  %122 = getelementptr inbounds i8, i8* %121, i64 24
+  %123 = bitcast i8* %122 to %struct.allocator_st**
+  %load_target29 = load %struct.allocator_st*, %struct.allocator_st** %123
   %R629 = bitcast %struct.AVLNode_st* %17 to i8*
   call void @dealloc_node(%struct.allocator_st* %load_target29, i8* %R629)
   %R631 = bitcast %struct.AVLNode_st* %load_target25 to i8*
-  %116 = bitcast %struct.avltree* %ARG1 to i8**
-  %117 = bitcast i8** %116 to i8*
-  %118 = getelementptr inbounds i8, i8* %117, i64 8
-  %119 = bitcast i8* %118 to i8**
-  store i8* %R631, i8** %119
+  %124 = bitcast %struct.avltree* %ARG1 to i8**
+  %125 = bitcast i8** %124 to i8*
+  %126 = getelementptr inbounds i8, i8* %125, i64 8
+  %127 = bitcast i8* %126 to i8**
+  store i8* %R631, i8** %127
   store i32 0, i32* %7
   br label %L203
 
 L193:                                             ; preds = %L187, %L180
-  %120 = bitcast i32* %height_changed_000001C154B19AA8 to i8*
-  %121 = getelementptr inbounds i8, i8* %120, i64 0
-  %122 = bitcast i8* %121 to i32*
-  store i32 1, i32* %122
+  %128 = bitcast i32* %height_changed_0000027B4C9C9AA8 to i8*
+  %129 = getelementptr inbounds i8, i8* %128, i64 0
+  %130 = bitcast i8* %129 to i32*
+  store i32 1, i32* %130
   br label %L194
 
 L194:                                             ; preds = %L199, %L193
-  %123 = load %struct.AVLNode_st*, %struct.AVLNode_st** %1
-  %124 = ptrtoint %struct.AVLNode_st* %123 to i64
-  %R634 = icmp ne i64 %124, 0
+  %131 = load %struct.AVLNode_st*, %struct.AVLNode_st** %1
+  %132 = ptrtoint %struct.AVLNode_st* %131 to i64
+  %R634 = icmp ne i64 %132, 0
   %R63430 = zext i1 %R634 to i32
-  %125 = bitcast i32* %height_changed_000001C154B19AA8 to i8*
-  %126 = getelementptr inbounds i8, i8* %125, i64 0
-  %127 = bitcast i8* %126 to i32*
-  %load_target31 = load i32, i32* %127
-  %128 = icmp ne i32 %R63430, 0
-  %129 = icmp ne i32 %load_target31, 0
-  %R636 = and i1 %128, %129
+  %133 = bitcast i32* %height_changed_0000027B4C9C9AA8 to i8*
+  %134 = getelementptr inbounds i8, i8* %133, i64 0
+  %135 = bitcast i8* %134 to i32*
+  %load_target31 = load i32, i32* %135
+  %136 = icmp ne i32 %R63430, 0
+  %137 = icmp ne i32 %load_target31, 0
+  %R636 = and i1 %136, %137
   %R63632 = zext i1 %R636 to i32
   %cond33 = icmp ne i32 %R63632, 0
   br i1 %cond33, label %L195, label %L200
 
 L195:                                             ; preds = %L194
-  %130 = load i32, i32* %2
-  %cond34 = icmp ne i32 %130, 0
+  %138 = load i32, i32* %2
+  %cond34 = icmp ne i32 %138, 0
   br i1 %cond34, label %L197, label %L196
 
 L196:                                             ; preds = %L195
-  %131 = load %struct.AVLNode_st*, %struct.AVLNode_st** %3
-  %132 = bitcast %struct.AVLNode_st* %123 to %struct.AVLNode_st**
-  %133 = bitcast %struct.AVLNode_st** %132 to i8*
-  %134 = getelementptr inbounds i8, i8* %133, i64 8
-  %135 = bitcast i8* %134 to %struct.AVLNode_st**
-  %load_target35 = load %struct.AVLNode_st*, %struct.AVLNode_st** %135
-  %136 = ptrtoint %struct.AVLNode_st* %131 to i64
-  %137 = ptrtoint %struct.AVLNode_st* %load_target35 to i64
-  %R641 = icmp eq i64 %136, %137
+  %139 = load %struct.AVLNode_st*, %struct.AVLNode_st** %3
+  %140 = bitcast %struct.AVLNode_st* %131 to %struct.AVLNode_st**
+  %141 = bitcast %struct.AVLNode_st** %140 to i8*
+  %142 = getelementptr inbounds i8, i8* %141, i64 8
+  %143 = bitcast i8* %142 to %struct.AVLNode_st**
+  %load_target35 = load %struct.AVLNode_st*, %struct.AVLNode_st** %143
+  %144 = ptrtoint %struct.AVLNode_st* %139 to i64
+  %145 = ptrtoint %struct.AVLNode_st* %load_target35 to i64
+  %R641 = icmp eq i64 %144, %145
   %R64136 = zext i1 %R641 to i32
   %cond37 = icmp ne i32 %R64136, 0
   br i1 %cond37, label %L197, label %L198
 
 L197:                                             ; preds = %L196, %L195
-  %R644 = call %struct.AVLNode_st* @AVL_RebalanceShorterLeft(%struct.AVLNode_st* %123, i32* %height_changed_000001C154B19AA8)
+  %R644 = call %struct.AVLNode_st* @AVL_RebalanceShorterLeft(%struct.AVLNode_st* %131, i32* %height_changed_0000027B4C9C9AA8)
   store %struct.AVLNode_st* %R644, %struct.AVLNode_st** %4
   store i32 0, i32* %2
   br label %L199
 
 L198:                                             ; preds = %L196
-  %R647 = call %struct.AVLNode_st* @AVL_RebalanceShorterRight(%struct.AVLNode_st* %123, i32* %height_changed_000001C154B19AA8)
+  %R647 = call %struct.AVLNode_st* @AVL_RebalanceShorterRight(%struct.AVLNode_st* %131, i32* %height_changed_0000027B4C9C9AA8)
   store %struct.AVLNode_st* %R647, %struct.AVLNode_st** %4
   br label %L199
 
 L199:                                             ; preds = %L198, %L197
-  %138 = load %struct.AVLNode_st*, %struct.AVLNode_st** %4
-  %139 = bitcast %struct.AVLNode_st* %138 to %struct.AVLNode_st**
-  %140 = bitcast %struct.AVLNode_st** %139 to i8*
-  %141 = getelementptr inbounds i8, i8* %140, i64 0
-  %142 = bitcast i8* %141 to %struct.AVLNode_st**
-  %load_target38 = load %struct.AVLNode_st*, %struct.AVLNode_st** %142
+  %146 = load %struct.AVLNode_st*, %struct.AVLNode_st** %4
+  %147 = bitcast %struct.AVLNode_st* %146 to %struct.AVLNode_st**
+  %148 = bitcast %struct.AVLNode_st** %147 to i8*
+  %149 = getelementptr inbounds i8, i8* %148, i64 0
+  %150 = bitcast i8* %149 to %struct.AVLNode_st**
+  %load_target38 = load %struct.AVLNode_st*, %struct.AVLNode_st** %150
   store %struct.AVLNode_st* %load_target38, %struct.AVLNode_st** %1
-  store %struct.AVLNode_st* %138, %struct.AVLNode_st** %5
-  store %struct.AVLNode_st* %138, %struct.AVLNode_st** %3
+  store %struct.AVLNode_st* %146, %struct.AVLNode_st** %5
+  store %struct.AVLNode_st* %146, %struct.AVLNode_st** %3
   br label %L194
 
 L200:                                             ; preds = %L194
-  %cond39 = icmp ne %struct.AVLNode_st* %123, null
+  %cond39 = icmp ne %struct.AVLNode_st* %131, null
   br i1 %cond39, label %L202, label %L201
 
 L201:                                             ; preds = %L200
-  %143 = load %struct.AVLNode_st*, %struct.AVLNode_st** %5
-  %R654 = bitcast %struct.AVLNode_st* %143 to i8*
-  %144 = bitcast %struct.avltree* %ARG1 to i8**
-  %145 = bitcast i8** %144 to i8*
-  %146 = getelementptr inbounds i8, i8* %145, i64 8
-  %147 = bitcast i8* %146 to i8**
-  store i8* %R654, i8** %147
+  %151 = load %struct.AVLNode_st*, %struct.AVLNode_st** %5
+  %R654 = bitcast %struct.AVLNode_st* %151 to i8*
+  %152 = bitcast %struct.avltree* %ARG1 to i8**
+  %153 = bitcast i8** %152 to i8*
+  %154 = getelementptr inbounds i8, i8* %153, i64 8
+  %155 = bitcast i8* %154 to i8**
+  store i8* %R654, i8** %155
   br label %L202
 
 L202:                                             ; preds = %L201, %L200
-  %148 = bitcast %struct.avltree* %ARG1 to %struct.allocator_st**
-  %149 = bitcast %struct.allocator_st** %148 to i8*
-  %150 = getelementptr inbounds i8, i8* %149, i64 24
-  %151 = bitcast i8* %150 to %struct.allocator_st**
-  %load_target40 = load %struct.allocator_st*, %struct.allocator_st** %151
-  %152 = load %struct.AVLNode_st*, %struct.AVLNode_st** %6
-  %R659 = bitcast %struct.AVLNode_st* %152 to i8*
+  %156 = bitcast %struct.avltree* %ARG1 to %struct.allocator_st**
+  %157 = bitcast %struct.allocator_st** %156 to i8*
+  %158 = getelementptr inbounds i8, i8* %157, i64 24
+  %159 = bitcast i8* %158 to %struct.allocator_st**
+  %load_target40 = load %struct.allocator_st*, %struct.allocator_st** %159
+  %160 = load %struct.AVLNode_st*, %struct.AVLNode_st** %6
+  %R659 = bitcast %struct.AVLNode_st* %160 to i8*
   call void @dealloc_node(%struct.allocator_st* %load_target40, i8* %R659)
   store i32 0, i32* %7
   br label %L203
 
 L203:                                             ; preds = %L202, %L192, %L167
-  %153 = load i32, i32* %7
-  ret i32 %153
+  %161 = load i32, i32* %7
+  ret i32 %161
 }
 
 define i32 @AVLTree_Delete(%struct.avltree* %ARG1, i8* %ARG2) {
@@ -2051,7 +2069,7 @@ L207:                                             ; preds = %L211, %L209, %L206
 
 L208:                                             ; preds = %L207
   %11 = bitcast %struct.AVLNode_st* %10 to i8*
-  %12 = getelementptr inbounds i8, i8* %11, i64 32
+  %12 = getelementptr inbounds i8, i8* %11, %struct.AVLNode_st* inttoptr (i64 32 to %struct.AVLNode_st*)
   %13 = bitcast i8* %12 to %struct.AVLNode_st*
   %R674 = bitcast %struct.AVLNode_st* %13 to i8*
   %14 = bitcast %struct.avl_vtbl* %load_target1 to i32 (i8*, i8*)**
@@ -2059,39 +2077,41 @@ L208:                                             ; preds = %L207
   %16 = getelementptr inbounds i8, i8* %15, i64 0
   %17 = bitcast i8* %16 to i32 (i8*, i8*)**
   %load_target3 = load i32 (i8*, i8*)*, i32 (i8*, i8*)** %17
-  %R677 = call i32 %load_target3(i8* %ARG2, i8* %R674)
-  %R679 = icmp slt i32 %R677, 0
-  %R6794 = zext i1 %R679 to i32
-  %cond5 = icmp ne i32 %R6794, 0
-  br i1 %cond5, label %L209, label %L210
+  %R677 = bitcast i32 (i8*, i8*)* %load_target3 to i8*
+  %R6774 = bitcast i8* %R677 to i32 (i8*, i8*)*
+  %R6775 = call i32 %R6774(i8* %ARG2, i8* %R674)
+  %R679 = icmp slt i32 %R6775, 0
+  %R6796 = zext i1 %R679 to i32
+  %cond7 = icmp ne i32 %R6796, 0
+  br i1 %cond7, label %L209, label %L210
 
 L209:                                             ; preds = %L208
   %18 = bitcast %struct.AVLNode_st* %10 to %struct.AVLNode_st**
   %19 = bitcast %struct.AVLNode_st** %18 to i8*
   %20 = getelementptr inbounds i8, i8* %19, i64 8
   %21 = bitcast i8* %20 to %struct.AVLNode_st**
-  %load_target6 = load %struct.AVLNode_st*, %struct.AVLNode_st** %21
-  store %struct.AVLNode_st* %load_target6, %struct.AVLNode_st** %0
+  %load_target8 = load %struct.AVLNode_st*, %struct.AVLNode_st** %21
+  store %struct.AVLNode_st* %load_target8, %struct.AVLNode_st** %0
   br label %L207
 
 L210:                                             ; preds = %L208
-  %R683 = icmp sgt i32 %R677, 0
-  %R6837 = zext i1 %R683 to i32
-  %cond8 = icmp ne i32 %R6837, 0
-  br i1 %cond8, label %L211, label %L212
+  %R683 = icmp sgt i32 %R6775, 0
+  %R6839 = zext i1 %R683 to i32
+  %cond10 = icmp ne i32 %R6839, 0
+  br i1 %cond10, label %L211, label %L212
 
 L211:                                             ; preds = %L210
   %22 = bitcast %struct.AVLNode_st* %10 to %struct.AVLNode_st**
   %23 = bitcast %struct.AVLNode_st** %22 to i8*
   %24 = getelementptr inbounds i8, i8* %23, i64 16
   %25 = bitcast i8* %24 to %struct.AVLNode_st**
-  %load_target9 = load %struct.AVLNode_st*, %struct.AVLNode_st** %25
-  store %struct.AVLNode_st* %load_target9, %struct.AVLNode_st** %0
+  %load_target11 = load %struct.AVLNode_st*, %struct.AVLNode_st** %25
+  store %struct.AVLNode_st* %load_target11, %struct.AVLNode_st** %0
   br label %L207
 
 L212:                                             ; preds = %L210
-  %cond10 = icmp ne %struct.AVLNode_st* %10, null
-  br i1 %cond10, label %L214, label %L213
+  %cond12 = icmp ne %struct.AVLNode_st* %10, null
+  br i1 %cond12, label %L214, label %L213
 
 L213:                                             ; preds = %L212, %L207
   store i32 -1, i32* %1
@@ -2136,7 +2156,7 @@ L218:                                             ; preds = %L223, %L222, %L217
 
 L219:                                             ; preds = %L218
   %11 = bitcast %struct.AVLNode_st* %10 to i8*
-  %12 = getelementptr inbounds i8, i8* %11, i64 32
+  %12 = getelementptr inbounds i8, i8* %11, %struct.AVLNode_st* inttoptr (i64 32 to %struct.AVLNode_st*)
   %13 = bitcast i8* %12 to %struct.AVLNode_st*
   %R704 = bitcast %struct.AVLNode_st* %13 to i8*
   %14 = bitcast %struct.avl_vtbl* %load_target1 to i32 (i8*, i8*)**
@@ -2144,27 +2164,29 @@ L219:                                             ; preds = %L218
   %16 = getelementptr inbounds i8, i8* %15, i64 0
   %17 = bitcast i8* %16 to i32 (i8*, i8*)**
   %load_target3 = load i32 (i8*, i8*)*, i32 (i8*, i8*)** %17
-  %R707 = call i32 %load_target3(i8* %ARG2, i8* %R704)
-  %cond4 = icmp ne i32 %R707, 0
-  br i1 %cond4, label %L221, label %L220
+  %R707 = bitcast i32 (i8*, i8*)* %load_target3 to i8*
+  %R7074 = bitcast i8* %R707 to i32 (i8*, i8*)*
+  %R7075 = call i32 %R7074(i8* %ARG2, i8* %R704)
+  %cond6 = icmp ne i32 %R7075, 0
+  br i1 %cond6, label %L221, label %L220
 
 L220:                                             ; preds = %L219
   store i8* %R704, i8** %1
   br label %L225
 
 L221:                                             ; preds = %L219
-  %R715 = icmp slt i32 %R707, 0
-  %R7155 = zext i1 %R715 to i32
-  %cond6 = icmp ne i32 %R7155, 0
-  br i1 %cond6, label %L222, label %L223
+  %R715 = icmp slt i32 %R7075, 0
+  %R7157 = zext i1 %R715 to i32
+  %cond8 = icmp ne i32 %R7157, 0
+  br i1 %cond8, label %L222, label %L223
 
 L222:                                             ; preds = %L221
   %18 = bitcast %struct.AVLNode_st* %10 to %struct.AVLNode_st**
   %19 = bitcast %struct.AVLNode_st** %18 to i8*
   %20 = getelementptr inbounds i8, i8* %19, i64 8
   %21 = bitcast i8* %20 to %struct.AVLNode_st**
-  %load_target7 = load %struct.AVLNode_st*, %struct.AVLNode_st** %21
-  store %struct.AVLNode_st* %load_target7, %struct.AVLNode_st** %0
+  %load_target9 = load %struct.AVLNode_st*, %struct.AVLNode_st** %21
+  store %struct.AVLNode_st* %load_target9, %struct.AVLNode_st** %0
   br label %L218
 
 L223:                                             ; preds = %L221
@@ -2172,8 +2194,8 @@ L223:                                             ; preds = %L221
   %23 = bitcast %struct.AVLNode_st** %22 to i8*
   %24 = getelementptr inbounds i8, i8* %23, i64 16
   %25 = bitcast i8* %24 to %struct.AVLNode_st**
-  %load_target8 = load %struct.AVLNode_st*, %struct.AVLNode_st** %25
-  store %struct.AVLNode_st* %load_target8, %struct.AVLNode_st** %0
+  %load_target10 = load %struct.AVLNode_st*, %struct.AVLNode_st** %25
+  store %struct.AVLNode_st* %load_target10, %struct.AVLNode_st** %0
   br label %L218
 
 L224:                                             ; preds = %L218, %L216
@@ -2311,134 +2333,134 @@ L233:
 
 define i32 @main() {
 L234:
-  %key_000001C154B341E8 = alloca i32
-  %tree_000001C154B33CA8 = alloca %struct.avltree
-  %vtable_000001C154B33D88 = alloca %struct.avl_vtbl
-  %testdata_000001C154B33AE8 = alloca [20 x i32]
+  %key_0000027B4C9E41E8 = alloca i32
+  %tree_0000027B4C9E3CA8 = alloca %struct.avltree
+  %vtable_0000027B4C9E3D88 = alloca %struct.avl_vtbl
+  %testdata_0000027B4C9E3AE8 = alloca [20 x i32]
   %0 = alloca i32
   %1 = alloca %struct.record*
   store i32 0, i32* @once
-  %2 = bitcast [20 x i32]* %testdata_000001C154B33AE8 to i32*
+  %2 = bitcast [20 x i32]* %testdata_0000027B4C9E3AE8 to i32*
   %3 = bitcast i32* %2 to i8*
   %4 = getelementptr inbounds i8, i8* %3, i64 0
   %5 = bitcast i8* %4 to i32*
   store i32 97, i32* %5
-  %6 = bitcast [20 x i32]* %testdata_000001C154B33AE8 to i32*
+  %6 = bitcast [20 x i32]* %testdata_0000027B4C9E3AE8 to i32*
   %7 = bitcast i32* %6 to i8*
   %8 = getelementptr inbounds i8, i8* %7, i64 4
   %9 = bitcast i8* %8 to i32*
   store i32 103, i32* %9
-  %10 = bitcast [20 x i32]* %testdata_000001C154B33AE8 to i32*
+  %10 = bitcast [20 x i32]* %testdata_0000027B4C9E3AE8 to i32*
   %11 = bitcast i32* %10 to i8*
   %12 = getelementptr inbounds i8, i8* %11, i64 8
   %13 = bitcast i8* %12 to i32*
   store i32 113, i32* %13
-  %14 = bitcast [20 x i32]* %testdata_000001C154B33AE8 to i32*
+  %14 = bitcast [20 x i32]* %testdata_0000027B4C9E3AE8 to i32*
   %15 = bitcast i32* %14 to i8*
   %16 = getelementptr inbounds i8, i8* %15, i64 12
   %17 = bitcast i8* %16 to i32*
   store i32 119, i32* %17
-  %18 = bitcast [20 x i32]* %testdata_000001C154B33AE8 to i32*
+  %18 = bitcast [20 x i32]* %testdata_0000027B4C9E3AE8 to i32*
   %19 = bitcast i32* %18 to i8*
   %20 = getelementptr inbounds i8, i8* %19, i64 16
   %21 = bitcast i8* %20 to i32*
   store i32 101, i32* %21
-  %22 = bitcast [20 x i32]* %testdata_000001C154B33AE8 to i32*
+  %22 = bitcast [20 x i32]* %testdata_0000027B4C9E3AE8 to i32*
   %23 = bitcast i32* %22 to i8*
   %24 = getelementptr inbounds i8, i8* %23, i64 20
   %25 = bitcast i8* %24 to i32*
   store i32 102, i32* %25
-  %26 = bitcast [20 x i32]* %testdata_000001C154B33AE8 to i32*
+  %26 = bitcast [20 x i32]* %testdata_0000027B4C9E3AE8 to i32*
   %27 = bitcast i32* %26 to i8*
   %28 = getelementptr inbounds i8, i8* %27, i64 24
   %29 = bitcast i8* %28 to i32*
   store i32 98, i32* %29
-  %30 = bitcast [20 x i32]* %testdata_000001C154B33AE8 to i32*
+  %30 = bitcast [20 x i32]* %testdata_0000027B4C9E3AE8 to i32*
   %31 = bitcast i32* %30 to i8*
   %32 = getelementptr inbounds i8, i8* %31, i64 28
   %33 = bitcast i8* %32 to i32*
   store i32 120, i32* %33
-  %34 = bitcast [20 x i32]* %testdata_000001C154B33AE8 to i32*
+  %34 = bitcast [20 x i32]* %testdata_0000027B4C9E3AE8 to i32*
   %35 = bitcast i32* %34 to i8*
   %36 = getelementptr inbounds i8, i8* %35, i64 32
   %37 = bitcast i8* %36 to i32*
   store i32 107, i32* %37
-  %38 = bitcast [20 x i32]* %testdata_000001C154B33AE8 to i32*
+  %38 = bitcast [20 x i32]* %testdata_0000027B4C9E3AE8 to i32*
   %39 = bitcast i32* %38 to i8*
   %40 = getelementptr inbounds i8, i8* %39, i64 36
   %41 = bitcast i8* %40 to i32*
   store i32 108, i32* %41
-  %42 = bitcast [20 x i32]* %testdata_000001C154B33AE8 to i32*
+  %42 = bitcast [20 x i32]* %testdata_0000027B4C9E3AE8 to i32*
   %43 = bitcast i32* %42 to i8*
   %44 = getelementptr inbounds i8, i8* %43, i64 40
   %45 = bitcast i8* %44 to i32*
   store i32 112, i32* %45
-  %46 = bitcast [20 x i32]* %testdata_000001C154B33AE8 to i32*
+  %46 = bitcast [20 x i32]* %testdata_0000027B4C9E3AE8 to i32*
   %47 = bitcast i32* %46 to i8*
   %48 = getelementptr inbounds i8, i8* %47, i64 44
   %49 = bitcast i8* %48 to i32*
   store i32 109, i32* %49
-  %50 = bitcast [20 x i32]* %testdata_000001C154B33AE8 to i32*
+  %50 = bitcast [20 x i32]* %testdata_0000027B4C9E3AE8 to i32*
   %51 = bitcast i32* %50 to i8*
   %52 = getelementptr inbounds i8, i8* %51, i64 48
   %53 = bitcast i8* %52 to i32*
   store i32 115, i32* %53
-  %54 = bitcast [20 x i32]* %testdata_000001C154B33AE8 to i32*
+  %54 = bitcast [20 x i32]* %testdata_0000027B4C9E3AE8 to i32*
   %55 = bitcast i32* %54 to i8*
   %56 = getelementptr inbounds i8, i8* %55, i64 52
   %57 = bitcast i8* %56 to i32*
   store i32 121, i32* %57
-  %58 = bitcast [20 x i32]* %testdata_000001C154B33AE8 to i32*
+  %58 = bitcast [20 x i32]* %testdata_0000027B4C9E3AE8 to i32*
   %59 = bitcast i32* %58 to i8*
   %60 = getelementptr inbounds i8, i8* %59, i64 56
   %61 = bitcast i8* %60 to i32*
   store i32 116, i32* %61
-  %62 = bitcast [20 x i32]* %testdata_000001C154B33AE8 to i32*
+  %62 = bitcast [20 x i32]* %testdata_0000027B4C9E3AE8 to i32*
   %63 = bitcast i32* %62 to i8*
   %64 = getelementptr inbounds i8, i8* %63, i64 60
   %65 = bitcast i8* %64 to i32*
   store i32 117, i32* %65
-  %66 = bitcast [20 x i32]* %testdata_000001C154B33AE8 to i32*
+  %66 = bitcast [20 x i32]* %testdata_0000027B4C9E3AE8 to i32*
   %67 = bitcast i32* %66 to i8*
   %68 = getelementptr inbounds i8, i8* %67, i64 64
   %69 = bitcast i8* %68 to i32*
   store i32 111, i32* %69
-  %70 = bitcast [20 x i32]* %testdata_000001C154B33AE8 to i32*
+  %70 = bitcast [20 x i32]* %testdata_0000027B4C9E3AE8 to i32*
   %71 = bitcast i32* %70 to i8*
   %72 = getelementptr inbounds i8, i8* %71, i64 68
   %73 = bitcast i8* %72 to i32*
   store i32 114, i32* %73
-  %74 = bitcast [20 x i32]* %testdata_000001C154B33AE8 to i32*
+  %74 = bitcast [20 x i32]* %testdata_0000027B4C9E3AE8 to i32*
   %75 = bitcast i32* %74 to i8*
   %76 = getelementptr inbounds i8, i8* %75, i64 72
   %77 = bitcast i8* %76 to i32*
   store i32 106, i32* %77
-  %78 = bitcast [20 x i32]* %testdata_000001C154B33AE8 to i32*
+  %78 = bitcast [20 x i32]* %testdata_0000027B4C9E3AE8 to i32*
   %79 = bitcast i32* %78 to i8*
   %80 = getelementptr inbounds i8, i8* %79, i64 76
   %81 = bitcast i8* %80 to i32*
   store i32 48, i32* %81
-  %82 = bitcast %struct.avl_vtbl* %vtable_000001C154B33D88 to i32 (i8*, i8*)**
+  %82 = bitcast %struct.avl_vtbl* %vtable_0000027B4C9E3D88 to i32 (i8*, i8*)**
   %83 = bitcast i32 (i8*, i8*)** %82 to i8*
   %84 = getelementptr inbounds i8, i8* %83, i64 0
   %85 = bitcast i8* %84 to i32 (i8*, i8*)**
   store i32 (i8*, i8*)* @comparekeys, i32 (i8*, i8*)** %85
-  %86 = bitcast %struct.avl_vtbl* %vtable_000001C154B33D88 to void (i8*, i8*)**
+  %86 = bitcast %struct.avl_vtbl* %vtable_0000027B4C9E3D88 to void (i8*, i8*)**
   %87 = bitcast void (i8*, i8*)** %86 to i8*
   %88 = getelementptr inbounds i8, i8* %87, i64 8
   %89 = bitcast i8* %88 to void (i8*, i8*)**
   store void (i8*, i8*)* @createobject, void (i8*, i8*)** %89
-  %90 = bitcast %struct.avl_vtbl* %vtable_000001C154B33D88 to void (i8*)**
+  %90 = bitcast %struct.avl_vtbl* %vtable_0000027B4C9E3D88 to void (i8*)**
   %91 = bitcast void (i8*)** %90 to i8*
   %92 = getelementptr inbounds i8, i8* %91, i64 24
   %93 = bitcast i8* %92 to void (i8*)**
   store void (i8*)* @destroyobject, void (i8*)** %93
-  %94 = bitcast %struct.avl_vtbl* %vtable_000001C154B33D88 to void (i8*, i8*)**
+  %94 = bitcast %struct.avl_vtbl* %vtable_0000027B4C9E3D88 to void (i8*, i8*)**
   %95 = bitcast void (i8*, i8*)** %94 to i8*
   %96 = getelementptr inbounds i8, i8* %95, i64 16
   %97 = bitcast i8* %96 to void (i8*, i8*)**
   store void (i8*, i8*)* @assignobject, void (i8*, i8*)** %97
-  %R777 = call %struct.avltree* @AVLTree_New(%struct.avltree* %tree_000001C154B33CA8, %struct.avl_vtbl* %vtable_000001C154B33D88, i32 4, i32 1000)
+  %R777 = call %struct.avltree* @AVLTree_New(%struct.avltree* %tree_0000027B4C9E3CA8, %struct.avl_vtbl* %vtable_0000027B4C9E3D88, i32 4, i32 1000)
   store i32 0, i32* %0
   br label %L235
 
@@ -2450,7 +2472,7 @@ L235:                                             ; preds = %L236, %L234
   br i1 %cond, label %L236, label %L237
 
 L236:                                             ; preds = %L235
-  %R780 = bitcast [20 x i32]* %testdata_000001C154B33AE8 to i32*
+  %R780 = bitcast [20 x i32]* %testdata_0000027B4C9E3AE8 to i32*
   %R782 = sext i32 %98 to i64
   %R783 = mul i64 %R782, 4
   %99 = bitcast i32* %R780 to i8*
@@ -2460,18 +2482,18 @@ L236:                                             ; preds = %L235
   %103 = getelementptr inbounds i8, i8* %102, i64 0
   %104 = bitcast i8* %103 to i32*
   %load_target = load i32, i32* %104
-  %105 = bitcast i32* %key_000001C154B341E8 to i8*
+  %105 = bitcast i32* %key_0000027B4C9E41E8 to i8*
   %106 = getelementptr inbounds i8, i8* %105, i64 0
   %107 = bitcast i8* %106 to i32*
   store i32 %load_target, i32* %107
-  %R788 = bitcast i32* %key_000001C154B341E8 to i8*
-  %R789 = call i8* @AVLTree_Insert(%struct.avltree* %tree_000001C154B33CA8, i8* %R788)
+  %R788 = bitcast i32* %key_0000027B4C9E41E8 to i8*
+  %R789 = call i8* @AVLTree_Insert(%struct.avltree* %tree_0000027B4C9E3CA8, i8* %R788)
   %R791 = add i32 %98, 1
   store i32 %R791, i32* %0
   br label %L235
 
 L237:                                             ; preds = %L235
-  %R793 = call i8* @AVLTree_FindFirst(%struct.avltree* %tree_000001C154B33CA8)
+  %R793 = call i8* @AVLTree_FindFirst(%struct.avltree* %tree_0000027B4C9E3CA8)
   %R794 = bitcast i8* %R793 to %struct.record*
   store %struct.record* %R794, %struct.record** %1
   br label %L238
@@ -2489,12 +2511,12 @@ L239:                                             ; preds = %L238
   %load_target3 = load i32, i32* %112
   %R800 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @.str.2, i64 0, i64 0), i32 %load_target3)
   %R803 = bitcast %struct.record* %108 to i8*
-  %R804 = call i8* @AVLTree_FindNext(%struct.avltree* %tree_000001C154B33CA8, i8* %R803)
+  %R804 = call i8* @AVLTree_FindNext(%struct.avltree* %tree_0000027B4C9E3CA8, i8* %R803)
   %R805 = bitcast i8* %R804 to %struct.record*
   store %struct.record* %R805, %struct.record** %1
   br label %L238
 
 L240:                                             ; preds = %L238
-  call void @AVLTree_Destroy(%struct.avltree* %tree_000001C154B33CA8)
+  call void @AVLTree_Destroy(%struct.avltree* %tree_0000027B4C9E3CA8)
   ret i32 0
 }

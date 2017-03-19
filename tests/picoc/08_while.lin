@@ -11,8 +11,10 @@ main:
 	br          %r2, .L1, .L5
 
 .L1:
-	symaddr.64  %r3 <- <anon symbol:0000020A66E31B78>
-	call.32     %r5 <- printf, %r3, %r1(a)
+	symaddr.64* %r3 <- <anon symbol:00000144B4374B68>
+	push.64*    %r3
+	push.32     %r1(a)
+	call.32     %r5 <- printf
 	phi.32      %r8 <- %phi5(p), %phi6(p)
 	add.32      %r9 <- %r1(a), %r8
 	phisrc.32   %phi4(a) <- %r9

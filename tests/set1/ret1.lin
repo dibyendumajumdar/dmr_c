@@ -1,0 +1,23 @@
+test:
+.L0:
+	<entry-point>
+	load.f64    %r2 <- 0[%arg1]
+	phisrc.f64  %phi1(return) <- %r2
+	phi.f64     %r4 <- %phi1(return)
+	ret.f64     %r2
+
+
+main:
+.L2:
+	<entry-point>
+	set.f64     %r5 <- 42.000000
+	store.f64   %r5 -> 0[v]
+	symaddr.64* %r6 <- v
+	push.64*    %r6
+	call.f64    %r7 <- test
+	load.f64    %r8 <- 0[v]
+	set.f64     %r9 <- 42.000000
+	setne.32    %r11 <- %r8, %r9
+	ret.32      %r11
+
+

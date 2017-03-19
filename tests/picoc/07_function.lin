@@ -8,29 +8,39 @@ myfunc:
 vfunc:
 .L2:
 	<entry-point>
-	symaddr.64  %r5 <- <anon symbol:000002082EF521B8>
-	call.32     %r7 <- printf, %r5, %arg1
+	symaddr.64* %r5 <- <anon symbol:000002180AED5188>
+	push.64*    %r5
+	push.32     %arg1
+	call.32     %r7 <- printf
 	ret
 
 
 qfunc:
 .L4:
 	<entry-point>
-	symaddr.64  %r8 <- <anon symbol:000002082EF52538>
-	call.32     %r9 <- printf, %r8
+	symaddr.64* %r8 <- <anon symbol:000002180AED5508>
+	push.64*    %r8
+	call.32     %r9 <- printf
 	ret
 
 
 main:
 .L6:
 	<entry-point>
-	symaddr.64  %r10 <- <anon symbol:000002082EF528B8>
-	call.32     %r11 <- myfunc, $3
-	call.32     %r12 <- printf, %r10, %r11
-	symaddr.64  %r13 <- <anon symbol:000002082EF52C38>
-	call.32     %r14 <- myfunc, $4
-	call.32     %r15 <- printf, %r13, %r14
-	call        vfunc, $0x4d2
+	symaddr.64* %r10 <- <anon symbol:000002180AED5888>
+	push.64*    %r10
+	push.32     $3
+	call.32     %r11 <- myfunc
+	push.32     %r11
+	call.32     %r12 <- printf
+	symaddr.64* %r13 <- <anon symbol:000002180AED5C08>
+	push.64*    %r13
+	push.32     $4
+	call.32     %r14 <- myfunc
+	push.32     %r14
+	call.32     %r15 <- printf
+	push.32     $0x4d2
+	call        vfunc
 	call        qfunc
 	ret.32      $0
 

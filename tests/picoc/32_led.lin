@@ -1,24 +1,24 @@
 topline:
 .L0:
 	<entry-point>
-	add.64      %r2(p) <- %arg2, $1
+	add.64*     %r2(p) <- %arg2, $1
 	store.8     $32 -> 0[%arg2]
 	switch      %arg1, 0 -> .L8, 2 -> .L8, 3 -> .L8, 5 -> .L8, 7 -> .L8, 8 -> .L8, 9 -> .L8, default -> .L9
 
 .L8:
-	add.64      %r5(p) <- %r2(p), $1
+	add.64*     %r5(p) <- %r2(p), $1
 	store.8     $95 -> 1[%arg2]
-	phisrc.64   %phi1(p) <- %r5(p)
+	phisrc.64*  %phi1(p) <- %r5(p)
 	br          .L1
 
 .L9:
-	add.64      %r7 <- %r2(p), $1
+	add.64*     %r7 <- %r2(p), $1
 	store.8     $32 -> 1[%arg2]
-	phisrc.64   %phi2(p) <- %r7
+	phisrc.64*  %phi2(p) <- %r7
 	br          .L1
 
 .L1:
-	phi.64      %r8 <- %phi1(p), %phi2(p)
+	phi.64*     %r8 <- %phi1(p), %phi2(p)
 	store.8     $32 -> 0[%r8]
 	ret
 
@@ -29,48 +29,48 @@ midline:
 	switch      %arg1, 0 -> .L18, 4 -> .L18, 5 -> .L18, 6 -> .L18, 8 -> .L18, 9 -> .L18, default -> .L19
 
 .L18:
-	add.64      %r12(p) <- %arg2, $1
+	add.64*     %r12(p) <- %arg2, $1
 	store.8     $124 -> 0[%arg2]
-	phisrc.64   %phi9(p) <- %r12(p)
-	phisrc.64   %phi11(p) <- %r12(p)
+	phisrc.64*  %phi9(p) <- %r12(p)
+	phisrc.64*  %phi11(p) <- %r12(p)
 	br          .L12
 
 .L19:
-	add.64      %r14 <- %arg2, $1
+	add.64*     %r14 <- %arg2, $1
 	store.8     $32 -> 0[%arg2]
-	phisrc.64   %phi10(p) <- %r14
-	phisrc.64   %phi12(p) <- %r14
+	phisrc.64*  %phi10(p) <- %r14
+	phisrc.64*  %phi12(p) <- %r14
 	br          .L12
 
 .L12:
 	switch      %arg1, 2 -> .L27, 3 -> .L27, 4 -> .L27, 5 -> .L27, 6 -> .L27, 8 -> .L27, 9 -> .L27, default -> .L28
 
 .L27:
-	phi.64      %r16 <- %phi11(p), %phi12(p)
-	add.64      %r17(p) <- %r16, $1
+	phi.64*     %r16 <- %phi11(p), %phi12(p)
+	add.64*     %r17(p) <- %r16, $1
 	store.8     $95 -> 0[%r16]
-	phisrc.64   %phi5(p) <- %r17(p)
-	phisrc.64   %phi7(p) <- %r17(p)
+	phisrc.64*  %phi5(p) <- %r17(p)
+	phisrc.64*  %phi7(p) <- %r17(p)
 	br          .L20
 
 .L28:
-	phi.64      %r18 <- %phi9(p), %phi10(p)
-	add.64      %r19 <- %r18, $1
+	phi.64*     %r18 <- %phi9(p), %phi10(p)
+	add.64*     %r19 <- %r18, $1
 	store.8     $32 -> 0[%r18]
-	phisrc.64   %phi6(p) <- %r19
-	phisrc.64   %phi8(p) <- %r19
+	phisrc.64*  %phi6(p) <- %r19
+	phisrc.64*  %phi8(p) <- %r19
 	br          .L20
 
 .L20:
 	switch      %arg1, 0 -> .L37, 1 -> .L37, 2 -> .L37, 3 -> .L37, 4 -> .L37, 7 -> .L37, 8 -> .L37, 9 -> .L37, default -> .L38
 
 .L37:
-	phi.64      %r21 <- %phi7(p), %phi8(p)
+	phi.64*     %r21 <- %phi7(p), %phi8(p)
 	store.8     $124 -> 0[%r21]
 	br          .L29
 
 .L38:
-	phi.64      %r23 <- %phi5(p), %phi6(p)
+	phi.64*     %r23 <- %phi5(p), %phi6(p)
 	store.8     $32 -> 0[%r23]
 	br          .L29
 
@@ -84,48 +84,48 @@ botline:
 	switch      %arg1, 0 -> .L44, 2 -> .L44, 6 -> .L44, 8 -> .L44, default -> .L45
 
 .L44:
-	add.64      %r27(p) <- %arg2, $1
+	add.64*     %r27(p) <- %arg2, $1
 	store.8     $124 -> 0[%arg2]
-	phisrc.64   %phi19(p) <- %r27(p)
-	phisrc.64   %phi21(p) <- %r27(p)
+	phisrc.64*  %phi19(p) <- %r27(p)
+	phisrc.64*  %phi21(p) <- %r27(p)
 	br          .L40
 
 .L45:
-	add.64      %r29 <- %arg2, $1
+	add.64*     %r29 <- %arg2, $1
 	store.8     $32 -> 0[%arg2]
-	phisrc.64   %phi20(p) <- %r29
-	phisrc.64   %phi22(p) <- %r29
+	phisrc.64*  %phi20(p) <- %r29
+	phisrc.64*  %phi22(p) <- %r29
 	br          .L40
 
 .L40:
 	switch      %arg1, 0 -> .L52, 2 -> .L52, 3 -> .L52, 5 -> .L52, 6 -> .L52, 8 -> .L52, default -> .L53
 
 .L52:
-	phi.64      %r31 <- %phi21(p), %phi22(p)
-	add.64      %r32(p) <- %r31, $1
+	phi.64*     %r31 <- %phi21(p), %phi22(p)
+	add.64*     %r32(p) <- %r31, $1
 	store.8     $95 -> 0[%r31]
-	phisrc.64   %phi15(p) <- %r32(p)
-	phisrc.64   %phi17(p) <- %r32(p)
+	phisrc.64*  %phi15(p) <- %r32(p)
+	phisrc.64*  %phi17(p) <- %r32(p)
 	br          .L46
 
 .L53:
-	phi.64      %r33 <- %phi19(p), %phi20(p)
-	add.64      %r34 <- %r33, $1
+	phi.64*     %r33 <- %phi19(p), %phi20(p)
+	add.64*     %r34 <- %r33, $1
 	store.8     $32 -> 0[%r33]
-	phisrc.64   %phi16(p) <- %r34
-	phisrc.64   %phi18(p) <- %r34
+	phisrc.64*  %phi16(p) <- %r34
+	phisrc.64*  %phi18(p) <- %r34
 	br          .L46
 
 .L46:
 	switch      %arg1, 0 -> .L63, 1 -> .L63, 3 -> .L63, 4 -> .L63, 5 -> .L63, 6 -> .L63, 7 -> .L63, 8 -> .L63, 9 -> .L63, default -> .L64
 
 .L63:
-	phi.64      %r36 <- %phi17(p), %phi18(p)
+	phi.64*     %r36 <- %phi17(p), %phi18(p)
 	store.8     $124 -> 0[%r36]
 	br          .L54
 
 .L64:
-	phi.64      %r38 <- %phi15(p), %phi16(p)
+	phi.64*     %r38 <- %phi15(p), %phi16(p)
 	store.8     $32 -> 0[%r38]
 	br          .L54
 
@@ -138,7 +138,7 @@ print_led:
 	<entry-point>
 	seteq.32    %r42(n) <- %arg1, $0
 	phisrc.32   %phi27(x) <- %arg1
-	phisrc.64   %phi39(buf) <- %arg2
+	phisrc.64*  %phi39(buf) <- %arg2
 	phisrc.32   %phi55(n) <- %r42(n)
 	phisrc.32   %phi57(n) <- %r42(n)
 	br          .L69
@@ -149,12 +149,12 @@ print_led:
 
 .L66:
 	modu.32     %r45 <- %r43(x), $10
-	symaddr.64  %r47 <- d
+	symaddr.64* %r47 <- d
 	phi.32      %r48 <- %phi57(n), %phi58(n)
 	add.32      %r49 <- %r48, $1
 	scast.64    %r50 <- (32) %r48
 	muls.64     %r51 <- %r50, $4
-	add.64      %r52 <- %r47, %r51
+	add.64*     %r52 <- %r47, %r51
 	store.32    %r45 -> 0[%r52]
 	setge.32    %r54 <- %r49, $32
 	phisrc.32   %phi56(n) <- %r49
@@ -175,82 +175,88 @@ print_led:
 .L75:
 	phi.32      %r59(i) <- %phi51(i), %phi52(i)
 	setge.32    %r60 <- %r59(i), $0
-	phi.64      %r67 <- %phi39(buf), %phi40(buf)
+	phi.64*     %r67 <- %phi39(buf), %phi40(buf)
 	br          %r60, .L72, .L74
 
 .L72:
-	symaddr.64  %r61 <- d
+	symaddr.64* %r61 <- d
 	scast.64    %r63 <- (32) %r59(i)
 	muls.64     %r64 <- %r63, $4
-	add.64      %r65 <- %r61, %r64
+	add.64*     %r65 <- %r61, %r64
 	load.32     %r66 <- 0[%r65]
-	call        topline, %r66, %r67
+	push.32     %r66
+	push.64*    %r67
+	call        topline
 	cast.64     %r69 <- (64) %r67
 	add.64      %r70 <- %r69, $3
-	ptrcast.64  %r71 <- (64) %r70
-	add.64      %r73 <- %r71, $1
+	ptrcast.64* %r71 <- (64) %r70
+	add.64*     %r73 <- %r71, $1
 	store.8     $32 -> 0[%r71]
-	phisrc.64   %phi40(buf) <- %r73
+	phisrc.64*  %phi40(buf) <- %r73
 	add.32      %r75 <- %r59(i), $-1
 	phisrc.32   %phi52(i) <- %r75
 	br          .L75
 
 .L74:
-	add.64      %r77(buf) <- %r67, $1
+	add.64*     %r77(buf) <- %r67, $1
 	store.8     $10 -> 0[%r67]
-	phisrc.64   %phi35(buf) <- %r77(buf)
+	phisrc.64*  %phi35(buf) <- %r77(buf)
 	phisrc.32   %phi47(i) <- %r58(i)
 	br          .L79
 
 .L79:
 	phi.32      %r80(i) <- %phi47(i), %phi48(i)
 	setge.32    %r81 <- %r80(i), $0
-	phi.64      %r88 <- %phi35(buf), %phi36(buf)
+	phi.64*     %r88 <- %phi35(buf), %phi36(buf)
 	br          %r81, .L76, .L78
 
 .L76:
-	symaddr.64  %r82 <- d
+	symaddr.64* %r82 <- d
 	scast.64    %r84 <- (32) %r80(i)
 	muls.64     %r85 <- %r84, $4
-	add.64      %r86 <- %r82, %r85
+	add.64*     %r86 <- %r82, %r85
 	load.32     %r87 <- 0[%r86]
-	call        midline, %r87, %r88
+	push.32     %r87
+	push.64*    %r88
+	call        midline
 	cast.64     %r90 <- (64) %r88
 	add.64      %r91 <- %r90, $3
-	ptrcast.64  %r92 <- (64) %r91
-	add.64      %r94 <- %r92, $1
+	ptrcast.64* %r92 <- (64) %r91
+	add.64*     %r94 <- %r92, $1
 	store.8     $32 -> 0[%r92]
-	phisrc.64   %phi36(buf) <- %r94
+	phisrc.64*  %phi36(buf) <- %r94
 	add.32      %r96 <- %r80(i), $-1
 	phisrc.32   %phi48(i) <- %r96
 	br          .L79
 
 .L78:
-	add.64      %r98(buf) <- %r88, $1
+	add.64*     %r98(buf) <- %r88, $1
 	store.8     $10 -> 0[%r88]
-	phisrc.64   %phi31(buf) <- %r98(buf)
+	phisrc.64*  %phi31(buf) <- %r98(buf)
 	phisrc.32   %phi43(i) <- %r58(i)
 	br          .L83
 
 .L83:
 	phi.32      %r101(i) <- %phi43(i), %phi44(i)
 	setge.32    %r102 <- %r101(i), $0
-	phi.64      %r109 <- %phi31(buf), %phi32(buf)
+	phi.64*     %r109 <- %phi31(buf), %phi32(buf)
 	br          %r102, .L80, .L82
 
 .L80:
-	symaddr.64  %r103 <- d
+	symaddr.64* %r103 <- d
 	scast.64    %r105 <- (32) %r101(i)
 	muls.64     %r106 <- %r105, $4
-	add.64      %r107 <- %r103, %r106
+	add.64*     %r107 <- %r103, %r106
 	load.32     %r108 <- 0[%r107]
-	call        botline, %r108, %r109
+	push.32     %r108
+	push.64*    %r109
+	call        botline
 	cast.64     %r111 <- (64) %r109
 	add.64      %r112 <- %r111, $3
-	ptrcast.64  %r113 <- (64) %r112
-	add.64      %r115 <- %r113, $1
+	ptrcast.64* %r113 <- (64) %r112
+	add.64*     %r115 <- %r113, $1
 	store.8     $32 -> 0[%r113]
-	phisrc.64   %phi32(buf) <- %r115
+	phisrc.64*  %phi32(buf) <- %r115
 	add.32      %r117 <- %r101(i), $-1
 	phisrc.32   %phi44(i) <- %r117
 	br          .L83
@@ -264,10 +270,14 @@ print_led:
 main:
 .L85:
 	<entry-point>
-	symaddr.64  %r121 <- buf
-	call        print_led, $0x12d687, %r121
-	symaddr.64  %r122 <- <anon symbol:00000118624E94B8>
-	call.32     %r124 <- printf, %r122, %r121
+	push.32     $0x12d687
+	symaddr.64* %r121 <- buf
+	push.64*    %r121
+	call        print_led
+	symaddr.64* %r122 <- <anon symbol:000001F538B6C6F8>
+	push.64*    %r122
+	push.64*    %r121
+	call.32     %r124 <- printf
 	ret.32      $0
 
 

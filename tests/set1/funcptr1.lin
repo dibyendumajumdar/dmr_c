@@ -8,12 +8,13 @@ testfunc:
 main:
 .L2:
 	<entry-point>
-	symaddr.64  %r4 <- testfunc
-	store.64    %r4 -> 0[f]
+	symaddr.64* %r4 <- testfunc
+	store.64*   %r4 -> 0[f]
 	br          %r4, .L3, .L4
 
 .L3:
-	call.32     %r7 <- %r4, $6
+	push.32     $6
+	call.32     %r7 <- %r4
 	phisrc.32   %phi2(return) <- %r7
 	br          .L5
 

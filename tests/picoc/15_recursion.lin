@@ -10,7 +10,8 @@ factorial:
 
 .L2:
 	add.32      %r7 <- %arg1, $-1
-	call.32     %r8 <- factorial, %r7
+	push.32     %r7
+	call.32     %r8 <- factorial
 	muls.32     %r9 <- %arg1, %r8
 	phisrc.32   %phi2(return) <- %r9
 	br          .L3
@@ -32,9 +33,12 @@ main:
 	br          %r11, .L6, .L10
 
 .L6:
-	symaddr.64  %r12 <- <anon symbol:0000025C8F781E98>
-	call.32     %r14 <- factorial, %r10(Count)
-	call.32     %r15 <- printf, %r12, %r14
+	symaddr.64* %r12 <- <anon symbol:0000022F30DB4D38>
+	push.64*    %r12
+	push.32     %r10(Count)
+	call.32     %r14 <- factorial
+	push.32     %r14
+	call.32     %r15 <- printf
 	add.32      %r17 <- %r10(Count), $1
 	phisrc.32   %phi7(Count) <- %r17
 	br          .L9

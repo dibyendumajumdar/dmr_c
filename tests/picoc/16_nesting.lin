@@ -28,8 +28,12 @@ main:
 	br          %r6, .L9, .L6
 
 .L9:
-	symaddr.64  %r7 <- <anon symbol:0000020261A01E68>
-	call.32     %r11 <- printf, %r7, %r1(x), %r3(y), %r5(z)
+	symaddr.64* %r7 <- <anon symbol:00000247A3044F18>
+	push.64*    %r7
+	push.32     %r1(x)
+	push.32     %r3(y)
+	push.32     %r5(z)
+	call.32     %r11 <- printf
 	add.32      %r13 <- %r5(z), $1
 	phisrc.32   %phi15(z) <- %r13
 	br          .L12

@@ -9,7 +9,9 @@ test_null_comp:
 main:
 .L2:
 	<entry-point>
-	call.32     %r6 <- test_null_comp, $1, $0
+	push.32     $1
+	push.64*    $0
+	call.32     %r6 <- test_null_comp
 	ret.32      %r6
 
 

@@ -22,9 +22,9 @@ L0:
 
 define i32 @main() {
 L1:
-  %cl_00000169BF19EB18 = alloca %union.Closure
+  %cl_0000025BD1A4DAC8 = alloca %union.Closure
   %0 = alloca i32
-  %R13 = call %struct.lua_TValue* @select(%union.Closure* %cl_00000169BF19EB18, i32 0)
+  %R13 = call %struct.lua_TValue* @select(%union.Closure* %cl_0000025BD1A4DAC8, i32 0)
   %1 = ptrtoint %struct.lua_TValue* %R13 to i64
   %R15 = icmp eq i64 %1, ptrtoint (%struct.lua_TValue* @luaO_nilobject_ to i64)
   %R151 = zext i1 %R15 to i32
@@ -32,7 +32,7 @@ L1:
   br i1 %cond, label %L2, label %L3
 
 L2:                                               ; preds = %L1
-  %R17 = call %struct.lua_TValue* @select(%union.Closure* %cl_00000169BF19EB18, i32 1)
+  %R17 = call %struct.lua_TValue* @select(%union.Closure* %cl_0000025BD1A4DAC8, i32 1)
   %2 = ptrtoint %struct.lua_TValue* %R17 to i64
   %R19 = icmp ne i64 %2, ptrtoint (%struct.lua_TValue* @luaO_nilobject_ to i64)
   %R192 = zext i1 %R19 to i32

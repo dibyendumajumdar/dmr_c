@@ -1,0 +1,10 @@
+main:
+.L0:
+	<entry-point>
+	symaddr.64* %r1 <- <anon symbol:000002DA980E4988>
+	push.64*    %r1
+	push.f64    $-1
+	call.32     %r2 <- printf
+	ret.32      $0
+
+

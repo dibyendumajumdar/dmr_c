@@ -7,7 +7,7 @@ source_filename = "sparse"
 
 define i32 @main() {
 L0:
-  %a_000001CD18259BC8 = alloca [4 x [4 x i32]]
+  %a_000002D400FFAD68 = alloca [4 x [4 x i32]]
   %0 = alloca i32
   %1 = alloca i32
   %2 = alloca i32
@@ -38,7 +38,7 @@ L3:                                               ; preds = %L4, %L2
 L4:                                               ; preds = %L3
   %7 = load i32, i32* %2
   %R6 = add i32 %7, 1
-  %R8 = bitcast [4 x [4 x i32]]* %a_000001CD18259BC8 to [4 x i32]*
+  %R8 = bitcast [4 x [4 x i32]]* %a_000002D400FFAD68 to [4 x i32]*
   %R10 = sext i32 %5 to i64
   %R11 = mul i64 %R10, 16
   %8 = bitcast [4 x i32]* %R8 to i8*
@@ -88,7 +88,7 @@ L9:                                               ; preds = %L10, %L8
   br i1 %cond7, label %L10, label %L11
 
 L10:                                              ; preds = %L9
-  %R29 = bitcast [4 x [4 x i32]]* %a_000001CD18259BC8 to [4 x i32]*
+  %R29 = bitcast [4 x [4 x i32]]* %a_000002D400FFAD68 to [4 x i32]*
   %R31 = sext i32 %18 to i64
   %R32 = mul i64 %R31, 16
   %20 = bitcast [4 x i32]* %R29 to i8*

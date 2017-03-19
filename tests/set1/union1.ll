@@ -10,7 +10,7 @@ source_filename = "sparse"
 define internal i32 @close(%struct.UpVal* %ARG1) {
 L0:
   %0 = bitcast %struct.UpVal* %ARG1 to i8*
-  %1 = getelementptr inbounds i8, i8* %0, i32 24
+  %1 = getelementptr inbounds i8, i8* %0, inttoptr (i64 24 to i8*)
   %2 = bitcast i8* %1 to %struct.UpVal*
   %3 = bitcast %struct.UpVal* %ARG1 to %struct.lua_TValue**
   %4 = bitcast %struct.lua_TValue** %3 to i8*
@@ -28,20 +28,20 @@ L0:
 
 define i32 @main() {
 L1:
-  %uv_0000027120F0A748 = alloca %struct.UpVal
-  %0 = bitcast %struct.UpVal* %uv_0000027120F0A748 to i32*
+  %uv_000001D81102C5C8 = alloca %struct.UpVal
+  %0 = bitcast %struct.UpVal* %uv_000001D81102C5C8 to i32*
   %1 = bitcast i32* %0 to i8*
   %2 = getelementptr inbounds i8, i8* %1, i64 32
   %3 = bitcast i8* %2 to i32*
   store i32 5, i32* %3
-  %R9 = call i32 @close(%struct.UpVal* %uv_0000027120F0A748)
-  %4 = bitcast %struct.UpVal* %uv_0000027120F0A748 to %struct.lua_TValue**
+  %R9 = call i32 @close(%struct.UpVal* %uv_000001D81102C5C8)
+  %4 = bitcast %struct.UpVal* %uv_000001D81102C5C8 to %struct.lua_TValue**
   %5 = bitcast %struct.lua_TValue** %4 to i8*
   %6 = getelementptr inbounds i8, i8* %5, i64 16
   %7 = bitcast i8* %6 to %struct.lua_TValue**
   %load_target = load %struct.lua_TValue*, %struct.lua_TValue** %7
-  %8 = bitcast %struct.UpVal* %uv_0000027120F0A748 to i8*
-  %9 = getelementptr inbounds i8, i8* %8, i32 24
+  %8 = bitcast %struct.UpVal* %uv_000001D81102C5C8 to i8*
+  %9 = getelementptr inbounds i8, i8* %8, inttoptr (i64 24 to i8*)
   %10 = bitcast i8* %9 to %struct.UpVal*
   %11 = ptrtoint %struct.lua_TValue* %load_target to i64
   %12 = ptrtoint %struct.UpVal* %10 to i64

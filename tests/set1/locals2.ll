@@ -20,18 +20,18 @@ L0:
 
 define i32 @main(i32 %ARG1, i8** %ARG2) {
 L1:
-  %x_00000228F3BD9DA8 = alloca [6 x %struct.mytype]
-  %x_00000228F3BD9A28 = alloca [5 x %struct.mytype]
-  %R3 = bitcast [5 x %struct.mytype]* %x_00000228F3BD9A28 to %struct.mytype*
+  %x_0000025044ABCDA8 = alloca [6 x %struct.mytype]
+  %x_0000025044ABCA28 = alloca [5 x %struct.mytype]
+  %R3 = bitcast [5 x %struct.mytype]* %x_0000025044ABCA28 to %struct.mytype*
   call void @init(%struct.mytype* %R3)
-  %0 = bitcast [5 x %struct.mytype]* %x_00000228F3BD9A28 to i32*
+  %0 = bitcast [5 x %struct.mytype]* %x_0000025044ABCA28 to i32*
   %1 = bitcast i32* %0 to i8*
   %2 = getelementptr inbounds i8, i8* %1, i64 4
   %3 = bitcast i8* %2 to i32*
   %load_target = load i32, i32* %3
-  %R10 = bitcast [6 x %struct.mytype]* %x_00000228F3BD9DA8 to %struct.mytype*
+  %R10 = bitcast [6 x %struct.mytype]* %x_0000025044ABCDA8 to %struct.mytype*
   call void @init(%struct.mytype* %R10)
-  %4 = bitcast [6 x %struct.mytype]* %x_00000228F3BD9DA8 to i32*
+  %4 = bitcast [6 x %struct.mytype]* %x_0000025044ABCDA8 to i32*
   %5 = bitcast i32* %4 to i8*
   %6 = getelementptr inbounds i8, i8* %5, i64 0
   %7 = bitcast i8* %6 to i32*

@@ -224,6 +224,7 @@ static const char *opcodes[] = {
 	[OP_FPCAST] = "fpcast",
 	[OP_PTRCAST] = "ptrcast",
 	[OP_INLINED_CALL] = "# call",
+	[OP_PUSH] = "push",
 	[OP_CALL] = "call",
 	[OP_VANEXT] = "va_next",
 	[OP_VAARG] = "va_arg",
@@ -403,15 +404,20 @@ const char *show_instruction(struct dmr_C *C, struct instruction *insn)
 	case OP_STORE: case OP_SNOP:
 		buf += sprintf(buf, "%s -> %d[%s]", show_pseudo(C, insn->target), insn->offset, show_pseudo(C, insn->src));
 		break;
+	case OP_PUSH:
+		buf += sprintf(buf, "%s", show_pseudo(C, insn->src));
+		break;
 	case OP_INLINED_CALL:
 	case OP_CALL: {
-		struct pseudo *arg;
 		if (insn->target && insn->target != VOID_PSEUDO(C))
 			buf += sprintf(buf, "%s <- ", show_pseudo(C, insn->target));
 		buf += sprintf(buf, "%s", show_pseudo(C, insn->func));
-		FOR_EACH_PTR(insn->arguments, arg) {
-			buf += sprintf(buf, ", %s", show_pseudo(C, arg));
-		} END_FOR_EACH_PTR(arg);
+		if (opcode == OP_INLINED_CALL) {
+			struct pseudo *arg;
+			FOR_EACH_PTR(insn->arguments, arg) {
+				buf += sprintf(buf, ", %s", show_pseudo(C, arg));
+			} END_FOR_EACH_PTR(arg);
+		}
 		break;
 	}
 	case OP_CAST:
@@ -1216,6 +1222,20 @@ static pseudo_t linearize_assignment(struct dmr_C *C, struct entrypoint *ep, str
 	return value;
 }
 
+/*
+* Add an argument for a call.
+*   -) insn->opcode == O_CALL | OP_INLINE_CALL
+*   -) ctype = typeof(arg)
+*/
+static void push_argument(struct dmr_C *C, struct entrypoint *ep, struct instruction *insn, pseudo_t arg, struct symbol *ctype)
+{
+	struct instruction *push = alloc_typed_instruction(C, OP_PUSH, ctype);
+	push->call = insn;
+	use_pseudo(C, push, arg, &push->src);
+	add_instruction(&insn->arguments, push);
+	add_one_insn(C, ep, push);
+}
+
 static pseudo_t linearize_call_expression(struct dmr_C *C, struct entrypoint *ep, struct expression *expr)
 {
 	struct expression *arg, *fn;
@@ -1232,7 +1252,7 @@ static pseudo_t linearize_call_expression(struct dmr_C *C, struct entrypoint *ep
 
 	FOR_EACH_PTR(expr->args, arg) {
 		pseudo_t new = linearize_expression(C, ep, arg);
-		use_pseudo(C, insn, new, add_pseudo(&insn->arguments, new));
+		push_argument(C, ep, insn, new, arg->ctype);
 	} END_FOR_EACH_PTR(arg);
 
 	fn = expr->fn;
@@ -1697,7 +1717,7 @@ static pseudo_t linearize_inlined_call(struct dmr_C *C, struct entrypoint *ep, s
 		concat_symbol_list(args->declaration, &ep->syms);
 		FOR_EACH_PTR(args->declaration, sym) {
 			pseudo_t value = linearize_one_symbol(C, ep, sym);
-			use_pseudo(C, insn, value, add_pseudo(&insn->arguments, value));
+			add_pseudo(&insn->inlined_args, value);
 		} END_FOR_EACH_PTR(sym);
 	}
 

@@ -47,13 +47,12 @@ static void track_instruction_usage(struct dmr_C *C, struct basic_block *bb, str
 	void (*def)(struct dmr_C *C, struct basic_block *, pseudo_t),
 	void (*use)(struct dmr_C *C, struct basic_block *, pseudo_t))
 {
-	pseudo_t pseudo;
-
 	#define USES(x)		use(C, bb, insn->x)
 	#define DEFINES(x)	def(C, bb, insn->x)
 
 	switch (insn->opcode) {
 	case OP_RET:
+	case OP_PUSH:
 		USES(src);
 		break;
 
@@ -142,14 +141,16 @@ static void track_instruction_usage(struct dmr_C *C, struct basic_block *bb, str
 		USES(src); DEFINES(target);
 		break;
 
-	case OP_CALL:
+	case OP_CALL: {
+		struct instruction *arg;
 		USES(func);
 		if (insn->target != VOID_PSEUDO(C))
 			DEFINES(target);
-		FOR_EACH_PTR(insn->arguments, pseudo) {
-			use(C, bb, pseudo);
-		} END_FOR_EACH_PTR(pseudo);
+		FOR_EACH_PTR(insn->arguments, arg) {
+			use(C, bb, arg->src);
+		} END_FOR_EACH_PTR(arg);
 		break;
+	}
 
 	case OP_SLICE:
 		USES(base); DEFINES(target);

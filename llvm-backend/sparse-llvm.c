@@ -991,7 +991,7 @@ static void output_op_call(struct dmr_C *C, struct function *fn, struct instruct
 {
 	LLVMValueRef target, func;
 	int n_arg = 0, i;
-	struct pseudo *arg;
+	struct instruction *arg;
 	LLVMValueRef *args;
 	char name[64];
 
@@ -1003,21 +1003,12 @@ static void output_op_call(struct dmr_C *C, struct function *fn, struct instruct
 	FOR_EACH_PTR(insn->arguments, arg) {
 		LLVMValueRef value;
 		struct symbol *atype;
+		
 		atype = get_nth_symbol(ftype->arguments, i);
-		if (arg->type == PSEUDO_VAL) {
-			/* Value pseudos do not have type information. */
-			/* Use the function prototype to get the type. */
-			if (atype)
-				value = val_to_value(C, fn, arg->value, atype);
-			else
-				value = val_to_value(C, fn, arg->value, pseudo_type(C, arg));
-		}
-		else {
-			value = pseudo_to_value(C, fn, insn, arg);
-			if (atype) {
-				LLVMTypeRef argtype = symbol_type(C, fn->module, atype);
-				value = build_cast(C, fn, value, argtype, "");
-			}
+		value = pseudo_to_value(C, fn, arg, arg->src);
+		if (atype) {
+			LLVMTypeRef argtype = symbol_type(C, fn->module, atype);
+			value = build_cast(C, fn, value, argtype, "");
 		}
 		assert(value);
 		args[i++] = value;

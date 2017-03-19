@@ -43,8 +43,11 @@ running ptraddassign1.c
 running ptraddassign2.c
 running ptraddassign3.c
 running ret1.c
+running select1.c
 running static1.c
 y = 3, s = hello world
+running switch1.c
+o
 running symaddr.c
 value -1
 running union1.c

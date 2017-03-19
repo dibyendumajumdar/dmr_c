@@ -922,7 +922,7 @@ static void output_op_sel(struct dmr_C *C, struct function *fn, struct instructi
 	src3 = pseudo_to_value(C, fn, insn, insn->src3);
 	/* make sure the two values are same type */
 	//src3 = build_cast(C, fn, src3, LLVMTypeOf(src2), "");
-	//target = LLVMBuildSelect(fn->builder, src1, src2, src3, "select");
+	target = LLVMBuildSelect(fn->builder, src1, src2, src3, "select");
 
 	insn->target->priv = target;
 }

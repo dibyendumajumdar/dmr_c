@@ -597,7 +597,7 @@ static LLVMValueRef pseudo_to_rvalue(struct dmr_C *C, struct function *fn, struc
 	LLVMValueRef val = pseudo_to_value(C, fn, insn, pseudo);
 	LLVMTypeRef dtype = symbol_type(C, fn->module, insn->type);
 
-	return LLVMBuildBitCast(fn->builder, val, dtype, "");
+	return build_cast(C, fn, val, dtype, "");
 }
 
 static LLVMValueRef value_to_ivalue(struct dmr_C *C, struct function *fn, LLVMValueRef val)

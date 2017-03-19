@@ -824,10 +824,10 @@ static void output_op_compare(struct dmr_C *C, struct function *fn, struct instr
 	char target_name[64];
 
 	lhs = pseudo_to_value(C, fn, insn, insn->src1);
-	if (insn->src2->type == PSEUDO_VAL)
-		rhs = constant_value(C, fn, insn->src2->value, LLVMTypeOf(lhs));
-	else
-		rhs = pseudo_to_value(C, fn, insn, insn->src2);
+	lhs = value_to_ivalue(C, fn, lhs);
+
+	rhs = pseudo_to_value(C, fn, insn, insn->src2);
+	rhs = value_to_ivalue(C, fn, rhs);
 
 	pseudo_name(C, insn->target, target_name);
 

@@ -1,0 +1,30 @@
+main:
+.L0:
+	<entry-point>
+	load.64*    %r2 <- 0[%arg2]
+	load.8      %r4 <- 0[%r2]
+	switch      %r4, 115 -> .L2, default -> .L3
+
+.L2:
+	symaddr.64* %r5 <- <anon symbol:00000152613451B8>
+	push.64*    %r5
+	scast.32    %r8 <- (8) %r4
+	push.32     %r8
+	call.32     %r9 <- printf
+	br          .L6
+
+.L3:
+	br          %r4, .L4, .L6
+
+.L4:
+	symaddr.64* %r12 <- <anon symbol:00000152613456F8>
+	push.64*    %r12
+	scast.32    %r15 <- (8) %r4
+	push.32     %r15
+	call.32     %r16 <- printf
+	br          .L6
+
+.L6:
+	ret.32      $0
+
+

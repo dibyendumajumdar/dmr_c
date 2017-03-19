@@ -1,0 +1,41 @@
+select:
+.L0:
+	<entry-point>
+	add.64*     %r3 <- %arg1, $8
+	symaddr.64* %r5 <- luaO_nilobject_
+	ptrcast.64* %r6 <- (64) %r5
+	ptrcast.64* %r7 <- (64) %r6
+	seteq.32    %r9 <- %arg2, $1
+	select.64*  %r10 <- %r9, %r3, %r7
+	ret.64*     %r10
+
+
+main:
+.L2:
+	<entry-point>
+	symaddr.64* %r12 <- cl
+	push.64*    %r12
+	push.32     $0
+	call.64*    %r13 <- select
+	symaddr.64* %r14 <- luaO_nilobject_
+	seteq.32    %r15 <- %r13, %r14
+	br          %r15, .L4, .L5
+
+.L4:
+	push.64*    %r12
+	push.32     $1
+	call.64*    %r17 <- select
+	setne.32    %r19 <- %r17, %r14
+	phisrc.32   %phi2 <- %r19
+	br          .L6
+
+.L5:
+	phisrc.32   %phi3 <- $0
+	br          .L6
+
+.L6:
+	phi.32      %r20 <- %phi2, %phi3
+	seteq.32    %r21 <- %r20, $0
+	ret.32      %r21
+
+

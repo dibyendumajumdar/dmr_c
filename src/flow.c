@@ -961,6 +961,7 @@ void pack_basic_blocks(struct dmr_C *C, struct entrypoint *ep)
 				continue;
 			switch (first->opcode) {
 			case OP_NOP: case OP_LNOP: case OP_SNOP:
+			case OP_INLINED_CALL:
 				continue;
 			case OP_BR: {
 				struct basic_block *replace;

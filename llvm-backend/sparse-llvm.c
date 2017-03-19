@@ -381,10 +381,9 @@ static void pseudo_name(struct dmr_C *C, pseudo_t pseudo, char *buf)
 	case PSEUDO_VAL:
 		assert(0);
 		break;
-	case PSEUDO_ARG: {
+	case PSEUDO_ARG:
 		assert(0);
 		break;
-	}
 	case PSEUDO_PHI:
 		snprintf(buf, MAX_PSEUDO_NAME, "PHI%d", pseudo->nr);
 		break;
@@ -394,37 +393,6 @@ static void pseudo_name(struct dmr_C *C, pseudo_t pseudo, char *buf)
 	default:
 		assert(0);
 	}
-}
-
-
-
-static LLVMValueRef val_to_value(struct dmr_C *C, struct function *fn, unsigned long long val, struct symbol *ctype)
-{
-	LLVMTypeRef dtype;
-	LLVMTypeRef itype;
-	LLVMValueRef result;
-
-	assert(ctype);
-	dtype = symbol_type(C, fn->module, ctype);
-	LLVMTypeKind kind = LLVMGetTypeKind(dtype);
-	switch (kind) {
-	case LLVMPointerTypeKind:
-		itype = LLVMIntType(C->target->bits_in_pointer);
-		result = LLVMConstInt(itype, val, 1);
-		result = LLVMConstIntToPtr(result, dtype);
-		break;
-	case LLVMIntegerTypeKind:
-		result = LLVMConstInt(dtype, val, !is_unsigned(ctype));
-		break;
-	case LLVMFloatTypeKind:
-	case LLVMDoubleTypeKind:
-		result = LLVMConstReal(dtype, (double)(long long)val);
-		break;
-	default:
-		fprintf(stderr, "unsupported pseudo value kind %d\n", kind);
-		exit(1);
-	}
-	return result;
 }
 
 static LLVMValueRef build_local(struct dmr_C *C, struct function *fn, struct symbol *sym) 
@@ -464,6 +432,129 @@ static LLVMValueRef build_local(struct dmr_C *C, struct function *fn, struct sym
 	return result;
 }
 
+static LLVMValueRef get_sym_value(struct dmr_C *C, struct function *fn, struct instruction *insn, pseudo_t pseudo)
+{
+	LLVMValueRef result = NULL;
+	struct symbol *sym = pseudo->sym;
+	struct expression *expr;
+
+	result = (LLVMValueRef)sym->priv;
+	if (result)
+		return result;
+
+	assert(sym->bb_target == NULL);
+
+	expr = sym->initializer;
+	if (expr) {
+		switch (expr->type) {
+		case EXPR_STRING: {
+			const char *s = expr->string->data;
+			LLVMValueRef indices[] = { LLVMConstInt(LLVMInt64Type(), 0, 0), LLVMConstInt(LLVMInt64Type(), 0, 0) };
+			LLVMValueRef data;
+
+			data = LLVMAddGlobal(fn->module, LLVMArrayType(LLVMInt8Type(), strlen(s) + 1), ".str");
+			LLVMSetLinkage(data, LLVMPrivateLinkage);
+			LLVMSetGlobalConstant(data, 1);
+			char *scopy = allocator_allocate(&C->byte_allocator, strlen(s) + 1);
+			strcpy(scopy, s);
+			LLVMSetInitializer(data, LLVMConstString(scopy, strlen(scopy) + 1, true));
+
+			result = LLVMConstGEP(data, indices, ARRAY_SIZE(indices));
+			sym->priv = result;
+			break;
+		}
+		case EXPR_SYMBOL: {
+			expression_error(C, expr, "unresolved symbol reference in initializer\n");
+			show_expression(C, expr);
+			exit(1);
+			break;
+		}
+		case EXPR_VALUE:
+			result = build_local(C, fn, sym);
+			if (is_static(sym))
+				LLVMSetInitializer(result, LLVMConstInt(symbol_type(C, fn->module, sym), expr->value, 1));
+			else
+				LLVMBuildStore(fn->builder, LLVMConstInt(symbol_type(C, fn->module, sym), expr->value, 1), result);
+			sym->priv = result;
+			break;
+		case EXPR_FVALUE:
+			result = build_local(C, fn, sym);
+			if (is_static(sym))
+				LLVMSetInitializer(result, LLVMConstReal(symbol_type(C, fn->module, sym), expr->fvalue));
+			else
+				LLVMBuildStore(fn->builder, LLVMConstReal(symbol_type(C, fn->module, sym), expr->fvalue), result);
+			sym->priv = result;
+			break;
+		default:
+			expression_error(C, expr, "unsupported expr type in initializer: %d\n", expr->type);
+			show_expression(C, expr);
+			exit(1);
+		}
+	}
+	else {
+		const char *name = show_ident(C, sym->ident);
+		LLVMTypeRef type = symbol_type(C, fn->module, sym);
+		if (LLVMGetTypeKind(type) == LLVMFunctionTypeKind) {
+			result = LLVMGetNamedFunction(fn->module, name);
+			if (!result)
+				result = LLVMAddFunction(fn->module, name, type);
+			sym->priv = result;
+		}
+		else if (is_extern(sym) || is_toplevel(sym)) {
+			result = LLVMGetNamedGlobal(fn->module, name);
+			if (!result) {
+				result = LLVMAddGlobal(fn->module, type, name);
+				if (is_extern(sym))
+					LLVMSetLinkage(result, LLVMExternalLinkage);
+			}
+			sym->priv = result;
+		}
+		else {
+			result = build_local(C, fn, sym);
+			if (is_static(sym)) {
+				LLVMSetInitializer(result, LLVMConstNull(type));
+			}
+			sym->priv = result;
+		}
+	}
+	return result;
+}
+
+static LLVMValueRef constant_value(struct dmr_C *C, struct function *fn, unsigned long long val, LLVMTypeRef dtype)
+{
+	LLVMTypeRef itype;
+	LLVMValueRef result;
+
+	LLVMTypeKind kind = LLVMGetTypeKind(dtype);
+	switch (kind) {
+	case LLVMPointerTypeKind:
+		itype = LLVMIntType(C->target->bits_in_pointer);
+		result = LLVMConstInt(itype, val, 1);
+		result = LLVMConstIntToPtr(result, dtype);
+		break;
+	case LLVMIntegerTypeKind:
+		result = LLVMConstInt(dtype, val, 1);
+		break;
+	case LLVMFloatTypeKind:
+	case LLVMDoubleTypeKind:
+		result = LLVMConstReal(dtype, (double)(long long)val);
+		break;
+	default:
+		fprintf(stderr, "unsupported pseudo value kind %d\n", kind);
+		exit(1);
+	}
+	return result;
+}
+
+static LLVMValueRef val_to_value(struct dmr_C *C, struct function *fn, unsigned long long val, struct symbol *ctype)
+{
+	LLVMTypeRef dtype;
+
+	assert(ctype);
+	dtype = symbol_type(C, fn->module, ctype);
+	return constant_value(C, fn, val, dtype);
+}
+
 static LLVMValueRef pseudo_to_value(struct dmr_C *C, struct function *fn, struct instruction *insn, pseudo_t pseudo)
 {
 	LLVMValueRef result = NULL;
@@ -476,99 +567,15 @@ static LLVMValueRef pseudo_to_value(struct dmr_C *C, struct function *fn, struct
 			exit(1);
 		}
 		break;
-	case PSEUDO_SYM: {
-		struct symbol *sym = pseudo->sym;
-		struct expression *expr;
-
-		result = (LLVMValueRef)sym->priv;
-		if (result)
-			return result;
-
-		assert(sym->bb_target == NULL);
-
-		expr = sym->initializer;
-		if (expr) {
-			switch (expr->type) {
-			case EXPR_STRING: {
-				const char *s = expr->string->data;
-				LLVMValueRef indices[] = { LLVMConstInt(LLVMInt64Type(), 0, 0), LLVMConstInt(LLVMInt64Type(), 0, 0) };
-				LLVMValueRef data;
-
-				data = LLVMAddGlobal(fn->module, LLVMArrayType(LLVMInt8Type(), strlen(s) + 1), ".str");
-				LLVMSetLinkage(data, LLVMPrivateLinkage);
-				LLVMSetGlobalConstant(data, 1);
-				char *scopy = allocator_allocate(&C->byte_allocator, strlen(s) + 1);
-				strcpy(scopy, s);
-				LLVMSetInitializer(data, LLVMConstString(scopy, strlen(scopy) + 1, true));
-
-				result = LLVMConstGEP(data, indices, ARRAY_SIZE(indices));
-				sym->priv = result;
-				break;
-			}
-			case EXPR_SYMBOL: {
-				expression_error(C, expr, "unresolved symbol reference in initializer\n");
-				show_expression(C, expr);
-				exit(1);
-				break;
-			}
-			case EXPR_VALUE: 
-				result = build_local(C, fn, sym);
-				if (is_static(sym))
-					LLVMSetInitializer(result, LLVMConstInt(symbol_type(C, fn->module, sym), expr->value, 1));
-				else
-					LLVMBuildStore(fn->builder, LLVMConstInt(symbol_type(C, fn->module, sym), expr->value, 1), result);
-				sym->priv = result;
-				break;
-			case EXPR_FVALUE:
-				result = build_local(C, fn, sym);
-				if (is_static(sym))
-					LLVMSetInitializer(result, LLVMConstReal(symbol_type(C, fn->module, sym), expr->fvalue));
-				else
-					LLVMBuildStore(fn->builder, LLVMConstReal(symbol_type(C, fn->module, sym), expr->fvalue), result);
-				sym->priv = result;
-				break;
-			default:
-				expression_error(C, expr, "unsupported expr type in initializer: %d\n", expr->type);
-				show_expression(C, expr);
-				exit(1);
-			}
-		}
-		else {
-			const char *name = show_ident(C, sym->ident);
-			LLVMTypeRef type = symbol_type(C, fn->module, sym);
-			if (LLVMGetTypeKind(type) == LLVMFunctionTypeKind) {
-				result = LLVMGetNamedFunction(fn->module, name);
-				if (!result)
-					result = LLVMAddFunction(fn->module, name, type);
-				sym->priv = result;
-			}
-			else if (is_extern(sym) || is_toplevel(sym)) {
-				result = LLVMGetNamedGlobal(fn->module, name);
-				if (!result) {
-					result = LLVMAddGlobal(fn->module, type, name);
-					if (is_extern(sym))
-						LLVMSetLinkage(result, LLVMExternalLinkage);
-				}
-				sym->priv = result;
-			}
-			else {
-				result = build_local(C, fn, sym);
-				if (is_static(sym)) {
-					LLVMSetInitializer(result, LLVMConstNull(type));
-				}
-				sym->priv = result;
-			}
-		}
+	case PSEUDO_SYM: 
+		result = get_sym_value(C, fn, insn, pseudo);
 		break;
-	}
-	case PSEUDO_VAL: {
+	case PSEUDO_VAL:
 		result = val_to_value(C, fn, pseudo->value, insn->type);
 		break;
-	}
-	case PSEUDO_ARG: {
+	case PSEUDO_ARG: 
 		result = LLVMGetParam(fn->fn, pseudo->nr - 1);
 		break;
-	}
 	case PSEUDO_PHI:
 		result = pseudo->priv;
 		break;
@@ -578,10 +585,46 @@ static LLVMValueRef pseudo_to_value(struct dmr_C *C, struct function *fn, struct
 	default:
 		assert(0);
 	}
-	if (!result)
+	if (!result) {
 		sparse_error(C, insn->pos, "error: no result for pseudo at insn %s\n", show_instruction(C, insn));
-	assert(result);
+		exit(1);
+	}
 	return result;
+}
+
+static LLVMValueRef pseudo_to_rvalue(struct dmr_C *C, struct function *fn, struct instruction *insn, pseudo_t pseudo)
+{
+	LLVMValueRef val = pseudo_to_value(C, fn, insn, pseudo);
+	LLVMTypeRef dtype = symbol_type(C, fn->module, insn->type);
+
+	return LLVMBuildBitCast(fn->builder, val, dtype, "");
+}
+
+static LLVMValueRef value_to_ivalue(struct dmr_C *C, struct function *fn, LLVMValueRef val)
+{
+	if (LLVMGetTypeKind(LLVMTypeOf(val)) == LLVMPointerTypeKind) {
+		LLVMTypeRef dtype = LLVMIntType(C->target->bits_in_pointer);
+		val = LLVMBuildPtrToInt(fn->builder, val, dtype, "");
+	}
+	return val;
+}
+
+static LLVMValueRef value_to_pvalue(struct dmr_C *C, struct function *fn, struct symbol *ctype, LLVMValueRef val)
+{
+	if (LLVMGetTypeKind(LLVMTypeOf(val)) == LLVMIntegerTypeKind) {
+		LLVMTypeRef dtype = symbol_type(C, fn->module, ctype);
+		val = LLVMBuildIntToPtr(fn->builder, val, dtype, "");
+	}
+	return val;
+}
+
+static LLVMValueRef adjust_type(struct dmr_C *C, struct function *fn, struct symbol *ctype, LLVMValueRef val)
+{
+	if (is_int_type(C->S, ctype))
+		return value_to_ivalue(C, fn, val);
+	if (is_ptr_type(ctype))
+		return value_to_pvalue(C, fn, ctype, val);
+	return val;
 }
 
 static LLVMValueRef calc_gep(struct dmr_C *C, LLVMBuilderRef builder, LLVMValueRef base, LLVMValueRef off)
@@ -643,8 +686,10 @@ static void output_op_binary(struct dmr_C *C, struct function *fn, struct instru
 	char target_name[64];
 
 	lhs = pseudo_to_value(C, fn, insn, insn->src1);
+	lhs = value_to_ivalue(C, fn, lhs);
 
 	rhs = pseudo_to_value(C, fn, insn, insn->src2);
+	rhs = value_to_ivalue(C, fn, rhs);
 
 	pseudo_name(C, insn->target, target_name);
 
@@ -653,28 +698,12 @@ static void output_op_binary(struct dmr_C *C, struct function *fn, struct instru
 	case OP_ADD:
 		if (symbol_is_fp_type(C, insn->type))
 			target = LLVMBuildFAdd(fn->builder, lhs, rhs, target_name);
-		else if (LLVMGetTypeKind(LLVMTypeOf(lhs)) == LLVMPointerTypeKind)
-			target = calc_gep(C, fn->builder, lhs, rhs);
-		else if (LLVMGetTypeKind(LLVMTypeOf(rhs)) == LLVMPointerTypeKind) 
-			target = calc_gep(C, fn->builder, rhs, lhs);
-		else 
+		else
 			target = LLVMBuildAdd(fn->builder, lhs, rhs, target_name);
 		break;
 	case OP_SUB:
 		if (symbol_is_fp_type(C, insn->type))
 			target = LLVMBuildFSub(fn->builder, lhs, rhs, target_name);
-		else if (LLVMGetTypeKind(LLVMTypeOf(lhs)) == LLVMPointerTypeKind &&
-			LLVMGetTypeKind(LLVMTypeOf(rhs)) == LLVMPointerTypeKind) {
-			// Both arguments are pointer 
-			// Result will be integer
-			lhs = LLVMBuildPtrToInt(fn->builder, lhs, LLVMIntType(C->target->bits_in_pointer), "");
-			rhs = LLVMBuildPtrToInt(fn->builder, rhs, LLVMIntType(C->target->bits_in_pointer), "");
-			target = LLVMBuildSub(fn->builder, lhs, rhs, target_name);
-		}
-		else if (LLVMGetTypeKind(LLVMTypeOf(lhs)) == LLVMPointerTypeKind)
-			target = calc_gep(C, fn->builder, lhs, rhs);
-		else if (LLVMGetTypeKind(LLVMTypeOf(rhs)) == LLVMPointerTypeKind)
-			target = calc_gep(C, fn->builder, rhs, lhs);
 		else
 			target = LLVMBuildSub(fn->builder, lhs, rhs, target_name);
 		break;
@@ -686,8 +715,6 @@ static void output_op_binary(struct dmr_C *C, struct function *fn, struct instru
 		break;
 	case OP_MULS:
 		assert(!symbol_is_fp_type(C, insn->type));
-		if (LLVMGetTypeKind(LLVMTypeOf(lhs)) == LLVMPointerTypeKind)
-			lhs = LLVMBuildPtrToInt(fn->builder, lhs, LLVMIntType(C->target->bits_in_pointer), "");
 		target = LLVMBuildMul(fn->builder, lhs, rhs, target_name);
 		break;
 	case OP_DIVU:
@@ -698,8 +725,6 @@ static void output_op_binary(struct dmr_C *C, struct function *fn, struct instru
 		break;
 	case OP_DIVS:
 		assert(!symbol_is_fp_type(C, insn->type));
-		if (LLVMGetTypeKind(LLVMTypeOf(lhs)) == LLVMPointerTypeKind) 
-			lhs = LLVMBuildPtrToInt(fn->builder, lhs, LLVMIntType(C->target->bits_in_pointer), "");
 		target = LLVMBuildSDiv(fn->builder, lhs, rhs, target_name);
 		break;
 	case OP_MODU:
@@ -771,6 +796,8 @@ static void output_op_binary(struct dmr_C *C, struct function *fn, struct instru
 		assert(0);
 		break;
 	}
+
+	target = adjust_type(C, fn, insn->type, target);
 	insn->target->priv = target;
 }
 
@@ -843,6 +870,7 @@ static void output_op_compare(struct dmr_C *C, struct function *fn, struct instr
 
 	insn->target->priv = target;
 }
+
 static void output_op_ret(struct dmr_C *C, struct function *fn, struct instruction *insn)
 {
 	pseudo_t pseudo = insn->src;

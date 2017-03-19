@@ -711,7 +711,7 @@ static void output_op_binary(struct dmr_C *C, struct function *fn, struct instru
 		if (symbol_is_fp_type(C, insn->type))
 			target = LLVMBuildFMul(fn->builder, lhs, rhs, target_name);
 		else
-			target = LLVMBuildMul(fn->builder, lhs, rhs, target_name);
+			target = LLVMBuildUMul(fn->builder, lhs, rhs, target_name);
 		break;
 	case OP_MULS:
 		assert(!symbol_is_fp_type(C, insn->type));

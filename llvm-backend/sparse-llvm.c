@@ -823,24 +823,36 @@ static void output_op_compare(struct dmr_C *C, struct function *fn, struct instr
 	LLVMValueRef lhs, rhs, target;
 	char target_name[64];
 
-	lhs = pseudo_to_value(C, fn, insn, insn->src1);
-	lhs = value_to_ivalue(C, fn, lhs);
-
-	rhs = pseudo_to_value(C, fn, insn, insn->src2);
-	rhs = value_to_ivalue(C, fn, rhs);
+	if (insn->src1->type == PSEUDO_VAL)
+		lhs = val_to_value(C, fn, insn->src1->value, pseudo_type(C, insn->src2));
+	else
+		lhs = pseudo_to_value(C, fn, insn, insn->src1);
+	if (insn->src2->type == PSEUDO_VAL)
+		rhs = val_to_value(C, fn, insn->src2->value, pseudo_type(C, insn->src1));
+	else
+		rhs = pseudo_to_value(C, fn, insn, insn->src2);
 
 	pseudo_name(C, insn->target, target_name);
 
 	LLVMTypeRef dst_type = insn_symbol_type(C, fn->module, insn);
 
-	switch  (LLVMGetTypeKind(LLVMTypeOf(lhs))) {
-	case LLVMPointerTypeKind:
-	case LLVMIntegerTypeKind: {
+	switch (LLVMGetTypeKind(LLVMTypeOf(lhs))) {
+	case LLVMPointerTypeKind: {
+		lhs = LLVMBuildPtrToInt(fn->builder, lhs, LLVMIntType(C->target->bits_in_pointer), "");
+		if (LLVMGetTypeKind(LLVMTypeOf(rhs)) == LLVMPointerTypeKind) {
+			rhs = LLVMBuildPtrToInt(fn->builder, rhs, LLVMIntType(C->target->bits_in_pointer), "");
+		}
 		LLVMIntPredicate op = translate_op(insn->opcode);
-
 		target = LLVMBuildICmp(fn->builder, op, lhs, rhs, target_name);
 		break;
 	}
+
+	case LLVMIntegerTypeKind: {
+		LLVMIntPredicate op = translate_op(insn->opcode);
+		target = LLVMBuildICmp(fn->builder, op, lhs, rhs, target_name);
+		break;
+	}
+
 	case LLVMHalfTypeKind:
 	case LLVMFloatTypeKind:
 	case LLVMDoubleTypeKind:

@@ -549,7 +549,7 @@ static LLVMValueRef constant_value(struct dmr_C *C, struct function *fn, unsigne
 		result = LLVMConstIntToPtr(result, dtype);
 		break;
 	case LLVMIntegerTypeKind:
-		result = LLVMConstInt(dtype, val, 1);
+		result = LLVMConstInt(dtype, (long long)val, 1);
 		break;
 	case LLVMFloatTypeKind:
 	case LLVMDoubleTypeKind:

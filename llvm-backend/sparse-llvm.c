@@ -27,10 +27,7 @@ static inline bool symbol_is_fp_type(struct dmr_C *C, struct symbol *sym)
 {
 	if (!sym)
 		return false;
-	if (sym->type == SYM_NODE)
-		sym = sym->ctype.base_type;
-	assert(sym->type != SYM_NODE);
-	return sym->ctype.base_type == &C->S->fp_type;
+	return is_float_type(C->S, sym);
 }
 
 static LLVMTypeRef symbol_type(struct dmr_C *C, LLVMModuleRef module, struct symbol *sym);

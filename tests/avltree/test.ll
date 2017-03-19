@@ -1342,7 +1342,7 @@ L143:                                             ; preds = %L142, %L141
 
 define i8* @AVLTree_Insert(%struct.avltree* %ARG1, i8* %ARG2) {
 L144:
-  %height_changed_000001B6A045F7C8 = alloca i32
+  %height_changed_000001A05C03F7C8 = alloca i32
   %0 = alloca %struct.AVLNode_st*
   %1 = alloca %struct.AVLNode_st*
   %2 = alloca %struct.AVLNode_st*
@@ -1371,7 +1371,7 @@ L145:                                             ; preds = %L144
   br label %L164
 
 L146:                                             ; preds = %L144
-  %15 = ptrtoint i32* %height_changed_000001B6A045F7C8 to i64
+  %15 = ptrtoint i32* %height_changed_000001A05C03F7C8 to i64
   %16 = add i64 %15, 0
   %17 = inttoptr i64 %16 to i32*
   store i32 0, i32* %17
@@ -1461,7 +1461,7 @@ L155:                                             ; preds = %L153
   br label %L156
 
 L156:                                             ; preds = %L155, %L154
-  %34 = ptrtoint i32* %height_changed_000001B6A045F7C8 to i64
+  %34 = ptrtoint i32* %height_changed_000001A05C03F7C8 to i64
   %35 = add i64 %34, 0
   %36 = inttoptr i64 %35 to i32*
   store i32 1, i32* %36
@@ -1472,7 +1472,7 @@ L157:                                             ; preds = %L161, %L156
   %38 = ptrtoint %struct.AVLNode_st* %37 to i64
   %R501 = icmp ne i64 %38, 0
   %R50117 = zext i1 %R501 to i32
-  %39 = ptrtoint i32* %height_changed_000001B6A045F7C8 to i64
+  %39 = ptrtoint i32* %height_changed_000001A05C03F7C8 to i64
   %40 = add i64 %39, 0
   %41 = inttoptr i64 %40 to i32*
   %load_target18 = load i32, i32* %41
@@ -1497,12 +1497,12 @@ L158:                                             ; preds = %L157
   br i1 %cond23, label %L159, label %L160
 
 L159:                                             ; preds = %L158
-  %R510 = call %struct.AVLNode_st* @AVL_RebalanceHeavierLeft(%struct.AVLNode_st* %37, i32* %height_changed_000001B6A045F7C8)
+  %R510 = call %struct.AVLNode_st* @AVL_RebalanceHeavierLeft(%struct.AVLNode_st* %37, i32* %height_changed_000001A05C03F7C8)
   store %struct.AVLNode_st* %R510, %struct.AVLNode_st** %4
   br label %L161
 
 L160:                                             ; preds = %L158
-  %R513 = call %struct.AVLNode_st* @AVL_RebalanceHeavierRight(%struct.AVLNode_st* %37, i32* %height_changed_000001B6A045F7C8)
+  %R513 = call %struct.AVLNode_st* @AVL_RebalanceHeavierRight(%struct.AVLNode_st* %37, i32* %height_changed_000001A05C03F7C8)
   store %struct.AVLNode_st* %R513, %struct.AVLNode_st** %4
   br label %L161
 
@@ -1548,7 +1548,7 @@ L165:                                             ; preds = %L164, %L151
 
 define i32 @AVLTree_DeleteObject(%struct.avltree* %ARG1, i8* %ARG2) {
 L166:
-  %height_changed_000001B6A0469AA8 = alloca i32
+  %height_changed_000001A05C049AA8 = alloca i32
   %0 = alloca %struct.AVLNode_st*
   %1 = alloca %struct.AVLNode_st*
   %2 = alloca i32
@@ -1558,7 +1558,7 @@ L166:
   %6 = alloca %struct.AVLNode_st*
   %7 = alloca i32
   %R530 = bitcast i8* %ARG2 to %struct.AVLNode_st*
-  %8 = ptrtoint i32* %height_changed_000001B6A0469AA8 to i64
+  %8 = ptrtoint i32* %height_changed_000001A05C049AA8 to i64
   %9 = add i64 %8, 0
   %10 = inttoptr i64 %9 to i32*
   store i32 0, i32* %10
@@ -1811,7 +1811,7 @@ L192:                                             ; preds = %L191, %L190
   br label %L203
 
 L193:                                             ; preds = %L187, %L180
-  %100 = ptrtoint i32* %height_changed_000001B6A0469AA8 to i64
+  %100 = ptrtoint i32* %height_changed_000001A05C049AA8 to i64
   %101 = add i64 %100, 0
   %102 = inttoptr i64 %101 to i32*
   store i32 1, i32* %102
@@ -1822,7 +1822,7 @@ L194:                                             ; preds = %L199, %L193
   %104 = ptrtoint %struct.AVLNode_st* %103 to i64
   %R634 = icmp ne i64 %104, 0
   %R63430 = zext i1 %R634 to i32
-  %105 = ptrtoint i32* %height_changed_000001B6A0469AA8 to i64
+  %105 = ptrtoint i32* %height_changed_000001A05C049AA8 to i64
   %106 = add i64 %105, 0
   %107 = inttoptr i64 %106 to i32*
   %load_target31 = load i32, i32* %107
@@ -1852,13 +1852,13 @@ L196:                                             ; preds = %L195
   br i1 %cond37, label %L197, label %L198
 
 L197:                                             ; preds = %L196, %L195
-  %R644 = call %struct.AVLNode_st* @AVL_RebalanceShorterLeft(%struct.AVLNode_st* %103, i32* %height_changed_000001B6A0469AA8)
+  %R644 = call %struct.AVLNode_st* @AVL_RebalanceShorterLeft(%struct.AVLNode_st* %103, i32* %height_changed_000001A05C049AA8)
   store %struct.AVLNode_st* %R644, %struct.AVLNode_st** %4
   store i32 0, i32* %2
   br label %L199
 
 L198:                                             ; preds = %L196
-  %R647 = call %struct.AVLNode_st* @AVL_RebalanceShorterRight(%struct.AVLNode_st* %103, i32* %height_changed_000001B6A0469AA8)
+  %R647 = call %struct.AVLNode_st* @AVL_RebalanceShorterRight(%struct.AVLNode_st* %103, i32* %height_changed_000001A05C049AA8)
   store %struct.AVLNode_st* %R647, %struct.AVLNode_st** %4
   br label %L199
 
@@ -2176,110 +2176,110 @@ L233:
 
 define i32 @main() {
 L234:
-  %key_000001B6A04841E8 = alloca i32
-  %tree_000001B6A0483CA8 = alloca %struct.avltree
-  %vtable_000001B6A0483D88 = alloca %struct.avl_vtbl
-  %testdata_000001B6A0483AE8 = alloca [20 x i32]
+  %key_000001A05C0641E8 = alloca i32
+  %tree_000001A05C063CA8 = alloca %struct.avltree
+  %vtable_000001A05C063D88 = alloca %struct.avl_vtbl
+  %testdata_000001A05C063AE8 = alloca [20 x i32]
   %0 = alloca i32
   %1 = alloca %struct.record*
   store i32 0, i32* @once
-  %2 = ptrtoint [20 x i32]* %testdata_000001B6A0483AE8 to i64
+  %2 = ptrtoint [20 x i32]* %testdata_000001A05C063AE8 to i64
   %3 = add i64 %2, 0
   %4 = inttoptr i64 %3 to i32*
   store i32 97, i32* %4
-  %5 = ptrtoint [20 x i32]* %testdata_000001B6A0483AE8 to i64
+  %5 = ptrtoint [20 x i32]* %testdata_000001A05C063AE8 to i64
   %6 = add i64 %5, 4
   %7 = inttoptr i64 %6 to i32*
   store i32 103, i32* %7
-  %8 = ptrtoint [20 x i32]* %testdata_000001B6A0483AE8 to i64
+  %8 = ptrtoint [20 x i32]* %testdata_000001A05C063AE8 to i64
   %9 = add i64 %8, 8
   %10 = inttoptr i64 %9 to i32*
   store i32 113, i32* %10
-  %11 = ptrtoint [20 x i32]* %testdata_000001B6A0483AE8 to i64
+  %11 = ptrtoint [20 x i32]* %testdata_000001A05C063AE8 to i64
   %12 = add i64 %11, 12
   %13 = inttoptr i64 %12 to i32*
   store i32 119, i32* %13
-  %14 = ptrtoint [20 x i32]* %testdata_000001B6A0483AE8 to i64
+  %14 = ptrtoint [20 x i32]* %testdata_000001A05C063AE8 to i64
   %15 = add i64 %14, 16
   %16 = inttoptr i64 %15 to i32*
   store i32 101, i32* %16
-  %17 = ptrtoint [20 x i32]* %testdata_000001B6A0483AE8 to i64
+  %17 = ptrtoint [20 x i32]* %testdata_000001A05C063AE8 to i64
   %18 = add i64 %17, 20
   %19 = inttoptr i64 %18 to i32*
   store i32 102, i32* %19
-  %20 = ptrtoint [20 x i32]* %testdata_000001B6A0483AE8 to i64
+  %20 = ptrtoint [20 x i32]* %testdata_000001A05C063AE8 to i64
   %21 = add i64 %20, 24
   %22 = inttoptr i64 %21 to i32*
   store i32 98, i32* %22
-  %23 = ptrtoint [20 x i32]* %testdata_000001B6A0483AE8 to i64
+  %23 = ptrtoint [20 x i32]* %testdata_000001A05C063AE8 to i64
   %24 = add i64 %23, 28
   %25 = inttoptr i64 %24 to i32*
   store i32 120, i32* %25
-  %26 = ptrtoint [20 x i32]* %testdata_000001B6A0483AE8 to i64
+  %26 = ptrtoint [20 x i32]* %testdata_000001A05C063AE8 to i64
   %27 = add i64 %26, 32
   %28 = inttoptr i64 %27 to i32*
   store i32 107, i32* %28
-  %29 = ptrtoint [20 x i32]* %testdata_000001B6A0483AE8 to i64
+  %29 = ptrtoint [20 x i32]* %testdata_000001A05C063AE8 to i64
   %30 = add i64 %29, 36
   %31 = inttoptr i64 %30 to i32*
   store i32 108, i32* %31
-  %32 = ptrtoint [20 x i32]* %testdata_000001B6A0483AE8 to i64
+  %32 = ptrtoint [20 x i32]* %testdata_000001A05C063AE8 to i64
   %33 = add i64 %32, 40
   %34 = inttoptr i64 %33 to i32*
   store i32 112, i32* %34
-  %35 = ptrtoint [20 x i32]* %testdata_000001B6A0483AE8 to i64
+  %35 = ptrtoint [20 x i32]* %testdata_000001A05C063AE8 to i64
   %36 = add i64 %35, 44
   %37 = inttoptr i64 %36 to i32*
   store i32 109, i32* %37
-  %38 = ptrtoint [20 x i32]* %testdata_000001B6A0483AE8 to i64
+  %38 = ptrtoint [20 x i32]* %testdata_000001A05C063AE8 to i64
   %39 = add i64 %38, 48
   %40 = inttoptr i64 %39 to i32*
   store i32 115, i32* %40
-  %41 = ptrtoint [20 x i32]* %testdata_000001B6A0483AE8 to i64
+  %41 = ptrtoint [20 x i32]* %testdata_000001A05C063AE8 to i64
   %42 = add i64 %41, 52
   %43 = inttoptr i64 %42 to i32*
   store i32 121, i32* %43
-  %44 = ptrtoint [20 x i32]* %testdata_000001B6A0483AE8 to i64
+  %44 = ptrtoint [20 x i32]* %testdata_000001A05C063AE8 to i64
   %45 = add i64 %44, 56
   %46 = inttoptr i64 %45 to i32*
   store i32 116, i32* %46
-  %47 = ptrtoint [20 x i32]* %testdata_000001B6A0483AE8 to i64
+  %47 = ptrtoint [20 x i32]* %testdata_000001A05C063AE8 to i64
   %48 = add i64 %47, 60
   %49 = inttoptr i64 %48 to i32*
   store i32 117, i32* %49
-  %50 = ptrtoint [20 x i32]* %testdata_000001B6A0483AE8 to i64
+  %50 = ptrtoint [20 x i32]* %testdata_000001A05C063AE8 to i64
   %51 = add i64 %50, 64
   %52 = inttoptr i64 %51 to i32*
   store i32 111, i32* %52
-  %53 = ptrtoint [20 x i32]* %testdata_000001B6A0483AE8 to i64
+  %53 = ptrtoint [20 x i32]* %testdata_000001A05C063AE8 to i64
   %54 = add i64 %53, 68
   %55 = inttoptr i64 %54 to i32*
   store i32 114, i32* %55
-  %56 = ptrtoint [20 x i32]* %testdata_000001B6A0483AE8 to i64
+  %56 = ptrtoint [20 x i32]* %testdata_000001A05C063AE8 to i64
   %57 = add i64 %56, 72
   %58 = inttoptr i64 %57 to i32*
   store i32 106, i32* %58
-  %59 = ptrtoint [20 x i32]* %testdata_000001B6A0483AE8 to i64
+  %59 = ptrtoint [20 x i32]* %testdata_000001A05C063AE8 to i64
   %60 = add i64 %59, 76
   %61 = inttoptr i64 %60 to i32*
   store i32 48, i32* %61
-  %62 = ptrtoint %struct.avl_vtbl* %vtable_000001B6A0483D88 to i64
+  %62 = ptrtoint %struct.avl_vtbl* %vtable_000001A05C063D88 to i64
   %63 = add i64 %62, 0
   %64 = inttoptr i64 %63 to i32 (i8*, i8*)**
   store i32 (i8*, i8*)* @comparekeys, i32 (i8*, i8*)** %64
-  %65 = ptrtoint %struct.avl_vtbl* %vtable_000001B6A0483D88 to i64
+  %65 = ptrtoint %struct.avl_vtbl* %vtable_000001A05C063D88 to i64
   %66 = add i64 %65, 8
   %67 = inttoptr i64 %66 to void (i8*, i8*)**
   store void (i8*, i8*)* @createobject, void (i8*, i8*)** %67
-  %68 = ptrtoint %struct.avl_vtbl* %vtable_000001B6A0483D88 to i64
+  %68 = ptrtoint %struct.avl_vtbl* %vtable_000001A05C063D88 to i64
   %69 = add i64 %68, 24
   %70 = inttoptr i64 %69 to void (i8*)**
   store void (i8*)* @destroyobject, void (i8*)** %70
-  %71 = ptrtoint %struct.avl_vtbl* %vtable_000001B6A0483D88 to i64
+  %71 = ptrtoint %struct.avl_vtbl* %vtable_000001A05C063D88 to i64
   %72 = add i64 %71, 16
   %73 = inttoptr i64 %72 to void (i8*, i8*)**
   store void (i8*, i8*)* @assignobject, void (i8*, i8*)** %73
-  %R777 = call %struct.avltree* @AVLTree_New(%struct.avltree* %tree_000001B6A0483CA8, %struct.avl_vtbl* %vtable_000001B6A0483D88, i32 4, i32 1000)
+  %R777 = call %struct.avltree* @AVLTree_New(%struct.avltree* %tree_000001A05C063CA8, %struct.avl_vtbl* %vtable_000001A05C063D88, i32 4, i32 1000)
   store i32 0, i32* %0
   br label %L235
 
@@ -2291,7 +2291,7 @@ L235:                                             ; preds = %L236, %L234
   br i1 %cond, label %L236, label %L237
 
 L236:                                             ; preds = %L235
-  %R780 = bitcast [20 x i32]* %testdata_000001B6A0483AE8 to i32*
+  %R780 = bitcast [20 x i32]* %testdata_000001A05C063AE8 to i32*
   %R782 = sext i32 %74 to i64
   %R783 = mul i64 %R782, 4
   %75 = ptrtoint i32* %R780 to i64
@@ -2301,18 +2301,18 @@ L236:                                             ; preds = %L235
   %78 = add i64 %77, 0
   %79 = inttoptr i64 %78 to i32*
   %load_target = load i32, i32* %79
-  %80 = ptrtoint i32* %key_000001B6A04841E8 to i64
+  %80 = ptrtoint i32* %key_000001A05C0641E8 to i64
   %81 = add i64 %80, 0
   %82 = inttoptr i64 %81 to i32*
   store i32 %load_target, i32* %82
-  %R788 = bitcast i32* %key_000001B6A04841E8 to i8*
-  %R789 = call i8* @AVLTree_Insert(%struct.avltree* %tree_000001B6A0483CA8, i8* %R788)
+  %R788 = bitcast i32* %key_000001A05C0641E8 to i8*
+  %R789 = call i8* @AVLTree_Insert(%struct.avltree* %tree_000001A05C063CA8, i8* %R788)
   %R791 = add i32 %74, 1
   store i32 %R791, i32* %0
   br label %L235
 
 L237:                                             ; preds = %L235
-  %R793 = call i8* @AVLTree_FindFirst(%struct.avltree* %tree_000001B6A0483CA8)
+  %R793 = call i8* @AVLTree_FindFirst(%struct.avltree* %tree_000001A05C063CA8)
   %R794 = bitcast i8* %R793 to %struct.record*
   store %struct.record* %R794, %struct.record** %1
   br label %L238
@@ -2329,12 +2329,12 @@ L239:                                             ; preds = %L238
   %load_target3 = load i32, i32* %86
   %R800 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @.str.2, i64 0, i64 0), i32 %load_target3)
   %R803 = bitcast %struct.record* %83 to i8*
-  %R804 = call i8* @AVLTree_FindNext(%struct.avltree* %tree_000001B6A0483CA8, i8* %R803)
+  %R804 = call i8* @AVLTree_FindNext(%struct.avltree* %tree_000001A05C063CA8, i8* %R803)
   %R805 = bitcast i8* %R804 to %struct.record*
   store %struct.record* %R805, %struct.record** %1
   br label %L238
 
 L240:                                             ; preds = %L238
-  call void @AVLTree_Destroy(%struct.avltree* %tree_000001B6A0483CA8)
+  call void @AVLTree_Destroy(%struct.avltree* %tree_000001A05C063CA8)
   ret i32 0
 }

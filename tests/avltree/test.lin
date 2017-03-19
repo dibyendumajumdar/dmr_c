@@ -39,7 +39,7 @@ new_allocator:
 	br          %r19, .L7, .L8
 
 .L7:
-	symaddr.64* %r20 <- <anon symbol:000001F43E1ECAC8>
+	symaddr.64* %r20 <- <anon symbol:0000020CF18E4A88>
 	push.64*    %r20
 	call.32     %r21 <- printf
 	push.32     $1
@@ -64,7 +64,7 @@ grow_allocator:
 	br          %r33, .L11, .L12
 
 .L11:
-	symaddr.64* %r34 <- <anon symbol:000001F43E1EDA88>
+	symaddr.64* %r34 <- <anon symbol:0000020CF18E5A48>
 	push.64*    %r34
 	call.32     %r35 <- printf
 	push.32     $1
@@ -1567,7 +1567,7 @@ main:
 	br          %r795(rec), .L307, .L309
 
 .L307:
-	symaddr.64* %r797 <- <anon symbol:000001F43E206168>
+	symaddr.64* %r797 <- <anon symbol:0000020CF18FE128>
 	push.64*    %r797
 	load.32     %r799 <- 0[%r795(rec)]
 	push.32     %r799

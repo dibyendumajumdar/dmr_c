@@ -1033,7 +1033,7 @@ static void output_op_call(struct dmr_C *C, struct function *fn, struct instruct
 		struct symbol *atype;
 		
 		atype = get_nth_symbol(ftype->arguments, i);
-		value = pseudo_to_value(C, fn, arg, arg->src);
+		value = pseudo_to_rvalue(C, fn, arg, arg->src);
 		if (atype) {
 			LLVMTypeRef argtype = symbol_type(C, fn->module, atype);
 			value = build_cast(C, fn, value, argtype, "");

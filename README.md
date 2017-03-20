@@ -16,7 +16,7 @@ The code base is a fork of Sparse. The main changes are:
 
 ## Current status
 
-* We are now able to build on Windows, Linux and Mac OSX. However there are platform specific limiations - see below for details.
+* We are now able to build on Windows, Linux and Mac OSX. However there are platform specific limitations - see below for details.
 * Global state has been removed except for the way ptr_list nodes are allocated.
 * The LLVM backend has had many fixes and is able to compile real programs. See the tests folder for what works, and what doesn't.
 
@@ -57,7 +57,7 @@ The following command line tools are built:
 
 #### Limitations
 
-* The main limitation is that complex initializers do not work - only strings and scalar variables cane be initialized.
+* The main limitation is that complex initializers do not work - only strings and scalar variables can be initialized.
 * There is no support for computed gotos, slices and ranges yet.
 * The parser and pre-processor knows about many Linux constructs hence it can process C header files on Linux. However, it doesn't know about Windows or Mac OSX features, so on these platforms, only standard C header files can be processed. As typically the vendor supplied header files have many platform specific extensions, unfortunately this means that you cannot process vendor supplied header files on these platforms.
 
@@ -89,6 +89,11 @@ sparse-llvm test.c -o test.bc
 llvm-dis test.bc
 
 ```
+
+#### Bugs
+
+Many bugs have been fixed and the tool is able to compile and run real programs. However there are still bugs that mean that the generated code is sometimes not correct. See the `tests/bugs` folder for examples of programs that fail to compile successfully. If you hit a problem, please submit a bug report with a minimal example of program that fails.
+
 
 ## Using dmr_C as a library
 
@@ -154,3 +159,4 @@ To follow.
 * [Sparse - a Semantic Parser for C](https://sparse.wiki.kernel.org/index.php/Main_Page)
 * [Article on Sparse](https://lwn.net/Articles/689907/)
 * [Wikipedia entry for Sparse](https://en.wikipedia.org/wiki/Sparse)
+* [Sparse Linux Man Page](https://linux.die.net/man/1/sparse)

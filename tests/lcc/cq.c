@@ -1340,7 +1340,7 @@ static void clobber(int x, int *y)
 #endif
 static int s714(struct defs *pd0)          /*  7.14  Assignment operators       */
 {
-#if 0
+#if 1
 #if 0
    static char f[] = "Local error %d.\n";
    static char s714er[] = "s714,er%d\n";
@@ -4088,7 +4088,7 @@ static int s7813(struct defs *pd0)          /* 7.8 Bitwise AND operator
                        7.12 Logical OR operator
                        7.13 Conditional operator            */
 {
-#if 0
+#if 1
    register int prlc, lrc;
    int i, j, r, zero, one;
 #if 0

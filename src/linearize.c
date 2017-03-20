@@ -315,6 +315,8 @@ const char *show_instruction(struct dmr_C *C, struct instruction *insn)
 		struct symbol *sym = insn->symbol->sym;
 		buf += sprintf(buf, "%s <- ", show_pseudo(C, insn->target));
 
+		if (!insn->bb && !sym)
+			break;
 		if (sym->bb_target) {
 			buf += sprintf(buf, ".L%u", sym->bb_target->nr);
 			break;
@@ -2204,16 +2206,23 @@ static struct entrypoint *linearize_fn(struct dmr_C *C, struct symbol *sym, stru
 		add_one_insn(C, ep, insn);
 	}
 
-	//printf("step 1 pre kill unreachable\n");
-	//show_entry(C, ep);
+	int show_details = C->verbose > 2;
+
+	if (show_details) {
+		printf("%s(%d): pre kill_unreachable_bbs()\n", __FILE__, __LINE__);
+		show_entry(C, ep);
+	}
 	/*
 	 * Do trivial flow simplification - branches to
 	 * branches, kill dead basicblocks etc
 	 */
 	kill_unreachable_bbs(C, ep);
 
-	//printf("step 2 pre simplify symbol usage\n");
-	//show_entry(C, ep);
+	if (show_details) {
+		printf("%s(%d): pre simplify_symbol_usage()\n", __FILE__, __LINE__);
+		show_entry(C, ep);
+	}
+
 	/*
 	 * Turn symbols into pseudos
 	 */
@@ -2224,43 +2233,61 @@ repeat:
 	 * the rest.
 	 */
 	do {
-		//printf("step 3 pre CSE\n");
-		//show_entry(C, ep);
+		if (show_details) {
+			printf("%s(%d): pre cleanup_and_cse()\n", __FILE__, __LINE__);
+			show_entry(C, ep);
+		}
 		cleanup_and_cse(C, ep);
+		if (show_details) {
+			printf("%s(%d): pre pack_basic_blocks()\n", __FILE__, __LINE__);
+			show_entry(C, ep);
+		}
 		pack_basic_blocks(C, ep);
 	} while (C->L->repeat_phase & REPEAT_CSE);
 
-	//printf("step 4 pre kill unreachable and vrfy flow\n");
-	//show_entry(C, ep);
+	if (show_details) {
+		printf("%s(%d): pre kill_unreachable_bbs() and vrfy_flow()\n", __FILE__, __LINE__);
+		show_entry(C, ep);
+	}
 	kill_unreachable_bbs(C, ep);
 	vrfy_flow(ep);
 
-	//printf("step pre cleanup 5\n");
-	//show_entry(C, ep);
+	if (show_details) {
+		printf("%s(%d): pre clear_symbol_pseudos()\n", __FILE__, __LINE__);
+		show_entry(C, ep);
+	}
+
 	/* Cleanup */
 	clear_symbol_pseudos(ep);
 
-	//printf("step post cleanup 6\n");
-	//show_entry(C, ep);
+	if (show_details) {
+		printf("%s(%d): pre track_pseudo_liveness()\n", __FILE__, __LINE__);
+		show_entry(C, ep);
+	}
+
 	/* And track pseudo register usage */
 	track_pseudo_liveness(C, ep);
 
-	//printf("pre simply flow 6\n");
-	//show_entry(C, ep);
+	if (show_details) {
+		printf("%s(%d): pre simplify_flow()\n", __FILE__, __LINE__);
+		show_entry(C, ep);
+	}
 	/*
 	 * Some flow optimizations can only effectively
 	 * be done when we've done liveness analysis. But
 	 * if they trigger, we need to start all over
 	 * again
 	 */
-	if (simplify_flow(C, ep)) {
+	//if (simplify_flow(C, ep)) {
 
-		//printf("post simplify flow 6\n");
-		//show_entry(C, ep);
+	//	if (show_details) {
+	//		printf("%s(%d): pre clear_liveness()\n", __FILE__, __LINE__);
+	//		show_entry(C, ep);
+	//	}
 
-		clear_liveness(ep);
-		goto repeat;
-	}
+	//	clear_liveness(ep);
+	//	goto repeat;
+	//}
 
 	/* Finally, add deathnotes to pseudos now that we have them */
 	if (C->dbg_dead)

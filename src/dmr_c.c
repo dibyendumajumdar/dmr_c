@@ -513,8 +513,7 @@ static char **handle_switch_o(struct dmr_C *C, char *arg, char **next)
 		if (!*++next)
 			die(C, "argument to '-o' is missing");
 	}
-	// else "-ofoo"
-
+	snprintf(C->output_file_name, sizeof C->output_file_name, "%s", *next);
 	return next;
 }
 

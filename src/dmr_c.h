@@ -200,6 +200,8 @@ struct dmr_C {
 	char preprocessor_tokenseqbuffer[256];
 	time_t t;
 	char fullname[1024];
+
+	char output_file_name[1024];
 };
 
 /*

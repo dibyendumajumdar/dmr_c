@@ -1954,7 +1954,10 @@ int main(int argc, char **argv)
 		LLVMDisposeMessage(error_message);
 	}
 	if (rc == 0) {
-		LLVMWriteBitcodeToFile(module, "out.bc");
+		const char *filename = "out.bc";
+		if (C->output_file_name[0])
+			filename = C->output_file_name;
+		LLVMWriteBitcodeToFile(module, filename);
 	}
 	else {
 		LLVMDumpModule(module);

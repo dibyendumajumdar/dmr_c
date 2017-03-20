@@ -186,13 +186,6 @@ if (LLVM_JIT)
     message(STATUS "LLVM_LIBS ${LLVM_LIBS}")
 endif ()
 
-set (ASMJIT_EMBED TRUE)
-add_definitions(-DASMJIT_STATIC)
-set (ASMJIT_DIR asmjit)
-include ("${ASMJIT_DIR}/CMakeLists.txt")
-
-include_directories("${ASMJIT_DIR}/src")
-
 #Main library
 add_library(dmr_c STATIC 
         ${LIB_H}
@@ -212,9 +205,6 @@ target_link_libraries(showparse dmr_c)
 
 add_executable(showsymbols samples/show-symbols.c)
 target_link_libraries(showsymbols dmr_c) 
-
-add_executable(jittest asmjit-backend/main.cpp ${ASMJIT_SRC})
-target_link_libraries(jittest dmr_c) 
 
 if (LLVM_JIT)
     add_executable(sparse-llvm llvm-backend/sparse-llvm.c)

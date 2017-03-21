@@ -2278,16 +2278,16 @@ repeat:
 	 * if they trigger, we need to start all over
 	 * again
 	 */
-	//if (simplify_flow(C, ep)) {
+	if (simplify_flow(C, ep)) {
 
-	//	if (show_details) {
-	//		printf("%s(%d): pre clear_liveness()\n", __FILE__, __LINE__);
-	//		show_entry(C, ep);
-	//	}
+		if (show_details) {
+			printf("%s(%d): pre clear_liveness()\n", __FILE__, __LINE__);
+			show_entry(C, ep);
+		}
 
-	//	clear_liveness(ep);
-	//	goto repeat;
-	//}
+		clear_liveness(ep);
+		goto repeat;
+	}
 
 	/* Finally, add deathnotes to pseudos now that we have them */
 	if (C->dbg_dead)

@@ -481,26 +481,40 @@ static LLVMValueRef get_sym_value(struct dmr_C *C, struct function *fn, struct i
 			return NULL;
 			break;
 		}
-		case EXPR_VALUE:
+		case EXPR_VALUE: {
+			LLVMTypeRef symtype = symbol_type(C, fn->module, sym);
+			if (symtype == NULL) {
+				expression_error(C, expr, "invalid symbol type\n");
+				show_expression(C, expr);
+				return NULL;
+			}
 			result = build_local(C, fn, sym);
 			if (!result)
 				return result;
 			if (is_static(sym))
-				LLVMSetInitializer(result, LLVMConstInt(symbol_type(C, fn->module, sym), expr->value, 1));
+				LLVMSetInitializer(result, LLVMConstInt(symtype, expr->value, 1));
 			else
-				LLVMBuildStore(fn->builder, LLVMConstInt(symbol_type(C, fn->module, sym), expr->value, 1), result);
+				LLVMBuildStore(fn->builder, LLVMConstInt(symtype, expr->value, 1), result);
 			sym->priv = result;
 			break;
-		case EXPR_FVALUE:
+		}
+		case EXPR_FVALUE: {
+			LLVMTypeRef symtype = symbol_type(C, fn->module, sym);
+			if (symtype == NULL) {
+				expression_error(C, expr, "invalid symbol type\n");
+				show_expression(C, expr);
+				return NULL;
+			}
 			result = build_local(C, fn, sym);
 			if (!result)
 				return result;
 			if (is_static(sym))
-				LLVMSetInitializer(result, LLVMConstReal(symbol_type(C, fn->module, sym), expr->fvalue));
+				LLVMSetInitializer(result, LLVMConstReal(symtype, expr->fvalue));
 			else
-				LLVMBuildStore(fn->builder, LLVMConstReal(symbol_type(C, fn->module, sym), expr->fvalue), result);
+				LLVMBuildStore(fn->builder, LLVMConstReal(symtype, expr->fvalue), result);
 			sym->priv = result;
 			break;
+		}
 		default:
 			expression_error(C, expr, "unsupported expr type in initializer: %d\n", expr->type);
 			show_expression(C, expr);

@@ -455,7 +455,7 @@ static LLVMValueRef get_sym_value(struct dmr_C *C, struct function *fn, struct i
 	assert(sym->bb_target == NULL);
 
 	expr = sym->initializer;
-	if (expr) {
+	if (expr && !sym->ident) {
 		switch (expr->type) {
 		case EXPR_STRING: {
 			const char *s = expr->string->data;
@@ -1930,6 +1930,9 @@ int main(int argc, char **argv)
 
 	int rc = 0;
 	if (compile(C, module, symlist)) {
+		/* need ->phi_users */
+		/* This flag enables call to track_pseudo_death() in linearize.c which sets
+		   phi_users list on PHISOURCE instructions  */
 		C->dbg_dead = 1;
 		FOR_EACH_PTR(filelist, file) {
 			symlist = sparse(C, file);

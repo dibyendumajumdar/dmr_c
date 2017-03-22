@@ -455,7 +455,7 @@ static LLVMValueRef get_sym_value(struct dmr_C *C, struct function *fn, struct i
 	assert(sym->bb_target == NULL);
 
 	expr = sym->initializer;
-	if (expr && expr->type != EXPR_SYMBOL) {
+	if (expr && !sym->ident && expr->type != EXPR_SYMBOL) {
 		switch (expr->type) {
 		case EXPR_STRING: {
 			const char *s = expr->string->data;

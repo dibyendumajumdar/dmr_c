@@ -210,6 +210,7 @@ Phi-node (for SSA form).
 
 ### OP_PHISOURCE
 Phi-node source.
+- .phi_users: phi instructions that reference this phisrc.
 Like OP_COPY but exclusively used to create *all* OP_PHI operands.
 
 ### OP_INLINED_CALL

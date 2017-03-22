@@ -708,15 +708,26 @@ static LLVMValueRef output_op_binary(struct dmr_C *C, struct function *fn, struc
 	LLVMValueRef lhs, rhs, target;
 	char target_name[64];
 
+	LLVMTypeRef instruction_type = symbol_type(C, fn->module, insn->type);
+
 	lhs = pseudo_to_value(C, fn, insn, insn->src1);
 	if (!lhs)
 		return NULL;
-	lhs = value_to_ivalue(C, fn, lhs);
+	if (LLVMGetTypeKind(LLVMTypeOf(lhs)) == LLVMPointerTypeKind)
+		lhs = value_to_ivalue(C, fn, lhs);
+	else if (LLVMGetTypeKind(instruction_type) == LLVMFloatTypeKind ||
+		LLVMGetTypeKind(instruction_type) == LLVMDoubleTypeKind)
+		lhs = build_cast(C, fn, lhs, instruction_type, "lhs", 0);
 
 	rhs = pseudo_to_value(C, fn, insn, insn->src2);
 	if (!rhs)
 		return NULL;
-	rhs = value_to_ivalue(C, fn, rhs);
+
+	if (LLVMGetTypeKind(LLVMTypeOf(rhs)) == LLVMPointerTypeKind)
+		rhs = value_to_ivalue(C, fn, rhs);
+	else if (LLVMGetTypeKind(instruction_type) == LLVMFloatTypeKind ||
+		LLVMGetTypeKind(instruction_type) == LLVMDoubleTypeKind)
+		rhs = build_cast(C, fn, rhs, instruction_type, "rhs", 0);
 
 	pseudo_name(C, insn->target, target_name, sizeof target_name);
 
@@ -832,7 +843,8 @@ static LLVMValueRef output_op_binary(struct dmr_C *C, struct function *fn, struc
 		return NULL;
 	}
 
-	target = adjust_type(C, fn, insn->type, target);
+	//target = adjust_type(C, fn, insn->type, target);
+	target = build_cast(C, fn, target, instruction_type, target_name, 0);
 	insn->target->priv = target;
 
 	return target;

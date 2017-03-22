@@ -944,6 +944,8 @@ void declare_builtin_functions(struct dmr_C *C)
 
 void create_builtin_stream(struct dmr_C *C)
 {
+	add_pre_buffer(C, "#define __DMR_C__ 1\n");
+
 	add_pre_buffer(C, "#weak_define __GNUC__ %d\n", gcc_major);
 	add_pre_buffer(C, "#weak_define __GNUC_MINOR__ %d\n", gcc_minor);
 	add_pre_buffer(C, "#weak_define __GNUC_PATCHLEVEL__ %d\n", gcc_patchlevel);

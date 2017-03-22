@@ -4507,7 +4507,7 @@ ences of the first number. If we get a sequence like this, we can
 determine, by simple subtraction, how many (if any) variables are
 being assigned to registers. If we get some other sequence, we know
 that the test is invalid.                                     */
-#if 0
+#if !defined(__DMR_C__) || defined(__DMR_C__) && !defined(__OPTIMIZE__) 
             char r00;
             char r01;
             char r02;
@@ -4647,8 +4647,9 @@ test is unreliable.              */
 
    if (s == 3) return 16-nr;
    else return -1;
-#endif
+#else
   return 0;
+#endif
 }
 static int regi(void) {     /*   int to register assignment    */
 /*   Testing a variable whose storage class has been spec-
@@ -4687,7 +4688,7 @@ determine, by simple subtraction, how many (if any) variables are
 being assigned to registers. If we get some other sequence, we know
 that the test is invalid.                                     */
 
-#if 0
+#if !defined(__DMR_C__) || defined(__DMR_C__) && !defined(__OPTIMIZE__) 
             int r00;
             int r01;
             int r02;
@@ -4828,8 +4829,9 @@ test is unreliable.              */
 
    if (s == 3) return 16-nr;
    else return -1;
-#endif
+#else
   return 0;
+#endif
 }
 static int regp(void) {     /*   pointer to register assignment   */
 /*   Testing a variable whose storage class has been spec-
@@ -4867,7 +4869,7 @@ ences of the first number. If we get a sequence like this, we can
 determine, by simple subtraction, how many (if any) variables are
 being assigned to registers. If we get some other sequence, we know
 that the test is invalid.                                     */
-#if 0
+#if !defined(__DMR_C__) || defined(__DMR_C__) && !defined(__OPTIMIZE__) 
 
             int *r00;
             int *r01;
@@ -5008,8 +5010,9 @@ test is unreliable.              */
 
    if (s == 3) return 16-nr;
    else return -1;
-#endif
+#else
   return 0;
+#endif
 }
 #if 1
    static const char *s84er = "s84,er%d\n";

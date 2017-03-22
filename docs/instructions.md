@@ -1,3 +1,11 @@
+# Sparse SSA Instruction Set
+
+## Credits
+
+Originally written by Luc Van Oostenryck.
+
+## Instructions
+
 This brievely describe which field of struct instruction is
 used by which operation.
 

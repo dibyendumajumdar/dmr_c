@@ -732,6 +732,8 @@ static LLVMValueRef output_op_binary(struct dmr_C *C, struct function *fn, struc
 	else if (LLVMGetTypeKind(instruction_type) == LLVMFloatTypeKind ||
 		LLVMGetTypeKind(instruction_type) == LLVMDoubleTypeKind)
 		lhs = build_cast(C, fn, lhs, instruction_type, "lhs", 0);
+	if (!lhs)
+		return NULL;
 
 	rhs = pseudo_to_value(C, fn, insn, insn->src2);
 	if (!rhs)
@@ -742,6 +744,8 @@ static LLVMValueRef output_op_binary(struct dmr_C *C, struct function *fn, struc
 	else if (LLVMGetTypeKind(instruction_type) == LLVMFloatTypeKind ||
 		LLVMGetTypeKind(instruction_type) == LLVMDoubleTypeKind)
 		rhs = build_cast(C, fn, rhs, instruction_type, "rhs", 0);
+	if (!rhs)
+		return NULL;
 
 	pseudo_name(C, insn->target, target_name, sizeof target_name);
 

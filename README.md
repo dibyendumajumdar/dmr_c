@@ -1,8 +1,8 @@
 # dmr_C
 
-The aim of the dmr_c project is to create a JIT compiler for C. Is is based on the the Linux [Sparse](https://sparse.wiki.kernel.org/index.php/Main_Page) library originally written by Linus Torvalds. 
+The aim of the dmr_C project is to create a JIT compiler for C. Is is based on the the Linux [Sparse](https://sparse.wiki.kernel.org/index.php/Main_Page) library originally written by Linus Torvalds. 
 
-The name dmr_c is a homage to Dennis M Ritchie.
+The name dmr_C is a homage to Dennis M Ritchie.
 
 ## Overview
 

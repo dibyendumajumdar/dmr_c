@@ -1,8 +1,8 @@
-# dmr_c
+# dmr_C
 
-The aim of the dmr_c project is to create a JIT compiler for C. Is is based on the the Linux [Sparse](https://sparse.wiki.kernel.org/index.php/Main_Page) library originally written by Linus Torvalds. 
+The aim of the dmr_C project is to create a JIT compiler for C. Is is based on the the Linux [Sparse](https://sparse.wiki.kernel.org/index.php/Main_Page) library originally written by Linus Torvalds. 
 
-The name dmr_c is a homage to Dennis M Ritchie.
+The name dmr_C is a homage to Dennis M Ritchie.
 
 ## Overview
 
@@ -18,7 +18,7 @@ The code base is a fork of Sparse. The main changes are:
 
 * We are now able to build on Windows, Linux and Mac OSX. However there are platform specific limitations - see below for details.
 * Global state has been removed except for the way ptr_list nodes are allocated.
-* The LLVM backend has had many fixes and is able to compile real programs. See the tests folder for what works, and what doesn't.
+* The LLVM backend has had many fixes and is able to compile real programs. See details below for what works and what doesn't.
 
 ## Build instructions
 
@@ -59,12 +59,13 @@ The following command line tools are built:
 
 * The main limitation is that complex initializers do not work - only strings and scalar variables can be initialized.
 * There is no support for computed gotos, slices and ranges yet.
-* The parser and pre-processor knows about many Linux constructs hence it can process C header files on Linux. However, it doesn't know about Windows or Mac OSX features, so on these platforms, only standard C header files can be processed. As typically the vendor supplied header files have many platform specific extensions, unfortunately this means that you cannot process vendor supplied header files on these platforms.
+* The parser and pre-processor knows about many Linux constructs hence it can process C header files on Linux. However, it doesn't know about Windows or Mac OSX features. As typically the vendor supplied header files have many platform specific extensions, unfortunately this means that you cannot process vendor supplied header files on these platforms.
 
 #### Usage
 
 * The tool will output the preprocesed source code if -E option is given.
 * The tool will save the output to specified file if -o option is given, otherwise output is saved to file named 'out.bc' in current directory.
+* The -O1 option can be used to enable internal IR simplifications. Note that these simplifications sometimes cause issues - see the tests/bugs folder for known issues. 
 * To run the generated module, you typically need to generate assembly code and then link it to produce an executable. Example:
 
 ```
@@ -122,6 +123,9 @@ Here is a simple program that uses the tokenizer. The tokenizer converts the inp
 				(unsigned long)strlen(test1), &end);
 
 	// do something with the tokens!
+	for (struct token *p = start; p != end; p = p->next) {
+		printf("%s\n", show_token(C, p));
+	}
 
 	destroy_dmr_C(C);
 ```

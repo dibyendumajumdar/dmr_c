@@ -228,6 +228,9 @@ static LLVMTypeRef symbol_type(struct dmr_C *C, LLVMModuleRef module, struct sym
 
 	switch (sym->type) {
 	case SYM_BITFIELD:
+		ret = LLVMIntType(sym->bit_size);
+		break;
+	case SYM_RESTRICT:
 	case SYM_ENUM:
 		ret = symbol_type(C, module, sym->ctype.base_type);
 		break;
@@ -379,30 +382,26 @@ static LLVMValueRef build_cast(struct dmr_C *C, struct function *fn, LLVMValueRe
 
 #define MAX_PSEUDO_NAME 64
 
-static void pseudo_name(struct dmr_C *C, pseudo_t pseudo, char *buf, size_t len)
+static const char * pseudo_name(struct dmr_C *C, pseudo_t pseudo, char *buf, size_t len)
 {
 	buf[0] = '\0';
 	switch (pseudo->type) {
 	case PSEUDO_REG:
 		snprintf(buf, len, "R%d", pseudo->nr);
 		break;
-	case PSEUDO_SYM:
-		assert(0);
-		break;
-	case PSEUDO_VAL:
-		assert(0);
-		break;
-	case PSEUDO_ARG:
-		assert(0);
-		break;
 	case PSEUDO_PHI:
 		snprintf(buf, len, "PHI%d", pseudo->nr);
 		break;
+	case PSEUDO_SYM:
+	case PSEUDO_VAL:
+	case PSEUDO_ARG:
 	case PSEUDO_VOID:
 		break;
 	default:
 		assert(0);
 	}
+
+	return buf;
 }
 
 static LLVMValueRef build_local(struct dmr_C *C, struct function *fn, struct symbol *sym) 
@@ -411,7 +410,7 @@ static LLVMValueRef build_local(struct dmr_C *C, struct function *fn, struct sym
 	LLVMTypeRef type = symbol_type(C, fn->module, sym);
 	LLVMValueRef result;
 	char localname[256] = { 0 };
-	snprintf(localname, sizeof localname, "%s_%p", name, sym);
+	snprintf(localname, sizeof localname, "%s_%p.", name, sym);
 	if (is_static(sym) || is_extern(sym) || is_toplevel(sym)) {
 		result = LLVMGetNamedGlobal(fn->module, localname);
 		if (!result) {
@@ -641,7 +640,7 @@ static LLVMValueRef value_to_ivalue(struct dmr_C *C, struct function *fn, LLVMVa
 {
 	if (LLVMGetTypeKind(LLVMTypeOf(val)) == LLVMPointerTypeKind) {
 		LLVMTypeRef dtype = LLVMIntType(C->target->bits_in_pointer);
-		val = LLVMBuildPtrToInt(fn->builder, val, dtype, "");
+		val = LLVMBuildPtrToInt(fn->builder, val, dtype, LLVMGetValueName(val));
 	}
 	return val;
 }
@@ -987,8 +986,8 @@ static LLVMValueRef calc_memop_addr(struct dmr_C *C, struct function *fn, struct
 	addr_type = LLVMPointerType(symtype, as);
 #if 1
 	src = value_to_ivalue(C, fn, src);
-	addr = LLVMBuildAdd(fn->builder, src, off, "");
-	addr = LLVMBuildIntToPtr(fn->builder, addr, addr_type, "");
+	addr = LLVMBuildAdd(fn->builder, src, off, LLVMGetValueName(src));
+	addr = LLVMBuildIntToPtr(fn->builder, addr, addr_type, LLVMGetValueName(src));
 #else
 	src = LLVMBuildPointerCast(fn->builder, src, addr_type, "");
 
@@ -1002,13 +1001,15 @@ static LLVMValueRef calc_memop_addr(struct dmr_C *C, struct function *fn, struct
 static LLVMValueRef output_op_load(struct dmr_C *C, struct function *fn, struct instruction *insn)
 {
 	LLVMValueRef addr, target;
+	char name[MAX_PSEUDO_NAME];
 
 	addr = calc_memop_addr(C, fn, insn);
 	if (!addr)
 		return NULL;
 
 	/* perform load */
-	target = LLVMBuildLoad(fn->builder, addr, "load_target");
+	pseudo_name(C, insn->target, name, sizeof name);
+	target = LLVMBuildLoad(fn->builder, addr, name);
 
 	insn->target->priv = target;
 	return target;
@@ -1131,7 +1132,6 @@ static LLVMValueRef output_op_switch(struct dmr_C *C, struct function *fn, struc
 	} END_FOR_EACH_PTR(jmp);
 
 	return target;
-	//insn->target->priv = target;
 }
 
 static struct symbol *get_function_basetype(struct symbol *type)
@@ -1445,6 +1445,9 @@ static LLVMValueRef output_op_setval(struct dmr_C *C, struct function *fn, struc
 	switch (expr->type) {
 	case EXPR_FVALUE:
 		target = LLVMConstReal(const_type, expr->fvalue);
+		break;
+	case EXPR_LABEL:
+		target = LLVMBlockAddress(fn->fn, expr->symbol->bb_target->priv);
 		break;
 	default:
 		sparse_error(C, insn->pos, "unsupported expression type %d in setval\n", expr->type);

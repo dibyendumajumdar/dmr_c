@@ -944,7 +944,7 @@ void declare_builtin_functions(struct dmr_C *C)
 
 void create_builtin_stream(struct dmr_C *C)
 {
-	//add_pre_buffer(C, "#define __DMR_C__ 1\n");
+	add_pre_buffer(C, "#define __DMR_C__ 1\n");
 
 	add_pre_buffer(C, "#weak_define __GNUC__ %d\n", gcc_major);
 	add_pre_buffer(C, "#weak_define __GNUC_MINOR__ %d\n", gcc_minor);
@@ -971,8 +971,8 @@ void create_builtin_stream(struct dmr_C *C)
 	// it is "long unsigned int".  In either case we can probably
 	// get away with this.  We need the #weak_define as cgcc will define
 	// the right __SIZE_TYPE__.
-	if (C->target->size_t_ctype == &C->S->ulong_ctype)
-		add_pre_buffer(C, "#weak_define __SIZE_TYPE__ unsigned long int\n");
+	if (C->target->size_t_ctype == &C->S->ullong_ctype)
+		add_pre_buffer(C, "#weak_define __SIZE_TYPE__ unsigned long long int\n");
 	else
 		add_pre_buffer(C, "#weak_define __SIZE_TYPE__ unsigned int\n");
 	add_pre_buffer(C, "#weak_define __STDC__ 1\n");

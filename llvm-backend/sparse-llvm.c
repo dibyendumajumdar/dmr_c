@@ -765,20 +765,10 @@ static LLVMValueRef output_op_binary(struct dmr_C *C, struct function *fn, struc
 		break;
 	case OP_SHL:
 		assert(!is_float_type(C->S, insn->type));
-		if (LLVMGetIntTypeWidth(LLVMTypeOf(rhs)) < LLVMGetIntTypeWidth(LLVMTypeOf(lhs))) {
-			rhs = build_cast(C, fn, rhs, LLVMTypeOf(lhs), "", 1);
-			if (!rhs)
-				return NULL;
-		}
 		target = LLVMBuildShl(fn->builder, lhs, rhs, target_name);
 		break;
 	case OP_LSR:
 		assert(!is_float_type(C->S, insn->type));
-		if (LLVMGetIntTypeWidth(LLVMTypeOf(rhs)) < LLVMGetIntTypeWidth(LLVMTypeOf(lhs))) {
-			rhs = build_cast(C, fn, rhs, LLVMTypeOf(lhs), "", 1);
-			if (!rhs)
-				return NULL;
-		}
 		target = LLVMBuildLShr(fn->builder, lhs, rhs, target_name);
 		break;
 	case OP_ASR:

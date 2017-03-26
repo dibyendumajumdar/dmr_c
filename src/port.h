@@ -14,10 +14,14 @@
 #endif
 
 #if defined(_WIN32) && defined(_MSC_VER)
+#include <stdlib.h>
 #ifndef __cplusplus
 #define inline __inline
 #endif
 #define __alignof__ __alignof
+#define __builtin_bswap16 _byteswap_ushort
+#define __builtin_bswap32 _byteswap_ulong
+#define __builtin_bswap64 _byteswap_uint64
 #endif
 
 #ifdef __GNUC__

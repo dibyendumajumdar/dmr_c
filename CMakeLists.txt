@@ -106,6 +106,7 @@ set(LIB_H
 
 set(LIB_SRCS 
 	src/allocate.c
+	src/builtin.c
 	src/char.c
 	src/cse.c
 	src/dmr_c.c

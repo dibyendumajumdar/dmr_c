@@ -681,6 +681,7 @@ void init_symbols(struct dmr_C *C)
 #include "ident-list.h"
 
 	init_parser(C, stream);
+	init_builtins(C, stream);
 }
 
 void destroy_symbols(struct dmr_C *C) {

@@ -2871,7 +2871,7 @@ static int evaluate_symbol_call(struct dmr_C *C, struct expression *expr)
 		return 0;
 
 	if (ctype->op && ctype->op->evaluate)
-		return ctype->op->evaluate(C->S, expr);
+		return ctype->op->evaluate(C, expr);
 
 	if (ctype->ctype.modifiers & MOD_INLINE) {
 		int ret;
@@ -2921,7 +2921,7 @@ static struct symbol *evaluate_call(struct dmr_C *C, struct expression *expr)
 	examine_fn_arguments(C, ctype);
 	if (sym->type == SYM_NODE && fn->type == EXPR_PREOP &&
 	    sym->op && sym->op->args) {
-		if (!sym->op->args(C->S, expr))
+		if (!sym->op->args(C, expr))
 			return NULL;
 	} else {
 		if (!evaluate_arguments(C, ctype, arglist))

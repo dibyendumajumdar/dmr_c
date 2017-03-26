@@ -251,6 +251,10 @@ struct token *compound_statement(struct dmr_C *C, struct token *, struct stateme
 void cast_value(struct dmr_C *C, struct expression *expr, struct symbol *newtype,
 		struct expression *old, struct symbol *oldtype);
 
+static inline struct expression *first_expression(struct ptr_list *head)
+{
+	return (struct expression *) ptrlist_first(head);
+}
 
 #ifdef __cplusplus
 }

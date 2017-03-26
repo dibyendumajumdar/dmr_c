@@ -120,9 +120,9 @@ struct decl_state {
 
 struct symbol_op {
 	enum keyword type;
-	int (*evaluate)(struct global_symbols_t *S, struct expression *);
+	int (*evaluate)(struct dmr_C *, struct expression *);
 	int (*expand)(struct dmr_C *, struct expression *, int);
-	int (*args)(struct global_symbols_t *S, struct expression *);
+	int (*args)(struct dmr_C *, struct expression *);
 
 	/* keywords */
 	struct token *(*declarator)(struct dmr_C *, struct token *token,
@@ -308,6 +308,7 @@ struct global_symbols_t {
 
 extern void init_symbols(struct dmr_C *C);
 extern void init_ctype(struct dmr_C *C);
+extern void init_builtins(struct dmr_C *C, int stream);
 extern void destroy_symbols(struct dmr_C *C);
 
 extern struct context *alloc_context(struct global_symbols_t *S);

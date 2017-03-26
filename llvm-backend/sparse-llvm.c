@@ -24,6 +24,7 @@ struct function {
 };
 
 static LLVMTypeRef symbol_type(struct dmr_C *C, LLVMModuleRef module, struct symbol *sym);
+static LLVMValueRef constant_value(struct dmr_C *C, unsigned long long val, LLVMTypeRef dtype);
 
 static LLVMTypeRef func_return_type(struct dmr_C *C, LLVMModuleRef module, struct symbol *sym)
 {
@@ -483,13 +484,7 @@ static LLVMValueRef get_sym_value(struct dmr_C *C, struct function *fn, struct i
 			result = build_local(C, fn, sym);
 			if (!result)
 				return result;
-			LLVMValueRef value;
-			if (is_float_type(C->S, sym))
-				value = LLVMConstReal(symtype, (double) (long long)expr->value);
-			else {
-				assert(LLVMGetTypeKind(symtype) == LLVMIntegerTypeKind);
-				value = LLVMConstInt(symtype, expr->value, 1);
-			}
+			LLVMValueRef value = constant_value(C, expr->value, symtype);
 			if (is_static(sym))
 				LLVMSetInitializer(result, value);
 			else
@@ -551,7 +546,7 @@ static LLVMValueRef get_sym_value(struct dmr_C *C, struct function *fn, struct i
 	return result;
 }
 
-static LLVMValueRef constant_value(struct dmr_C *C, struct function *fn, unsigned long long val, LLVMTypeRef dtype)
+static LLVMValueRef constant_value(struct dmr_C *C, unsigned long long val, LLVMTypeRef dtype)
 {
 	LLVMTypeRef itype;
 	LLVMValueRef result;
@@ -585,7 +580,7 @@ static LLVMValueRef val_to_value(struct dmr_C *C, struct function *fn, unsigned 
 	dtype = symbol_type(C, fn->module, ctype);
 	if (!dtype)
 		return NULL;
-	return constant_value(C, fn, val, dtype);
+	return constant_value(C, val, dtype);
 }
 
 static LLVMValueRef pseudo_to_value(struct dmr_C *C, struct function *fn, struct instruction *insn, pseudo_t pseudo)
@@ -1746,7 +1741,7 @@ static LLVMValueRef output_data(struct dmr_C *C, LLVMModuleRef module, struct sy
 	if (initializer) {
 		switch (initializer->type) {
 		case EXPR_VALUE:
-			initial_value = LLVMConstInt(symbol_type(C, module, sym), initializer->value, 1);
+			initial_value = constant_value(C, initializer->value, symbol_type(C, module, sym));
 			break;
 		case EXPR_FVALUE:
 			initial_value = LLVMConstReal(symbol_type(C, module, sym), initializer->fvalue);

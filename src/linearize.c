@@ -71,7 +71,7 @@ static struct basic_block *alloc_basic_block(struct dmr_C *C, struct entrypoint 
 	return bb;
 }
 
-static struct multijmp *alloc_multijmp(struct dmr_C *C, struct basic_block *target, int begin, int end)
+static struct multijmp *alloc_multijmp(struct dmr_C *C, struct basic_block *target, long long begin, long long end)
 {
 	struct multijmp *multijmp = (struct multijmp *)allocator_allocate(&C->L->multijmp_allocator, 0);
 	multijmp->target = target;
@@ -364,9 +364,9 @@ const char *show_instruction(struct dmr_C *C, struct instruction *insn)
 		buf += sprintf(buf, "%s", show_pseudo(C, insn->cond));
 		FOR_EACH_PTR(insn->multijmp_list, jmp) {
 			if (jmp->begin == jmp->end)
-				buf += sprintf(buf, ", %d -> .L%u", jmp->begin, jmp->target->nr);
+				buf += sprintf(buf, ", %lld -> .L%u", jmp->begin, jmp->target->nr);
 			else if (jmp->begin < jmp->end)
-				buf += sprintf(buf, ", %d ... %d -> .L%u", jmp->begin, jmp->end, jmp->target->nr);
+				buf += sprintf(buf, ", %lld ... %lld -> .L%u", jmp->begin, jmp->end, jmp->target->nr);
 			else
 				buf += sprintf(buf, ", default -> .L%u", jmp->target->nr);
 		} END_FOR_EACH_PTR(jmp);
@@ -1229,19 +1229,19 @@ static pseudo_t linearize_assignment(struct dmr_C *C, struct entrypoint *ep, str
 *   -) insn->opcode == O_CALL | OP_INLINE_CALL
 *   -) ctype = typeof(arg)
 */
-static void push_argument(struct dmr_C *C, struct entrypoint *ep, struct instruction *insn, pseudo_t arg, struct symbol *ctype)
+static void push_argument(struct dmr_C *C, struct instruction *insn, pseudo_t arg, struct symbol *ctype)
 {
 	struct instruction *push = alloc_typed_instruction(C, OP_PUSH, ctype);
 	push->call = insn;
 	use_pseudo(C, push, arg, &push->src);
 	add_instruction(&insn->arguments, push);
-	add_one_insn(C, ep, push);
 }
 
 static pseudo_t linearize_call_expression(struct dmr_C *C, struct entrypoint *ep, struct expression *expr)
 {
 	struct expression *arg, *fn;
 	struct instruction *insn = alloc_typed_instruction(C, OP_CALL, expr->ctype);
+	struct instruction *push;
 	pseudo_t retval, call;
 	struct ctype *ctype = NULL;
 	struct symbol *fntype;
@@ -1252,10 +1252,18 @@ static pseudo_t linearize_call_expression(struct dmr_C *C, struct entrypoint *ep
 		return VOID_PSEUDO(C);
 	}
 
+	// first generate all the parameters
 	FOR_EACH_PTR(expr->args, arg) {
 		pseudo_t new = linearize_expression(C, ep, arg);
-		push_argument(C, ep, insn, new, arg->ctype);
+		push_argument(C, insn, new, arg->ctype);
 	} END_FOR_EACH_PTR(arg);
+
+	// and push them all just before the actual call
+	// (because the linearization of the arguments can
+	//  create other calls)
+	FOR_EACH_PTR(insn->arguments, push) {
+		add_one_insn(C, ep, push);
+	} END_FOR_EACH_PTR(push);
 
 	fn = expr->fn;
 
@@ -1925,16 +1933,17 @@ static pseudo_t linearize_switch(struct dmr_C *C, struct entrypoint *ep, struct 
 	struct instruction *switch_ins;
 	struct basic_block *switch_end = alloc_basic_block(C, ep, stmt->pos);
 	struct basic_block *active, *default_case;
+	struct expression *expr = stmt->switch_expression;
 	struct multijmp *jmp;
 	pseudo_t pseudo;
 
-	pseudo = linearize_expression(C, ep, stmt->switch_expression);
+	pseudo = linearize_expression(C, ep, expr);
 
 	active = ep->active;
 	if (!bb_reachable(active))
 		return VOID_PSEUDO(C);
 
-	switch_ins = alloc_instruction(C, OP_SWITCH, 0);
+	switch_ins = alloc_typed_instruction(C, OP_SWITCH, expr->ctype);
 	use_pseudo(C, switch_ins, pseudo, &switch_ins->cond);
 	add_one_insn(C, ep, switch_ins);
 	finish_block(ep);
@@ -1948,7 +1957,7 @@ static pseudo_t linearize_switch(struct dmr_C *C, struct entrypoint *ep, struct 
 			default_case = bb_case;
 			continue;
 		} else {
-			int begin, end;
+			long long begin, end;
 
 			begin = end = case_stmt->case_expression->value;
 			if (case_stmt->case_to)

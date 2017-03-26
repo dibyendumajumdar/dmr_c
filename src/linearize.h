@@ -89,7 +89,7 @@ struct linearizer_state_t {
 
 struct multijmp {
 	struct basic_block *target;
-	int begin, end;
+	long long begin, end;
 };
 
 struct asm_constraint {

@@ -23,13 +23,6 @@ struct function {
 	LLVMTypeRef			return_type;
 };
 
-static inline bool symbol_is_fp_type(struct dmr_C *C, struct symbol *sym)
-{
-	if (!sym)
-		return false;
-	return is_float_type(C->S, sym);
-}
-
 static LLVMTypeRef symbol_type(struct dmr_C *C, LLVMModuleRef module, struct symbol *sym);
 
 static LLVMTypeRef func_return_type(struct dmr_C *C, LLVMModuleRef module, struct symbol *sym)
@@ -171,7 +164,7 @@ static LLVMTypeRef sym_basetype_type(struct dmr_C *C, struct symbol *sym)
 {
 	LLVMTypeRef ret = NULL;
 
-	if (symbol_is_fp_type(C, sym)) {
+	if (is_float_type(C->S, sym)) {
 		switch (sym->bit_size) {
 		case 32:
 			ret = LLVMFloatType();
@@ -751,47 +744,47 @@ static LLVMValueRef output_op_binary(struct dmr_C *C, struct function *fn, struc
 	switch (insn->opcode) {
 	/* Binary */
 	case OP_ADD:
-		if (symbol_is_fp_type(C, insn->type))
+		if (is_float_type(C->S, insn->type))
 			target = LLVMBuildFAdd(fn->builder, lhs, rhs, target_name);
 		else
 			target = LLVMBuildAdd(fn->builder, lhs, rhs, target_name);
 		break;
 	case OP_SUB:
-		if (symbol_is_fp_type(C, insn->type))
+		if (is_float_type(C->S, insn->type))
 			target = LLVMBuildFSub(fn->builder, lhs, rhs, target_name);
 		else
 			target = LLVMBuildSub(fn->builder, lhs, rhs, target_name);
 		break;
 	case OP_MULU:
-		if (symbol_is_fp_type(C, insn->type))
+		if (is_float_type(C->S, insn->type))
 			target = LLVMBuildFMul(fn->builder, lhs, rhs, target_name);
 		else
 			target = LLVMBuildMul(fn->builder, lhs, rhs, target_name);
 		break;
 	case OP_MULS:
-		assert(!symbol_is_fp_type(C, insn->type));
+		assert(!is_float_type(C->S, insn->type));
 		target = LLVMBuildMul(fn->builder, lhs, rhs, target_name);
 		break;
 	case OP_DIVU:
-		if (symbol_is_fp_type(C, insn->type))
+		if (is_float_type(C->S, insn->type))
 			target = LLVMBuildFDiv(fn->builder, lhs, rhs, target_name);
 		else
 			target = LLVMBuildUDiv(fn->builder, lhs, rhs, target_name);
 		break;
 	case OP_DIVS:
-		assert(!symbol_is_fp_type(C, insn->type));
+		assert(!is_float_type(C->S, insn->type));
 		target = LLVMBuildSDiv(fn->builder, lhs, rhs, target_name);
 		break;
 	case OP_MODU:
-		assert(!symbol_is_fp_type(C, insn->type));
+		assert(!is_float_type(C->S, insn->type));
 		target = LLVMBuildURem(fn->builder, lhs, rhs, target_name);
 		break;
 	case OP_MODS:
-		assert(!symbol_is_fp_type(C, insn->type));
+		assert(!is_float_type(C->S, insn->type));
 		target = LLVMBuildSRem(fn->builder, lhs, rhs, target_name);
 		break;
 	case OP_SHL:
-		assert(!symbol_is_fp_type(C, insn->type));
+		assert(!is_float_type(C->S, insn->type));
 		if (LLVMGetIntTypeWidth(LLVMTypeOf(rhs)) < LLVMGetIntTypeWidth(LLVMTypeOf(lhs))) {
 			rhs = build_cast(C, fn, rhs, LLVMTypeOf(lhs), "", 1);
 			if (!rhs)
@@ -800,7 +793,7 @@ static LLVMValueRef output_op_binary(struct dmr_C *C, struct function *fn, struc
 		target = LLVMBuildShl(fn->builder, lhs, rhs, target_name);
 		break;
 	case OP_LSR:
-		assert(!symbol_is_fp_type(C, insn->type));
+		assert(!is_float_type(C->S, insn->type));
 		if (LLVMGetIntTypeWidth(LLVMTypeOf(rhs)) < LLVMGetIntTypeWidth(LLVMTypeOf(lhs))) {
 			rhs = build_cast(C, fn, rhs, LLVMTypeOf(lhs), "", 1);
 			if (!rhs)
@@ -809,21 +802,21 @@ static LLVMValueRef output_op_binary(struct dmr_C *C, struct function *fn, struc
 		target = LLVMBuildLShr(fn->builder, lhs, rhs, target_name);
 		break;
 	case OP_ASR:
-		assert(!symbol_is_fp_type(C, insn->type));
+		assert(!is_float_type(C->S, insn->type));
 		target = LLVMBuildAShr(fn->builder, lhs, rhs, target_name);
 		break;
 	
 	/* Logical */
 	case OP_AND:
-		assert(!symbol_is_fp_type(C, insn->type));
+		assert(!is_float_type(C->S, insn->type));
 		target = LLVMBuildAnd(fn->builder, lhs, rhs, target_name);
 		break;
 	case OP_OR:
-		assert(!symbol_is_fp_type(C, insn->type));
+		assert(!is_float_type(C->S, insn->type));
 		target = LLVMBuildOr(fn->builder, lhs, rhs, target_name);
 		break;
 	case OP_XOR:
-		assert(!symbol_is_fp_type(C, insn->type));
+		assert(!is_float_type(C->S, insn->type));
 		target = LLVMBuildXor(fn->builder, lhs, rhs, target_name);
 		break;
 	case OP_AND_BOOL: {
@@ -956,7 +949,7 @@ static LLVMValueRef output_op_ret(struct dmr_C *C, struct function *fn, struct i
 		LLVMValueRef result = pseudo_to_value(C, fn, insn, pseudo);
 		if (!result)
 			return NULL;
-		result = build_cast(C, fn, result, fn->return_type, "", 0);
+		result = build_cast(C, fn, result, fn->return_type, LLVMGetValueName(result), 0);
 		if (!result)
 			return NULL;
 		return LLVMBuildRet(fn->builder, result);
@@ -1033,7 +1026,7 @@ static LLVMValueRef output_op_store(struct dmr_C *C, struct function *fn, struct
 		return NULL;
 
 	/* Cast to the right type - to resolve issue with union types */
-	target_in = build_cast(C, fn, target_in, desttype, "", 0);
+	target_in = build_cast(C, fn, target_in, desttype, LLVMGetValueName(target_in), 0);
 	if (!target_in)
 		return NULL;
 
@@ -1108,8 +1101,7 @@ static LLVMValueRef output_op_switch(struct dmr_C *C, struct function *fn, struc
 		if (jmp->begin == jmp->end) {		/* case N */
 			n_jmp++;
 		} else if (jmp->begin < jmp->end) {	/* case M..N */
-			assert(0);
-			return NULL;
+			n_jmp += (jmp->end - jmp->begin) + 1;
 		} else					/* default case */
 			def = jmp->target;
 	} END_FOR_EACH_PTR(jmp);
@@ -1121,13 +1113,10 @@ static LLVMValueRef output_op_switch(struct dmr_C *C, struct function *fn, struc
 				 def ? def->priv : NULL, n_jmp);
 
 	FOR_EACH_PTR(insn->multijmp_list, jmp) {
-		if (jmp->begin == jmp->end) {		/* case N */
-			LLVMAddCase(target,
-				LLVMConstInt(LLVMTypeOf(sw_val), jmp->begin, 0),
-				jmp->target->priv);
-		} else if (jmp->begin < jmp->end) {	/* case M..N */
-			assert(0);
-			return NULL;
+		long long val;
+		for (val = jmp->begin; val <= jmp->end; val++) {
+			LLVMValueRef value = LLVMConstInt(LLVMTypeOf(sw_val), val, 0);
+			LLVMAddCase(target, value, jmp->target->priv);
 		}
 	} END_FOR_EACH_PTR(jmp);
 
@@ -1167,7 +1156,7 @@ static LLVMValueRef output_op_call(struct dmr_C *C, struct function *fn, struct 
 			LLVMTypeRef argtype = symbol_type(C, fn->module, atype);
 			if (!argtype)
 				return NULL;
-			value = build_cast(C, fn, value, argtype, "", 0);
+			value = build_cast(C, fn, value, argtype, LLVMGetValueName(value), 0);
 			if (!value)
 				return NULL;
 		}
@@ -1196,12 +1185,16 @@ static LLVMValueRef output_op_call(struct dmr_C *C, struct function *fn, struct 
 static LLVMValueRef output_op_phisrc(struct dmr_C *C, struct function *fn, struct instruction *insn)
 {
 	LLVMValueRef v;
+	LLVMTypeRef srctype;
 	struct instruction *phi;
 
 	assert(insn->target->priv == NULL);
 
 	/* target = src */
 	v = pseudo_to_value(C, fn, insn, insn->phi_src);
+	srctype = insn_symbol_type(C, fn->module, insn);
+	v = build_cast(C, fn, v, srctype, LLVMGetValueName(v), 0);
+
 	if (!v)
 		return NULL;
 
@@ -1261,7 +1254,7 @@ static LLVMValueRef output_op_ptrcast(struct dmr_C *C, struct function *fn, stru
 
 	pseudo_name(C, insn->target, target_name, sizeof target_name);
 
-	assert(!symbol_is_fp_type(C, insn->type));
+	assert(!is_float_type(C->S, insn->type));
 
 	dtype = insn_symbol_type(C, fn->module, insn);
 	if (!dtype)
@@ -1303,7 +1296,7 @@ static LLVMValueRef output_op_cast(struct dmr_C *C, struct function *fn, struct 
 
 	pseudo_name(C, insn->target, target_name, sizeof target_name);
 
-	assert(!symbol_is_fp_type(C, insn->type));
+	assert(!is_float_type(C->S, insn->type));
 
 	dtype = insn_symbol_type(C, fn->module, insn);
 	if (!dtype)
@@ -1321,7 +1314,7 @@ static LLVMValueRef output_op_cast(struct dmr_C *C, struct function *fn, struct 
 			break;
 		case LLVMFloatTypeKind:
 		case LLVMDoubleTypeKind:
-			op = LLVMFPToSI;
+			op = (op == LLVMZExt) ? LLVMFPToUI : LLVMFPToSI;
 			break;
 		default: {
 			sparse_error(C, insn->pos, "unsupported op_cast instruction %s: type %d\n", show_instruction(C, insn), (int)LLVMGetTypeKind(LLVMTypeOf(src)));
@@ -1341,6 +1334,7 @@ static LLVMValueRef output_op_fpcast(struct dmr_C *C, struct function *fn, struc
 	char target_name[64];
 	LLVMTypeRef dtype;
 	LLVMOpcode op;
+	struct symbol *otype = insn->orig_type;
 
 	src = insn->src->priv;
 	if (!src)
@@ -1356,7 +1350,7 @@ static LLVMValueRef output_op_fpcast(struct dmr_C *C, struct function *fn, struc
 
 	switch (LLVMGetTypeKind(LLVMTypeOf(src))) {
 	case LLVMIntegerTypeKind:
-		op = LLVMSIToFP;
+		op = is_signed_type(otype) ? LLVMSIToFP : LLVMUIToFP;
 		break;
 	case LLVMFloatTypeKind: {
 		if (insn->size == 32)
@@ -1415,7 +1409,7 @@ static LLVMValueRef output_op_copy(struct dmr_C *C, struct function *fn, struct 
 	 * than using "X + 0" simply to produce a new LLVM pseudo
 	 */
 
-	if (symbol_is_fp_type(C, insn->type))
+	if (is_float_type(C->S, insn->type))
 		target = LLVMBuildFAdd(fn->builder, src,
 			LLVMConstReal(const_type, 0.0), target_name);
 	else
@@ -1429,7 +1423,6 @@ static LLVMValueRef output_op_copy(struct dmr_C *C, struct function *fn, struct 
 static LLVMValueRef output_op_setval(struct dmr_C *C, struct function *fn, struct instruction *insn)
 {
 	struct expression *expr = insn->val;
-	pseudo_t pseudo = insn->target;
 	char target_name[64];
 	LLVMTypeRef const_type;
 	LLVMValueRef target = NULL;
@@ -1510,7 +1503,7 @@ static LLVMValueRef output_op_neg(struct dmr_C *C, struct function *fn, struct i
 
 	pseudo_name(C, insn->target, target_name, sizeof target_name);
 
-	if (symbol_is_fp_type(C, insn->type))
+	if (is_float_type(C->S, insn->type))
 		target = LLVMBuildFNeg(fn->builder, src, target_name);
 	else
 		target = LLVMBuildNeg(fn->builder, src, target_name);
@@ -1560,9 +1553,6 @@ static int output_insn(struct dmr_C *C, struct function *fn, struct instruction 
 		break;
 	case OP_SNOP:
 		sparse_error(C, insn->pos, "snop not yet supported\n");
-		return 0;
-	case OP_INLINED_CALL:
-		sparse_error(C, insn->pos, "inlined_call not yet supported\n");
 		return 0;
 	case OP_CALL:
 		v = output_op_call(C, fn, insn);

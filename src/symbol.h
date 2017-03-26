@@ -460,15 +460,18 @@ static inline int is_static(struct symbol *sym)
 	return (sym->ctype.modifiers & MOD_STATIC);
 }
 
-static inline int is_unsigned(struct symbol *sym)
+static int is_signed_type(struct symbol *sym)
 {
-	if (sym->ctype.modifiers & MOD_UNSIGNED)
-		return 1;
 	if (sym->type == SYM_NODE)
 		sym = sym->ctype.base_type;
-	if (sym->ctype.modifiers & MOD_UNSIGNED)
-		return 1;
-	return 0;
+	if (sym->type == SYM_PTR)
+		return 0;
+	return !(sym->ctype.modifiers & MOD_UNSIGNED);
+}
+
+static inline int is_unsigned(struct symbol *sym)
+{
+	return !is_signed_type(sym);
 }
 
 static inline int get_sym_type(struct symbol *type)

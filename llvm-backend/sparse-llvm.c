@@ -516,11 +516,6 @@ static LLVMValueRef get_sym_value(struct dmr_C *C, struct function *fn, struct i
 		}
 	}
 	else {
-		if (sym->initializer) {
-			expression_error(C, sym->initializer, "unsupported initializer\n");
-			show_expression(C, sym->initializer);
-			return NULL;
-		}
 		const char *name = show_ident(C, sym->ident);
 		LLVMTypeRef type = symbol_type(C, fn->module, sym);
 		if (LLVMGetTypeKind(type) == LLVMFunctionTypeKind) {
@@ -543,6 +538,11 @@ static LLVMValueRef get_sym_value(struct dmr_C *C, struct function *fn, struct i
 			if (!result)
 				return result;
 			if (is_static(sym)) {
+				if (sym->initializer) {
+					expression_error(C, sym->initializer, "unsupported initializer\n");
+					show_expression(C, sym->initializer);
+					return NULL;
+				}
 				LLVMSetInitializer(result, LLVMConstNull(type));
 			}
 			sym->priv = result;

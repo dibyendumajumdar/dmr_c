@@ -483,10 +483,15 @@ static LLVMValueRef get_sym_value(struct dmr_C *C, struct function *fn, struct i
 			result = build_local(C, fn, sym);
 			if (!result)
 				return result;
-			if (is_static(sym))
-				LLVMSetInitializer(result, LLVMConstInt(symtype, expr->value, 1));
+			LLVMValueRef value;
+			if (is_float_type(C->S, sym))
+				value = LLVMConstReal(symtype, (double) (long long)expr->value);
 			else
-				LLVMBuildStore(fn->builder, LLVMConstInt(symtype, expr->value, 1), result);
+				value = LLVMConstInt(symtype, expr->value, 1);
+			if (is_static(sym))
+				LLVMSetInitializer(result, value);
+			else
+				LLVMBuildStore(fn->builder, value, result);
 			sym->priv = result;
 			break;
 		}

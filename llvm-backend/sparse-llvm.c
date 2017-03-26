@@ -726,6 +726,8 @@ static LLVMValueRef output_op_binary(struct dmr_C *C, struct function *fn, struc
 		return NULL;
 	if (LLVMGetTypeKind(LLVMTypeOf(lhs)) == LLVMPointerTypeKind)
 		lhs = value_to_ivalue(C, fn, lhs);
+	else if (is_int_type(C->S, insn->type))
+		lhs = build_cast(C, fn, lhs, instruction_type, "lhs", 0);
 	else if (LLVMGetTypeKind(instruction_type) == LLVMFloatTypeKind ||
 		LLVMGetTypeKind(instruction_type) == LLVMDoubleTypeKind)
 		lhs = build_cast(C, fn, lhs, instruction_type, "lhs", 0);
@@ -738,6 +740,8 @@ static LLVMValueRef output_op_binary(struct dmr_C *C, struct function *fn, struc
 
 	if (LLVMGetTypeKind(LLVMTypeOf(rhs)) == LLVMPointerTypeKind)
 		rhs = value_to_ivalue(C, fn, rhs);
+	else if (is_int_type(C->S, insn->type))
+		rhs = build_cast(C, fn, rhs, instruction_type, "rhs", 0);
 	else if (LLVMGetTypeKind(instruction_type) == LLVMFloatTypeKind ||
 		LLVMGetTypeKind(instruction_type) == LLVMDoubleTypeKind)
 		rhs = build_cast(C, fn, rhs, instruction_type, "rhs", 0);

@@ -546,15 +546,15 @@ static LLVMValueRef get_sym_value(struct dmr_C *C, struct function *fn, struct i
 			sym->priv = result;
 		}
 		else {
+			if (is_static(sym) && sym->initializer) {
+				expression_error(C, sym->initializer, "unsupported initializer for local static variable\n");
+				show_expression(C, sym->initializer);
+				return NULL;
+			}
 			result = build_local(C, fn, sym);
 			if (!result)
 				return result;
 			if (is_static(sym)) {
-				if (sym->initializer) {
-					expression_error(C, sym->initializer, "unsupported initializer\n");
-					show_expression(C, sym->initializer);
-					return NULL;
-				}
 				LLVMSetInitializer(result, LLVMConstNull(type));
 			}
 			sym->priv = result;

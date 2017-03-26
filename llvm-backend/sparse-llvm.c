@@ -682,6 +682,28 @@ static LLVMIntPredicate translate_op(int opcode)
 	return trans_tbl[opcode];
 }
 
+/**
+* Convert the pseudo to a value, and cast it to the expected type of the
+* instruction. If ptrtoint is true then convert pointer values to integers.
+*/
+static LLVMValueRef get_operand(struct dmr_C *C, struct function *fn, struct instruction *insn, pseudo_t pseudo, bool ptrtoint) 
+{
+	struct symbol *ctype = insn->type;
+	LLVMValueRef target;
+
+	LLVMTypeRef instruction_type = symbol_type(C, fn->module, ctype);
+	if (instruction_type == NULL)
+		return NULL;
+	target = pseudo_to_value(C, fn, insn, pseudo);
+	if (!target)
+		return NULL;
+	if (ptrtoint && is_ptr_type(ctype))
+		target = ptr_toint(C, fn, target);
+	else 
+		target = build_cast(C, fn, target, instruction_type, LLVMGetValueName(target), 0);
+	return target;
+}
+
 static LLVMValueRef output_op_binary(struct dmr_C *C, struct function *fn, struct instruction *insn)
 {
 	LLVMValueRef lhs, rhs, target;
@@ -689,30 +711,32 @@ static LLVMValueRef output_op_binary(struct dmr_C *C, struct function *fn, struc
 
 	LLVMTypeRef instruction_type = symbol_type(C, fn->module, insn->type);
 
-	lhs = pseudo_to_value(C, fn, insn, insn->src1);
-	if (!lhs)
-		return NULL;
-	if (LLVMGetTypeKind(LLVMTypeOf(lhs)) == LLVMPointerTypeKind)
-		lhs = ptr_toint(C, fn, lhs);
-	else if (is_int_type(C->S, insn->type))
-		lhs = build_cast(C, fn, lhs, instruction_type, "lhs", 0);
-	else if (LLVMGetTypeKind(instruction_type) == LLVMFloatTypeKind ||
-		LLVMGetTypeKind(instruction_type) == LLVMDoubleTypeKind)
-		lhs = build_cast(C, fn, lhs, instruction_type, "lhs", 0);
+	lhs = get_operand(C, fn, insn, insn->src1, 1);
+	//lhs = pseudo_to_value(C, fn, insn, insn->src1);
+	//if (!lhs)
+	//	return NULL;
+	//if (LLVMGetTypeKind(LLVMTypeOf(lhs)) == LLVMPointerTypeKind)
+	//	lhs = ptr_toint(C, fn, lhs);
+	//else if (is_int_type(C->S, insn->type))
+	//	lhs = build_cast(C, fn, lhs, instruction_type, "lhs", 0);
+	//else if (LLVMGetTypeKind(instruction_type) == LLVMFloatTypeKind ||
+	//	LLVMGetTypeKind(instruction_type) == LLVMDoubleTypeKind)
+	//	lhs = build_cast(C, fn, lhs, instruction_type, "lhs", 0);
 	if (!lhs)
 		return NULL;
 
-	rhs = pseudo_to_value(C, fn, insn, insn->src2);
-	if (!rhs)
-		return NULL;
+	rhs = get_operand(C, fn, insn, insn->src2, 1);
+	//rhs = pseudo_to_value(C, fn, insn, insn->src2);
+	//if (!rhs)
+	//	return NULL;
 
-	if (LLVMGetTypeKind(LLVMTypeOf(rhs)) == LLVMPointerTypeKind)
-		rhs = ptr_toint(C, fn, rhs);
-	else if (is_int_type(C->S, insn->type))
-		rhs = build_cast(C, fn, rhs, instruction_type, "rhs", 0);
-	else if (LLVMGetTypeKind(instruction_type) == LLVMFloatTypeKind ||
-		LLVMGetTypeKind(instruction_type) == LLVMDoubleTypeKind)
-		rhs = build_cast(C, fn, rhs, instruction_type, "rhs", 0);
+	//if (LLVMGetTypeKind(LLVMTypeOf(rhs)) == LLVMPointerTypeKind)
+	//	rhs = ptr_toint(C, fn, rhs);
+	//else if (is_int_type(C->S, insn->type))
+	//	rhs = build_cast(C, fn, rhs, instruction_type, "rhs", 0);
+	//else if (LLVMGetTypeKind(instruction_type) == LLVMFloatTypeKind ||
+	//	LLVMGetTypeKind(instruction_type) == LLVMDoubleTypeKind)
+	//	rhs = build_cast(C, fn, rhs, instruction_type, "rhs", 0);
 	if (!rhs)
 		return NULL;
 
@@ -912,10 +936,11 @@ static LLVMValueRef output_op_ret(struct dmr_C *C, struct function *fn, struct i
 	pseudo_t pseudo = insn->src;
 
 	if (pseudo && pseudo != VOID_PSEUDO(C) && LLVMGetTypeKind(fn->return_type) != LLVMVoidTypeKind) {
-		LLVMValueRef result = pseudo_to_value(C, fn, insn, pseudo);
-		if (!result)
-			return NULL;
-		result = build_cast(C, fn, result, fn->return_type, LLVMGetValueName(result), 0);
+		LLVMValueRef result = get_operand(C, fn, insn, pseudo, 0);
+		//LLVMValueRef result = pseudo_to_value(C, fn, insn, pseudo);
+		//if (!result)
+		//	return NULL;
+		//result = build_cast(C, fn, result, fn->return_type, LLVMGetValueName(result), 0);
 		if (!result)
 			return NULL;
 		return LLVMBuildRet(fn->builder, result);
@@ -931,7 +956,6 @@ static LLVMValueRef calc_memop_addr(struct dmr_C *C, struct function *fn, struct
 
 	/* int type large enough to hold a pointer */
 	int_type = LLVMIntType(C->target->bits_in_pointer);
-
 	off = LLVMConstInt(int_type, (int) insn->offset, 0);
 
 	/* convert src to the effective pointer type */
@@ -1037,19 +1061,27 @@ static LLVMValueRef output_op_sel(struct dmr_C *C, struct function *fn, struct i
 	if (!src1)
 		return NULL;
 
-	src2 = pseudo_to_value(C, fn, insn, insn->src2);
+	src2 = get_operand(C, fn, insn, insn->src2, 0);
 	if (!src2)
 		return NULL;
-	src3 = pseudo_to_value(C, fn, insn, insn->src3);
+	src3 = get_operand(C, fn, insn, insn->src3, 0);
 	if (!src3)
 		return NULL;
-	/* make sure the two values are cast to target type */
-	src2 = build_cast(C, fn, src2, desttype, "src2", 0);
-	if (!src2)
-		return NULL;
-	src3 = build_cast(C, fn, src3, desttype, "src3", 0);
-	if (!src3)
-		return NULL;
+
+	//src2 = pseudo_to_value(C, fn, insn, insn->src2);
+	//if (!src2)
+	//	return NULL;
+	//src3 = pseudo_to_value(C, fn, insn, insn->src3);
+	//if (!src3)
+	//	return NULL;
+	///* make sure the two values are cast to target type */
+	//src2 = build_cast(C, fn, src2, desttype, "src2", 0);
+	//if (!src2)
+	//	return NULL;
+	//src3 = build_cast(C, fn, src3, desttype, "src3", 0);
+	//if (!src3)
+	//	return NULL;
+
 	target = LLVMBuildSelect(fn->builder, src1, src2, src3, "select");
 
 	insn->target->priv = target;
@@ -1064,9 +1096,7 @@ static LLVMValueRef output_op_switch(struct dmr_C *C, struct function *fn, struc
 	int n_jmp = 0;
 
 	FOR_EACH_PTR(insn->multijmp_list, jmp) {
-		if (jmp->begin == jmp->end) {		/* case N */
-			n_jmp++;
-		} else if (jmp->begin < jmp->end) {	/* case M..N */
+		if (jmp->begin <= jmp->end) {	/* case M..N */
 			n_jmp += (jmp->end - jmp->begin) + 1;
 		} else					/* default case */
 			def = jmp->target;
@@ -1157,9 +1187,10 @@ static LLVMValueRef output_op_phisrc(struct dmr_C *C, struct function *fn, struc
 	assert(insn->target->priv == NULL);
 
 	/* target = src */
-	v = pseudo_to_value(C, fn, insn, insn->phi_src);
-	srctype = insn_symbol_type(C, fn->module, insn);
-	v = build_cast(C, fn, v, srctype, LLVMGetValueName(v), 0);
+	v = get_operand(C, fn, insn, insn->phi_src, 0);
+	//v = pseudo_to_value(C, fn, insn, insn->phi_src);
+	//srctype = insn_symbol_type(C, fn->module, insn);
+	//v = build_cast(C, fn, v, srctype, LLVMGetValueName(v), 0);
 
 	if (!v)
 		return NULL;
@@ -1208,9 +1239,9 @@ static LLVMValueRef output_op_phi(struct dmr_C *C, struct function *fn, struct i
 static LLVMValueRef output_op_ptrcast(struct dmr_C *C, struct function *fn, struct instruction *insn)
 {
 	LLVMValueRef src, target;
-	char target_name[64];
 	LLVMTypeRef dtype;
 	LLVMOpcode op;
+	char target_name[64];
 
 	src = insn->src->priv;
 	if (!src)

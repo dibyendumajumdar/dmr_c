@@ -316,9 +316,6 @@ extern void access_symbol(struct global_symbols_t *S, struct symbol *sym);
 
 extern const char *type_difference(struct dmr_C *C, struct ctype *c1, struct ctype *c2,
 				   unsigned long mod1, unsigned long mod2);
-extern int expand_safe_p(struct dmr_C *C, struct expression *expr, int cost);
-extern int expand_constant_p(struct dmr_C *C, struct expression *expr,
-			     int cost);
 
 extern struct symbol *lookup_symbol(struct ident *, enum namespace_type);
 extern struct symbol *create_symbol(struct global_symbols_t *S, int stream, const char *name, int type, int ns);

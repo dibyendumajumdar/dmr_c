@@ -5304,11 +5304,17 @@ static int s85(struct defs *pd0)          /*  8.5 Structure and union declaratio
    }
    return rc;
 }
+#if 1
+   static const char *s86er = "s86,er%d\n";
+   static const char *qs86 = "s86    ";
+#endif
 static int s86(struct defs *pd0)          /*  8.6 Initialization  */
 {
 #if 0
+#if 0
    static char s86er[] = "s86,er%d\n";
    static char qs86[8] = "s86    ";
+#endif
    int lrc, rc;
    char *ps, *pt;
    int i, j, k;
@@ -5399,8 +5405,9 @@ static int s86(struct defs *pd0)          /*  8.6 Initialization  */
      rc = rc+32;
    }
    return rc;
-#endif
+#else
   return 0;
+#endif
 }
 static int one(void){
    return 1;

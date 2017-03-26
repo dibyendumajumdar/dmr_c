@@ -429,6 +429,18 @@ static LLVMValueRef build_local(struct dmr_C *C, struct function *fn, struct sym
 		/* Since multiple locals may have same name but in different scopes we
 		append the symbol's address to make each variable unique */
 		result = LLVMBuildAlloca(tmp_builder, type, localname);
+		if (sym->initialized) {
+			LLVMValueRef memsetfunc = LLVMGetNamedFunction(fn->module, "llvm.memset.p0i8.i32");
+			assert(memsetfunc);
+			LLVMValueRef resulti8 = LLVMBuildBitCast(fn->builder, result, LLVMPointerType(LLVMInt8Type(), 0), LLVMGetValueName(result));
+			LLVMValueRef args[5];
+			args[0] = resulti8;
+			args[1] = LLVMConstInt(LLVMInt8Type(), 0, 0);
+			args[2] = LLVMConstInt(LLVMInt32Type(), sym->bit_size / C->target->bits_in_char, 0);
+			args[3] = LLVMConstInt(LLVMInt32Type(), sym->ctype.alignment, 0);
+			args[4] = LLVMConstInt(LLVMInt1Type(), 0, 0);
+			LLVMBuildCall(fn->builder, memsetfunc, args, 5, "");
+		}
 		LLVMDisposeBuilder(tmp_builder);
 	}
 	sym->priv = result;
@@ -1941,6 +1953,13 @@ static void set_target(struct dmr_C *C, LLVMModuleRef module)
 	//LLVMSetDataLayout(module, layout);
 }
 
+static void add_intrinsics(LLVMModuleRef module)
+{
+	LLVMTypeRef param_types[] = { LLVMPointerType(LLVMInt8Type(), 0), LLVMInt8Type(), LLVMInt32Type(), LLVMInt32Type(), LLVMInt1Type() };
+	LLVMTypeRef fn_type = LLVMFunctionType(LLVMVoidType(), param_types, 5, false);
+	LLVMValueRef fn = LLVMAddFunction(module, "llvm.memset.p0i8.i32", fn_type);
+}
+
 int main(int argc, char **argv)
 {
 	struct ptr_list *filelist = NULL;
@@ -1954,6 +1973,7 @@ int main(int argc, char **argv)
 
 	module = LLVMModuleCreateWithName("sparse");
 	set_target(C, module);
+	add_intrinsics(module);
 
 	int rc = 0;
 	if (compile(C, module, symlist)) {
@@ -1976,7 +1996,9 @@ int main(int argc, char **argv)
 	else
 		rc = 1;
 	char *error_message = NULL;
+	int dump_module = 0;
 	if (rc == 0 && LLVMVerifyModule(module, LLVMPrintMessageAction, &error_message)) {
+		dump_module = 1;
 		rc = 1;
 	}
 	if (error_message) {
@@ -1990,7 +2012,9 @@ int main(int argc, char **argv)
 		LLVMWriteBitcodeToFile(module, filename);
 	}
 	else {
-		LLVMDumpModule(module);
+		if (dump_module)
+			/* we only dump the LLVM module if verification fails */
+			LLVMDumpModule(module);
 	}
 	LLVMDisposeModule(module);
 

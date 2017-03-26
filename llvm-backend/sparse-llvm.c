@@ -486,8 +486,10 @@ static LLVMValueRef get_sym_value(struct dmr_C *C, struct function *fn, struct i
 			LLVMValueRef value;
 			if (is_float_type(C->S, sym))
 				value = LLVMConstReal(symtype, (double) (long long)expr->value);
-			else
+			else {
+				assert(LLVMGetTypeKind(symtype) == LLVMIntegerTypeKind);
 				value = LLVMConstInt(symtype, expr->value, 1);
+			}
 			if (is_static(sym))
 				LLVMSetInitializer(result, value);
 			else

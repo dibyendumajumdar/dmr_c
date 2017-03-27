@@ -481,7 +481,7 @@ static LLVMValueRef get_sym_value(struct dmr_C *C, struct function *fn, struct i
 			break;
 		}
 		case EXPR_SYMBOL: {
-			expression_error(C, expr, "unresolved symbol reference in initializer\n");
+			sparse_error(C, expr->pos, "unresolved symbol reference in initializer\n");
 			show_expression(C, expr);
 			return NULL;
 			break;
@@ -489,7 +489,7 @@ static LLVMValueRef get_sym_value(struct dmr_C *C, struct function *fn, struct i
 		case EXPR_VALUE: {
 			LLVMTypeRef symtype = symbol_type(C, fn->module, sym);
 			if (symtype == NULL) {
-				expression_error(C, expr, "invalid symbol type\n");
+				sparse_error(C, expr->pos, "invalid symbol type\n");
 				show_expression(C, expr);
 				return NULL;
 			}
@@ -507,7 +507,7 @@ static LLVMValueRef get_sym_value(struct dmr_C *C, struct function *fn, struct i
 		case EXPR_FVALUE: {
 			LLVMTypeRef symtype = symbol_type(C, fn->module, sym);
 			if (symtype == NULL) {
-				expression_error(C, expr, "invalid symbol type\n");
+				sparse_error(C, expr->pos, "invalid symbol type\n");
 				show_expression(C, expr);
 				return NULL;
 			}
@@ -522,7 +522,7 @@ static LLVMValueRef get_sym_value(struct dmr_C *C, struct function *fn, struct i
 			break;
 		}
 		default:
-			expression_error(C, expr, "unsupported expr type in initializer: %d\n", expr->type);
+			sparse_error(C, expr->pos, "unsupported expr type in initializer: %d\n", expr->type);
 			show_expression(C, expr);
 			return NULL;
 		}
@@ -547,7 +547,7 @@ static LLVMValueRef get_sym_value(struct dmr_C *C, struct function *fn, struct i
 		}
 		else {
 			if (is_static(sym) && sym->initializer) {
-				expression_error(C, sym->initializer, "unsupported initializer for local static variable\n");
+				sparse_error(C, sym->initializer->pos, "unsupported initializer for local static variable\n");
 				show_expression(C, sym->initializer);
 				return NULL;
 			}
@@ -1810,7 +1810,7 @@ static LLVMValueRef output_data(struct dmr_C *C, LLVMModuleRef module, struct sy
 			break;
 		}
 		default:
-			expression_error(C, initializer, "unsupported expr type in global data initializer: %d\n", initializer->type);
+			sparse_error(C, initializer->pos, "unsupported expr type in global data initializer: %d\n", initializer->type);
 			show_expression(C, initializer);			
 		}
 		if (!initial_value)

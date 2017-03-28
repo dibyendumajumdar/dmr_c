@@ -1209,35 +1209,38 @@ static LLVMValueRef output_op_ptrcast(struct dmr_C *C, struct function *fn, stru
 {
 	LLVMValueRef src, target;
 	LLVMTypeRef dtype;
+	struct symbol *otype = insn->orig_type;
 	LLVMOpcode op;
 	char target_name[64];
 
+	assert(is_ptr_type(insn->type));
+
 	src = insn->src->priv;
 	if (!src)
-		src = pseudo_to_value(C, fn, insn->type, insn->src);
+		src = get_operand(C, fn, otype, insn->src, 1);
 	if (!src)
 		return NULL;
 
 	pseudo_name(C, insn->target, target_name, sizeof target_name);
 
-	assert(!is_float_type(C->S, insn->type));
-
 	dtype = insn_symbol_type(C, fn->module, insn);
 	if (!dtype)
 		return NULL;
-	switch (LLVMGetTypeKind(LLVMTypeOf(src))) {
-		case LLVMPointerTypeKind:
-			op = LLVMBitCast;
-			break;
-		case LLVMIntegerTypeKind:
-			op = LLVMIntToPtr;
-			break;
-		default:
-			assert(0);
-			return NULL;
-	}
 
-	target = LLVMBuildCast(fn->builder, op, src, dtype, target_name);
+	target = build_cast(C, fn, src, dtype, target_name, 0);
+	//switch (LLVMGetTypeKind(LLVMTypeOf(src))) {
+	//	case LLVMPointerTypeKind:
+	//		op = LLVMBitCast;
+	//		break;
+	//	case LLVMIntegerTypeKind:
+	//		op = LLVMIntToPtr;
+	//		break;
+	//	default:
+	//		assert(0);
+	//		return NULL;
+	//}
+
+	//target = LLVMBuildCast(fn->builder, op, src, dtype, target_name);
 	insn->target->priv = target;
 
 	return target;

@@ -1030,10 +1030,10 @@ static LLVMValueRef output_op_store(struct dmr_C *C, struct function *fn, struct
 	LLVMValueRef addr, target_in;
 	LLVMTypeRef desttype;
 
-	//if (is_aggregate_type(insn->type)) {
-	//	sparse_error(C, insn->pos, "store to aggregate type is not yet supported, failure at insn %s, type is:", show_instruction(C, insn));
-	//	return NULL;
-	//}
+	if (is_aggregate_type(insn->type)) {
+		sparse_error(C, insn->pos, "store to aggregate type is not yet supported, failure at insn %s\n", show_instruction(C, insn));
+		return NULL;
+	}
 
 	addr = calc_memop_addr(C, fn, insn);
 	if (!addr)
@@ -1047,19 +1047,19 @@ static LLVMValueRef output_op_store(struct dmr_C *C, struct function *fn, struct
 	if (!desttype)
 		return NULL;
 
-	LLVMTypeKind kind = LLVMGetTypeKind(desttype);
-	switch (kind) {
-	case LLVMFloatTypeKind:       /**< 32 bit floating point type */
-	case LLVMDoubleTypeKind:      /**< 64 bit floating point type */
-	case LLVMIntegerTypeKind:     /**< Arbitrary bit width integers */
-	case LLVMFunctionTypeKind:    /**< Functions */
-	case LLVMPointerTypeKind:     /**< Pointers */
-		break;
-	default:
-		sparse_error(C, insn->pos, "store to unsupported type at insn %s, type is:", show_instruction(C, insn));
-		LLVMDumpType(desttype);
-		return NULL;
-	}
+	//LLVMTypeKind kind = LLVMGetTypeKind(desttype);
+	//switch (kind) {
+	//case LLVMFloatTypeKind:       /**< 32 bit floating point type */
+	//case LLVMDoubleTypeKind:      /**< 64 bit floating point type */
+	//case LLVMIntegerTypeKind:     /**< Arbitrary bit width integers */
+	//case LLVMFunctionTypeKind:    /**< Functions */
+	//case LLVMPointerTypeKind:     /**< Pointers */
+	//	break;
+	//default:
+	//	sparse_error(C, insn->pos, "store to unsupported type at insn %s, type is:", show_instruction(C, insn));
+	//	LLVMDumpType(desttype);
+	//	return NULL;
+	//}
 
 	/* Cast to the right type - to resolve issue with union types */
 	target_in = build_cast(C, fn, target_in, desttype, LLVMGetValueName(target_in), 0);

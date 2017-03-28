@@ -447,7 +447,7 @@ static LLVMValueRef build_local(struct dmr_C *C, struct function *fn, struct sym
 	return result;
 }
 
-static LLVMValueRef get_sym_value(struct dmr_C *C, struct function *fn, struct instruction *insn, pseudo_t pseudo)
+static LLVMValueRef get_sym_value(struct dmr_C *C, struct function *fn, pseudo_t pseudo)
 {
 	LLVMValueRef result = NULL;
 	struct symbol *sym = pseudo->sym;
@@ -613,7 +613,7 @@ static LLVMValueRef pseudo_to_value(struct dmr_C *C, struct function *fn, struct
 		}
 		break;
 	case PSEUDO_SYM: 
-		result = get_sym_value(C, fn, insn, pseudo);
+		result = get_sym_value(C, fn, pseudo);
 		break;
 	case PSEUDO_VAL:
 		result = val_to_value(C, fn, pseudo->value, insn->type);
@@ -1295,6 +1295,7 @@ static LLVMValueRef output_op_cast(struct dmr_C *C, struct function *fn, struct 
 {
 	LLVMValueRef src, target;
 	LLVMTypeRef dtype;
+	struct symbol *otype = insn->orig_type;
 	char target_name[64];
 	unsigned int width;
 
@@ -1305,6 +1306,10 @@ static LLVMValueRef output_op_cast(struct dmr_C *C, struct function *fn, struct 
 	src = insn->src->priv;
 	if (!src)
 		src = pseudo_to_value(C, fn, insn, insn->src);
+	if (is_int_type(C->S, otype)) {
+		LLVMTypeRef stype = symbol_type(C, fn->module, otype);
+		src = build_cast(C, fn, src, stype, LLVMGetValueName(src), op == LLVMZExt);
+	}
 	if (!src)
 		return NULL;
 
@@ -1315,28 +1320,29 @@ static LLVMValueRef output_op_cast(struct dmr_C *C, struct function *fn, struct 
 	dtype = insn_symbol_type(C, fn->module, insn);
 	if (!dtype)
 		return NULL;
-	switch (LLVMGetTypeKind(LLVMTypeOf(src))) {
-		case LLVMPointerTypeKind:
-			op = LLVMPtrToInt;
-			break;
-		case LLVMIntegerTypeKind:
-			width = LLVMGetIntTypeWidth(LLVMTypeOf(src));
-			if (insn->size < width)
-				op = LLVMTrunc;
-			else if (insn->size == width)
-				op = LLVMBitCast;
-			break;
-		case LLVMFloatTypeKind:
-		case LLVMDoubleTypeKind:
-			op = (op == LLVMZExt) ? LLVMFPToUI : LLVMFPToSI;
-			break;
-		default: {
-			sparse_error(C, insn->pos, "unsupported op_cast instruction %s: type %d\n", show_instruction(C, insn), (int)LLVMGetTypeKind(LLVMTypeOf(src)));
-			return NULL;
-		}
-	}
+	target = build_cast(C, fn, src, dtype, target_name, op == LLVMZExt);
+	//switch (LLVMGetTypeKind(LLVMTypeOf(src))) {
+	//	case LLVMPointerTypeKind:
+	//		op = LLVMPtrToInt;
+	//		break;
+	//	case LLVMIntegerTypeKind:
+	//		width = otype->bit_size;    //LLVMGetIntTypeWidth(LLVMTypeOf(src));
+	//		if (insn->size < width)
+	//			op = LLVMTrunc;
+	//		else if (insn->size == width)
+	//			op = LLVMBitCast;
+	//		break;
+	//	case LLVMFloatTypeKind:
+	//	case LLVMDoubleTypeKind:
+	//		op = (op == LLVMZExt) ? LLVMFPToUI : LLVMFPToSI;
+	//		break;
+	//	default: {
+	//		sparse_error(C, insn->pos, "unsupported op_cast instruction %s: type %d\n", show_instruction(C, insn), (int)LLVMGetTypeKind(LLVMTypeOf(src)));
+	//		return NULL;
+	//	}
+	//}
 
-	target = LLVMBuildCast(fn->builder, op, src, dtype, target_name);
+	//target = LLVMBuildCast(fn->builder, op, src, dtype, target_name);
 	insn->target->priv = target;
 
 	return target;

@@ -1288,38 +1288,40 @@ static LLVMValueRef output_op_fpcast(struct dmr_C *C, struct function *fn, struc
 	if (!dtype)
 		return NULL;
 
-	switch (LLVMGetTypeKind(LLVMTypeOf(src))) {
-	case LLVMIntegerTypeKind:
-		op = is_signed_type(otype) ? LLVMSIToFP : LLVMUIToFP;
-		break;
-	case LLVMFloatTypeKind: {
-		if (insn->size == 32)
-			op = LLVMBitCast;
-		else if (insn->size == 64)
-			op = LLVMFPExt;
-		else {
-			sparse_error(C, insn->pos, "Unsupported source float type in fpcast");
-			return NULL;
-		}
-		break;
-	}
-	case LLVMDoubleTypeKind: {
-		if (insn->size == 32)
-			op = LLVMFPTrunc;
-		else if (insn->size == 64)
-			op = LLVMBitCast;
-		else {
-			sparse_error(C, insn->pos, "Unsupported source double type in fpcast");
-			return NULL;
-		}
-		break;
-	}
-	default:
-		sparse_error(C, insn->pos, "Unsupported source type in fpcast");
-		return NULL;
-	}
+	target = build_cast(C, fn, src, dtype, target_name, !is_signed_type(otype));
 
-	target = LLVMBuildCast(fn->builder, op, src, dtype, target_name);
+	//switch (LLVMGetTypeKind(LLVMTypeOf(src))) {
+	//case LLVMIntegerTypeKind:
+	//	op = is_signed_type(otype) ? LLVMSIToFP : LLVMUIToFP;
+	//	break;
+	//case LLVMFloatTypeKind: {
+	//	if (insn->size == 32)
+	//		op = LLVMBitCast;
+	//	else if (insn->size == 64)
+	//		op = LLVMFPExt;
+	//	else {
+	//		sparse_error(C, insn->pos, "Unsupported source float type in fpcast");
+	//		return NULL;
+	//	}
+	//	break;
+	//}
+	//case LLVMDoubleTypeKind: {
+	//	if (insn->size == 32)
+	//		op = LLVMFPTrunc;
+	//	else if (insn->size == 64)
+	//		op = LLVMBitCast;
+	//	else {
+	//		sparse_error(C, insn->pos, "Unsupported source double type in fpcast");
+	//		return NULL;
+	//	}
+	//	break;
+	//}
+	//default:
+	//	sparse_error(C, insn->pos, "Unsupported source type in fpcast");
+	//	return NULL;
+	//}
+
+	//target = LLVMBuildCast(fn->builder, op, src, dtype, target_name);
 	insn->target->priv = target;
 
 	return target;

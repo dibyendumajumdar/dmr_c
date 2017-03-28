@@ -998,6 +998,11 @@ static LLVMValueRef output_op_load(struct dmr_C *C, struct function *fn, struct 
 	LLVMValueRef addr, target;
 	char name[MAX_PSEUDO_NAME];
 
+	if (is_ptr_type(insn->type) && insn->size != C->target->bits_in_pointer) {
+		sparse_error(C, insn->pos, "Unsupported size in instruction %s\n", show_instruction(C, insn));
+		return NULL;
+	}
+
 	addr = calc_memop_addr(C, fn, insn);
 	if (!addr)
 		return NULL;
@@ -1014,6 +1019,11 @@ static LLVMValueRef output_op_store(struct dmr_C *C, struct function *fn, struct
 {
 	LLVMValueRef addr, target_in;
 	LLVMTypeRef desttype;
+
+	if (is_ptr_type(insn->type) && insn->size != C->target->bits_in_pointer) {
+		sparse_error(C, insn->pos, "Unsupported size in instruction %s\n", show_instruction(C, insn));
+		return NULL;
+	}
 
 	addr = calc_memop_addr(C, fn, insn);
 	if (!addr)

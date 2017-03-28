@@ -1114,6 +1114,7 @@ static LLVMValueRef output_op_sel(struct dmr_C *C, struct function *fn, struct i
 		return NULL;
 
 	target = LLVMBuildSelect(fn->builder, src1, src2, src3, "select");
+	target = build_cast(C, fn, target, desttype, LLVMGetValueName(target), 0);
 
 	insn->target->priv = target;
 	return target;

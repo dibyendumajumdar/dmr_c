@@ -232,11 +232,24 @@ void die(struct dmr_C *C, const char *fmt, ...)
 	exit(1);
 }
 
+#define ARCH_LP32  0
+#define ARCH_LP64  1
+#define ARCH_LLP64 2
 
-#ifdef __x86_64__
-#define ARCH_M64_DEFAULT 1
+#if _WIN32 || _WIN64
+#if _WIN64
+#define ARCH_M64_DEFAULT ARCH_LLP64
 #else
-#define ARCH_M64_DEFAULT 0
+#define ARCH_M64_DEFAULT ARCH_LP32
+#endif
+#elif __GNUC__
+#ifdef __x86_64__
+#define ARCH_M64_DEFAULT ARCH_LP64 
+#else
+#define ARCH_M64_DEFAULT ARCH_LP32
+#endif
+#else
+#error Unsupported compiler
 #endif
 
 struct dmr_C *new_dmr_C()
@@ -465,12 +478,12 @@ static char **handle_multiarch_dir(struct dmr_C *C, char *arg, char **next)
 static char **handle_switch_m(struct dmr_C *C, char *arg, char **next)
 {
 	if (!strcmp(arg, "m64")) {
-		C->arch_m64 = 1;
-	}
-	else if (!strcmp(arg, "m32")) {
-		C->arch_m64 = 0;
-	}
-	else if (!strcmp(arg, "msize-long")) {
+		C->arch_m64 = ARCH_LP64;
+	} else if (!strcmp(arg, "m32")) {
+		C->arch_m64 = ARCH_LP32;
+	} else if (!strcmp(arg, "msize-llp64")) {
+		C->arch_m64 = ARCH_LLP64;
+	} else if (!strcmp(arg, "msize-long")) {
 		C->arch_msize_long = 1;
 	} else if (!strcmp(arg, "multiarch-dir"))
 		return handle_multiarch_dir(C, arg, next);
@@ -479,16 +492,35 @@ static char **handle_switch_m(struct dmr_C *C, char *arg, char **next)
 
 static void handle_arch_m64_finalize(struct dmr_C *C)
 {
-	if (C->arch_m64) {
+	switch (C->arch_m64) {
+	case ARCH_LP32:
+		C->target->bits_in_long = 32;
+		C->target->max_int_alignment = 4;
+		C->target->bits_in_pointer = 32;
+		C->target->pointer_alignment = 4;
+		break;
+	case ARCH_LP64:
 		C->target->bits_in_long = 64;
 		C->target->max_int_alignment = 8;
-		C->target->bits_in_pointer = 64;
-		C->target->pointer_alignment = 8;
 		C->target->size_t_ctype = &C->S->ulong_ctype;
 		C->target->ssize_t_ctype = &C->S->long_ctype;
+		add_pre_buffer(C, "#weak_define __LP64__ 1\n");
+		add_pre_buffer(C, "#weak_define _LP64 1\n");
+		goto case_64bit_common;
+	case ARCH_LLP64:
+		C->target->bits_in_long = 32;
+		C->target->max_int_alignment = 8;
+		C->target->size_t_ctype = &C->S->ullong_ctype;
+		C->target->ssize_t_ctype = &C->S->llong_ctype;
+		add_pre_buffer(C, "#weak_define __LLP64__ 1\n");
+		goto case_64bit_common;
+	case_64bit_common:
+		C->target->bits_in_pointer = 64;
+		C->target->pointer_alignment = 8;
 #ifdef __x86_64__
 		add_pre_buffer(C, "#weak_define __x86_64__ 1\n");
 #endif
+		break;
 	}
 }
 
@@ -601,6 +633,8 @@ static void handle_switch_W_finalize(struct dmr_C *C)
 		case STANDARD_C99:
 		case STANDARD_GNU89:
 		case STANDARD_GNU99:
+		case STANDARD_C11:
+		case STANDARD_GNU11:
 			C->Wdeclarationafterstatement = 0;
 			break;
 
@@ -705,6 +739,14 @@ static char **handle_switch_s(struct dmr_C *C, char *arg, char **next)
 
 		else if (!strcmp(arg, "gnu99") || !strcmp(arg, "gnu9x"))
 			C->standard = STANDARD_GNU99;
+
+		else if (!strcmp(arg, "c11") ||
+			 !strcmp(arg, "c1x") ||
+			 !strcmp(arg, "iso9899:2011"))
+			C->standard = STANDARD_C11;
+
+		else if (!strcmp(arg, "gnu11"))
+			C->standard = STANDARD_GNU11;
 
 		else
 			die(C, "Unsupported C dialect");
@@ -821,24 +863,82 @@ static char **handle_switch(struct dmr_C *C, char *arg, char **next)
 	return next;
 }
 
+static void predefined_sizeof(struct dmr_C *C, const char *name, unsigned bits)
+{
+	add_pre_buffer(C, "#weak_define __SIZEOF_%s__ %d\n", name, bits/8);
+}
+
+static void predefined_type_size(struct dmr_C *C, const char *name, const char *suffix, unsigned bits)
+{
+	unsigned long long max = (1ULL << (bits - 1 )) - 1;
+
+	add_pre_buffer(C, "#weak_define __%s_MAX__ %#llx%s\n", name, max, suffix);
+	predefined_sizeof(C, name, bits);
+}
+
+static void predefined_macros(struct dmr_C *C)
+{
+	add_pre_buffer(C, "#define __CHECKER__ 1\n");
+
+	predefined_sizeof(C, "SHORT", C->target->bits_in_short);
+
+	predefined_type_size(C, "INT", "", C->target->bits_in_int);
+	predefined_type_size(C, "LONG", "L", C->target->bits_in_long);
+	predefined_type_size(C, "LONG_LONG", "LL", C->target->bits_in_longlong);
+
+	predefined_sizeof(C, "INT128", 128);
+
+	predefined_sizeof(C, "SIZE_T", C->target->bits_in_pointer);
+	predefined_sizeof(C, "PTRDIFF_T", C->target->bits_in_pointer);
+	predefined_sizeof(C, "POINTER", C->target->bits_in_pointer);
+
+	predefined_sizeof(C, "FLOAT", C->target->bits_in_float);
+	predefined_sizeof(C, "DOUBLE", C->target->bits_in_double);
+	predefined_sizeof(C, "LONG_DOUBLE", C->target->bits_in_longdouble);
+}
+
 void declare_builtin_functions(struct dmr_C *C)
 {
 	/* Gaah. gcc knows tons of builtin <string.h> functions */
+	add_pre_buffer(C, "extern void *__builtin_memchr(const void *, int, __SIZE_TYPE__);\n");
 	add_pre_buffer(C, "extern void *__builtin_memcpy(void *, const void *, __SIZE_TYPE__);\n");
 	add_pre_buffer(C, "extern void *__builtin_mempcpy(void *, const void *, __SIZE_TYPE__);\n");
+	add_pre_buffer(C, "extern void *__builtin_memmove(void *, const void *, __SIZE_TYPE__);\n");
 	add_pre_buffer(C, "extern void *__builtin_memset(void *, int, __SIZE_TYPE__);\n");
 	add_pre_buffer(C, "extern int __builtin_memcmp(const void *, const void *, __SIZE_TYPE__);\n");
 	add_pre_buffer(C, "extern char *__builtin_strcat(char *, const char *);\n");
 	add_pre_buffer(C, "extern char *__builtin_strncat(char *, const char *, __SIZE_TYPE__);\n");
 	add_pre_buffer(C, "extern int __builtin_strcmp(const char *, const char *);\n");
+	add_pre_buffer(C, "extern int __builtin_strncmp(const char *, const char *, __SIZE_TYPE__);\n");
+	add_pre_buffer(C, "extern int __builtin_strcasecmp(const char *, const char *);\n");
+	add_pre_buffer(C, "extern int __builtin_strncasecmp(const char *, const char *, __SIZE_TYPE__);\n");
 	add_pre_buffer(C, "extern char *__builtin_strchr(const char *, int);\n");
+	add_pre_buffer(C, "extern char *__builtin_strrchr(const char *, int);\n");
 	add_pre_buffer(C, "extern char *__builtin_strcpy(char *, const char *);\n");
 	add_pre_buffer(C, "extern char *__builtin_strncpy(char *, const char *, __SIZE_TYPE__);\n");
+	add_pre_buffer(C, "extern char *__builtin_strdup(const char *);\n");
+	add_pre_buffer(C, "extern char *__builtin_strndup(const char *, __SIZE_TYPE__);\n");
 	add_pre_buffer(C, "extern __SIZE_TYPE__ __builtin_strspn(const char *, const char *);\n");
 	add_pre_buffer(C, "extern __SIZE_TYPE__ __builtin_strcspn(const char *, const char *);\n");
 	add_pre_buffer(C, "extern char * __builtin_strpbrk(const char *, const char *);\n");
 	add_pre_buffer(C, "extern char* __builtin_stpcpy(const char *, const char*);\n");
+	add_pre_buffer(C, "extern char* __builtin_stpncpy(const char *, const char*, __SIZE_TYPE__);\n");
 	add_pre_buffer(C, "extern __SIZE_TYPE__ __builtin_strlen(const char *);\n");
+	add_pre_buffer(C, "extern char *__builtin_strstr(const char *, const char *);\n");
+	add_pre_buffer(C, "extern char *__builtin_strcasestr(const char *, const char *);\n");
+	add_pre_buffer(C, "extern char *__builtin_strnstr(const char *, const char *, __SIZE_TYPE__);\n");
+
+	/* And even some from <strings.h> */
+	add_pre_buffer(C, "extern int  __builtin_bcmp(const void *, const void *, __SIZE_TYPE_);\n");
+	add_pre_buffer(C, "extern void __builtin_bcopy(const void *, void *, __SIZE_TYPE__);\n");
+	add_pre_buffer(C, "extern void __builtin_bzero(void *, __SIZE_TYPE__);\n");
+	add_pre_buffer(C, "extern char*__builtin_index(const char *, int);\n");
+	add_pre_buffer(C, "extern char*__builtin_rindex(const char *, int);\n");
+
+	/* And bitwise operations.. */
+	add_pre_buffer(C, "extern int __builtin_clrsb(int);\n");
+	add_pre_buffer(C, "extern int __builtin_clrsbl(long);\n");
+	add_pre_buffer(C, "extern int __builtin_clrsbll(long long);\n");
 
 	/* And bitwise operations.. */
 	add_pre_buffer(C, "extern int __builtin_clz(int);\n");
@@ -850,6 +950,9 @@ void declare_builtin_functions(struct dmr_C *C)
 	add_pre_buffer(C, "extern int __builtin_ffs(int);\n");
 	add_pre_buffer(C, "extern int __builtin_ffsl(long);\n");
 	add_pre_buffer(C, "extern int __builtin_ffsll(long long);\n");
+	add_pre_buffer(C, "extern int __builtin_parity(unsigned int);\n");
+	add_pre_buffer(C, "extern int __builtin_parityl(unsigned long);\n");
+	add_pre_buffer(C, "extern int __builtin_parityll(unsigned long long);\n");
 	add_pre_buffer(C, "extern int __builtin_popcount(unsigned int);\n");
 	add_pre_buffer(C, "extern int __builtin_popcountl(unsigned long);\n");
 	add_pre_buffer(C, "extern int __builtin_popcountll(unsigned long long);\n");
@@ -892,7 +995,9 @@ void declare_builtin_functions(struct dmr_C *C)
 	add_pre_buffer(C, "extern long __builtin_alpha_insql(long, long);\n");
 	add_pre_buffer(C, "extern long __builtin_alpha_inslh(long, long);\n");
 	add_pre_buffer(C, "extern long __builtin_alpha_cmpbge(long, long);\n");
+	add_pre_buffer(C, "extern int  __builtin_abs(int);\n");
 	add_pre_buffer(C, "extern long __builtin_labs(long);\n");
+	add_pre_buffer(C, "extern long long __builtin_llabs(long long);\n");
 	add_pre_buffer(C, "extern double __builtin_fabs(double);\n");
 	add_pre_buffer(C, "extern __SIZE_TYPE__ __builtin_va_arg_pack_len(void);\n");
 
@@ -940,6 +1045,23 @@ void declare_builtin_functions(struct dmr_C *C)
 	add_pre_buffer(C, "extern int __builtin___vsprintf_chk(char *, int, __SIZE_TYPE__, const char *, __builtin_va_list);\n");
 	add_pre_buffer(C, "extern int __builtin___vsnprintf_chk(char *, __SIZE_TYPE__, int, __SIZE_TYPE__, const char *, __builtin_va_list ap);\n");
 	add_pre_buffer(C, "extern void __builtin_unreachable(void);\n");
+
+	/* And some from <stdlib.h> */
+	add_pre_buffer(C, "extern void __builtin_abort(void);\n");
+	add_pre_buffer(C, "extern void *__builtin_calloc(__SIZE_TYPE__, __SIZE_TYPE__);\n");
+	add_pre_buffer(C, "extern void __builtin_exit(int);\n");
+	add_pre_buffer(C, "extern void *__builtin_malloc(__SIZE_TYPE__);\n");
+	add_pre_buffer(C, "extern void *__builtin_realloc(void *, __SIZE_TYPE__);\n");
+	add_pre_buffer(C, "extern void __builtin_free(void *);\n");
+
+	/* And some from <stdio.h> */
+	add_pre_buffer(C, "extern int __builtin_printf(const char *, ...);\n");
+	add_pre_buffer(C, "extern int __builtin_sprintf(char *, const char *, ...);\n");
+	add_pre_buffer(C, "extern int __builtin_snprintf(char *, __SIZE_TYPE__, const char *, ...);\n");
+	add_pre_buffer(C, "extern int __builtin_puts(const char *);\n");
+	add_pre_buffer(C, "extern int __builtin_vprintf(const char *, __builtin_va_list);\n");
+	add_pre_buffer(C, "extern int __builtin_vsprintf(char *, const char *, __builtin_va_list);\n");
+	add_pre_buffer(C, "extern int __builtin_vsnprintf(char *, __SIZE_TYPE__, const char *, __builtin_va_list ap);\n");
 }
 
 void create_builtin_stream(struct dmr_C *C)
@@ -973,6 +1095,8 @@ void create_builtin_stream(struct dmr_C *C)
 	// the right __SIZE_TYPE__.
 	if (C->target->size_t_ctype == &C->S->ullong_ctype)
 		add_pre_buffer(C, "#weak_define __SIZE_TYPE__ unsigned long long int\n");
+	else if (C->target->size_t_ctype == &C->S->ulong_ctype)
+		add_pre_buffer(C, "#weak_define __SIZE_TYPE__ unsigned long int\n");
 	else
 		add_pre_buffer(C, "#weak_define __SIZE_TYPE__ unsigned int\n");
 	add_pre_buffer(C, "#weak_define __STDC__ 1\n");
@@ -998,6 +1122,16 @@ void create_builtin_stream(struct dmr_C *C)
 
 	case STANDARD_GNU99:
 		add_pre_buffer(C, "#weak_define __STDC_VERSION__ 199901L\n");
+		break;
+
+	case STANDARD_C11:
+		add_pre_buffer(C, "#weak_define __STRICT_ANSI__ 1\n");
+
+	case STANDARD_GNU11:
+		add_pre_buffer(C, "#weak_define __STDC_NO_ATOMICS__ 1\n");
+		add_pre_buffer(C, "#weak_define __STDC_NO_COMPLEX__ 1\n");
+		add_pre_buffer(C, "#weak_define __STDC_NO_THREADS__ 1\n");
+		add_pre_buffer(C, "#weak_define __STDC_VERSION__ 201112L\n");
 		break;
 
 	default:
@@ -1144,7 +1278,7 @@ struct ptr_list *sparse_initialize(struct dmr_C *C, int argc, char **argv, struc
 	if (!ptr_list_empty(filelist)) {
 
 		create_builtin_stream(C);
-		add_pre_buffer(C, "#define __CHECKER__ 1\n");
+		predefined_macros(C);
 		if (!C->preprocess_only)
 			declare_builtin_functions(C);
 

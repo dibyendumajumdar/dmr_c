@@ -1,4 +1,8 @@
+#if __DMR_C__
 extern int printf(const char *, ...);
+#else
+#include <stdio.h>
+#endif
 static int McCarthy(int x);
 static void clobber(int x, int *y);
 static void zerofill(char *x);

@@ -61,7 +61,7 @@ void init_target(struct dmr_C *C) {
   */
   t->bits_in_float = 32;
   t->bits_in_double = 64;
-  t->bits_in_longdouble = 80;
+  t->bits_in_longdouble = sizeof(long double) * t->bits_in_char;
 
   t->max_fp_alignment = 8;
 

@@ -600,23 +600,19 @@ static LLVMValueRef val_to_value(struct dmr_C *C, struct function *fn, unsigned 
 	return constant_value(C, val, dtype);
 }
 
-static LLVMValueRef pseudo_to_value(struct dmr_C *C, struct function *fn, struct instruction *insn, pseudo_t pseudo)
+static LLVMValueRef pseudo_to_value(struct dmr_C *C, struct function *fn, struct symbol *ctype, pseudo_t pseudo)
 {
 	LLVMValueRef result = NULL;
 
 	switch (pseudo->type) {
 	case PSEUDO_REG:
 		result = pseudo->priv;
-		if (!result) {
-			sparse_error(C, insn->pos, "pseudo uninitialized, please check if variable has been initialized: insn %s\n", show_instruction(C, insn));
-			return NULL;
-		}
 		break;
 	case PSEUDO_SYM: 
 		result = get_sym_value(C, fn, pseudo);
 		break;
 	case PSEUDO_VAL:
-		result = val_to_value(C, fn, pseudo->value, insn->type);
+		result = val_to_value(C, fn, pseudo->value, ctype);
 		break;
 	case PSEUDO_ARG: 
 		result = LLVMGetParam(fn->fn, pseudo->nr - 1);
@@ -631,7 +627,7 @@ static LLVMValueRef pseudo_to_value(struct dmr_C *C, struct function *fn, struct
 		assert(0);
 	}
 	if (!result) {
-		sparse_error(C, insn->pos, "error: no result for pseudo at insn %s\n", show_instruction(C, insn));
+		fprintf(stderr, "error: no result for pseudo\n");
 		return NULL;
 	}
 	return result;
@@ -711,7 +707,7 @@ static LLVMValueRef get_operand(struct dmr_C *C, struct function *fn, struct ins
 	LLVMTypeRef instruction_type = symbol_type(C, fn->module, ctype);
 	if (instruction_type == NULL)
 		return NULL;
-	target = pseudo_to_value(C, fn, insn, pseudo);
+	target = pseudo_to_value(C, fn, ctype, pseudo);
 	if (!target)
 		return NULL;
 	if (ptrtoint && is_ptr_type(ctype))
@@ -871,13 +867,13 @@ static LLVMValueRef output_op_compare(struct dmr_C *C, struct function *fn, stru
 	if (insn->src1->type == PSEUDO_VAL)
 		lhs = val_to_value(C, fn, insn->src1->value, pseudo_type(C, insn->src2));
 	else
-		lhs = pseudo_to_value(C, fn, insn, insn->src1);
+		lhs = pseudo_to_value(C, fn, insn->type, insn->src1);
 	if (!lhs)
 		return NULL;
 	if (insn->src2->type == PSEUDO_VAL)
 		rhs = val_to_value(C, fn, insn->src2->value, pseudo_type(C, insn->src1));
 	else
-		rhs = pseudo_to_value(C, fn, insn, insn->src2);
+		rhs = pseudo_to_value(C, fn, insn->type, insn->src2);
 	if (!rhs)
 		return NULL;
 
@@ -951,7 +947,7 @@ static LLVMValueRef calc_memop_addr(struct dmr_C *C, struct function *fn, struct
 	off = LLVMConstInt(int_type, (int) insn->offset, 0);
 
 	/* convert src to the effective pointer type */
-	src = pseudo_to_value(C, fn, insn, insn->src);
+	src = pseudo_to_value(C, fn, insn->type, insn->src);
 	if (!src)
 		return NULL;
 	as = LLVMGetPointerAddressSpace(LLVMTypeOf(src));
@@ -999,7 +995,7 @@ static LLVMValueRef output_op_store(struct dmr_C *C, struct function *fn, struct
 	if (!addr)
 		return NULL;
 
-	target_in = pseudo_to_value(C, fn, insn, insn->target);
+	target_in = pseudo_to_value(C, fn, insn->type, insn->target);
 	if (!target_in)
 		return NULL;
 
@@ -1028,7 +1024,7 @@ static LLVMValueRef output_op_br(struct dmr_C *C, struct function *fn, struct in
 {
 	if (br->cond) {
 		LLVMValueRef cond = bool_value(C, fn,
-				pseudo_to_value(C, fn, br, br->cond));
+				pseudo_to_value(C, fn, br->type, br->cond));
 
 		return LLVMBuildCondBr(fn->builder, cond,
 				br->bb_true->priv,
@@ -1046,7 +1042,7 @@ static LLVMValueRef output_op_sel(struct dmr_C *C, struct function *fn, struct i
 	if (!desttype)
 		return NULL;
 
-	src1 = pseudo_to_value(C, fn, insn, insn->src1);
+	src1 = pseudo_to_value(C, fn, insn->type, insn->src1);
 	if (!src1)
 		return NULL;
 	src1 = bool_value(C, fn, src1);
@@ -1080,7 +1076,7 @@ static LLVMValueRef output_op_switch(struct dmr_C *C, struct function *fn, struc
 			def = jmp->target;
 	} END_FOR_EACH_PTR(jmp);
 
-	sw_val = pseudo_to_value(C, fn, insn, insn->target);
+	sw_val = pseudo_to_value(C, fn, insn->type, insn->target);
 	if (!sw_val)
 		return NULL;
 	target = LLVMBuildSwitch(fn->builder, sw_val,
@@ -1123,7 +1119,7 @@ static LLVMValueRef output_op_call(struct dmr_C *C, struct function *fn, struct 
 		struct symbol *atype;
 		
 		atype = get_nth_symbol(ftype->arguments, i);
-		value = pseudo_to_value(C, fn, arg, arg->src);
+		value = pseudo_to_value(C, fn, arg->type, arg->src);
 		if (!value)
 			return NULL;
 		if (atype) {
@@ -1137,7 +1133,7 @@ static LLVMValueRef output_op_call(struct dmr_C *C, struct function *fn, struct 
 		args[i++] = value;
 	} END_FOR_EACH_PTR(arg);
 
-	func = pseudo_to_value(C, fn, insn, insn->func);
+	func = pseudo_to_value(C, fn, insn->type, insn->func);
 	if (!func)
 		return NULL;
 	pseudo_name(C, insn->target, name, sizeof name);
@@ -1219,7 +1215,7 @@ static LLVMValueRef output_op_ptrcast(struct dmr_C *C, struct function *fn, stru
 
 	src = insn->src->priv;
 	if (!src)
-		src = pseudo_to_value(C, fn, insn, insn->src);
+		src = pseudo_to_value(C, fn, insn->type, insn->src);
 	if (!src)
 		return NULL;
 
@@ -1262,7 +1258,7 @@ static LLVMValueRef output_op_cast(struct dmr_C *C, struct function *fn, struct 
 
 	src = insn->src->priv;
 	if (!src)
-		src = pseudo_to_value(C, fn, insn, insn->src);
+		src = pseudo_to_value(C, fn, insn->type, insn->src);
 	if (is_int_type(C->S, otype)) {
 		LLVMTypeRef stype = symbol_type(C, fn->module, otype);
 		src = build_cast(C, fn, src, stype, LLVMGetValueName(src), op == LLVMZExt);
@@ -1293,7 +1289,7 @@ static LLVMValueRef output_op_fpcast(struct dmr_C *C, struct function *fn, struc
 
 	src = insn->src->priv;
 	if (!src)
-		src = pseudo_to_value(C, fn, insn, insn->src);
+		src = pseudo_to_value(C, fn, insn->type, insn->src);
 	if (!src)
 		return NULL;
 
@@ -1349,7 +1345,7 @@ static LLVMValueRef output_op_copy(struct dmr_C *C, struct function *fn, struct 
 	char target_name[64];
 
 	pseudo_name(C, insn->target, target_name, sizeof target_name);
-	src = pseudo_to_value(C, fn, insn, pseudo);
+	src = pseudo_to_value(C, fn, insn->type, pseudo);
 	if (!src)
 		return NULL;
 
@@ -1414,7 +1410,7 @@ static LLVMValueRef output_op_symaddr(struct dmr_C *C, struct function *fn, stru
 	LLVMTypeRef dtype;
 	char name[64];
 
-	src = pseudo_to_value(C, fn, insn, insn->symbol);
+	src = pseudo_to_value(C, fn, insn->type, insn->symbol);
 	if (!src)
 		return NULL;
 
@@ -1434,7 +1430,7 @@ static LLVMValueRef output_op_not(struct dmr_C *C, struct function *fn, struct i
 	LLVMValueRef src, target;
 	char target_name[64];
 
-	src = pseudo_to_value(C, fn, insn, insn->src);
+	src = pseudo_to_value(C, fn, insn->type, insn->src);
 	if (!src)
 		return NULL;
 
@@ -1452,7 +1448,7 @@ static LLVMValueRef output_op_neg(struct dmr_C *C, struct function *fn, struct i
 	LLVMValueRef src, target;
 	char target_name[64];
 
-	src = pseudo_to_value(C, fn, insn, insn->src);
+	src = pseudo_to_value(C, fn, insn->type, insn->src);
 	if (!src)
 		return NULL;
 

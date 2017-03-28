@@ -104,6 +104,7 @@ static LLVMTypeRef sym_array_type(struct dmr_C *C, LLVMModuleRef module, struct 
 	base_type = sym->ctype.base_type;
 	/* empty struct is undefined [6.7.2.1(8)] */
 	assert(base_type->bit_size > 0);
+	assert((int)sym->bit_size > 0);
 
 	elem_type = symbol_type(C, module, base_type);
 	if (!elem_type)

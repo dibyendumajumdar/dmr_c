@@ -1,7 +1,7 @@
 /**
 * Sparse LLVM backend
 *
-* Originally copyrights: Pekka Enberg and Jeff Garzik (https://lwn.net/Articles/456709/)
+* Original copyrights: Pekka Enberg and Jeff Garzik (https://lwn.net/Articles/456709/)
 * Additional copyrights: Dibyendu Majumdar and Luc Van Oostenryck
 * 
 * Permission is hereby granted, free of charge, to any person obtaining a copy

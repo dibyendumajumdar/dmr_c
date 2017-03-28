@@ -998,11 +998,6 @@ static LLVMValueRef output_op_load(struct dmr_C *C, struct function *fn, struct 
 	LLVMValueRef addr, target;
 	char name[MAX_PSEUDO_NAME];
 
-	if (is_ptr_type(insn->type) && insn->size != C->target->bits_in_pointer) {
-		sparse_error(C, insn->pos, "Unsupported size in instruction %s\n", show_instruction(C, insn));
-		return NULL;
-	}
-
 	addr = calc_memop_addr(C, fn, insn);
 	if (!addr)
 		return NULL;
@@ -1020,11 +1015,6 @@ static LLVMValueRef output_op_store(struct dmr_C *C, struct function *fn, struct
 	LLVMValueRef addr, target_in;
 	LLVMTypeRef desttype;
 
-	if (is_ptr_type(insn->type) && insn->size != C->target->bits_in_pointer) {
-		sparse_error(C, insn->pos, "Unsupported size in instruction %s\n", show_instruction(C, insn));
-		return NULL;
-	}
-
 	addr = calc_memop_addr(C, fn, insn);
 	if (!addr)
 		return NULL;
@@ -1036,6 +1026,20 @@ static LLVMValueRef output_op_store(struct dmr_C *C, struct function *fn, struct
 	desttype = insn_symbol_type(C, fn->module, insn);
 	if (!desttype)
 		return NULL;
+
+	LLVMTypeKind kind = LLVMGetTypeKind(desttype);
+	switch (kind) {
+	case LLVMFloatTypeKind:       /**< 32 bit floating point type */
+	case LLVMDoubleTypeKind:      /**< 64 bit floating point type */
+	case LLVMIntegerTypeKind:     /**< Arbitrary bit width integers */
+	case LLVMFunctionTypeKind:    /**< Functions */
+	case LLVMPointerTypeKind:     /**< Pointers */
+		break;
+	default:
+		sparse_error(C, insn->pos, "store to unsupported type at insn %s, type is:", show_instruction(C, insn));
+		LLVMDumpType(desttype);
+		return NULL;
+	}
 
 	/* Cast to the right type - to resolve issue with union types */
 	target_in = build_cast(C, fn, target_in, desttype, LLVMGetValueName(target_in), 0);

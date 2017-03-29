@@ -355,6 +355,16 @@ typedef struct lua_TValue {
 		i_o->tt = (8 + 1);                                             \
 		checkliveness(G(L), i_o);                                      \
 	}
+#if __DMR_C__
+#define setobj(L, obj1, obj2)                                                  \
+	{                                                                      \
+		const TValue *o2 = (obj2);                                     \
+		TValue *o1 = (obj1);                                           \
+		o1->value.n = o2->value.n;                                         \
+		o1->tt = o2->tt;                                               \
+		checkliveness(G(L), o1);                                       \
+	}
+#else
 #define setobj(L, obj1, obj2)                                                  \
 	{                                                                      \
 		const TValue *o2 = (obj2);                                     \
@@ -363,6 +373,7 @@ typedef struct lua_TValue {
 		o1->tt = o2->tt;                                               \
 		checkliveness(G(L), o1);                                       \
 	}
+#endif
 #define setttype(obj, tt) (ttype(obj) = (tt))
 #define iscollectable(o) (ttype(o) >= 4)
 typedef TValue *StkId;
@@ -1889,7 +1900,11 @@ static TValue *newkey(lua_State *L, Table *t, const TValue *key)
 			while (gnext(othern) != mp)
 				othern = gnext(othern);
 			gnext(othern) = n;
+#if __DMR_C__
+			memcpy(n, mp, sizeof *n);
+#else
 			*n = *mp;
+#endif
 			gnext(mp) = NULL;
 			setnilvalue(gval(mp));
 		} else {
@@ -1898,7 +1913,11 @@ static TValue *newkey(lua_State *L, Table *t, const TValue *key)
 			mp = n;
 		}
 	}
+#if __DMR_C__
+	gkey(mp)->value.n = key->value.n;
+#else
 	gkey(mp)->value = key->value;
+#endif
 	gkey(mp)->tt = key->tt;
 	luaC_barriert(L, t, key);
 	return gval(mp);
@@ -3442,7 +3461,11 @@ static void luaX_next(LexState *ls)
 {
 	ls->lastline = ls->linenumber;
 	if (ls->lookahead.token != TK_EOS) {
+#if __DMR_C__
+		memcpy(&ls->t, &ls->lookahead, sizeof ls->t);
+#else
 		ls->t = ls->lookahead;
+#endif
 		ls->lookahead.token = TK_EOS;
 	} else
 		ls->t.token = llex(ls, &ls->t.seminfo);
@@ -4143,13 +4166,21 @@ static void luaK_posfix(FuncState *fs, BinOpr op, expdesc *e1, expdesc *e2)
 	case OPR_AND: {
 		luaK_dischargevars(fs, e2);
 		luaK_concat(fs, &e2->f, e1->f);
+#if __DMR_C__
+		memcpy(e1, e2, sizeof *e1);
+#else
 		*e1 = *e2;
+#endif
 		break;
 	}
 	case OPR_OR: {
 		luaK_dischargevars(fs, e2);
 		luaK_concat(fs, &e2->t, e1->t);
+#if __DMR_C__
+		memcpy(e1, e2, sizeof *e1);
+#else
 		*e1 = *e2;
+#endif
 		break;
 	}
 	case OPR_CONCAT: {

@@ -9,7 +9,7 @@ static int dosomething(const char **strings)
 		printf("%s\n", *s);
 		i++;
 	}
-	return i == 2; 
+	return i; 
 }
 int main(void)
 {

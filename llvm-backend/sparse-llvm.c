@@ -48,28 +48,28 @@ struct function {
 	LLVMTypeRef			return_type;
 };
 
-static LLVMTypeRef symbol_type(struct dmr_C *C, LLVMModuleRef module, struct symbol *sym, struct symbol *sym_node);
+static LLVMTypeRef type_to_llvmtype(struct dmr_C *C, LLVMModuleRef module, struct symbol *sym, struct symbol *sym_node);
 static LLVMValueRef constant_value(struct dmr_C *C, unsigned long long val, LLVMTypeRef dtype);
 
 static LLVMTypeRef get_symnode_type(struct dmr_C *C, LLVMModuleRef module, struct symbol *sym)
 {
 	assert(sym->type == SYM_NODE);
-	return 	symbol_type(C, module, sym->ctype.base_type, sym);
+	return 	type_to_llvmtype(C, module, sym->ctype.base_type, sym);
 }
 
 static LLVMTypeRef get_symnode_or_basetype(struct dmr_C *C, LLVMModuleRef module, struct symbol *sym) 
 {
 	if (sym->type == SYM_NODE) {
 		assert(sym->ctype.base_type->type != SYM_NODE);
-		return symbol_type(C, module, sym->ctype.base_type, sym);
+		return type_to_llvmtype(C, module, sym->ctype.base_type, sym);
 	}
-	return symbol_type(C, module, sym, NULL);
+	return type_to_llvmtype(C, module, sym, NULL);
 }
 
 
 static LLVMTypeRef func_return_type(struct dmr_C *C, LLVMModuleRef module, struct symbol *sym, struct symbol *sym_node)
 {
-	return symbol_type(C, module, sym->ctype.base_type, sym_node);
+	return type_to_llvmtype(C, module, sym->ctype.base_type, sym_node);
 }
 
 static LLVMTypeRef sym_func_type(struct dmr_C *C, LLVMModuleRef module, struct symbol *sym, struct symbol *sym_node)
@@ -128,7 +128,7 @@ static LLVMTypeRef sym_array_type(struct dmr_C *C, LLVMModuleRef module, struct 
 		fprintf(stderr, "array size can not be determined\n");
 		return NULL;
 	}
-	elem_type = symbol_type(C, module, base_type, sym_node);
+	elem_type = type_to_llvmtype(C, module, base_type, sym_node);
 	if (!elem_type)
 		return NULL;
 
@@ -206,7 +206,7 @@ static LLVMTypeRef sym_ptr_type(struct dmr_C *C, LLVMModuleRef module, struct sy
 	if (is_void_type(C->S, sym->ctype.base_type))
 		type = LLVMInt8Type();
 	else {
-		type = symbol_type(C, module, sym->ctype.base_type, sym_node);
+		type = type_to_llvmtype(C, module, sym->ctype.base_type, sym_node);
 		if (!type)
 			return NULL;
 	}
@@ -275,7 +275,7 @@ static int is_aggregate_type(struct symbol *sym)
 	}
 }
 
-static LLVMTypeRef symbol_type(struct dmr_C *C, LLVMModuleRef module, struct symbol *sym, struct symbol *sym_node)
+static LLVMTypeRef type_to_llvmtype(struct dmr_C *C, LLVMModuleRef module, struct symbol *sym, struct symbol *sym_node)
 {
 	LLVMTypeRef ret = NULL;
 
@@ -290,7 +290,7 @@ static LLVMTypeRef symbol_type(struct dmr_C *C, LLVMModuleRef module, struct sym
 		break;
 	case SYM_RESTRICT:
 	case SYM_ENUM:
-		ret = symbol_type(C, module, sym->ctype.base_type, sym_node);
+		ret = type_to_llvmtype(C, module, sym->ctype.base_type, sym_node);
 		break;
 	case SYM_BASETYPE:
 		ret = sym_basetype_type(C, sym, sym_node);
@@ -1220,7 +1220,7 @@ static LLVMValueRef output_op_call(struct dmr_C *C, struct function *fn, struct 
 	if (!func)
 		return NULL;
 	pseudo_name(C, insn->target, name, sizeof name);
-	LLVMTypeRef function_type = symbol_type(C, fn->module, ftype, NULL);
+	LLVMTypeRef function_type = type_to_llvmtype(C, fn->module, ftype, NULL);
 	if (!function_type)
 		return NULL;
 	LLVMTypeRef fptr_type = LLVMPointerType(function_type, 0);
@@ -1675,7 +1675,7 @@ static LLVMValueRef output_fn(struct dmr_C *C, LLVMModuleRef module, struct entr
 
 	name = show_ident(C, sym->ident);
 
-	return_type = symbol_type(C, module, ret_type, NULL);
+	return_type = type_to_llvmtype(C, module, ret_type, NULL);
 	if (!return_type)
 		return NULL;
 

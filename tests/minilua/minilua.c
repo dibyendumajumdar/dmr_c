@@ -22,7 +22,7 @@
 * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ******************************************************************************/
-#define INITIALIZER_SUPPORTED 0
+#define INITIALIZER_SUPPORTED !__DMR_C__
 #ifdef _MSC_VER
 typedef unsigned __int64 U64;
 #else

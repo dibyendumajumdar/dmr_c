@@ -392,7 +392,8 @@ static struct symbol * examine_node_type(struct global_symbols_t *S, struct symb
 
 			if (node_type && node_type->bit_size >= 0)
 				bit_size = array_element_offset(S->C->target, node_type->bit_size, count);
-			base_type->bit_size = bit_size;
+			/* Note that the bit_size will be set on parent SYM_NODE rather than here */
+			//base_type->bit_size = bit_size;
 		}
 	}
 	

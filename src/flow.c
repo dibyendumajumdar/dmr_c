@@ -37,7 +37,7 @@ static int rewrite_branch(struct dmr_C *C, struct basic_block *bb,
 	*ptr = new;
 	replace_bb_in_list(&bb->children, old, new, 1);
 	remove_bb_from_list(&old->parents, bb, 1);
-	add_bb(&new->parents, bb);
+	add_bb(C, &new->parents, bb);
 	return 1;
 }
 
@@ -369,8 +369,8 @@ found_dominator:
 		br = delete_last_instruction(&parent->insns);
 		phi = alloc_phi(C, parent, one->target, one->type);
 		phi->ident = phi->ident ? phi->ident : pseudo->ident;
-		add_instruction(&parent->insns, br);
-		use_pseudo(C, insn, phi, add_pseudo(dominators, phi));
+		add_instruction(C, &parent->insns, br);
+		use_pseudo(C, insn, phi, add_pseudo(C, dominators, phi));
 	} END_FOR_EACH_PTR(parent);
 	return 1;
 }		
@@ -1020,7 +1020,7 @@ out:
 				assert(insn->bb == bb);
 				insn->bb = parent;
 			}
-			add_instruction(&parent->insns, insn);
+			add_instruction(C, &parent->insns, insn);
 		} END_FOR_EACH_PTR(insn);
 		bb->insns = NULL;
 

@@ -159,14 +159,14 @@ extern void copy_statement(struct dmr_C *C, struct statement *src, struct statem
 extern int inline_function(struct dmr_C *C, struct expression *expr, struct symbol *sym);
 extern void uninline(struct dmr_C *C, struct symbol *sym);
 
-static inline void add_statement(struct ptr_list **list, struct statement *stmt)
+static inline void add_statement(struct dmr_C *C, struct ptr_list **list, struct statement *stmt)
 {
-	ptrlist_add(list, stmt);
+	ptrlist_add(list, stmt, &C->ptrlist_allocator);
 }
 
-static inline void add_expression(struct ptr_list **list, struct expression *expr)
+static inline void add_expression(struct dmr_C *C, struct ptr_list **list, struct expression *expr)
 {
-	ptrlist_add(list, expr);
+	ptrlist_add(list, expr, &C->ptrlist_allocator);
 }
 
 static inline int statement_list_size(struct ptr_list *list)

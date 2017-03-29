@@ -499,9 +499,9 @@ static inline void concat_symbol_list(struct ptr_list *from, struct ptr_list **t
 	ptrlist_concat(from, to);
 }
 
-static inline void add_symbol(struct ptr_list **list, struct symbol *sym)
+static inline void add_symbol(struct dmr_C *C, struct ptr_list **list, struct symbol *sym)
 {
-	ptrlist_add(list, sym);
+	ptrlist_add(list, sym, &C->ptrlist_allocator);
 }
 
 static inline int symbol_list_size(struct ptr_list *list)

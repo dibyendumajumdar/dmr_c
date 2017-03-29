@@ -55,8 +55,8 @@ found_dominator:
 		br = delete_last_instruction(&parent->insns);
 		phi = alloc_phi(C, parent, one->target, one->type);
 		phi->ident = phi->ident ? phi->ident: one->target->ident;
-		add_instruction(&parent->insns, br);
-		use_pseudo(C, insn, phi, add_pseudo(dominators, phi));
+		add_instruction(C, &parent->insns, br);
+		use_pseudo(C, insn, phi, add_pseudo(C, dominators, phi));
 	} END_FOR_EACH_PTR(parent);
 	return 1;
 }		

@@ -108,6 +108,7 @@ struct dmr_C {
 	struct linearizer_state_t *L;
 
 	// memory allocators
+	struct allocator ptrlist_allocator;
 	struct allocator token_allocator;
 	struct allocator protected_token_allocator;
 	struct allocator byte_allocator;

@@ -56,7 +56,7 @@ void destroy_all_scopes(struct dmr_C *C) {
 void bind_scope(struct dmr_C *C, struct symbol *sym, struct scope *scope)
 {
 	sym->scope = scope;
-	add_symbol(&scope->symbols, sym);
+	add_symbol(C, &scope->symbols, sym);
 }
 
 void rebind_scope(struct dmr_C *C, struct symbol *sym, struct scope *news)

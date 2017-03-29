@@ -342,24 +342,24 @@ static inline int is_branch_goto(struct instruction *br)
 	return br && br->opcode==OP_BR && (!br->bb_true || !br->bb_false);
 }
 
-static inline void add_bb(struct ptr_list **list, struct basic_block *bb)
+static inline void add_bb(struct dmr_C *C, struct ptr_list **list, struct basic_block *bb)
 {
-	ptrlist_add(list, bb);
+	ptrlist_add(list, bb, &C->ptrlist_allocator);
 }
 
-static inline void add_instruction(struct ptr_list **list, struct instruction *insn)
+static inline void add_instruction(struct dmr_C *C, struct ptr_list **list, struct instruction *insn)
 {
-	ptrlist_add(list, insn);
+	ptrlist_add(list, insn, &C->ptrlist_allocator);
 }
 
-static inline void add_multijmp(struct ptr_list **list, struct multijmp *multijmp)
+static inline void add_multijmp(struct dmr_C *C, struct ptr_list **list, struct multijmp *multijmp)
 {
-	ptrlist_add(list, multijmp);
+	ptrlist_add(list, multijmp, &C->ptrlist_allocator);
 }
 
-static inline pseudo_t *add_pseudo(struct ptr_list **list, pseudo_t pseudo)
+static inline pseudo_t *add_pseudo(struct dmr_C *C, struct ptr_list **list, pseudo_t pseudo)
 {
-	return (pseudo_t *) ptrlist_add(list, pseudo);
+	return (pseudo_t *) ptrlist_add(list, pseudo, &C->ptrlist_allocator);
 }
 
 static inline int remove_pseudo(struct ptr_list **list, pseudo_t pseudo)
@@ -382,14 +382,14 @@ static inline int bb_reachable(struct basic_block *bb)
 	return bb != NULL;
 }
 
-static inline void add_pseudo_ptr(pseudo_t *ptr, struct ptr_list **list)
+static inline void add_pseudo_ptr(struct dmr_C *C, pseudo_t *ptr, struct ptr_list **list)
 {
-	ptrlist_add(list, ptr);
+	ptrlist_add(list, ptr, &C->ptrlist_allocator);
 }
 
-static inline void add_pseudo_user_ptr(struct pseudo_user *user, struct ptr_list **list)
+static inline void add_pseudo_user_ptr(struct dmr_C *C, struct pseudo_user *user, struct ptr_list **list)
 {
-	ptrlist_add(list, user);
+	ptrlist_add(list, user, &C->ptrlist_allocator);
 }
 
 static inline int has_use_list(pseudo_t p)
@@ -409,7 +409,7 @@ static inline void use_pseudo(struct dmr_C *C, struct instruction *insn, pseudo_
 {
 	*pp = p;
 	if (has_use_list(p))
-		add_pseudo_user_ptr(alloc_pseudo_user(C, insn, pp), &p->users);
+		add_pseudo_user_ptr(C, alloc_pseudo_user(C, insn, pp), &p->users);
 }
 
 static inline void remove_bb_from_list(struct ptr_list **list, struct basic_block *entry, int count)

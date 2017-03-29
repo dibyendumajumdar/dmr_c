@@ -287,6 +287,8 @@ struct dmr_C *new_dmr_C()
 	C->max_warnings = 100;
 	C->show_info = 1;
 
+	allocator_init(&C->ptrlist_allocator, "ptrlist_nodes", sizeof(struct ptr_list),
+		__alignof__(struct ptr_list), CHUNK);
 	allocator_init(&C->byte_allocator, "bytes", sizeof(char),
 		       __alignof__(char), CHUNK);
 	allocator_init(&C->ident_allocator, "identifiers", sizeof(struct ident),
@@ -359,6 +361,7 @@ void destroy_dmr_C(struct dmr_C *C)
 	allocator_destroy(&C->scope_allocator);
 	allocator_destroy(&C->expression_allocator);
 	allocator_destroy(&C->statement_allocator);
+	allocator_destroy(&C->ptrlist_allocator);
 	free(C);
 }
 
@@ -1267,7 +1270,7 @@ struct ptr_list *sparse_initialize(struct dmr_C *C, int argc, char **argv, struc
 			args = handle_switch(C, arg + 1, args);
 			continue;
 		}
-		ptrlist_add(filelist, arg);
+		ptrlist_add(filelist, arg, &C->ptrlist_allocator);
 	}
 	handle_switch_W_finalize(C);
 	handle_switch_v_finalize(C);

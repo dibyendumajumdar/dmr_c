@@ -195,7 +195,7 @@ static void add_pseudo_exclusive(struct dmr_C *C, struct ptr_list **list, pseudo
 {
 	if (!pseudo_in_list(*list, pseudo)) {
 		C->L->liveness_changed = 1;
-		add_pseudo(list, pseudo);
+		add_pseudo(C, list, pseudo);
 	}
 }
 
@@ -216,7 +216,7 @@ static void insn_uses(struct dmr_C *C, struct basic_block *bb, pseudo_t pseudo)
 static void insn_defines(struct dmr_C *C, struct basic_block *bb, pseudo_t pseudo)
 {
 	assert(trackable_pseudo(pseudo));
-	add_pseudo(&bb->defines, pseudo);
+	add_pseudo(C, &bb->defines, pseudo);
 }
 
 static void track_bb_liveness(struct dmr_C *C, struct basic_block *bb)
@@ -308,7 +308,7 @@ void track_phi_uses(struct dmr_C *C, struct instruction *insn)
 			continue;
 		def = phi->def;
 		assert(def->opcode == OP_PHISOURCE);
-		ptrlist_add(&def->phi_users, insn);
+		ptrlist_add(&def->phi_users, insn, &C->ptrlist_allocator);
 	} END_FOR_EACH_PTR(phi);
 }
 
@@ -328,8 +328,8 @@ static void death_def(struct dmr_C *C, struct basic_block *bb, pseudo_t pseudo)
 static void death_use(struct dmr_C *C, struct basic_block *bb, pseudo_t pseudo)
 {
 	if (trackable_pseudo(pseudo) && !pseudo_in_list(*C->L->live_list, pseudo)) {
-		add_pseudo(&C->L->dead_list, pseudo);
-		add_pseudo(C->L->live_list, pseudo);
+		add_pseudo(C, &C->L->dead_list, pseudo);
+		add_pseudo(C, C->L->live_list, pseudo);
 	}
 }
 

@@ -38,6 +38,7 @@ struct ptr_list {
 	int nr_;
 	struct ptr_list *prev_;
 	struct ptr_list *next_;
+	struct allocator *allocator_;
 	void *list_[LIST_NODE_NR];
 };
 
@@ -49,7 +50,7 @@ struct ptr_list_iter {
 
 /* The ptr list */
 extern int ptrlist_size(const struct ptr_list *self);
-extern void **ptrlist_add(struct ptr_list **self, void *ptr);
+extern void **ptrlist_add(struct ptr_list **self, void *ptr, struct allocator *alloc);
 extern void *ptrlist_nth_entry(struct ptr_list *list, unsigned int idx);
 extern void *ptrlist_first(struct ptr_list *list);
 extern void *ptrlist_last(struct ptr_list *list);
@@ -75,8 +76,6 @@ extern void ptrlist_iter_split_current(struct ptr_list_iter *self);
 extern void ptrlist_iter_insert(struct ptr_list_iter *self, void *newitem);
 extern void ptrlist_iter_remove(struct ptr_list_iter *self);
 extern void ptrlist_iter_set(struct ptr_list_iter *self, void *ptr);
-
-extern void ptrlist_destroy_all_allocated_nodes();
 
 static inline void **ptrlist_iter_this_address(struct ptr_list_iter *self) {
 	return &self->__list->list_[self->__nr];

@@ -116,7 +116,7 @@ static void clean_up_one_instruction(struct dmr_C *C, struct basic_block *bb, st
 	}
 	hash += hash >> 16;
 	hash &= INSN_HASH_SIZE-1;
-	add_instruction(C->L->insn_hash_table + hash, insn);
+	add_instruction(C, C->L->insn_hash_table + hash, insn);
 }
 
 static void clean_up_insns(struct dmr_C *C, struct entrypoint *ep)
@@ -294,12 +294,12 @@ static inline void remove_instruction(struct ptr_list **list, struct instruction
 	ptrlist_remove(list, insn, count);
 }
 
-static void add_instruction_to_end(struct instruction *insn, struct basic_block *bb)
+static void add_instruction_to_end(struct dmr_C *C, struct instruction *insn, struct basic_block *bb)
 {
 	struct instruction *br = delete_last_instruction(&bb->insns);
 	insn->bb = bb;
-	add_instruction(&bb->insns, insn);
-	add_instruction(&bb->insns, br);
+	add_instruction(C, &bb->insns, insn);
+	add_instruction(C, &bb->insns, br);
 }
 
 static struct instruction * try_to_cse(struct dmr_C *C, struct entrypoint *ep, struct instruction *i1, struct instruction *i2)
@@ -339,7 +339,7 @@ static struct instruction * try_to_cse(struct dmr_C *C, struct entrypoint *ep, s
 	if (common) {
 		i1 = cse_one_instruction(C, i2, i1);
 		remove_instruction(&b1->insns, i1, 1);
-		add_instruction_to_end(i1, common);
+		add_instruction_to_end(C, i1, common);
 	}
 
 	return i1;

@@ -638,10 +638,10 @@ static void add_goto(struct dmr_C *C, struct entrypoint *ep, struct basic_block 
 	if (bb_reachable(src)) {
 		struct instruction *br = alloc_instruction(C, OP_BR, 0);
 		br->bb_true = dst;
-		add_bb(&dst->parents, src);
-		add_bb(&src->children, dst);
+		add_bb(C, &dst->parents, src);
+		add_bb(C, &src->children, dst);
 		br->bb = src;
-		add_instruction(&src->insns, br);
+		add_instruction(C, &src->insns, br);
 		ep->active = NULL;
 	}
 }
@@ -652,7 +652,7 @@ static void add_one_insn(struct dmr_C *C, struct entrypoint *ep, struct instruct
 
 	if (bb_reachable(bb)) {
 		insn->bb = bb;
-		add_instruction(&bb->insns, insn);
+		add_instruction(C, &bb->insns, insn);
 	}
 }
 
@@ -663,7 +663,7 @@ static void set_activeblock(struct dmr_C *C, struct entrypoint *ep, struct basic
 
 	ep->active = bb;
 	if (bb_reachable(bb))
-		add_bb(&ep->bbs, bb);
+		add_bb(C, &ep->bbs, bb);
 }
 
 static void remove_parent(struct dmr_C *C, struct basic_block *child, struct basic_block *parent)
@@ -686,7 +686,7 @@ void insert_branch(struct dmr_C *C, struct basic_block *bb, struct instruction *
 	br = alloc_instruction(C, OP_BR, 0);
 	br->bb = bb;
 	br->bb_true = target;
-	add_instruction(&bb->insns, br);
+	add_instruction(C, &bb->insns, br);
 
 	FOR_EACH_PTR(bb->children, child) {
 		if (child == target) {
@@ -722,8 +722,8 @@ void insert_select(struct dmr_C *C, struct basic_block *bb, struct instruction *
 	use_pseudo(C, select, if_true, &select->src2);
 	use_pseudo(C, select, if_false, &select->src3);
 
-	add_instruction(&bb->insns, select);
-	add_instruction(&bb->insns, br);
+	add_instruction(C, &bb->insns, select);
+	add_instruction(C, &bb->insns, br);
 }
 
 static inline int bb_empty(struct basic_block *bb)
@@ -759,10 +759,10 @@ static void add_branch(struct dmr_C *C, struct entrypoint *ep, struct expression
 		use_pseudo(C, br, cond, &br->cond);
 		br->bb_true = bb_true;
 		br->bb_false = bb_false;
-		add_bb(&bb_true->parents, bb);
-		add_bb(&bb_false->parents, bb);
-		add_bb(&bb->children, bb_true);
-		add_bb(&bb->children, bb_false);
+		add_bb(C, &bb_true->parents, bb);
+		add_bb(C, &bb_false->parents, bb);
+		add_bb(C, &bb->children, bb_true);
+		add_bb(C, &bb->children, bb_false);
 		add_one_insn(C, ep, br);
 	}
 }
@@ -801,7 +801,7 @@ static pseudo_t symbol_pseudo(struct dmr_C *C, struct entrypoint *ep, struct sym
 		pseudo->sym = sym;
 		pseudo->ident = sym->ident;
 		sym->pseudo = pseudo;
-		add_pseudo(&ep->accesses, pseudo);
+		add_pseudo(C, &ep->accesses, pseudo);
 	}
 	/* Symbol pseudos have neither nr, usage nor def */
 	return pseudo;
@@ -821,7 +821,7 @@ pseudo_t value_pseudo(struct dmr_C *C, long long val)
 	pseudo = (pseudo_t)allocator_allocate(&C->L->pseudo_allocator, 0);
 	pseudo->type = PSEUDO_VAL;
 	pseudo->value = val;
-	add_pseudo(list, pseudo);
+	add_pseudo(C, list, pseudo);
 
 	/* Value pseudos have neither nr, usage nor def */
 	return pseudo;
@@ -835,7 +835,7 @@ static pseudo_t argument_pseudo(struct dmr_C *C, struct entrypoint *ep, int nr, 
 	pseudo->type = PSEUDO_ARG;
 	pseudo->nr = nr;
 	pseudo->sym = arg;
-	add_pseudo(&entry->arg_list, pseudo);
+	add_pseudo(C, &entry->arg_list, pseudo);
 
 	/* Argument pseudos have neither usage nor def */
 	return pseudo;
@@ -854,7 +854,7 @@ pseudo_t alloc_phi(struct dmr_C *C, struct basic_block *source, pseudo_t pseudo,
 	use_pseudo(C, insn, pseudo, &insn->phi_src);
 	insn->bb = source;
 	insn->target = phi;
-	add_instruction(&source->insns, insn);
+	add_instruction(C, &source->insns, insn);
 	return phi;
 }
 
@@ -1234,7 +1234,7 @@ static void push_argument(struct dmr_C *C, struct instruction *insn, pseudo_t ar
 	struct instruction *push = alloc_typed_instruction(C, OP_PUSH, ctype);
 	push->call = insn;
 	use_pseudo(C, push, arg, &push->src);
-	add_instruction(&insn->arguments, push);
+	add_instruction(C, &insn->arguments, push);
 }
 
 static pseudo_t linearize_call_expression(struct dmr_C *C, struct entrypoint *ep, struct expression *expr)
@@ -1384,8 +1384,8 @@ static pseudo_t add_join_conditional(struct dmr_C *C, struct entrypoint *ep, str
 		return phi1;
 
 	phi_node = alloc_typed_instruction(C, OP_PHI, expr->ctype);
-	use_pseudo(C, phi_node, phi1, add_pseudo(&phi_node->phi_list, phi1));
-	use_pseudo(C, phi_node, phi2, add_pseudo(&phi_node->phi_list, phi2));
+	use_pseudo(C, phi_node, phi1, add_pseudo(C, &phi_node->phi_list, phi1));
+	use_pseudo(C, phi_node, phi2, add_pseudo(C, &phi_node->phi_list, phi2));
 	phi_node->target = target = alloc_pseudo(C, phi_node);
 	add_one_insn(C, ep, phi_node);
 	return target;
@@ -1727,7 +1727,7 @@ static pseudo_t linearize_inlined_call(struct dmr_C *C, struct entrypoint *ep, s
 		concat_symbol_list(args->declaration, &ep->syms);
 		FOR_EACH_PTR(args->declaration, sym) {
 			pseudo_t value = linearize_one_symbol(C, ep, sym);
-			add_pseudo(&insn->inlined_args, value);
+			add_pseudo(C, &insn->inlined_args, value);
 		} END_FOR_EACH_PTR(sym);
 	}
 
@@ -1775,7 +1775,7 @@ static void add_asm_input(struct dmr_C *C, struct entrypoint *ep, struct instruc
 	rule->ident = ident;
 	rule->constraint = constraint;
 	use_pseudo(C, insn, pseudo, &rule->pseudo);
-	ptrlist_add(&insn->asm_rules->inputs, rule);
+	ptrlist_add(&insn->asm_rules->inputs, rule, &C->ptrlist_allocator);
 }
 
 static void add_asm_output(struct dmr_C *C, struct entrypoint *ep, struct instruction *insn, struct expression *expr,
@@ -1793,7 +1793,7 @@ static void add_asm_output(struct dmr_C *C, struct entrypoint *ep, struct instru
 	rule->ident = ident;
 	rule->constraint = constraint;
 	use_pseudo(C, insn, pseudo, &rule->pseudo);
-	ptrlist_add(&insn->asm_rules->outputs, rule);
+	ptrlist_add(&insn->asm_rules->outputs, rule, &C->ptrlist_allocator);
 }
 
 static pseudo_t linearize_asm_statement(struct dmr_C *C, struct entrypoint *ep, struct statement *stmt)
@@ -1917,11 +1917,11 @@ static pseudo_t linearize_return(struct dmr_C *C, struct entrypoint *ep, struct 
 			phi_node = alloc_typed_instruction(C, OP_PHI, expr->ctype);
 			phi_node->target = alloc_pseudo(C, phi_node);
 			phi_node->bb = bb_return;
-			add_instruction(&bb_return->insns, phi_node);
+			add_instruction(C, &bb_return->insns, phi_node);
 		}
 		phi = alloc_phi(C, active, src, expr->ctype);
 		phi->ident = C->S->return_ident;
-		use_pseudo(C, phi_node, phi, add_pseudo(&phi_node->phi_list, phi));
+		use_pseudo(C, phi_node, phi, add_pseudo(C, &phi_node->phi_list, phi));
 	}
 	add_goto(C, ep, bb_return);
 	return VOID_PSEUDO(C);
@@ -1968,9 +1968,9 @@ static pseudo_t linearize_switch(struct dmr_C *C, struct entrypoint *ep, struct 
 				jmp = alloc_multijmp(C, bb_case, begin, end);
 
 		}
-		add_multijmp(&switch_ins->multijmp_list, jmp);
-		add_bb(&bb_case->parents, active);
-		add_bb(&active->children, bb_case);
+		add_multijmp(C, &switch_ins->multijmp_list, jmp);
+		add_bb(C, &bb_case->parents, active);
+		add_bb(C, &active->children, bb_case);
 	} END_FOR_EACH_PTR(sym);
 
 	bind_label(C, stmt->switch_break, switch_end, stmt->pos);
@@ -1983,9 +1983,9 @@ static pseudo_t linearize_switch(struct dmr_C *C, struct entrypoint *ep, struct 
 		default_case = switch_end;
 
 	jmp = alloc_multijmp(C, default_case, 1, 0);
-	add_multijmp(&switch_ins->multijmp_list, jmp);
-	add_bb(&default_case->parents, active);
-	add_bb(&active->children, default_case);
+	add_multijmp(C, &switch_ins->multijmp_list, jmp);
+	add_bb(C, &default_case->parents, active);
+	add_bb(C, &active->children, default_case);
 	sort_switch_cases(C, switch_ins);
 
 	return VOID_PSEUDO(C);
@@ -2122,9 +2122,9 @@ pseudo_t linearize_statement(struct dmr_C *C, struct entrypoint *ep, struct stat
 		FOR_EACH_PTR(stmt->target_list, sym) {
 			struct basic_block *bb_computed = get_bound_block(C, ep, sym);
 			struct multijmp *jmp = alloc_multijmp(C, bb_computed, 1, 0);
-			add_multijmp(&goto_ins->multijmp_list, jmp);
-			add_bb(&bb_computed->parents, ep->active);
-			add_bb(&active->children, bb_computed);
+			add_multijmp(C, &goto_ins->multijmp_list, jmp);
+			add_bb(C, &bb_computed->parents, ep->active);
+			add_bb(C, &active->children, bb_computed);
 		} END_FOR_EACH_PTR(sym);
 
 		finish_block(ep);

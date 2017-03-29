@@ -709,7 +709,7 @@ void destroy_parser(struct dmr_C *C) {
 static void fn_local_symbol(struct dmr_C *C, struct symbol *sym)
 {
 	if (C->P->function_symbol_list)
-		add_symbol(C->P->function_symbol_list, sym);
+		add_symbol(C, C->P->function_symbol_list, sym);
 }
 
 static int SENTINEL_ATTR match_idents(struct dmr_C *C, struct token *token, ...)
@@ -983,7 +983,7 @@ static struct token *parse_enum_declaration(struct dmr_C *C, struct token *token
 		sym->initializer = expr;
 		sym->enum_member = 1;
 		sym->ctype.base_type = parent;
-		ptrlist_add(&parent->symbol_list, sym);
+		ptrlist_add(&parent->symbol_list, sym, &C->ptrlist_allocator);
 
 		if (base_type != &C->S->bad_ctype) {
 			if (ctype->type == SYM_NODE)
@@ -1269,7 +1269,7 @@ static struct token *attribute_context(struct dmr_C *C, struct token *token, str
 	}
 
 	if (argc)
-		ptrlist_add(&ctx->ctype.contexts, context);
+		ptrlist_add(&ctx->ctype.contexts, context, &C->ptrlist_allocator);
 
 	token = expect(C, token, ')', "after context attribute");
 	return token;
@@ -1942,7 +1942,7 @@ static struct token *declaration_list(struct dmr_C *C, struct token *token, stru
 		decl->ctype = ctx.ctype;
 		decl->ctype.modifiers |= mod;
 		decl->endpos = token->pos;
-		add_symbol(list, decl);
+		add_symbol(C, list, decl);
 		if (!match_op(token, ','))
 			break;
 		token = token->next;
@@ -2028,11 +2028,11 @@ static struct token *parse_asm_operands(struct dmr_C *C, struct token *token, st
 			ident = token->next->next->ident;
 			token = token->next->next->next;
 		}
-		add_expression(inout, (struct expression *)ident); /* UGGLEE!!! */
+		add_expression(C, inout, (struct expression *)ident); /* UGGLEE!!! */
 		token = primary_expression(C, token->next, &expr);
-		add_expression(inout, expr);
+		add_expression(C, inout, expr);
 		token = parens_expression(C, token, &expr, "in asm parameter");
-		add_expression(inout, expr);
+		add_expression(C, inout, expr);
 	} while (match_op(token, ','));
 	return token;
 }
@@ -2045,7 +2045,7 @@ static struct token *parse_asm_clobbers(struct dmr_C *C, struct token *token, st
 	do {
 		token = primary_expression(C, token->next, &expr);
 		if (expr)
-			add_expression(clobbers, expr);
+			add_expression(C, clobbers, expr);
 	} while (match_op(token, ','));
 	return token;
 }
@@ -2060,7 +2060,7 @@ static struct token *parse_asm_labels(struct dmr_C *C, struct token *token, stru
 		if (token_type(token) != TOKEN_IDENT)
 			return token;
 		label = label_symbol(C, token);
-		add_symbol(labels, label);
+		add_symbol(C, labels, label);
 		token = token->next;
 	} while (match_op(token, ','));
 	return token;
@@ -2221,7 +2221,7 @@ static void add_case_statement(struct dmr_C *C, struct statement *stmt)
 		return;
 	}
 	sym = alloc_symbol(C->S, stmt->pos, SYM_NODE);
-	add_symbol(&target->symbol_list, sym);
+	add_symbol(C, &target->symbol_list, sym);
 	sym->stmt = stmt;
 	stmt->case_label = sym;
 	fn_local_symbol(C, sym);
@@ -2372,7 +2372,7 @@ static struct token *parse_goto_statement(struct dmr_C *C, struct token *token, 
 	token = token->next;
 	if (match_op(token, '*')) {
 		token = parse_expression(C, token->next, &stmt->goto_expression);
-		add_statement(&C->P->function_computed_goto_list, stmt);
+		add_statement(C, &C->P->function_computed_goto_list, stmt);
 	} else if (token_type(token) == TOKEN_IDENT) {
 		stmt->goto_label = label_symbol(C, token);
 		token = token->next;
@@ -2483,7 +2483,7 @@ static struct token * statement_list(struct dmr_C *C, struct token *token, struc
 			seen_statement = C->Wdeclarationafterstatement;
 			token = statement(C, token, &stmt);
 		}
-		add_statement(list, stmt);
+		add_statement(C, list, stmt);
 	}
 	return token;
 }
@@ -2497,7 +2497,7 @@ static struct token *identifier_list(struct dmr_C *C, struct token *token, struc
 		token = token->next;
 		sym->endpos = token->pos;
 		sym->ctype.base_type = &C->S->incomplete_ctype;
-		add_symbol(list, sym);
+		add_symbol(C, list, sym);
 		if (!match_op(token, ',') ||
 		    token_type(token->next) != TOKEN_IDENT ||
 		    lookup_type(token->next))
@@ -2528,7 +2528,7 @@ static struct token *parameter_type_list(struct dmr_C *C, struct token *token, s
 				break;
 			warning(C, token->pos, "void parameter");
 		}
-		add_symbol(list, sym);
+		add_symbol(C, list, sym);
 		if (!match_op(token, ','))
 			break;
 		token = token->next;
@@ -2634,7 +2634,7 @@ static struct token *initializer_list(struct dmr_C *C, struct ptr_list **list, s
 		token = single_initializer(C, &expr, token);
 		if (!expr)
 			break;
-		add_expression(list, expr);
+		add_expression(C, list, expr);
 		if (!match_op(token, ','))
 			break;
 		token = token->next;
@@ -2700,7 +2700,7 @@ static struct token *parse_function_body(struct dmr_C *C, struct token *token, s
 
 	end_function(C, decl);
 	if (!(decl->ctype.modifiers & MOD_INLINE))
-		add_symbol(list, decl);
+		add_symbol(C, list, decl);
 	check_declaration(C->S, decl);
 	decl->definition = decl;
 	prev = decl->same_symbol;
@@ -2801,7 +2801,7 @@ static struct token *toplevel_asm_declaration(struct dmr_C *C, struct token *tok
 
 	token = parse_asm_statement(C, token, stmt);
 
-	add_symbol(list, anon);
+	add_symbol(C, list, anon);
 	return token;
 }
 
@@ -2894,7 +2894,7 @@ struct token *external_declaration(struct dmr_C *C, struct token *token, struct 
 		}
 		if (!is_typedef) {
 			if (!(decl->ctype.modifiers & (MOD_EXTERN | MOD_INLINE))) {
-				add_symbol(list, decl);
+				add_symbol(C, list, decl);
 				fn_local_symbol(C, decl);
 			}
 		}

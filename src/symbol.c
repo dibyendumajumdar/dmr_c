@@ -50,7 +50,7 @@ void access_symbol(struct global_symbols_t *S, struct symbol *sym)
 {
 	if (sym->ctype.modifiers & MOD_INLINE) {
 		if (!(sym->ctype.modifiers & MOD_ACCESSED)) {
-			add_symbol(&S->translation_unit_used_list, sym);
+			add_symbol(S->C, &S->translation_unit_used_list, sym);
 			sym->ctype.modifiers |= MOD_ACCESSED;
 		}
 	}
@@ -542,8 +542,8 @@ void create_fouled(struct global_symbols_t *S, struct symbol *type)
 		news->bit_size = S->C->target->bits_in_int;
 		news->type = SYM_FOULED;
 		news->ctype.base_type = type;
-		add_symbol(&S->restr, type);
-		add_symbol(&S->fouled, news);
+		add_symbol(S->C, &S->restr, type);
+		add_symbol(S->C, &S->fouled, news);
 	}
 }
 

@@ -29,10 +29,17 @@ running globals1.c
 running init1.c
 hello 55 1.500000 65.780000
 ocal string 6 4.200000 42.340000
+running initializers1.c
+foo->i = 1, foo->j = 2
+foo->i = 99, foo->j = 0
+running initializers2.c
+dibyendu
+majumdar
 running locals1.c
 running locals2.c
 running matmul.c
 -95.583583
+running onebit.c
 running opt1.c
 -1.000000
 running paranoia0.c

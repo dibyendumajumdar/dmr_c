@@ -5,6 +5,6 @@
 #include <port.h>
 #include <dmr_c.h>
 
-extern LLVMModuleRef dmr_C_llvmcompile(int argc, char **argv, LLVMContextRef context, const char *modulename, const char *inputbuffer);
+extern LLVMModuleRef dmrC_llvmcompile(int argc, char **argv, LLVMContextRef context, const char *modulename, const char *inputbuffer);
 
 #endif

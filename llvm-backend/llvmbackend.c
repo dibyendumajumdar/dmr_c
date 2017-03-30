@@ -30,7 +30,7 @@ int main(int argc, char **argv)
 {
 	LLVMModuleRef module;
 	int rc = 1;
-	module = dmr_C_llvmcompile(argc, argv, LLVMGetGlobalContext(), "sparse", NULL);	
+	module = dmrC_llvmcompile(argc, argv, LLVMGetGlobalContext(), "sparse", NULL);	
 	if (module) {
 		LLVMDisposeModule(module);
 		rc = 0;

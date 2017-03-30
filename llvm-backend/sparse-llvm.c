@@ -1951,7 +1951,7 @@ static void add_intrinsics(LLVMModuleRef module)
 	LLVMValueRef fn = LLVMAddFunction(module, "llvm.memset.p0i8.i32", fn_type);
 }
 
-LLVMModuleRef dmr_C_llvmcompile(int argc, char **argv, LLVMContextRef context, const char *modulename, const char *inputbuffer)
+LLVMModuleRef dmrC_llvmcompile(int argc, char **argv, LLVMContextRef context, const char *modulename, const char *inputbuffer)
 {
 	struct ptr_list *filelist = NULL;
 	struct ptr_list *symlist;

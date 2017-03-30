@@ -645,20 +645,6 @@ struct symbol *dmrC_create_symbol(struct global_symbols_t *S, int stream, const 
 	return sym;
 }
 
-struct symbol *get_nth1_arg(struct symbol *fn, int idx)
-{
-	/* TODO assert that symbol is a function */
-	struct ptr_list *args = fn->ctype.base_type->arguments;
-	struct symbol *arg;
-	int i = 0;
-	FOR_EACH_PTR(args, arg) {
-		if (++i == idx)
-			return arg;
-	} END_FOR_EACH_PTR(arg);
-	return NULL;
-}
-
-
 void dmrC_init_symbols(struct dmr_C *C)
 {
 	struct global_symbols_t *S = (struct global_symbols_t *) calloc(1, sizeof(struct global_symbols_t));

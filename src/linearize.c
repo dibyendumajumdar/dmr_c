@@ -23,8 +23,8 @@
 #include <flow.h>
 #include <target.h>
 
-pseudo_t linearize_statement(struct dmr_C *C, struct entrypoint *ep, struct statement *stmt);
-pseudo_t linearize_expression(struct dmr_C *C, struct entrypoint *ep, struct expression *expr);
+static pseudo_t linearize_statement(struct dmr_C *C, struct entrypoint *ep, struct statement *stmt);
+static pseudo_t linearize_expression(struct dmr_C *C, struct entrypoint *ep, struct expression *expr);
 
 static pseudo_t add_binary_op(struct dmr_C *C, struct entrypoint *ep, struct symbol *ctype, int op, pseudo_t left, pseudo_t right);
 static pseudo_t add_setval(struct dmr_C *C, struct entrypoint *ep, struct symbol *ctype, struct expression *val);
@@ -1348,7 +1348,7 @@ static pseudo_t linearize_binop(struct dmr_C *C, struct entrypoint *ep, struct e
 
 static pseudo_t linearize_logical_branch(struct dmr_C *C, struct entrypoint *ep, struct expression *expr, struct basic_block *bb_true, struct basic_block *bb_false);
 
-pseudo_t linearize_cond_branch(struct dmr_C *C, struct entrypoint *ep, struct expression *expr, struct basic_block *bb_true, struct basic_block *bb_false);
+static pseudo_t linearize_cond_branch(struct dmr_C *C, struct entrypoint *ep, struct expression *expr, struct basic_block *bb_true, struct basic_block *bb_false);
 
 static pseudo_t linearize_select(struct dmr_C *C, struct entrypoint *ep, struct expression *expr)
 {
@@ -1478,7 +1478,7 @@ static pseudo_t linearize_compare(struct dmr_C *C, struct entrypoint *ep, struct
 }
 
 
-pseudo_t linearize_cond_branch(struct dmr_C *C, struct entrypoint *ep, struct expression *expr, struct basic_block *bb_true, struct basic_block *bb_false)
+static pseudo_t linearize_cond_branch(struct dmr_C *C, struct entrypoint *ep, struct expression *expr, struct basic_block *bb_true, struct basic_block *bb_false)
 {
 	pseudo_t cond;
 
@@ -1592,7 +1592,7 @@ static void linearize_argument(struct dmr_C *C, struct entrypoint *ep, struct sy
 	finish_address_gen(ep, &ad);
 }
 
-pseudo_t linearize_expression(struct dmr_C *C, struct entrypoint *ep, struct expression *expr)
+static pseudo_t linearize_expression(struct dmr_C *C, struct entrypoint *ep, struct expression *expr)
 {
 	if (!expr)
 		return VOID_PSEUDO(C);
@@ -2039,7 +2039,7 @@ static pseudo_t linearize_iterator(struct dmr_C *C, struct entrypoint *ep, struc
 	return VOID_PSEUDO(C);
 }
 
-pseudo_t linearize_statement(struct dmr_C *C, struct entrypoint *ep, struct statement *stmt)
+static pseudo_t linearize_statement(struct dmr_C *C, struct entrypoint *ep, struct statement *stmt)
 {
 	struct basic_block *bb;
 

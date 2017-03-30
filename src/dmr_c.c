@@ -1245,12 +1245,12 @@ static struct ptr_list *sparse_initial(struct dmr_C *C)
 	return sparse_tokenstream(C, C->pre_buffer_begin);
 }
 
-void protect_token_alloc(struct dmr_C *C) {
+static void protect_token_alloc(struct dmr_C *C) {
 	/* prevent tokens from being deallocated ? */
 	dmrC_allocator_transfer(&C->token_allocator, &C->protected_token_allocator);
 }
 
-void clear_token_alloc(struct dmr_C *C) {
+static void clear_token_alloc(struct dmr_C *C) {
 	/* prevent tokens from being deallocated ? */
 	dmrC_allocator_drop_all_allocations(&C->token_allocator);
 }

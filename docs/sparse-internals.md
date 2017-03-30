@@ -72,11 +72,11 @@ The same pseudo can have many different types.
 ### Pointer arithmetic uses byte offsets
 
 With an example:
-== C code ==
+* C code
 
     void *foo(int *p) { return p + 5; }
 
-== linearized code ==
+* linearized code
 
     foo:
     .L0:
@@ -87,7 +87,7 @@ With an example:
 
 This is correct.
 
-== LLVM code from sparse-llvm ==
+* LLVM code from sparse-llvm
     
     define i8* @foo(i32* %ARG1) {
     L0:

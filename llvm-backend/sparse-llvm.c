@@ -34,7 +34,7 @@
 #include <assert.h>
 
 #include <port.h>
-#include <dmr_c.h>
+#include <dmr_c_llvm.h>
 #include <symbol.h>
 #include <expression.h>
 #include <linearize.h>
@@ -49,7 +49,7 @@ struct function {
 };
 
 static LLVMTypeRef type_to_llvmtype(struct dmr_C *C, LLVMModuleRef module, struct symbol *sym, struct symbol *sym_node);
-static LLVMValueRef constant_value(struct dmr_C *C, unsigned long long val, LLVMTypeRef dtype);
+static LLVMValueRef constant_value(struct dmr_C *C, LLVMModuleRef module, unsigned long long val, LLVMTypeRef dtype);
 
 static LLVMTypeRef get_symnode_type(struct dmr_C *C, LLVMModuleRef module, struct symbol *sym)
 {
@@ -57,7 +57,7 @@ static LLVMTypeRef get_symnode_type(struct dmr_C *C, LLVMModuleRef module, struc
 	return 	type_to_llvmtype(C, module, sym->ctype.base_type, sym);
 }
 
-static LLVMTypeRef get_symnode_or_basetype(struct dmr_C *C, LLVMModuleRef module, struct symbol *sym) 
+static LLVMTypeRef get_symnode_or_basetype(struct dmr_C *C, LLVMModuleRef module, struct symbol *sym)
 {
 	if (sym->type == SYM_NODE) {
 		assert(sym->ctype.base_type->type != SYM_NODE);
@@ -81,10 +81,10 @@ static LLVMTypeRef sym_func_type(struct dmr_C *C, LLVMModuleRef module, struct s
 	int n_arg = 0;
 
 	/* to avoid strangeness with varargs [for now], we build
-	 * the function and type anew, for each call.  This
-	 * is probably wrong.  We should look up the
-	 * symbol declaration info.
-	 */
+	* the function and type anew, for each call.  This
+	* is probably wrong.  We should look up the
+	* symbol declaration info.
+	*/
 
 	ret_type = func_return_type(C, module, sym, sym_node);
 	if (!ret_type)
@@ -107,7 +107,7 @@ static LLVMTypeRef sym_func_type(struct dmr_C *C, LLVMModuleRef module, struct s
 		idx++;
 	} END_FOR_EACH_PTR(arg);
 	func_type = LLVMFunctionType(ret_type, arg_type, n_arg,
-				     sym->variadic);
+		sym->variadic);
 
 	return func_type;
 }
@@ -146,7 +146,7 @@ static LLVMTypeRef sym_struct_type(struct dmr_C *C, LLVMModuleRef module, struct
 	unsigned nr = 0;
 
 	snprintf(buffer, sizeof(buffer), "struct.%s", sym->ident ? sym->ident->name : "anno");
-	ret = LLVMStructCreateNamed(LLVMGetGlobalContext(), buffer);
+	ret = LLVMStructCreateNamed(LLVMGetModuleContext(module), buffer);
 	/* set ->aux to avoid recursion */
 	sym->aux = ret;
 
@@ -162,10 +162,10 @@ static LLVMTypeRef sym_struct_type(struct dmr_C *C, LLVMModuleRef module, struct
 		if (!member_type)
 			return NULL;
 
-		elem_types[nr++] = member_type; 
+		elem_types[nr++] = member_type;
 	} END_FOR_EACH_PTR(member);
 
-	LLVMStructSetBody(ret, elem_types, nr, 0 /* packed? */); 
+	LLVMStructSetBody(ret, elem_types, nr, 0 /* packed? */);
 	return ret;
 }
 
@@ -176,7 +176,7 @@ static LLVMTypeRef sym_union_type(struct dmr_C *C, LLVMModuleRef module, struct 
 	LLVMTypeRef type;
 
 	snprintf(buffer, sizeof(buffer), "union.%s", sym->ident ? sym->ident->name : "anno");
-	type = LLVMStructCreateNamed(LLVMGetGlobalContext(), buffer);
+	type = LLVMStructCreateNamed(LLVMGetModuleContext(module), buffer);
 	/* set ->aux to avoid recursion */
 	sym->aux = type;
 
@@ -190,7 +190,7 @@ static LLVMTypeRef sym_union_type(struct dmr_C *C, LLVMModuleRef module, struct 
 		*/
 		union_size = sym->bit_size / 8;
 		if (union_size > 0) {
-			elem_types[0] = LLVMArrayType(LLVMInt8Type(), union_size);
+			elem_types[0] = LLVMArrayType(LLVMInt8TypeInContext(LLVMGetModuleContext(module)), union_size);
 
 			LLVMStructSetBody(type, elem_types, 1, 0 /* packed? */);
 		}
@@ -204,7 +204,7 @@ static LLVMTypeRef sym_ptr_type(struct dmr_C *C, LLVMModuleRef module, struct sy
 
 	/* 'void *' is treated like 'char *' */
 	if (is_void_type(C->S, sym->ctype.base_type))
-		type = LLVMInt8Type();
+		type = LLVMInt8TypeInContext(LLVMGetModuleContext(module));
 	else {
 		type = type_to_llvmtype(C, module, sym->ctype.base_type, sym_node);
 		if (!type)
@@ -213,44 +213,45 @@ static LLVMTypeRef sym_ptr_type(struct dmr_C *C, LLVMModuleRef module, struct sy
 	return LLVMPointerType(type, 0);
 }
 
-static LLVMTypeRef sym_basetype_type(struct dmr_C *C, struct symbol *sym, struct symbol *sym_node)
+static LLVMTypeRef sym_basetype_type(struct dmr_C *C, LLVMModuleRef module, struct symbol *sym, struct symbol *sym_node)
 {
 	LLVMTypeRef ret = NULL;
 
 	if (is_float_type(C->S, sym)) {
 		switch (sym->bit_size) {
 		case 32:
-			ret = LLVMFloatType();
+			ret = LLVMFloatTypeInContext(LLVMGetModuleContext(module));
 			break;
 		case 64:
-			ret = LLVMDoubleType();
+			ret = LLVMDoubleTypeInContext(LLVMGetModuleContext(module));
 			break;
 		case 80:
-			ret = LLVMX86FP80Type();
+			ret = LLVMX86FP80TypeInContext(LLVMGetModuleContext(module));
 			break;
 		default:
 			fprintf(stderr, "invalid bit size %d for type %d\n", sym->bit_size, sym->type);
 			return NULL;
 		}
-	} else {
+	}
+	else {
 		switch (sym->bit_size) {
 		case -1:
-			ret = LLVMVoidType();
+			ret = LLVMVoidTypeInContext(LLVMGetModuleContext(module));
 			break;
 		case 1:
-			ret = LLVMInt1Type();
+			ret = LLVMInt1TypeInContext(LLVMGetModuleContext(module));
 			break;
 		case 8:
-			ret = LLVMInt8Type();
+			ret = LLVMInt8TypeInContext(LLVMGetModuleContext(module));
 			break;
 		case 16:
-			ret = LLVMInt16Type();
+			ret = LLVMInt16TypeInContext(LLVMGetModuleContext(module));
 			break;
 		case 32:
-			ret = LLVMInt32Type();
+			ret = LLVMInt32TypeInContext(LLVMGetModuleContext(module));
 			break;
 		case 64:
-			ret = LLVMInt64Type();
+			ret = LLVMInt64TypeInContext(LLVMGetModuleContext(module));
 			break;
 		default:
 			fprintf(stderr, "invalid bit size %d for type %d", sym->bit_size, sym->type);
@@ -286,14 +287,14 @@ static LLVMTypeRef type_to_llvmtype(struct dmr_C *C, LLVMModuleRef module, struc
 
 	switch (sym->type) {
 	case SYM_BITFIELD:
-		ret = LLVMIntType(sym->bit_size);
+		ret = LLVMIntTypeInContext(LLVMGetModuleContext(module), sym->bit_size);
 		break;
 	case SYM_RESTRICT:
 	case SYM_ENUM:
 		ret = type_to_llvmtype(C, module, sym->ctype.base_type, sym_node);
 		break;
 	case SYM_BASETYPE:
-		ret = sym_basetype_type(C, sym, sym_node);
+		ret = sym_basetype_type(C, module, sym, sym_node);
 		break;
 	case SYM_PTR:
 		ret = sym_ptr_type(C, module, sym, sym_node);
@@ -326,14 +327,14 @@ static LLVMTypeRef insn_symbol_type(struct dmr_C *C, LLVMModuleRef module, struc
 		return get_symnode_or_basetype(C, module, insn->type);
 	}
 	switch (insn->size) {
-		case 8:		return LLVMInt8Type();
-		case 16:	return LLVMInt16Type();
-		case 32:	return LLVMInt32Type();
-		case 64:	return LLVMInt64Type();
+	case 8:		return LLVMInt8TypeInContext(LLVMGetModuleContext(module));
+	case 16:	return LLVMInt16TypeInContext(LLVMGetModuleContext(module));
+	case 32:	return LLVMInt32TypeInContext(LLVMGetModuleContext(module));
+	case 64:	return LLVMInt64TypeInContext(LLVMGetModuleContext(module));
 
-		default:
-			sparse_error(C, insn->pos, "invalid bit size %d", insn->size);
-			return NULL;
+	default:
+		sparse_error(C, insn->pos, "invalid bit size %d", insn->size);
+		return NULL;
 	}
 }
 
@@ -463,7 +464,7 @@ static const char * pseudo_name(struct dmr_C *C, pseudo_t pseudo, char *buf, siz
 	return buf;
 }
 
-static LLVMValueRef build_local(struct dmr_C *C, struct function *fn, struct symbol *sym) 
+static LLVMValueRef build_local(struct dmr_C *C, struct function *fn, struct symbol *sym)
 {
 	const char *name = show_ident(C, sym->ident);
 	LLVMTypeRef type = get_symnode_type(C, fn->module, sym);
@@ -476,7 +477,7 @@ static LLVMValueRef build_local(struct dmr_C *C, struct function *fn, struct sym
 			result = LLVMAddGlobal(fn->module, type, localname);
 			if (!is_extern(sym))
 				LLVMSetLinkage(result, LLVMInternalLinkage);
-			else 
+			else
 				LLVMSetLinkage(result, LLVMExternalLinkage);
 		}
 	}
@@ -485,7 +486,7 @@ static LLVMValueRef build_local(struct dmr_C *C, struct function *fn, struct sym
 		/* LLVM requires allocas to be at the start */
 		LLVMBasicBlockRef entrybbr = LLVMGetEntryBasicBlock(fn->fn);
 		/* Use temporary Builder as we don't want to mess the function builder */
-		LLVMBuilderRef tmp_builder = LLVMCreateBuilder();
+		LLVMBuilderRef tmp_builder = LLVMCreateBuilderInContext(LLVMGetModuleContext(fn->module));
 		LLVMValueRef firstins = LLVMGetFirstInstruction(entrybbr);
 		if (firstins)
 			LLVMPositionBuilderBefore(tmp_builder, firstins);
@@ -497,13 +498,13 @@ static LLVMValueRef build_local(struct dmr_C *C, struct function *fn, struct sym
 		if (sym->initialized && is_aggregate_type(sym)) {
 			LLVMValueRef memsetfunc = LLVMGetNamedFunction(fn->module, "llvm.memset.p0i8.i32");
 			assert(memsetfunc);
-			LLVMValueRef resulti8 = LLVMBuildBitCast(fn->builder, result, LLVMPointerType(LLVMInt8Type(), 0), LLVMGetValueName(result));
+			LLVMValueRef resulti8 = LLVMBuildBitCast(fn->builder, result, LLVMPointerType(LLVMInt8TypeInContext(LLVMGetModuleContext(fn->module)), 0), LLVMGetValueName(result));
 			LLVMValueRef args[5];
 			args[0] = resulti8;
-			args[1] = LLVMConstInt(LLVMInt8Type(), 0, 0);
-			args[2] = LLVMConstInt(LLVMInt32Type(), sym->bit_size / C->target->bits_in_char, 0);
-			args[3] = LLVMConstInt(LLVMInt32Type(), sym->ctype.alignment, 0);
-			args[4] = LLVMConstInt(LLVMInt1Type(), 0, 0);
+			args[1] = LLVMConstInt(LLVMInt8TypeInContext(LLVMGetModuleContext(fn->module)), 0, 0);
+			args[2] = LLVMConstInt(LLVMInt32TypeInContext(LLVMGetModuleContext(fn->module)), sym->bit_size / C->target->bits_in_char, 0);
+			args[3] = LLVMConstInt(LLVMInt32TypeInContext(LLVMGetModuleContext(fn->module)), sym->ctype.alignment, 0);
+			args[4] = LLVMConstInt(LLVMInt1TypeInContext(LLVMGetModuleContext(fn->module)), 0, 0);
 			LLVMBuildCall(fn->builder, memsetfunc, args, 5, "");
 		}
 		LLVMDisposeBuilder(tmp_builder);
@@ -525,21 +526,22 @@ static LLVMValueRef get_sym_value(struct dmr_C *C, struct function *fn, pseudo_t
 	assert(sym->bb_target == NULL);
 
 	expr = sym->initializer;
-	if (expr && 
-		(!sym->ident || 
+	if (expr &&
+		(!sym->ident ||
 		(sym->ident && (expr->type == EXPR_VALUE || expr->type == EXPR_FVALUE)))) {
 		switch (expr->type) {
 		case EXPR_STRING: {
 			const char *s = expr->string->data;
-			LLVMValueRef indices[] = { LLVMConstInt(LLVMInt64Type(), 0, 0), LLVMConstInt(LLVMInt64Type(), 0, 0) };
+			LLVMValueRef indices[] = { LLVMConstInt(LLVMInt64TypeInContext(LLVMGetModuleContext(fn->module)), 0, 0), 
+				LLVMConstInt(LLVMInt64TypeInContext(LLVMGetModuleContext(fn->module)), 0, 0) };
 			LLVMValueRef data;
 
-			data = LLVMAddGlobal(fn->module, LLVMArrayType(LLVMInt8Type(), strlen(s) + 1), ".str");
+			data = LLVMAddGlobal(fn->module, LLVMArrayType(LLVMInt8TypeInContext(LLVMGetModuleContext(fn->module)), strlen(s) + 1), ".str");
 			LLVMSetLinkage(data, LLVMPrivateLinkage);
 			LLVMSetGlobalConstant(data, 1);
 			char *scopy = allocator_allocate(&C->byte_allocator, strlen(s) + 1);
 			strcpy(scopy, s);
-			LLVMSetInitializer(data, LLVMConstString(scopy, strlen(scopy) + 1, true));
+			LLVMSetInitializer(data, LLVMConstStringInContext(LLVMGetModuleContext(fn->module), scopy, strlen(scopy) + 1, true));
 
 			result = LLVMConstGEP(data, indices, ARRAY_SIZE(indices));
 			sym->priv = result;
@@ -561,7 +563,7 @@ static LLVMValueRef get_sym_value(struct dmr_C *C, struct function *fn, pseudo_t
 			result = build_local(C, fn, sym);
 			if (!result)
 				return result;
-			LLVMValueRef value = constant_value(C, expr->value, symtype);
+			LLVMValueRef value = constant_value(C, fn->module, expr->value, symtype);
 			if (is_static(sym))
 				LLVMSetInitializer(result, value);
 			else
@@ -628,7 +630,7 @@ static LLVMValueRef get_sym_value(struct dmr_C *C, struct function *fn, pseudo_t
 	return result;
 }
 
-static LLVMValueRef constant_value(struct dmr_C *C, unsigned long long val, LLVMTypeRef dtype)
+static LLVMValueRef constant_value(struct dmr_C *C, LLVMModuleRef module, unsigned long long val, LLVMTypeRef dtype)
 {
 	LLVMTypeRef itype;
 	LLVMValueRef result;
@@ -636,7 +638,7 @@ static LLVMValueRef constant_value(struct dmr_C *C, unsigned long long val, LLVM
 	LLVMTypeKind kind = LLVMGetTypeKind(dtype);
 	switch (kind) {
 	case LLVMPointerTypeKind:
-		itype = LLVMIntType(C->target->bits_in_pointer);
+		itype = LLVMIntTypeInContext(LLVMGetModuleContext(module), C->target->bits_in_pointer);
 		result = LLVMConstInt(itype, val, 0);
 		result = LLVMConstIntToPtr(result, dtype);
 		break;
@@ -662,7 +664,7 @@ static LLVMValueRef val_to_value(struct dmr_C *C, struct function *fn, unsigned 
 	dtype = get_symnode_or_basetype(C, fn->module, ctype);
 	if (!dtype)
 		return NULL;
-	return constant_value(C, val, dtype);
+	return constant_value(C, fn->module, val, dtype);
 }
 
 static LLVMValueRef pseudo_to_value(struct dmr_C *C, struct function *fn, struct symbol *ctype, pseudo_t pseudo)
@@ -673,13 +675,13 @@ static LLVMValueRef pseudo_to_value(struct dmr_C *C, struct function *fn, struct
 	case PSEUDO_REG:
 		result = pseudo->priv;
 		break;
-	case PSEUDO_SYM: 
+	case PSEUDO_SYM:
 		result = get_sym_value(C, fn, pseudo);
 		break;
 	case PSEUDO_VAL:
 		result = val_to_value(C, fn, pseudo->value, ctype);
 		break;
-	case PSEUDO_ARG: 
+	case PSEUDO_ARG:
 		result = LLVMGetParam(fn->fn, pseudo->nr - 1);
 		break;
 	case PSEUDO_PHI:
@@ -701,17 +703,17 @@ static LLVMValueRef pseudo_to_value(struct dmr_C *C, struct function *fn, struct
 static LLVMValueRef ptr_toint(struct dmr_C *C, struct function *fn, LLVMValueRef val)
 {
 	if (LLVMGetTypeKind(LLVMTypeOf(val)) == LLVMPointerTypeKind) {
-		LLVMTypeRef dtype = LLVMIntType(C->target->bits_in_pointer);
+		LLVMTypeRef dtype = LLVMIntTypeInContext(LLVMGetModuleContext(fn->module), C->target->bits_in_pointer);
 		val = LLVMBuildPtrToInt(fn->builder, val, dtype, LLVMGetValueName(val));
 	}
 	return val;
 }
 
-static LLVMValueRef calc_gep(struct dmr_C *C, LLVMBuilderRef builder, LLVMValueRef base, LLVMValueRef off)
+static LLVMValueRef calc_gep(struct dmr_C *C, struct function *fn, LLVMBuilderRef builder, LLVMValueRef base, LLVMValueRef off)
 {
 	LLVMTypeRef type = LLVMTypeOf(base);
 	unsigned int as = LLVMGetPointerAddressSpace(type);
-	LLVMTypeRef bytep = LLVMPointerType(LLVMInt8Type(), as);
+	LLVMTypeRef bytep = LLVMPointerType(LLVMInt8TypeInContext(LLVMGetModuleContext(fn->module)), as);
 	LLVMValueRef addr;
 
 	/* convert base to char* type */
@@ -726,17 +728,17 @@ static LLVMValueRef calc_gep(struct dmr_C *C, LLVMBuilderRef builder, LLVMValueR
 static LLVMRealPredicate translate_fop(int opcode)
 {
 	static const LLVMRealPredicate trans_tbl[] = {
-		[OP_SET_EQ]	= LLVMRealOEQ,
-		[OP_SET_NE]	= LLVMRealUNE,
-		[OP_SET_LE]	= LLVMRealOLE,
-		[OP_SET_GE]	= LLVMRealOGE,
-		[OP_SET_LT]	= LLVMRealOLT,
-		[OP_SET_GT]	= LLVMRealOGT,
+		[OP_SET_EQ] = LLVMRealOEQ,
+		[OP_SET_NE] = LLVMRealUNE,
+		[OP_SET_LE] = LLVMRealOLE,
+		[OP_SET_GE] = LLVMRealOGE,
+		[OP_SET_LT] = LLVMRealOLT,
+		[OP_SET_GT] = LLVMRealOGT,
 		/* Are these used with FP? */
-		[OP_SET_B]	= LLVMRealOLT,
-		[OP_SET_A]	= LLVMRealOGT,
-		[OP_SET_BE]	= LLVMRealOLE,
-		[OP_SET_AE]	= LLVMRealOGE,
+		[OP_SET_B] = LLVMRealOLT,
+		[OP_SET_A] = LLVMRealOGT,
+		[OP_SET_BE] = LLVMRealOLE,
+		[OP_SET_AE] = LLVMRealOGE,
 	};
 
 	return trans_tbl[opcode];
@@ -745,16 +747,16 @@ static LLVMRealPredicate translate_fop(int opcode)
 static LLVMIntPredicate translate_op(int opcode)
 {
 	static const LLVMIntPredicate trans_tbl[] = {
-		[OP_SET_EQ]	= LLVMIntEQ,
-		[OP_SET_NE]	= LLVMIntNE,
-		[OP_SET_LE]	= LLVMIntSLE,
-		[OP_SET_GE]	= LLVMIntSGE,
-		[OP_SET_LT]	= LLVMIntSLT,
-		[OP_SET_GT]	= LLVMIntSGT,
-		[OP_SET_B]	= LLVMIntULT,
-		[OP_SET_A]	= LLVMIntUGT,
-		[OP_SET_BE]	= LLVMIntULE,
-		[OP_SET_AE]	= LLVMIntUGE,
+		[OP_SET_EQ] = LLVMIntEQ,
+		[OP_SET_NE] = LLVMIntNE,
+		[OP_SET_LE] = LLVMIntSLE,
+		[OP_SET_GE] = LLVMIntSGE,
+		[OP_SET_LT] = LLVMIntSLT,
+		[OP_SET_GT] = LLVMIntSGT,
+		[OP_SET_B] = LLVMIntULT,
+		[OP_SET_A] = LLVMIntUGT,
+		[OP_SET_BE] = LLVMIntULE,
+		[OP_SET_AE] = LLVMIntUGE,
 	};
 
 	return trans_tbl[opcode];
@@ -776,7 +778,7 @@ static LLVMValueRef get_operand(struct dmr_C *C, struct function *fn, struct sym
 		return NULL;
 	if (ptrtoint && is_ptr_type(ctype))
 		target = ptr_toint(C, fn, target);
-	else 
+	else
 		target = build_cast(C, fn, target, instruction_type, LLVMGetValueName(target), unsigned_cast);
 	return target;
 }
@@ -799,7 +801,7 @@ static LLVMValueRef output_op_binary(struct dmr_C *C, struct function *fn, struc
 	pseudo_name(C, insn->target, target_name, sizeof target_name);
 
 	switch (insn->opcode) {
-	/* Binary */
+		/* Binary */
 	case OP_ADD:
 		if (is_float_type(C->S, insn->type))
 			target = LLVMBuildFAdd(fn->builder, lhs, rhs, target_name);
@@ -852,8 +854,8 @@ static LLVMValueRef output_op_binary(struct dmr_C *C, struct function *fn, struc
 		assert(!is_float_type(C->S, insn->type));
 		target = LLVMBuildAShr(fn->builder, lhs, rhs, target_name);
 		break;
-	
-	/* Logical */
+
+		/* Logical */
 	case OP_AND:
 		assert(!is_float_type(C->S, insn->type));
 		target = LLVMBuildAnd(fn->builder, lhs, rhs, target_name);
@@ -949,9 +951,9 @@ static LLVMValueRef output_op_compare(struct dmr_C *C, struct function *fn, stru
 
 	switch (LLVMGetTypeKind(LLVMTypeOf(lhs))) {
 	case LLVMPointerTypeKind: {
-		lhs = LLVMBuildPtrToInt(fn->builder, lhs, LLVMIntType(C->target->bits_in_pointer), "");
+		lhs = LLVMBuildPtrToInt(fn->builder, lhs, LLVMIntTypeInContext(LLVMGetModuleContext(fn->module), C->target->bits_in_pointer), "");
 		if (LLVMGetTypeKind(LLVMTypeOf(rhs)) == LLVMPointerTypeKind) {
-			rhs = LLVMBuildPtrToInt(fn->builder, rhs, LLVMIntType(C->target->bits_in_pointer), "");
+			rhs = LLVMBuildPtrToInt(fn->builder, rhs, LLVMIntTypeInContext(LLVMGetModuleContext(fn->module), C->target->bits_in_pointer), "");
 		}
 		LLVMIntPredicate op = translate_op(insn->opcode);
 		target = LLVMBuildICmp(fn->builder, op, lhs, rhs, target_name);
@@ -996,7 +998,8 @@ static LLVMValueRef output_op_ret(struct dmr_C *C, struct function *fn, struct i
 		if (!result)
 			return NULL;
 		return LLVMBuildRet(fn->builder, result);
-	} else
+	}
+	else
 		return LLVMBuildRetVoid(fn->builder);
 }
 
@@ -1007,8 +1010,8 @@ static LLVMValueRef calc_memop_addr(struct dmr_C *C, struct function *fn, struct
 	unsigned int as;
 
 	/* int type large enough to hold a pointer */
-	int_type = LLVMIntType(C->target->bits_in_pointer);
-	off = LLVMConstInt(int_type, (int) insn->offset, 0);
+	int_type = LLVMIntTypeInContext(LLVMGetModuleContext(fn->module), C->target->bits_in_pointer);
+	off = LLVMConstInt(int_type, (int)insn->offset, 0);
 
 	/* convert src to the effective pointer type */
 	src = pseudo_to_value(C, fn, insn->type, insn->src);
@@ -1097,7 +1100,7 @@ static LLVMValueRef output_op_store(struct dmr_C *C, struct function *fn, struct
 
 static LLVMValueRef bool_value(struct dmr_C *C, struct function *fn, LLVMValueRef value)
 {
-	if (LLVMTypeOf(value) != LLVMInt1Type())
+	if (LLVMTypeOf(value) != LLVMInt1TypeInContext(LLVMGetModuleContext(fn->module)))
 		value = LLVMBuildIsNotNull(fn->builder, value, "cond");
 
 	return value;
@@ -1107,15 +1110,16 @@ static LLVMValueRef output_op_br(struct dmr_C *C, struct function *fn, struct in
 {
 	if (br->cond) {
 		LLVMValueRef cond = bool_value(C, fn,
-				pseudo_to_value(C, fn, br->type, br->cond));
+			pseudo_to_value(C, fn, br->type, br->cond));
 
 		return LLVMBuildCondBr(fn->builder, cond,
-				br->bb_true->priv,
-				br->bb_false->priv);
-	} else
+			br->bb_true->priv,
+			br->bb_false->priv);
+	}
+	else
 		return LLVMBuildBr(fn->builder,
-			    br->bb_true ? br->bb_true->priv :
-			    br->bb_false->priv);
+			br->bb_true ? br->bb_true->priv :
+			br->bb_false->priv);
 }
 
 static LLVMValueRef output_op_sel(struct dmr_C *C, struct function *fn, struct instruction *insn)
@@ -1155,7 +1159,8 @@ static LLVMValueRef output_op_switch(struct dmr_C *C, struct function *fn, struc
 	FOR_EACH_PTR(insn->multijmp_list, jmp) {
 		if (jmp->begin <= jmp->end) {	/* case M..N */
 			n_jmp += (jmp->end - jmp->begin) + 1;
-		} else					/* default case */
+		}
+		else					/* default case */
 			def = jmp->target;
 	} END_FOR_EACH_PTR(jmp);
 
@@ -1163,7 +1168,7 @@ static LLVMValueRef output_op_switch(struct dmr_C *C, struct function *fn, struc
 	if (!sw_val)
 		return NULL;
 	target = LLVMBuildSwitch(fn->builder, sw_val,
-				 def ? def->priv : NULL, n_jmp);
+		def ? def->priv : NULL, n_jmp);
 
 	FOR_EACH_PTR(insn->multijmp_list, jmp) {
 		long long val;
@@ -1200,7 +1205,7 @@ static LLVMValueRef output_op_call(struct dmr_C *C, struct function *fn, struct 
 	FOR_EACH_PTR(insn->arguments, arg) {
 		LLVMValueRef value;
 		struct symbol *atype;
-		
+
 		atype = get_nth_symbol(ftype->arguments, i);
 		value = pseudo_to_value(C, fn, arg->type, arg->src);
 		if (!value)
@@ -1224,7 +1229,7 @@ static LLVMValueRef output_op_call(struct dmr_C *C, struct function *fn, struct 
 	if (!function_type)
 		return NULL;
 	LLVMTypeRef fptr_type = LLVMPointerType(function_type, 0);
-	LLVMTypeRef bytep = LLVMPointerType(LLVMInt8Type(), 0);
+	LLVMTypeRef bytep = LLVMPointerType(LLVMInt8TypeInContext(LLVMGetModuleContext(fn->module)), 0);
 
 	target = LLVMBuildBitCast(fn->builder, func, bytep, name);
 	target = LLVMBuildBitCast(fn->builder, target, fptr_type, name);
@@ -1379,7 +1384,7 @@ static LLVMValueRef output_op_fpcast(struct dmr_C *C, struct function *fn, struc
 
 
 static LLVMValueRef output_op_copy(struct dmr_C *C, struct function *fn, struct instruction *insn,
-			   pseudo_t pseudo)
+	pseudo_t pseudo)
 {
 	LLVMValueRef src, target;
 	LLVMTypeRef const_type;
@@ -1395,11 +1400,11 @@ static LLVMValueRef output_op_copy(struct dmr_C *C, struct function *fn, struct 
 		return NULL;
 
 	/*
-	 * This is nothing more than 'target = src'
-	 *
-	 * TODO: find a better way to provide an identity function,
-	 * than using "X + 0" simply to produce a new LLVM pseudo
-	 */
+	* This is nothing more than 'target = src'
+	*
+	* TODO: find a better way to provide an identity function,
+	* than using "X + 0" simply to produce a new LLVM pseudo
+	*/
 
 	if (is_float_type(C->S, insn->type))
 		target = LLVMBuildFAdd(fn->builder, src,
@@ -1599,7 +1604,7 @@ static int output_insn(struct dmr_C *C, struct function *fn, struct instruction 
 		return 0;
 	case OP_NOT:
 		v = output_op_not(C, fn, insn);
-		break;	
+		break;
 	case OP_NEG:
 		v = output_op_neg(C, fn, insn);
 		break;
@@ -1690,10 +1695,10 @@ static LLVMValueRef output_fn(struct dmr_C *C, LLVMModuleRef module, struct entr
 	else {
 		function.type = LLVMTypeOf(function.fn);
 	}
-	
+
 	LLVMSetFunctionCallConv(function.fn, LLVMCCallConv);
 
-	function.builder = LLVMCreateBuilder();
+	function.builder = LLVMCreateBuilderInContext(LLVMGetModuleContext(module));
 
 	/* give a name to each argument */
 	for (int i = 0; i < nr_args; i++) {
@@ -1701,7 +1706,7 @@ static LLVMValueRef output_fn(struct dmr_C *C, LLVMModuleRef module, struct entr
 		LLVMValueRef arg;
 
 		arg = LLVMGetParam(function.fn, i);
-		snprintf(name, sizeof name, "ARG%d", i+1);
+		snprintf(name, sizeof name, "ARG%d", i + 1);
 		LLVMSetValueName(arg, name);
 	}
 
@@ -1713,7 +1718,7 @@ static LLVMValueRef output_fn(struct dmr_C *C, LLVMModuleRef module, struct entr
 		struct instruction *insn;
 
 		sprintf(bbname, "L%d", nr_bb++);
-		bbr = LLVMAppendBasicBlock(function.fn, bbname);
+		bbr = LLVMAppendBasicBlockInContext(LLVMGetModuleContext(module), function.fn, bbname);
 
 		bb->priv = bbr;
 
@@ -1767,7 +1772,7 @@ static LLVMValueRef output_data(struct dmr_C *C, LLVMModuleRef module, struct sy
 	if (initializer) {
 		switch (initializer->type) {
 		case EXPR_VALUE:
-			initial_value = constant_value(C, initializer->value, get_symnode_type(C, module, sym));
+			initial_value = constant_value(C, module, initializer->value, get_symnode_type(C, module, sym));
 			break;
 		case EXPR_FVALUE:
 			initial_value = LLVMConstReal(get_symnode_type(C, module, sym), initializer->fvalue);
@@ -1784,16 +1789,17 @@ static LLVMValueRef output_data(struct dmr_C *C, LLVMModuleRef module, struct sy
 			const char *s = initializer->string->data;
 			char *scopy = allocator_allocate(&C->byte_allocator, strlen(s) + 1);
 			strcpy(scopy, s);
-			initial_value = LLVMConstString(scopy, strlen(scopy) + 1, true);
+			initial_value = LLVMConstStringInContext(LLVMGetModuleContext(module), scopy, strlen(scopy) + 1, true);
 			break;
 		}
 		default:
 			sparse_error(C, initializer->pos, "unsupported expr type in global data initializer: %d\n", initializer->type);
-			show_expression(C, initializer);			
+			show_expression(C, initializer);
 		}
 		if (!initial_value)
 			return NULL;
-	} else {
+	}
+	else {
 		LLVMTypeRef type = get_symnode_type(C, module, sym);
 		if (type == NULL)
 			return NULL;
@@ -1917,7 +1923,8 @@ static void set_target(struct dmr_C *C, LLVMModuleRef module)
 	if (!strcmp(arch, "x86_64") && !strcmp(os, "linux")) {
 		if (C->arch_m64) {
 			layout = X86_64_LINUX_LAYOUT;
-		} else {
+		}
+		else {
 			arch = "i386";
 			layout = X86_LINUX_LAYOUT;
 		}
@@ -1935,12 +1942,16 @@ static void set_target(struct dmr_C *C, LLVMModuleRef module)
 
 static void add_intrinsics(LLVMModuleRef module)
 {
-	LLVMTypeRef param_types[] = { LLVMPointerType(LLVMInt8Type(), 0), LLVMInt8Type(), LLVMInt32Type(), LLVMInt32Type(), LLVMInt1Type() };
-	LLVMTypeRef fn_type = LLVMFunctionType(LLVMVoidType(), param_types, 5, false);
+	LLVMTypeRef param_types[] = { LLVMPointerType(LLVMInt8TypeInContext(LLVMGetModuleContext(module)), 0), 
+		LLVMInt8TypeInContext(LLVMGetModuleContext(module)), 
+		LLVMInt32TypeInContext(LLVMGetModuleContext(module)), 
+		LLVMInt32TypeInContext(LLVMGetModuleContext(module)), 
+		LLVMInt1TypeInContext(LLVMGetModuleContext(module)) };
+	LLVMTypeRef fn_type = LLVMFunctionType(LLVMVoidTypeInContext(LLVMGetModuleContext(module)), param_types, 5, false);
 	LLVMValueRef fn = LLVMAddFunction(module, "llvm.memset.p0i8.i32", fn_type);
 }
 
-int main(int argc, char **argv)
+LLVMModuleRef dmr_C_llvmcompile(int argc, char **argv, LLVMContextRef context, const char *modulename, const char *inputbuffer)
 {
 	struct ptr_list *filelist = NULL;
 	struct ptr_list *symlist;
@@ -1951,7 +1962,7 @@ int main(int argc, char **argv)
 
 	symlist = sparse_initialize(C, argc, argv, &filelist);
 
-	module = LLVMModuleCreateWithName("sparse");
+	module = LLVMModuleCreateWithNameInContext(modulename, context);
 	set_target(C, module);
 	add_intrinsics(module);
 
@@ -1959,7 +1970,7 @@ int main(int argc, char **argv)
 	if (compile(C, module, symlist)) {
 		/* need ->phi_users */
 		/* This flag enables call to track_pseudo_death() in linearize.c which sets
-		   phi_users list on PHISOURCE instructions  */
+		phi_users list on PHISOURCE instructions  */
 		C->dbg_dead = 1;
 		FOR_EACH_PTR(filelist, file) {
 			symlist = sparse(C, file);
@@ -1981,6 +1992,9 @@ int main(int argc, char **argv)
 		dump_module = 1;
 		rc = 1;
 	}
+	else {
+		fprintf(stderr, "Failed to compile given inputs\n");
+	}
 	if (error_message) {
 		fprintf(stderr, "%s\n\n", error_message);
 		LLVMDisposeMessage(error_message);
@@ -1996,9 +2010,8 @@ int main(int argc, char **argv)
 			/* we only dump the LLVM module if verification fails */
 			LLVMDumpModule(module);
 	}
-	LLVMDisposeModule(module);
-
 	destroy_dmr_C(C);
 
-	return rc;
+	return module;
 }
+

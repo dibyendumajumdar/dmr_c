@@ -130,11 +130,6 @@ set(LIB_SRCS
 	src/unssa.c
 	)
 
-if (MSVC OR APPLE)
-    source_group("Headers" FILES ${LIB_H})
-    source_group("Source Files" FILES ${LIB_SRCS})
-endif ()
-
 # Enable minimal required LLVM components so that the
 # the size of the resulting binary is manageable
 if (LLVM_JIT)
@@ -185,12 +180,23 @@ if (LLVM_JIT)
         ${LLVM_LIBS_PROCESSOR}
             )
     message(STATUS "LLVM_LIBS ${LLVM_LIBS}")
+
+    set(LIB_LLVM_SRCS llvm-backend/sparse-llvm.c)
+    include_directories("${PROJECT_SOURCE_DIR}/llvm-backend")
+endif ()
+
+if (MSVC OR APPLE)
+    source_group("Headers" FILES ${LIB_H})
+    source_group("Source Files" FILES ${LIB_SRCS})
+    source_group("LLVM backend Source Files" FILES ${LIB_LLVM_SRCS})
 endif ()
 
 #Main library
 add_library(dmr_c STATIC 
         ${LIB_H}
-        ${LIB_SRCS} )
+        ${LIB_SRCS}
+        ${LIB_LLVM_SRCS} )
+target_link_libraries(dmr_c ${LLVM_LIBS})
 
 add_executable(runtests src/runtests.c)
 target_link_libraries(runtests dmr_c) 
@@ -208,6 +214,6 @@ add_executable(showsymbols samples/show-symbols.c)
 target_link_libraries(showsymbols dmr_c) 
 
 if (LLVM_JIT)
-    add_executable(sparse-llvm llvm-backend/sparse-llvm.c)
-    target_link_libraries(sparse-llvm dmr_c ${LLVM_LIBS}) 
+    add_executable(sparse-llvm llvm-backend/llvmbackend.c)
+    target_link_libraries(sparse-llvm dmr_c) 
 endif()

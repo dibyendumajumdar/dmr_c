@@ -183,41 +183,40 @@ struct expression {
 	};
 };
 
-long long get_expression_value_silent(struct dmr_C *C, struct expression *expr);
-extern struct symbol *evaluate_expression(struct dmr_C *C, struct expression *);
-long long get_expression_value(struct dmr_C *C, struct expression *);
+long long dmrC_get_expression_value_silent(struct dmr_C *C, struct expression *expr);
+extern struct symbol *dmrC_evaluate_expression(struct dmr_C *C, struct expression *);
+long long dmrC_get_expression_value(struct dmr_C *C, struct expression *);
 
 /* Constant expression values */
-int is_zero_constant(struct dmr_C *C, struct expression *);
-long long const_expression_value(struct dmr_C *C, struct expression *);
+int dmrC_is_zero_constant(struct dmr_C *C, struct expression *);
+long long dmrC_const_expression_value(struct dmr_C *C, struct expression *);
 
 /* Expression parsing */
-struct token *parse_expression(struct dmr_C *C, struct token *token, struct expression **tree);
-struct token *conditional_expression(struct dmr_C *C, struct token *token,
+struct token *dmrC_conditional_expression(struct dmr_C *C, struct token *token,
 				     struct expression **tree);
-struct token *primary_expression(struct dmr_C *C, struct token *token, struct expression **tree);
-struct token *parens_expression(struct dmr_C *C, struct token *token, struct expression **expr,
+struct token *dmrC_primary_expression(struct dmr_C *C, struct token *token, struct expression **tree);
+struct token *dmrC_parens_expression(struct dmr_C *C, struct token *token, struct expression **expr,
 				const char *where);
-struct token *assignment_expression(struct dmr_C *C, struct token *token,
+struct token *dmrC_assignment_expression(struct dmr_C *C, struct token *token,
 				    struct expression **tree);
 
-extern void evaluate_symbol_list(struct dmr_C *C, struct ptr_list *list);
-extern struct symbol *evaluate_statement(struct dmr_C *C, struct statement *stmt);
+extern void dmrC_evaluate_symbol_list(struct dmr_C *C, struct ptr_list *list);
+extern struct symbol *dmrC_evaluate_statement(struct dmr_C *C, struct statement *stmt);
 
-extern int expand_symbol(struct dmr_C *C, struct symbol *);
+extern int dmrC_expand_symbol(struct dmr_C *C, struct symbol *);
 
-static inline struct expression *alloc_expression(struct dmr_C *C, struct position pos, int type)
+static inline struct expression *dmrC_alloc_expression(struct dmr_C *C, struct position pos, int type)
 {
-	struct expression *expr = (struct expression *)allocator_allocate(&C->expression_allocator, 0);
+	struct expression *expr = (struct expression *)dmrC_allocator_allocate(&C->expression_allocator, 0);
 	expr->type = (enum expression_type)type;
 	expr->pos = pos;
 	return expr;
 }
 
-static inline struct expression *alloc_const_expression(struct dmr_C *C, struct position pos,
+static inline struct expression *dmrC_alloc_const_expression(struct dmr_C *C, struct position pos,
 							int value)
 {
-	struct expression *expr = (struct expression *)allocator_allocate(&C->expression_allocator, 0);
+	struct expression *expr = (struct expression *)dmrC_allocator_allocate(&C->expression_allocator, 0);
 	expr->type = EXPR_VALUE;
 	expr->pos = pos;
 	expr->value = value;
@@ -226,12 +225,12 @@ static inline struct expression *alloc_const_expression(struct dmr_C *C, struct 
 }
 
 /* Type name parsing */
-struct token *typname(struct dmr_C *C, struct token *, struct symbol **, int *);
+struct token *dmrC_typename(struct dmr_C *C, struct token *, struct symbol **, int *);
 
-static inline int lookup_type(struct token *token)
+static inline int dmrC_lookup_type(struct token *token)
 {
 	if (token->pos.type == TOKEN_IDENT) {
-		struct symbol *sym = lookup_symbol(
+		struct symbol *sym = dmrC_lookup_symbol(
 		    token->ident,
 		    (enum namespace_type)(NS_SYMBOL | NS_TYPEDEF));
 		return sym && (sym->ns & NS_TYPEDEF);
@@ -240,18 +239,18 @@ static inline int lookup_type(struct token *token)
 }
 
 /* Statement parsing */
-struct statement *alloc_statement(struct dmr_C *C, struct position pos, int type);
-struct token *initializer(struct dmr_C *C, struct expression **tree, struct token *token);
-struct token *compound_statement(struct dmr_C *C, struct token *, struct statement *);
+struct statement *dmrC_alloc_statement(struct dmr_C *C, struct position pos, int type);
+struct token *dmrC_initializer(struct dmr_C *C, struct expression **tree, struct token *token);
+struct token *dmrC_compound_statement(struct dmr_C *C, struct token *, struct statement *);
 
-/* The preprocessor calls this 'constant_expression()' */
-#define constant_expression(C, token, tree) conditional_expression(C, token, tree)
+/* The preprocessor calls this 'dmrC_constant_expression()' */
+#define dmrC_constant_expression(C, token, tree) dmrC_conditional_expression(C, token, tree)
 
 /* Cast folding of constant values.. */
-void cast_value(struct dmr_C *C, struct expression *expr, struct symbol *newtype,
+void dmrC_cast_value(struct dmr_C *C, struct expression *expr, struct symbol *newtype,
 		struct expression *old, struct symbol *oldtype);
 
-static inline struct expression *first_expression(struct ptr_list *head)
+static inline struct expression *dmrC_first_expression(struct ptr_list *head)
 {
 	return (struct expression *) ptrlist_first(head);
 }

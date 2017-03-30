@@ -78,12 +78,12 @@ static void do_debug_symbol(struct dmr_C *C, struct symbol *sym, int indent)
 
 	if (!sym)
 		return;
-	const char *t = builtin_typename(C, sym);
+	const char *t = dmrC_builtin_typename(C, sym);
 	fprintf(stderr, "%.*s%s%3d:%lu %s %s (as: %d) %p (%s:%d:%d) %s\n",
 		indent, indent_string, typestr[sym->type],
 		sym->bit_size, sym->ctype.alignment,
-		modifier_string(C, sym->ctype.modifiers), show_ident(C, sym->ident), sym->ctype.as,
-		sym, stream_name(C, sym->pos.stream), sym->pos.line, sym->pos.pos,
+		dmrC_modifier_string(C, sym->ctype.modifiers), dmrC_show_ident(C, sym->ident), sym->ctype.as,
+		sym, dmrC_stream_name(C, sym->pos.stream), sym->pos.line, sym->pos.pos,
 		t ? t : "");
 	i = 0;
 	FOR_EACH_PTR(sym->ctype.contexts, context) {
@@ -106,7 +106,7 @@ static void do_debug_symbol(struct dmr_C *C, struct symbol *sym, int indent)
 	do_debug_symbol(C, sym->ctype.base_type, indent+2);
 }
 
-void debug_symbol(struct dmr_C *C, struct symbol *sym)
+void dmrC_debug_symbol(struct dmr_C *C, struct symbol *sym)
 {
 	do_debug_symbol(C, sym, 0);
 }
@@ -115,7 +115,7 @@ void debug_symbol(struct dmr_C *C, struct symbol *sym)
  * Symbol type printout. The type system is by far the most
  * complicated part of C - everything else is trivial.
  */
-const char *modifier_string(struct dmr_C *C, unsigned long mod)
+const char *dmrC_modifier_string(struct dmr_C *C, unsigned long mod)
 {
 	int len = 0;
 	int i;
@@ -172,11 +172,11 @@ const char *modifier_string(struct dmr_C *C, unsigned long mod)
 
 static void show_struct_member(struct dmr_C *C, struct symbol *sym)
 {
-	printf("\t%s:%d:%ld at offset %ld.%d", show_ident(C, sym->ident), sym->bit_size, sym->ctype.alignment, sym->offset, sym->bit_offset);
+	printf("\t%s:%d:%ld at offset %ld.%d", dmrC_show_ident(C, sym->ident), sym->bit_size, sym->ctype.alignment, sym->offset, sym->bit_offset);
 	printf("\n");
 }
 
-void show_symbol_list(struct dmr_C *C, struct ptr_list *list, const char *sep)
+void dmrC_show_symbol_list(struct dmr_C *C, struct ptr_list *list, const char *sep)
 {
 	struct symbol *sym;
 	const char *prepend = "";
@@ -184,7 +184,7 @@ void show_symbol_list(struct dmr_C *C, struct ptr_list *list, const char *sep)
 	FOR_EACH_PTR(list, sym) {
 		puts(prepend);
 		prepend = ", ";
-		show_symbol(C, sym);
+		dmrC_show_symbol(C, sym);
 	} END_FOR_EACH_PTR(sym);
 }
 
@@ -222,7 +222,7 @@ static void FORMAT_ATTR(3) append(struct dmr_C *C, struct type_name *name, const
 }
 
 
-const char *builtin_typename(struct dmr_C *C, struct symbol *sym)
+const char *dmrC_builtin_typename(struct dmr_C *C, struct symbol *sym)
 {
 	int i;
 
@@ -232,7 +232,7 @@ const char *builtin_typename(struct dmr_C *C, struct symbol *sym)
 	return NULL;
 }
 
-const char *builtin_ctypename(struct dmr_C *C, struct ctype *ctype)
+const char *dmrC_builtin_ctypename(struct dmr_C *C, struct ctype *ctype)
 {
 	int i;
 
@@ -260,7 +260,7 @@ deeper:
 		if (as)
 			prepend(C, name, "<asn:%d>", as);
 
-		s = modifier_string(C, mod);
+		s = dmrC_modifier_string(C, mod);
 		len = strlen(s);
 		name->start -= len;    
 		memcpy(name->start, s, len);  
@@ -271,7 +271,7 @@ deeper:
 	if (!sym)
 		goto out;
 
-	if ((typname = builtin_typename(C, sym))) {
+	if ((typname = dmrC_builtin_typename(C, sym))) {
 		int len = (int) strlen(typname);
 		if (name->start != name->end)
 			*--name->start = ' ';
@@ -301,21 +301,21 @@ deeper:
 	case SYM_STRUCT:
 		if (name->start != name->end)
 			*--name->start = ' ';
-		prepend(C, name, "struct %s", show_ident(C, sym->ident));
+		prepend(C, name, "struct %s", dmrC_show_ident(C, sym->ident));
 		goto out;
 
 	case SYM_UNION:
 		if (name->start != name->end)
 			*--name->start = ' ';
-		prepend(C, name, "union %s", show_ident(C, sym->ident));
+		prepend(C, name, "union %s", dmrC_show_ident(C, sym->ident));
 		goto out;
 
 	case SYM_ENUM:
-		prepend(C, name, "enum %s ", show_ident(C, sym->ident));
+		prepend(C, name, "enum %s ", dmrC_show_ident(C, sym->ident));
 		break;
 
 	case SYM_NODE:
-		append(C, name, "%s", show_ident(C, sym->ident));
+		append(C, name, "%s", dmrC_show_ident(C, sym->ident));
 		mod |= sym->ctype.modifiers;
 		as |= sym->ctype.as;
 		break;
@@ -327,7 +327,7 @@ deeper:
 		break;
 
 	case SYM_LABEL:
-		append(C, name, "label(%s:%p)", show_ident(C, sym->ident), sym);
+		append(C, name, "label(%s:%p)", dmrC_show_ident(C, sym->ident), sym);
 		return;
 
 	case SYM_ARRAY:
@@ -338,7 +338,7 @@ deeper:
 			append(C, name, " )");
 			was_ptr = 0;
 		}
-		append(C, name, "[%lld]", get_expression_value(C, sym->array_size));
+		append(C, name, "[%lld]", dmrC_get_expression_value(C, sym->array_size));
 		break;
 
 	case SYM_RESTRICT:
@@ -348,7 +348,7 @@ deeper:
 		}
 		if (name->start != name->end)
 			*--name->start = ' ';
-		prepend(C, name, "restricted %s", show_ident(C, sym->ident));
+		prepend(C, name, "restricted %s", dmrC_show_ident(C, sym->ident));
 		goto out;
 
 	case SYM_FOULED:
@@ -372,7 +372,7 @@ out:
 		prepend(C, name, "fouled ");
 }
 
-void show_type(struct dmr_C *C, struct symbol *sym)
+void dmrC_show_type(struct dmr_C *C, struct symbol *sym)
 {
 	char array[200];
 	struct type_name name;
@@ -383,7 +383,7 @@ void show_type(struct dmr_C *C, struct symbol *sym)
 	printf("%s", name.start);
 }
 
-const char *show_typename(struct dmr_C *C, struct symbol *sym)
+const char *dmrC_show_typename(struct dmr_C *C, struct symbol *sym)
 {
 	struct type_name name;
 
@@ -393,7 +393,7 @@ const char *show_typename(struct dmr_C *C, struct symbol *sym)
 	return name.start;
 }
 
-void show_symbol(struct dmr_C *C, struct symbol *sym)
+void dmrC_show_symbol(struct dmr_C *C, struct symbol *sym)
 {
 	struct symbol *type;
 
@@ -403,7 +403,7 @@ void show_symbol(struct dmr_C *C, struct symbol *sym)
 	if (sym->ctype.alignment)
 		printf(".align %ld\n", sym->ctype.alignment);
 
-	show_type(C, sym);
+	dmrC_show_type(C, sym);
 	type = sym->ctype.base_type;
 	if (!type) {
 		printf("\n");
@@ -430,7 +430,7 @@ void show_symbol(struct dmr_C *C, struct symbol *sym)
 		printf("\n");
 		if (stmt) {
 			int val;
-			val = show_statement(C, stmt);
+			val = dmrC_show_statement(C, stmt);
 			if (val)
 				printf("\tmov.%d\t\tretval,%d\n", stmt->ret->bit_size, val);
 			printf("\tret\n");
@@ -445,7 +445,7 @@ void show_symbol(struct dmr_C *C, struct symbol *sym)
 
 	if (sym->initializer) {
 		printf(" = \n");
-		show_expression(C, sym->initializer);
+		dmrC_show_expression(C, sym->initializer);
 	}
 }
 
@@ -465,7 +465,7 @@ static int new_label(void)
 
 static void show_switch_statement(struct dmr_C *C, struct statement *stmt)
 {
-	int val = show_expression(C, stmt->switch_expression);
+	int val = dmrC_show_expression(C, stmt->switch_expression);
 	struct symbol *sym;
 	printf("\tswitch v%d\n", val);
 
@@ -502,7 +502,7 @@ static void show_switch_statement(struct dmr_C *C, struct statement *stmt)
 	} END_FOR_EACH_PTR(sym);
 	printf("# end case table\n");
 
-	show_statement(C, stmt->switch_statement);
+	dmrC_show_statement(C, stmt->switch_statement);
 
 	if (stmt->switch_break->used)
 		printf(".L%p:\n", stmt->switch_break);
@@ -521,7 +521,7 @@ static int show_return_stmt(struct dmr_C *C, struct statement *stmt);
 /*
  * Print out a statement
  */
-int show_statement(struct dmr_C *C, struct statement *stmt)
+int dmrC_show_statement(struct dmr_C *C, struct statement *stmt)
 {
 	if (!stmt)
 		return 0;
@@ -536,11 +536,11 @@ int show_statement(struct dmr_C *C, struct statement *stmt)
 		int last = 0;
 
 		if (stmt->inline_fn) {
-			show_statement(C, stmt->args);
-			printf("\tbegin_inline \t%s\n", show_ident(C, stmt->inline_fn->ident));
+			dmrC_show_statement(C, stmt->args);
+			printf("\tbegin_inline \t%s\n", dmrC_show_ident(C, stmt->inline_fn->ident));
 		}
 		FOR_EACH_PTR(stmt->stmts, s) {
-			last = show_statement(C, s);
+			last = dmrC_show_statement(C, s);
 		} END_FOR_EACH_PTR(s);
 		if (stmt->ret) {
 			int addr, bits;
@@ -551,12 +551,12 @@ int show_statement(struct dmr_C *C, struct statement *stmt)
 			printf("\tld.%d\t\tv%d,[v%d]\n", bits, last, addr);
 		}
 		if (stmt->inline_fn)
-			printf("\tend_inlined\t%s\n", show_ident(C, stmt->inline_fn->ident));
+			printf("\tend_inlined\t%s\n", dmrC_show_ident(C, stmt->inline_fn->ident));
 		return last;
 	}
 
 	case STMT_EXPRESSION:
-		return show_expression(C, stmt->expression);
+		return dmrC_show_expression(C, stmt->expression);
 	case STMT_IF: {
 		int val, target;
 		struct expression *cond = stmt->if_conditional;
@@ -567,20 +567,20 @@ int show_statement(struct dmr_C *C, struct statement *stmt)
 			struct statement *s = stmt->if_true;
 			if (!cond->value)
 				s = stmt->if_false;
-			show_statement(s);
+			dmrC_show_statement(s);
 			break;
 		}
 #endif
-		val = show_expression(C, cond);
+		val = dmrC_show_expression(C, cond);
 		target = new_label();
 		printf("\tje\t\tv%d,.L%d\n", val, target);
-		show_statement(C, stmt->if_true);
+		dmrC_show_statement(C, stmt->if_true);
 		if (stmt->if_false) {
 			int last = new_label();
 			printf("\tjmp\t\t.L%d\n", last);
 			printf(".L%d:\n", target);
 			target = last;
-			show_statement(C, stmt->if_false);
+			dmrC_show_statement(C, stmt->if_false);
 		}
 		printf(".L%d:\n", target);
 		break;
@@ -591,7 +591,7 @@ int show_statement(struct dmr_C *C, struct statement *stmt)
 
 	case STMT_CASE:
 		printf(".L%p:\n", stmt->case_label);
-		show_statement(C, stmt->case_statement);
+		dmrC_show_statement(C, stmt->case_statement);
 		break;
 
 	case STMT_ITERATOR: {
@@ -603,7 +603,7 @@ int show_statement(struct dmr_C *C, struct statement *stmt)
 		int val, loop_top = 0, loop_bottom = 0;
 
 		show_symbol_decl(C, stmt->iterator_syms);
-		show_statement(C, pre_statement);
+		dmrC_show_statement(C, pre_statement);
 		if (pre_condition) {
 			if (pre_condition->type == EXPR_VALUE) {
 				if (!pre_condition->value) {
@@ -612,7 +612,7 @@ int show_statement(struct dmr_C *C, struct statement *stmt)
 				}
 			} else {
 				loop_bottom = new_label();
-				val = show_expression(C, pre_condition);
+				val = dmrC_show_expression(C, pre_condition);
 				printf("\tje\t\tv%d, .L%d\n", val, loop_bottom);
 			}
 		}
@@ -620,17 +620,17 @@ int show_statement(struct dmr_C *C, struct statement *stmt)
 			loop_top = new_label();
 			printf(".L%d:\n", loop_top);
 		}
-		show_statement(C, statement);
+		dmrC_show_statement(C, statement);
 		if (stmt->iterator_continue->used)
 			printf(".L%p:\n", stmt->iterator_continue);
-		show_statement(C, post_statement);
+		dmrC_show_statement(C, post_statement);
 		if (!post_condition) {
 			printf("\tjmp\t\t.L%d\n", loop_top);
 		} else if (post_condition->type == EXPR_VALUE) {
 			if (post_condition->value)
 				printf("\tjmp\t\t.L%d\n", loop_top);
 		} else {
-			val = show_expression(C, post_condition);
+			val = dmrC_show_expression(C, post_condition);
 			printf("\tjne\t\tv%d, .L%d\n", val, loop_top);
 		}
 		if (stmt->iterator_break->used)
@@ -644,12 +644,12 @@ int show_statement(struct dmr_C *C, struct statement *stmt)
 	
 	case STMT_LABEL:
 		printf(".L%p:\n", stmt->label_identifier);
-		show_statement(C, stmt->label_statement);
+		dmrC_show_statement(C, stmt->label_statement);
 		break;
 
 	case STMT_GOTO:
 		if (stmt->goto_expression) {
-			int val = show_expression(C, stmt->goto_expression);
+			int val = dmrC_show_expression(C, stmt->goto_expression);
 			printf("\tgoto\t\t*v%d\n", val);
 		} else {
 			printf("\tgoto\t\t.L%p\n", stmt->goto_label);
@@ -659,14 +659,14 @@ int show_statement(struct dmr_C *C, struct statement *stmt)
 		printf("\tasm( .... )\n");
 		break;
 	case STMT_CONTEXT: {
-		int val = show_expression(C, stmt->expression);
+		int val = dmrC_show_expression(C, stmt->expression);
 		printf("\tcontext( %d )\n", val);
 		break;
 	}
 	case STMT_RANGE: {
-		int val = show_expression(C, stmt->range_expression);
-		int low = show_expression(C, stmt->range_low);
-		int high = show_expression(C, stmt->range_high);
+		int val = dmrC_show_expression(C, stmt->range_expression);
+		int low = dmrC_show_expression(C, stmt->range_low);
+		int high = dmrC_show_expression(C, stmt->range_high);
 		printf("\trange( %d %d-%d)\n", val, low, high); 
 		break;
 	}	
@@ -682,16 +682,16 @@ static int show_call_expression(struct dmr_C *C, struct expression *expr)
 	int framesize;
 
 	if (!expr->ctype) {
-		warning(C, expr->pos, "\tcall with no type!");
+		dmrC_warning(C, expr->pos, "\tcall with no type!");
 		return 0;
 	}
 
 	framesize = 0;
 	FOR_EACH_PTR_REVERSE(expr->args, arg) {
-		int news = show_expression(C, arg);
+		int news = dmrC_show_expression(C, arg);
 		int size = arg->ctype->bit_size;
 		printf("\tpush.%d\t\tv%d\n", size, news);
-		framesize += bits_to_bytes(C->target, size);
+		framesize += dmrC_bits_to_bytes(C->target, size);
 	} END_FOR_EACH_PTR_REVERSE(arg);
 
 	fn = expr->fn;
@@ -706,9 +706,9 @@ static int show_call_expression(struct dmr_C *C, struct expression *expr)
 		}
 	}
 	if (direct) {
-		printf("\tcall\t\t%s\n", show_ident(C, direct->ident));
+		printf("\tcall\t\t%s\n", dmrC_show_ident(C, direct->ident));
 	} else {
-		fncall = show_expression(C, fn);
+		fncall = dmrC_show_expression(C, fn);
 		printf("\tcall\t\t*v%d\n", fncall);
 	}
 	if (framesize)
@@ -721,14 +721,14 @@ static int show_call_expression(struct dmr_C *C, struct expression *expr)
 
 static int show_comma(struct dmr_C *C, struct expression *expr)
 {
-	show_expression(C, expr->left);
-	return show_expression(C, expr->right);
+	dmrC_show_expression(C, expr->left);
+	return dmrC_show_expression(C, expr->right);
 }
 
 static int show_binop(struct dmr_C *C, struct expression *expr)
 {
-	int left = show_expression(C, expr->left);
-	int right = show_expression(C, expr->right);
+	int left = dmrC_show_expression(C, expr->left);
+	int right = dmrC_show_expression(C, expr->right);
 	int news = new_pseudo();
 	const char *opname;
 	static const char *name[] = {
@@ -739,7 +739,7 @@ static int show_binop(struct dmr_C *C, struct expression *expr)
 	};
 	unsigned int op = expr->op;
 
-	opname = show_special(C, op);
+	opname = dmrC_show_special(C, op);
 	if (op < ARRAY_SIZE(name))
 		opname = name[op];
 	printf("\t%s.%d\t\tv%d,v%d,v%d\n", opname,
@@ -750,7 +750,7 @@ static int show_binop(struct dmr_C *C, struct expression *expr)
 
 static int show_slice(struct dmr_C *C, struct expression *expr)
 {
-	int target = show_expression(C, expr->base);
+	int target = dmrC_show_expression(C, expr->base);
 	int news = new_pseudo();
 	printf("\tslice.%d\t\tv%d,v%d,%d\n", expr->r_nrbits, target, news, expr->r_bitpos);
 	return news;
@@ -758,7 +758,7 @@ static int show_slice(struct dmr_C *C, struct expression *expr)
 
 static int show_regular_preop(struct dmr_C *C, struct expression *expr)
 {
-	int target = show_expression(C, expr->unop);
+	int target = dmrC_show_expression(C, expr->unop);
 	int news = new_pseudo();
 	static const char *name[] = {
 		['!'] = "nonzero", ['-'] = "neg",
@@ -767,7 +767,7 @@ static int show_regular_preop(struct dmr_C *C, struct expression *expr)
 	unsigned int op = expr->op;
 	const char *opname;
 
-	opname = show_special(C, op);
+	opname = dmrC_show_special(C, op);
 	if (op < ARRAY_SIZE(name))
 		opname = name[op];
 	printf("\t%s.%d\t\tv%d,v%d\n", opname, expr->ctype->bit_size, news, target);
@@ -780,7 +780,7 @@ static int show_regular_preop(struct dmr_C *C, struct expression *expr)
  */
 static int show_address_gen(struct dmr_C *C, struct expression *expr)
 {
-	return show_expression(C, expr->unop);
+	return dmrC_show_expression(C, expr->unop);
 }
 
 static int show_load_gen(int bits, struct expression *expr, int addr)
@@ -806,7 +806,7 @@ static int show_assignment(struct dmr_C *C, struct expression *expr)
 		return 0;
 
 	bits = expr->ctype->bit_size;
-	val = show_expression(C, expr->right);
+	val = dmrC_show_expression(C, expr->right);
 	addr = show_address_gen(C, target);
 	show_store_gen(bits, val, target, addr);
 	return val;
@@ -818,7 +818,7 @@ static int show_return_stmt(struct dmr_C *C, struct statement *stmt)
 	struct symbol *target = stmt->ret_target;
 
 	if (expr && expr->ctype) {
-		int val = show_expression(C, expr);
+		int val = dmrC_show_expression(C, expr);
 		int bits = expr->ctype->bit_size;
 		int addr = show_symbol_expr(C, target);
 		show_store_gen(bits, val, NULL, addr);
@@ -835,7 +835,7 @@ static int show_initialization(struct dmr_C *C, struct symbol *sym, struct expre
 		return 0;
 
 	bits = expr->ctype->bit_size;
-	val = show_expression(C, expr);
+	val = dmrC_show_expression(C, expr);
 	addr = show_symbol_expr(C, sym);
 	// FIXME! The "target" expression is for bitfield store information.
 	// Leave it NULL, which works fine.
@@ -892,14 +892,14 @@ static int show_symbol_expr(struct dmr_C *C, struct symbol *sym)
 		return show_string_expr(C, sym->initializer);
 
 	if (sym->ctype.modifiers & (MOD_TOPLEVEL | MOD_EXTERN | MOD_STATIC)) {
-		printf("\tmovi.%d\t\tv%d,$%s\n", C->target->bits_in_pointer, news, show_ident(C, sym->ident));
+		printf("\tmovi.%d\t\tv%d,$%s\n", C->target->bits_in_pointer, news, dmrC_show_ident(C, sym->ident));
 		return news;
 	}
 	if (sym->ctype.modifiers & MOD_ADDRESSABLE) {
 		printf("\taddi.%d\t\tv%d,vFP,$%lld\n", C->target->bits_in_pointer, news, sym->value);
 		return news;
 	}
-	printf("\taddi.%d\t\tv%d,vFP,$offsetof(%s:%p)\n", C->target->bits_in_pointer, news, show_ident(C, sym->ident), sym);
+	printf("\taddi.%d\t\tv%d,vFP,$offsetof(%s:%p)\n", C->target->bits_in_pointer, news, dmrC_show_ident(C, sym->ident), sym);
 	return news;
 }
 
@@ -911,7 +911,7 @@ static int show_symbol_init(struct dmr_C *C, struct symbol *sym)
 		int val, addr, bits;
 
 		bits = expr->ctype->bit_size;
-		val = show_expression(C, expr);
+		val = dmrC_show_expression(C, expr);
 		addr = show_symbol_expr(C, sym);
 		show_store_gen(bits, val, NULL, addr);
 	}
@@ -921,7 +921,7 @@ static int show_symbol_init(struct dmr_C *C, struct symbol *sym)
 static int show_cast_expr(struct dmr_C *C, struct expression *expr)
 {
 	struct symbol *old_type, *new_type;
-	int op = show_expression(C, expr->cast_expression);
+	int op = dmrC_show_expression(C, expr->cast_expression);
 	int oldbits, newbits;
 	int news, is_signed;
 
@@ -933,7 +933,7 @@ static int show_cast_expr(struct dmr_C *C, struct expression *expr)
 	if (oldbits >= newbits)
 		return op;
 	news = new_pseudo();
-	is_signed = is_signed_type(old_type);
+	is_signed = dmrC_is_signed_type(old_type);
 	if (is_signed) {
 		printf("\tsext%d.%d\tv%d,v%d\n", oldbits, newbits, news, op);
 	} else {
@@ -964,7 +964,7 @@ static int show_string_expr(struct dmr_C *C, struct expression *expr)
 {
 	int news = new_pseudo();
 
-	printf("\tmovi.%d\t\tv%d,&%s\n", C->target->bits_in_pointer, news, show_string(C, expr->string));
+	printf("\tmovi.%d\t\tv%d,&%s\n", C->target->bits_in_pointer, news, dmrC_show_string(C, expr->string));
 	return news;
 }
 
@@ -977,9 +977,9 @@ static int show_label_expr(struct dmr_C *C, struct expression *expr)
 
 static int show_conditional_expr(struct dmr_C *C, struct expression *expr)
 {
-	int cond = show_expression(C, expr->conditional);
-	int truee = show_expression(C, expr->cond_true);
-	int falsee = show_expression(C, expr->cond_false);
+	int cond = dmrC_show_expression(C, expr->conditional);
+	int truee = dmrC_show_expression(C, expr->cond_true);
+	int falsee = dmrC_show_expression(C, expr->cond_false);
 	int news = new_pseudo();
 
 	printf("[v%d]\tcmov.%d\t\tv%d,v%d,v%d\n", cond, expr->ctype->bit_size, news, truee, falsee);
@@ -988,12 +988,12 @@ static int show_conditional_expr(struct dmr_C *C, struct expression *expr)
 
 static int show_statement_expr(struct dmr_C *C, struct expression *expr)
 {
-	return show_statement(C, expr->statement);
+	return dmrC_show_statement(C, expr->statement);
 }
 
 static int show_position_expr(struct dmr_C *C, struct expression *expr, struct symbol *base)
 {
-	int news = show_expression(C, expr->init_expr);
+	int news = dmrC_show_expression(C, expr->init_expr);
 	struct symbol *ctype = expr->init_expr->ctype;
 	int bit_offset;
 
@@ -1001,7 +1001,7 @@ static int show_position_expr(struct dmr_C *C, struct expression *expr, struct s
 
 	printf("\tinsert v%d at [%d:%d] of %s\n", news,
 		expr->init_offset, bit_offset,
-		show_ident(C, base->ident));
+		dmrC_show_ident(C, base->ident));
 	return 0;
 }
 
@@ -1022,7 +1022,7 @@ again:
 		// Initializer indexes and identifiers should
 		// have been evaluated to EXPR_POS
 		if (entry->type == EXPR_IDENTIFIER) {
-			printf(" AT '%s':\n", show_ident(C, entry->expr_ident));
+			printf(" AT '%s':\n", dmrC_show_ident(C, entry->expr_ident));
 			entry = entry->ident_expression;
 			goto again;
 		}
@@ -1041,12 +1041,12 @@ again:
 	return 0;
 }
 
-int show_symbol_expr_init(struct dmr_C *C, struct symbol *sym)
+int dmrC_show_symbol_expr_init(struct dmr_C *C, struct symbol *sym)
 {
 	struct expression *expr = sym->initializer;
 
 	if (expr)
-		show_expression(C, expr);
+		dmrC_show_expression(C, expr);
 	return show_symbol_expr(C, sym);
 }
 
@@ -1054,7 +1054,7 @@ int show_symbol_expr_init(struct dmr_C *C, struct symbol *sym)
  * Print out an expression. Return the pseudo that contains the
  * variable.
  */
-int show_expression(struct dmr_C *C, struct expression *expr)
+int dmrC_show_expression(struct dmr_C *C, struct expression *expr)
 {
 	if (!expr)
 		return 0;
@@ -1062,7 +1062,7 @@ int show_expression(struct dmr_C *C, struct expression *expr)
 	if (!expr->ctype) {
 		struct position *pos = &expr->pos;
 		printf("\tno type at %s:%d:%d\n",
-			stream_name(C, pos->stream),
+			dmrC_stream_name(C, pos->stream),
 			pos->line, pos->pos);
 		return 0;
 	}
@@ -1091,7 +1091,7 @@ int show_expression(struct dmr_C *C, struct expression *expr)
 	case EXPR_PTRSIZEOF:
 	case EXPR_ALIGNOF:
 	case EXPR_OFFSETOF:
-		warning(C, expr->pos, "invalid expression after evaluation");
+		dmrC_warning(C, expr->pos, "invalid expression after evaluation");
 		return 0;
 	case EXPR_CAST:
 	case EXPR_FORCE_CAST:
@@ -1118,16 +1118,16 @@ int show_expression(struct dmr_C *C, struct expression *expr)
 	// None of these should exist as direct expressions: they are only
 	// valid as sub-expressions of initializers.
 	case EXPR_POS:
-		warning(C, expr->pos, "unable to show plain initializer position expression");
+		dmrC_warning(C, expr->pos, "unable to show plain initializer position expression");
 		return 0;
 	case EXPR_IDENTIFIER:
-		warning(C, expr->pos, "unable to show identifier expression");
+		dmrC_warning(C, expr->pos, "unable to show identifier expression");
 		return 0;
 	case EXPR_INDEX:
-		warning(C, expr->pos, "unable to show index expression");
+		dmrC_warning(C, expr->pos, "unable to show index expression");
 		return 0;
 	case EXPR_TYPE:
-		warning(C, expr->pos, "unable to show type expression");
+		dmrC_warning(C, expr->pos, "unable to show type expression");
 		return 0;
 	}
 	return 0;

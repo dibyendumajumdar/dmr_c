@@ -49,16 +49,16 @@ static int arguments_choose(struct dmr_C *C, struct expression *expr)
 	int i = 0;
 
 	FOR_EACH_PTR (arglist, arg) {
-		if (!evaluate_expression(C, arg))
+		if (!dmrC_evaluate_expression(C, arg))
 			return 0;
 		i++;
 	} END_FOR_EACH_PTR(arg);
 	if (i < 3) {
-		sparse_error(C, expr->pos,
+		dmrC_sparse_error(C, expr->pos,
 			     "not enough arguments for __builtin_choose_expr");
 		return 0;
 	} if (i > 3) {
-		sparse_error(C, expr->pos,
+		dmrC_sparse_error(C, expr->pos,
 			     "too many arguments for __builtin_choose_expr");
 		return 0;
 	}
@@ -76,7 +76,7 @@ static int evaluate_choose(struct dmr_C *C, struct expression *expr)
 		args[n++] = arg;
 	} END_FOR_EACH_PTR(arg);
 
-	*expr = get_expression_value(C, args[0]) ? *args[1] : *args[2];
+	*expr = dmrC_get_expression_value(C, args[0]) ? *args[1] : *args[2];
 
 	return 1;
 }
@@ -113,7 +113,7 @@ static int expand_warning(struct dmr_C *C, struct expression *expr, int cost)
 			struct symbol *sym = arg->symbol;
 			if (sym->initializer && sym->initializer->type == EXPR_STRING) {
 				struct string *string = sym->initializer->string;
-				warning(C, expr->pos, "%*s", string->length-1, string->data);
+				dmrC_warning(C, expr->pos, "%*s", string->length-1, string->data);
 			}
 			continue;
 		}
@@ -187,7 +187,7 @@ static int expand_bswap(struct dmr_C *C, struct expression *expr, int cost)
 		return cost;
 
 	/* the arguments number & type have already been checked */
-	val = const_expression_value(C, first_expression(expr->args));
+	val = dmrC_const_expression_value(C, dmrC_first_expression(expr->args));
 	switch (expr->ctype->bit_size) {
 	case 16: expr->value = __builtin_bswap16(val); break;
 	case 32: expr->value = __builtin_bswap32(val); break;
@@ -227,14 +227,14 @@ static struct sym_init {
 	{ NULL,		NULL,		0 }
 };
 
-void init_builtins(struct dmr_C *C, int stream)
+void dmrC_init_builtins(struct dmr_C *C, int stream)
 {
 	struct sym_init *ptr;
 
 	builtin_fn_type.variadic = 1;
 	for (ptr = builtins_table; ptr->name; ptr++) {
 		struct symbol *sym;
-		sym = create_symbol(C->S, stream, ptr->name, SYM_NODE, NS_SYMBOL);
+		sym = dmrC_create_symbol(C->S, stream, ptr->name, SYM_NODE, NS_SYMBOL);
 		sym->ctype.base_type = ptr->base_type;
 		sym->ctype.modifiers = ptr->modifiers;
 		sym->op = ptr->op;

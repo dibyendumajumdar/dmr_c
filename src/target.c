@@ -34,7 +34,7 @@
 
 enum dummy { DUMMY };
 
-void init_target(struct dmr_C *C) {
+void dmrC_init_target(struct dmr_C *C) {
 
   struct target_t *t = (struct target_t *)calloc(1, sizeof(struct target_t));
 
@@ -80,7 +80,7 @@ void init_target(struct dmr_C *C) {
   C->target = t;
 }
 
-void destroy_target(struct dmr_C *C) {
+void dmrC_destroy_target(struct dmr_C *C) {
 	free(C->target);
 	C->target = NULL;
 }

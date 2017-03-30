@@ -53,7 +53,7 @@ extern "C" {
 
 #define MAX_STRING 8191
 
-extern unsigned int hexval(unsigned int c);
+extern unsigned int dmrC_hexval(unsigned int c);
 
 struct position {
 	unsigned int type : 6, stream : 14, newline : 1, whitespace : 1,
@@ -218,38 +218,38 @@ extern void destroy_dmr_C(struct dmr_C *C);
 
 /*
 * Appends the provided formatted string to the "pre buffer" that is processed by
-* sparse_initialize(). The input is tokenized immediately and added to the "pre buffer"
+* dmrC_sparse_initialize(). The input is tokenized immediately and added to the "pre buffer"
 * token stream.
 */
-extern void add_pre_buffer(struct dmr_C *, const char *fmt, ...) FORMAT_ATTR(2);
+extern void dmrC_add_pre_buffer(struct dmr_C *, const char *fmt, ...) FORMAT_ATTR(2);
 
 /*
 * Declares a bunch of gcc built-ins into a "pre buffer" which is processed in
-* sparse_initialize(). The add_pre_buffer() function is used to add input into the
+* dmrC_sparse_initialize(). The dmrC_add_pre_buffer() function is used to add input into the
 * pre buffer.
 */
-extern void declare_builtin_functions(struct dmr_C *C);
+extern void dmrC_declare_builtin_functions(struct dmr_C *C);
 
 
-extern void create_builtin_stream(struct dmr_C *C);
-extern struct ptr_list * sparse_initialize(struct dmr_C *C, int argc, char **argv, struct ptr_list **filelist);
-extern struct ptr_list * sparse_keep_tokens(struct dmr_C *C, char *filename);
-extern struct ptr_list * sparse(struct dmr_C *C, char *filename);
-extern struct ptr_list * __sparse(struct dmr_C *C, char *filename);
+extern void dmrC_create_builtin_stream(struct dmr_C *C);
+extern struct ptr_list * dmrC_sparse_initialize(struct dmr_C *C, int argc, char **argv, struct ptr_list **filelist);
+extern struct ptr_list * dmrC_sparse_keep_tokens(struct dmr_C *C, char *filename);
+extern struct ptr_list * dmrC_sparse(struct dmr_C *C, char *filename);
+extern struct ptr_list * dmrC__sparse(struct dmr_C *C, char *filename);
 
-struct token *skip_to(struct token *, int);
-struct token *expect(struct dmr_C *C, struct token *token, int op, const char *where);
+struct token *dmrC_skip_to_token(struct token *, int);
+struct token *dmrC_expect_token(struct dmr_C *C, struct token *token, int op, const char *where);
 
-extern void die(struct dmr_C *, const char *, ...) FORMAT_ATTR(2) NORETURN_ATTR;
-extern void info(struct dmr_C *, struct position, const char *, ...)
+extern void dmrC_die(struct dmr_C *, const char *, ...) FORMAT_ATTR(2) NORETURN_ATTR;
+extern void dmrC_info(struct dmr_C *, struct position, const char *, ...)
     FORMAT_ATTR(3);
-extern void warning(struct dmr_C *, struct position, const char *, ...)
+extern void dmrC_warning(struct dmr_C *, struct position, const char *, ...)
     FORMAT_ATTR(3);
-extern void sparse_error(struct dmr_C *, struct position, const char *, ...)
+extern void dmrC_sparse_error(struct dmr_C *, struct position, const char *, ...)
     FORMAT_ATTR(3);
-extern void error_die(struct dmr_C *, struct position, const char *, ...)
+extern void dmrC_error_die(struct dmr_C *, struct position, const char *, ...)
     FORMAT_ATTR(3) NORETURN_ATTR;
-extern void expression_error(struct dmr_C *, struct expression *, const char *,
+extern void dmrC_expression_error(struct dmr_C *, struct expression *, const char *,
 			     ...) FORMAT_ATTR(3);
 
 #ifdef __cplusplus

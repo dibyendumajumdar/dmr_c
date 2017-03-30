@@ -58,7 +58,7 @@ static int expand_symbol_expression(struct dmr_C *C, struct expression *expr)
 
 	if (sym == &C->S->zero_int) {
 		if (C->Wundef)
-			warning(C, expr->pos, "undefined preprocessor identifier '%s'", show_ident(C, expr->symbol_name));
+			dmrC_warning(C, expr->pos, "undefined preprocessor identifier '%s'", dmrC_show_ident(C, expr->symbol_name));
 		expr->type = EXPR_VALUE;
 		expr->value = 0;
 		expr->taint = 0;
@@ -84,7 +84,7 @@ static long long get_longlong(struct dmr_C *C, struct expression *expr)
 	return (value & andmask) | ormask;
 }
 
-void cast_value(struct dmr_C *C, struct expression *expr, struct symbol *newtype,
+void dmrC_cast_value(struct dmr_C *C, struct expression *expr, struct symbol *newtype,
 		struct expression *old, struct symbol *oldtype)
 {
 	int old_size = oldtype->bit_size;
@@ -109,10 +109,10 @@ void cast_value(struct dmr_C *C, struct expression *expr, struct symbol *newtype
 
 Int:
 	// _Bool requires a zero test rather than truncation.
-	if (is_bool_type(C->S, newtype)) {
+	if (dmrC_is_bool_type(C->S, newtype)) {
 		expr->value = !!value;
 		if (!conservative && value != 0 && value != 1)
-			warning(C, old->pos, "odd constant _Bool cast (%llx becomes 1)", value);
+			dmrC_warning(C, old->pos, "odd constant _Bool cast (%llx becomes 1)", value);
 		return;
 	}
 
@@ -133,21 +133,21 @@ Int:
 	// OK if the bits were (and still are) purely sign bits
 	if (value & dropped) {
 		if (!(value & oldsignmask) || !(value & signmask) || (value & dropped) != dropped)
-			warning(C, old->pos, "cast truncates bits from constant value (%llx becomes %llx)",
+			dmrC_warning(C, old->pos, "cast truncates bits from constant value (%llx becomes %llx)",
 				value & oldmask,
 				value & mask);
 	}
 	return;
 
 Float:
-	if (!is_float_type(C->S, newtype)) {
+	if (!dmrC_is_float_type(C->S, newtype)) {
 		value = (long long)old->fvalue;
 		expr->type = EXPR_VALUE;
 		expr->taint = 0;
 		goto Int;
 	}
 
-	if (!is_float_type(C->S, oldtype))
+	if (!dmrC_is_float_type(C->S, oldtype))
 		expr->fvalue = (long double)get_longlong(C, old);
 	else
 		expr->fvalue = old->fvalue;
@@ -164,7 +164,7 @@ Float:
 
 static int check_shift_count(struct dmr_C *C, struct expression *expr, struct symbol *ctype, unsigned int count)
 {
-	warning(C, expr->pos, "shift too big (%u) for type %s", count, show_typename(C, ctype));
+	dmrC_warning(C, expr->pos, "shift too big (%u) for type %s", count, dmrC_show_typename(C, ctype));
 	count &= ctype->bit_size-1;
 	return count;
 }
@@ -288,11 +288,11 @@ static int simplify_int_binop(struct dmr_C *C, struct expression *expr, struct s
 	return 1;
 Div:
 	if (!conservative)
-		warning(C, expr->pos, "division by zero");
+		dmrC_warning(C, expr->pos, "division by zero");
 	return 0;
 Overflow:
 	if (!conservative)
-		warning(C, expr->pos, "constant integer operation overflow");
+		dmrC_warning(C, expr->pos, "constant integer operation overflow");
 	return 0;
 }
 
@@ -373,7 +373,7 @@ static int simplify_float_binop(struct dmr_C *C, struct expression *expr)
 	return 1;
 Div:
 	if (!conservative)
-		warning(C, expr->pos, "division by zero");
+		dmrC_warning(C, expr->pos, "division by zero");
 	return 0;
 }
 
@@ -491,9 +491,9 @@ static int compare_types(struct dmr_C *C, int op, struct symbol *left, struct sy
 	struct ctype c2 = {.base_type = right};
 	switch (op) {
 	case SPECIAL_EQUAL:
-		return !type_difference(C, &c1, &c2, MOD_IGN, MOD_IGN);
+		return !dmrC_type_difference(C, &c1, &c2, MOD_IGN, MOD_IGN);
 	case SPECIAL_NOTEQUAL:
-		return type_difference(C, &c1, &c2, MOD_IGN, MOD_IGN) != NULL;
+		return dmrC_type_difference(C, &c1, &c2, MOD_IGN, MOD_IGN) != NULL;
 	case '<':
 		return left->bit_size < right->bit_size;
 	case '>':
@@ -627,7 +627,7 @@ static int expand_dereference(struct dmr_C *C, struct expression *expr)
 	 * test for me to get the type evaluation right..
 	 */
 	if (expr->ctype->ctype.modifiers & MOD_NODEREF)
-		warning(C, unop->pos, "dereference of noderef expression");
+		dmrC_warning(C, unop->pos, "dereference of noderef expression");
 
 	/*
 	 * Is it "symbol" or "symbol + offset"?
@@ -696,7 +696,7 @@ static int simplify_preop(struct dmr_C *C, struct expression *expr)
 
 Overflow:
 	if (!conservative)
-		warning(C, expr->pos, "constant integer operation overflow");
+		dmrC_warning(C, expr->pos, "constant integer operation overflow");
 	return 0;
 }
 
@@ -778,7 +778,7 @@ static int expand_cast(struct dmr_C *C, struct expression *expr)
 
 	/* Simplify normal integer casts.. */
 	if (target->type == EXPR_VALUE || target->type == EXPR_FVALUE) {
-		cast_value(C, expr, expr->ctype, target, target->ctype);
+		dmrC_cast_value(C, expr, expr->ctype, target, target->ctype);
 		return 0;
 	}
 	return cost + 1;
@@ -814,7 +814,7 @@ static int expand_call(struct dmr_C *C, struct expression *expr)
 	cost = expand_arguments(C, expr->args);
 	sym = fn->ctype;
 	if (!sym) {
-		expression_error(C, expr, "function has no type");
+		dmrC_expression_error(C, expr, "function has no type");
 		return SIDE_EFFECTS;
 	}
 	if (sym->type == SYM_NODE)
@@ -866,7 +866,7 @@ static int expand_pos_expression(struct dmr_C *C, struct expression *expr)
 						 * with bitfields that are all at offset
 						 * zero..
 						 */
-						reuse = alloc_expression(C, entry->pos, EXPR_POS);
+						reuse = dmrC_alloc_expression(C, entry->pos, EXPR_POS);
 					}
 					reuse->type = EXPR_POS;
 					reuse->ctype = entry->ctype;
@@ -892,7 +892,7 @@ static unsigned long bit_offset(struct dmr_C *C, const struct expression *expr)
 {
 	unsigned long offset = 0;
 	while (expr->type == EXPR_POS) {
-		offset += bytes_to_bits(C->target, expr->init_offset);
+		offset += dmrC_bytes_to_bits(C->target, expr->init_offset);
 		expr = expr->init_expr;
 	}
 	if (expr && expr->ctype)
@@ -925,8 +925,8 @@ static void verify_nonoverlapping(struct dmr_C *C, struct ptr_list **list)
 		if (!b->ctype || !b->ctype->bit_size)
 			continue;
 		if (a && bit_offset(C, a) == bit_offset(C, b)) {
-			warning(C, a->pos, "Initializer entry defined twice");
-			info(C, b->pos, "  also defined here");
+			dmrC_warning(C, a->pos, "Initializer entry defined twice");
+			dmrC_info(C, b->pos, "  also defined here");
 			return;
 		}
 		a = b;
@@ -978,7 +978,7 @@ static int expand_expression(struct dmr_C *C, struct expression *expr)
 		return expand_call(C, expr);
 
 	case EXPR_DEREF:
-		warning(C, expr->pos, "we should not have an EXPR_DEREF left at expansion time");
+		dmrC_warning(C, expr->pos, "we should not have an EXPR_DEREF left at expansion time");
 		return UNSAFE;
 
 	case EXPR_SELECT:
@@ -1018,7 +1018,7 @@ static int expand_expression(struct dmr_C *C, struct expression *expr)
 	case EXPR_PTRSIZEOF:
 	case EXPR_ALIGNOF:
 	case EXPR_OFFSETOF:
-		expression_error(C, expr, "internal front-end error: sizeof in expansion?");
+		dmrC_expression_error(C, expr, "internal front-end error: sizeof in expansion?");
 		return UNSAFE;
 	}
 	return SIDE_EFFECTS;
@@ -1029,11 +1029,11 @@ static void expand_const_expression(struct dmr_C *C, struct expression *expr, co
 	if (expr) {
 		expand_expression(C, expr);
 		if (expr->type != EXPR_VALUE)
-			expression_error(C, expr, "Expected constant expression in %s", where);
+			dmrC_expression_error(C, expr, "Expected constant expression in %s", where);
 	}
 }
 
-int expand_symbol(struct dmr_C *C, struct symbol *sym)
+int dmrC_expand_symbol(struct dmr_C *C, struct symbol *sym)
 {
 	int retval;
 	struct symbol *base_type;
@@ -1105,7 +1105,7 @@ static int expand_compound(struct dmr_C *C, struct statement *stmt)
 	int cost, statements;
 
 	if (stmt->ret)
-		expand_symbol(C, stmt->ret);
+		dmrC_expand_symbol(C, stmt->ret);
 
 	last = stmt->args;
 	cost = expand_statement(C, last);
@@ -1131,7 +1131,7 @@ static int expand_statement(struct dmr_C *C, struct statement *stmt)
 	case STMT_DECLARATION: {
 		struct symbol *sym;
 		FOR_EACH_PTR(stmt->declaration, sym) {
-			expand_symbol(C, sym);
+			dmrC_expand_symbol(C, sym);
 		} END_FOR_EACH_PTR(sym);
 		return SIDE_EFFECTS;
 	}
@@ -1209,19 +1209,19 @@ static long long __get_expression_value(struct dmr_C *C, struct expression *expr
 
 	if (!expr)
 		return 0;
-	ctype = evaluate_expression(C, expr);
+	ctype = dmrC_evaluate_expression(C, expr);
 	if (!ctype) {
-		expression_error(C, expr, "bad constant expression type");
+		dmrC_expression_error(C, expr, "bad constant expression type");
 		return 0;
 	}
 	expand_expression(C, expr);
 	if (expr->type != EXPR_VALUE) {
 		if (strict != 2)
-			expression_error(C, expr, "bad constant expression");
+			dmrC_expression_error(C, expr, "bad constant expression");
 		return 0;
 	}
 	if ((strict == 1) && bad_integer_constant_expression(C, expr)) {
-		expression_error(C, expr, "bad integer constant expression");
+		dmrC_expression_error(C, expr, "bad integer constant expression");
 		return 0;
 	}
 
@@ -1237,23 +1237,23 @@ static long long __get_expression_value(struct dmr_C *C, struct expression *expr
 	return value;
 }
 
-long long get_expression_value(struct dmr_C *C, struct expression *expr)
+long long dmrC_get_expression_value(struct dmr_C *C, struct expression *expr)
 {
 	return __get_expression_value(C, expr, 0);
 }
 
-long long const_expression_value(struct dmr_C *C, struct expression *expr)
+long long dmrC_const_expression_value(struct dmr_C *C, struct expression *expr)
 {
 	return __get_expression_value(C, expr, 1);
 }
 
-long long get_expression_value_silent(struct dmr_C *C, struct expression *expr)
+long long dmrC_get_expression_value_silent(struct dmr_C *C, struct expression *expr)
 {
 
 	return __get_expression_value(C, expr, 2);
 }
 
-int is_zero_constant(struct dmr_C *C, struct expression *expr)
+int dmrC_is_zero_constant(struct dmr_C *C, struct expression *expr)
 {
 	const int saved = conservative;
 	conservative = 1;

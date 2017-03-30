@@ -70,7 +70,7 @@ static void newIdProp(const char *name, unsigned int id)
 
 static void new_sym_node(struct dmr_C *C, struct symbol *sym, const char *name)
 {
-	const char *ident = show_ident(C, sym->ident);
+	const char *ident = dmrC_show_ident(C, sym->ident);
 
 	assert(name != NULL);
 	assert(sym != NULL);
@@ -83,7 +83,7 @@ static void new_sym_node(struct dmr_C *C, struct symbol *sym, const char *name)
 
 	if (sym->ident && ident)
 		newProp("ident", ident);
-	newProp("file", stream_name(C, sym->pos.stream));
+	newProp("file", dmrC_stream_name(C, sym->pos.stream));
 
 	newNumProp("start-line", sym->pos.line);
 	newNumProp("start-col", sym->pos.pos);
@@ -92,7 +92,7 @@ static void new_sym_node(struct dmr_C *C, struct symbol *sym, const char *name)
 		newNumProp("end-line", sym->endpos.line);
 		newNumProp("end-col", sym->endpos.pos);
 		if (sym->pos.stream != sym->endpos.stream)
-			newProp("end-file", stream_name(C, sym->endpos.stream));
+			newProp("end-file", dmrC_stream_name(C, sym->endpos.stream));
         }
 	sym->aux = visited(idcount);
 
@@ -159,12 +159,12 @@ static void examine_modifiers(struct dmr_C *C, struct symbol *sym)
 static void
 examine_layout(struct dmr_C *C, struct symbol *sym)
 {
-	examine_symbol_type(C->S, sym);
+	dmrC_examine_symbol_type(C->S, sym);
 
 	newNumProp("bit-size", sym->bit_size);
 	newNumProp("alignment", sym->ctype.alignment);
 	newNumProp("offset", sym->offset);
-	if (is_bitfield_type(sym)) {
+	if (dmrC_is_bitfield_type(sym)) {
 		newNumProp("bit-offset", sym->bit_offset);
 	}
 }
@@ -182,12 +182,12 @@ static void examine_symbol(struct dmr_C *C, struct symbol *sym)
 	if (sym->ident && sym->ident->reserved)
 		return;
 
-	new_sym_node(C, sym, get_type_name(sym->type));
+	new_sym_node(C, sym, dmrC_get_type_name(sym->type));
 	examine_modifiers(C, sym);
 	examine_layout(C, sym);
 
 	if (sym->ctype.base_type) {
-		if ((base = builtin_typename(C, sym->ctype.base_type)) == NULL) {
+		if ((base = dmrC_builtin_typename(C, sym->ctype.base_type)) == NULL) {
 			if (!sym->ctype.base_type->aux) {
 				examine_symbol(C, sym->ctype.base_type);
 			}
@@ -197,8 +197,8 @@ static void examine_symbol(struct dmr_C *C, struct symbol *sym)
 		}
 	}
 	if (sym->array_size) {
-		/* TODO: modify get_expression_value to give error return */
-		array_size = get_expression_value(C, sym->array_size);
+		/* TODO: modify dmrC_get_expression_value to give error return */
+		array_size = dmrC_get_expression_value(C, sym->array_size);
 		newNumProp("array-size", array_size);
 	}
 
@@ -215,7 +215,7 @@ static void examine_symbol(struct dmr_C *C, struct symbol *sym)
 		//examine_members(C, sym->symbol_list);
 		break;
 	case SYM_UNINITIALIZED:
-		newProp("base-type-builtin", builtin_typename(C, sym));
+		newProp("base-type-builtin", dmrC_builtin_typename(C, sym));
 		break;
 	default:
 		break;
@@ -229,7 +229,7 @@ static struct position *get_expansion_end (struct token *token)
 	struct token *p1, *p2;
 
 	for (p1=NULL, p2=NULL;
-	     !eof_token(token);
+	     !dmrC_eof_token(token);
 	     p2 = p1, p1 = token, token = token->next);
 
 	if (p2)
@@ -274,7 +274,7 @@ static void examine_namespace(struct dmr_C *C, struct symbol *sym)
 	case NS_KEYWORD:
 		break;
 	default:
-		die(C, "Unrecognised namespace type %d",sym->ns);
+		dmrC_die(C, "Unrecognised namespace type %d",sym->ns);
 	}
 
 }
@@ -283,7 +283,7 @@ static int get_stream_id (struct dmr_C *C, const char *name)
 {
 	int i;
 	for (i=0; i<C->T->input_stream_nr; i++) {
-		if (strcmp(name, stream_name(C, i))==0)
+		if (strcmp(name, dmrC_stream_name(C, i))==0)
 			return i;
 	}
 	return -1;
@@ -310,11 +310,11 @@ int main(int argc, char **argv)
 
 	struct dmr_C *C = new_dmr_C();
 
-	symlist = sparse_initialize(C, argc, argv, &filelist);
+	symlist = dmrC_sparse_initialize(C, argc, argv, &filelist);
 
 	FOR_EACH_PTR(filelist, file) {
 		examine_symbol_list(C, file, symlist);
-		sparse_keep_tokens(C, file);
+		dmrC_sparse_keep_tokens(C, file);
 		examine_symbol_list(C, file, C->file_scope->symbols);
 		examine_symbol_list(C, file, C->global_scope->symbols);
 	} END_FOR_EACH_PTR(file);

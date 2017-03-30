@@ -38,9 +38,9 @@
 extern "C" {
 #endif
 
-void *blob_alloc(size_t size);
-void blob_free(void *addr, size_t size);
-long double string_to_ld(const char *nptr, char **endptr);
+void *dmrC_blob_alloc(size_t size);
+void dmrC_blob_free(void *addr, size_t size);
+long double dmrC_string_to_ld(const char *nptr, char **endptr);
 
 #ifdef __cplusplus
 }

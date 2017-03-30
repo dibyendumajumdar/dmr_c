@@ -74,23 +74,23 @@ struct allocator {
 	size_t allocations, total_bytes, useful_bytes;
 };
 
-extern void allocator_init(struct allocator *A, const char *name, size_t size,
+extern void dmrC_allocator_init(struct allocator *A, const char *name, size_t size,
 			   unsigned int alignment, unsigned int chunking);
 
-extern void *allocator_allocate(struct allocator *A, size_t extra);
+extern void *dmrC_allocator_allocate(struct allocator *A, size_t extra);
 
-extern void allocator_free(struct allocator *A, void *entry);
+extern void dmrC_allocator_free(struct allocator *A, void *entry);
 
-extern void allocator_show_allocations(struct allocator *A);
+extern void dmrC_allocator_show_allocations(struct allocator *A);
 
-extern void allocator_drop_all_allocations(struct allocator *A);
+extern void dmrC_allocator_drop_all_allocations(struct allocator *A);
 
-extern void allocator_destroy(struct allocator *A);
+extern void dmrC_allocator_destroy(struct allocator *A);
 
-extern void allocator_transfer(struct allocator *A,
+extern void dmrC_allocator_transfer(struct allocator *A,
 			       struct allocator *transfer_to);
 
-extern int test_allocator();
+extern int dmrC_test_allocator();
 
 #ifdef __cplusplus
 }

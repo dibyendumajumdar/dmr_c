@@ -57,7 +57,7 @@ static int context_increase(struct dmr_C *C, struct basic_block *bb, int entry)
 					continue;
 			} else if (current >= val)
 				continue;
-			warning(C, insn->pos, "context check failure");
+			dmrC_warning(C, insn->pos, "context check failure");
 			continue;
 		}
 		sum += val;
@@ -69,7 +69,7 @@ static int imbalance(struct dmr_C *C, struct entrypoint *ep, struct basic_block 
 {
 	if (C->Wcontext) {
 		struct symbol *sym = ep->name;
-		warning(C, bb->pos, "context imbalance in '%s' - %s", show_ident(C, sym->ident), why);
+		dmrC_warning(C, bb->pos, "context imbalance in '%s' - %s", dmrC_show_ident(C, sym->ident), why);
 	}
 	return -1;
 }
@@ -81,7 +81,7 @@ static int check_children(struct dmr_C *C, struct entrypoint *ep, struct basic_b
 	struct instruction *insn;
 	struct basic_block *child;
 
-	insn = last_instruction(bb->insns);
+	insn = dmrC_last_instruction(bb->insns);
 	if (!insn)
 		return 0;
 	if (insn->opcode == OP_RET)
@@ -127,24 +127,24 @@ static void check_cast_instruction(struct dmr_C *C, struct instruction *insn)
 				return;
 			if (newsigned)
 				return;
-			warning(C, insn->pos, "cast loses sign");
+			dmrC_warning(C, insn->pos, "cast loses sign");
 			return;
 		}
 		if (new < old) {
-			warning(C, insn->pos, "cast drops bits");
+			dmrC_warning(C, insn->pos, "cast drops bits");
 			return;
 		}
 		if (oldsigned == newsigned) {
-			warning(C, insn->pos, "cast wasn't removed");
+			dmrC_warning(C, insn->pos, "cast wasn't removed");
 			return;
 		}
-		warning(C, insn->pos, "cast changes sign");
+		dmrC_warning(C, insn->pos, "cast changes sign");
 	}
 }
 
 static void check_range_instruction(struct dmr_C *C, struct instruction *insn)
 {
-	warning(C, insn->pos, "value out of range");
+	dmrC_warning(C, insn->pos, "value out of range");
 }
 
 static void check_byte_count(struct dmr_C *C, struct instruction *insn, pseudo_t count)
@@ -154,8 +154,8 @@ static void check_byte_count(struct dmr_C *C, struct instruction *insn, pseudo_t
 	if (count->type == PSEUDO_VAL) {
 		long long val = count->value;
 		if (val <= 0 || val > 100000)
-			warning(C, insn->pos, "%s with byte count of %lld",
-				show_ident(C, insn->func->sym->ident), val);
+			dmrC_warning(C, insn->pos, "%s with byte count of %lld",
+				dmrC_show_ident(C, insn->func->sym->ident), val);
 		return;
 	}
 	/* OK, we could try to do the range analysis here */
@@ -257,8 +257,8 @@ static void check_context(struct dmr_C *C, struct entrypoint *ep)
 		pseudo_t pseudo;
 		FOR_EACH_PTR(ep->entry->bb->needs, pseudo) {
 			if (pseudo->type != PSEUDO_ARG)
-				warning(C, sym->pos, "%s: possible uninitialized variable (%s)",
-					show_ident(C, sym->ident), show_pseudo(C, pseudo));
+				dmrC_warning(C, sym->pos, "%s: possible uninitialized variable (%s)",
+					dmrC_show_ident(C, sym->ident), dmrC_show_pseudo(C, pseudo));
 		} END_FOR_EACH_PTR(pseudo);
 	}
 
@@ -278,11 +278,11 @@ static void check_symbols(struct dmr_C *C, struct ptr_list *list)
 	FOR_EACH_PTR(list, sym) {
 		struct entrypoint *ep;
 
-		expand_symbol(C, sym);
-		ep = linearize_symbol(C, sym);
+		dmrC_expand_symbol(C, sym);
+		ep = dmrC_linearize_symbol(C, sym);
 		if (ep) {
 			if (C->dbg_entry)
-				show_entry(C, ep);
+				dmrC_show_entry(C, ep);
 
 			check_context(C, ep);
 		}
@@ -298,9 +298,9 @@ int main(int argc, char **argv)
 
 	struct dmr_C *C = new_dmr_C();
 	// Expand, linearize and show it.
-	check_symbols(C, sparse_initialize(C, argc, argv, &filelist));
+	check_symbols(C, dmrC_sparse_initialize(C, argc, argv, &filelist));
 	FOR_EACH_PTR(filelist, file) {
-		check_symbols(C, sparse(C, file));
+		check_symbols(C, dmrC_sparse(C, file));
 	} END_FOR_EACH_PTR(file);
 
 	destroy_dmr_C(C);

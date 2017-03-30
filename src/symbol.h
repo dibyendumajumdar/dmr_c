@@ -304,55 +304,50 @@ struct global_symbols_t {
 #undef __IDENT
 };
 
-#define symbol_is_typename(sym) ((sym)->type == SYM_TYPE)
+extern void dmrC_init_symbols(struct dmr_C *C);
+extern void dmrC_init_ctype(struct dmr_C *C);
+extern void dmrC_init_builtins(struct dmr_C *C, int stream);
+extern void dmrC_destroy_symbols(struct dmr_C *C);
 
-extern void init_symbols(struct dmr_C *C);
-extern void init_ctype(struct dmr_C *C);
-extern void init_builtins(struct dmr_C *C, int stream);
-extern void destroy_symbols(struct dmr_C *C);
+extern struct context *dmrC_alloc_context(struct global_symbols_t *S);
+extern void dmrC_access_symbol(struct global_symbols_t *S, struct symbol *sym);
 
-extern struct context *alloc_context(struct global_symbols_t *S);
-extern void access_symbol(struct global_symbols_t *S, struct symbol *sym);
-
-extern const char *type_difference(struct dmr_C *C, struct ctype *c1, struct ctype *c2,
+extern const char *dmrC_type_difference(struct dmr_C *C, struct ctype *c1, struct ctype *c2,
 				   unsigned long mod1, unsigned long mod2);
 
-extern struct symbol *lookup_symbol(struct ident *, enum namespace_type);
-extern struct symbol *create_symbol(struct global_symbols_t *S, int stream, const char *name, int type, int ns);
+extern struct symbol *dmrC_lookup_symbol(struct ident *, enum namespace_type);
+extern struct symbol *dmrC_create_symbol(struct global_symbols_t *S, int stream, const char *name, int type, int ns);
 
-extern struct symbol *alloc_symbol(struct global_symbols_t *S,
+extern struct symbol *dmrC_alloc_symbol(struct global_symbols_t *S,
 				   struct position pos, int type);
-extern void show_type(struct dmr_C *C, struct symbol *);
-extern const char *modifier_string(struct dmr_C *C, unsigned long mod);
-extern void show_symbol(struct dmr_C *C, struct symbol *);
-extern int show_symbol_expr_init(struct dmr_C *C, struct symbol *sym);
-extern void show_type_list(struct dmr_C *C, struct symbol *);
-extern void show_symbol_list(struct dmr_C *C, struct ptr_list *, const char *);
-extern void bind_symbol(struct global_symbols_t *S, struct symbol *sym,
+extern void dmrC_show_type(struct dmr_C *C, struct symbol *);
+extern const char *dmrC_modifier_string(struct dmr_C *C, unsigned long mod);
+extern void dmrC_show_symbol(struct dmr_C *C, struct symbol *);
+extern int dmrC_show_symbol_expr_init(struct dmr_C *C, struct symbol *sym);
+extern void dmrC_show_symbol_list(struct dmr_C *C, struct ptr_list *, const char *);
+extern void dmrC_bind_symbol(struct global_symbols_t *S, struct symbol *sym,
 			struct ident *ident, enum namespace_type ns);
 
-extern struct symbol *examine_symbol_type(struct global_symbols_t *S,
+extern struct symbol *dmrC_examine_symbol_type(struct global_symbols_t *S,
 					  struct symbol *sym);
-extern struct symbol *examine_pointer_target(struct global_symbols_t *S,
+extern struct symbol *dmrC_examine_pointer_target(struct global_symbols_t *S,
 					     struct symbol *sym);
-extern void examine_simple_symbol_type(struct symbol *);
-extern const char *show_typename(struct dmr_C *C, struct symbol *sym);
-extern const char *builtin_typename(struct dmr_C *C, struct symbol *sym);
-extern const char *builtin_ctypename(struct dmr_C *C, struct ctype *ctype);
-extern const char *get_type_name(enum type type);
+extern const char *dmrC_show_typename(struct dmr_C *C, struct symbol *sym);
+extern const char *dmrC_builtin_typename(struct dmr_C *C, struct symbol *sym);
+extern const char *dmrC_builtin_ctypename(struct dmr_C *C, struct ctype *ctype);
+extern const char *dmrC_get_type_name(enum type type);
 
-extern void debug_symbol(struct dmr_C *C, struct symbol *);
-extern void merge_type(struct symbol *sym, struct symbol *base_type);
-extern void check_declaration(struct global_symbols_t *S, struct symbol *sym);
-extern const char *show_typename(struct dmr_C *C, struct symbol *sym);
+extern void dmrC_debug_symbol(struct dmr_C *C, struct symbol *);
+extern void dmrC_merge_type(struct symbol *sym, struct symbol *base_type);
+extern void dmrC_check_declaration(struct global_symbols_t *S, struct symbol *sym);
 
-static inline struct symbol *get_base_type(struct global_symbols_t *S,
+static inline struct symbol *dmrC_get_base_type(struct global_symbols_t *S,
 					   const struct symbol *sym)
 {
-	return examine_symbol_type(S, sym->ctype.base_type);
+	return dmrC_examine_symbol_type(S, sym->ctype.base_type);
 }
 
-static inline int is_int_type(struct global_symbols_t *S,
+static inline int dmrC_is_int_type(struct global_symbols_t *S,
 			      const struct symbol *type)
 {
 	if (type->type == SYM_NODE)
@@ -363,53 +358,53 @@ static inline int is_int_type(struct global_symbols_t *S,
 	       type->ctype.base_type == &S->int_type;
 }
 
-static inline int is_enum_type(const struct symbol *type)
+static inline int dmrC_is_enum_type(const struct symbol *type)
 {
 	if (type->type == SYM_NODE)
 		type = type->ctype.base_type;
 	return (type->type == SYM_ENUM);
 }
 
-static inline int is_type_type(struct symbol *type)
+static inline int dmrC_is_type_type(struct symbol *type)
 {
 	return (type->ctype.modifiers & MOD_TYPE) != 0;
 }
 
-static inline int is_ptr_type(struct symbol *type)
+static inline int dmrC_is_ptr_type(struct symbol *type)
 {
 	if (type->type == SYM_NODE)
 		type = type->ctype.base_type;
 	return type->type == SYM_PTR || type->type == SYM_ARRAY || type->type == SYM_FN;
 }
 
-static inline int is_float_type(struct global_symbols_t *S, struct symbol *type)
+static inline int dmrC_is_float_type(struct global_symbols_t *S, struct symbol *type)
 {
 	if (type->type == SYM_NODE)
 		type = type->ctype.base_type;
 	return type->ctype.base_type == &S->fp_type;
 }
 
-static inline int is_byte_type(const struct target_t *target,
+static inline int dmrC_is_byte_type(const struct target_t *target,
 			       struct symbol *type)
 {
 	return type->bit_size == target->bits_in_char && type->type != SYM_BITFIELD;
 }
 
-static inline int is_void_type(struct global_symbols_t *S, struct symbol *type)
+static inline int dmrC_is_void_type(struct global_symbols_t *S, struct symbol *type)
 {
 	if (type->type == SYM_NODE)
 		type = type->ctype.base_type;
 	return type == &S->void_ctype;
 }
 
-static inline int is_bool_type(struct global_symbols_t *S, struct symbol *type)
+static inline int dmrC_is_bool_type(struct global_symbols_t *S, struct symbol *type)
 {
 	if (type->type == SYM_NODE)
 		type = type->ctype.base_type;
 	return type == &S->bool_ctype;
 }
 
-static inline int is_scalar_type(struct global_symbols_t *S, struct symbol *type)
+static inline int dmrC_is_scalar_type(struct global_symbols_t *S, struct symbol *type)
 {
 	if (type->type == SYM_NODE)
 		type = type->ctype.base_type;
@@ -431,34 +426,34 @@ static inline int is_scalar_type(struct global_symbols_t *S, struct symbol *type
 	return 0;
 }
 
-static inline int is_function(struct symbol *type)
+static inline int dmrC_is_function(struct symbol *type)
 {
 	return type && type->type == SYM_FN;
 }
 
-static inline int is_extern_inline(struct symbol *sym)
+static inline int dmrC_is_extern_inline(struct symbol *sym)
 {
 	return (sym->ctype.modifiers & MOD_EXTERN) &&
 		(sym->ctype.modifiers & MOD_INLINE) &&
-		is_function(sym->ctype.base_type);
+		dmrC_is_function(sym->ctype.base_type);
 }
 
-static inline int is_toplevel(struct symbol *sym)
+static inline int dmrC_is_toplevel(struct symbol *sym)
 {
 	return (sym->ctype.modifiers & MOD_TOPLEVEL);
 }
 
-static inline int is_extern(struct symbol *sym)
+static inline int dmrC_is_extern(struct symbol *sym)
 {
 	return (sym->ctype.modifiers & MOD_EXTERN);
 }
 
-static inline int is_static(struct symbol *sym)
+static inline int dmrC_is_static(struct symbol *sym)
 {
 	return (sym->ctype.modifiers & MOD_STATIC);
 }
 
-static int is_signed_type(struct symbol *sym)
+static int dmrC_is_signed_type(struct symbol *sym)
 {
 	if (sym->type == SYM_NODE)
 		sym = sym->ctype.base_type;
@@ -467,12 +462,12 @@ static int is_signed_type(struct symbol *sym)
 	return !(sym->ctype.modifiers & MOD_UNSIGNED);
 }
 
-static inline int is_unsigned(struct symbol *sym)
+static inline int dmrC_is_unsigned(struct symbol *sym)
 {
-	return !is_signed_type(sym);
+	return !dmrC_is_signed_type(sym);
 }
 
-static inline int get_sym_type(struct symbol *type)
+static inline int dmrC_get_sym_type(struct symbol *type)
 {
 	if (type->type == SYM_NODE)
 		type = type->ctype.base_type;
@@ -481,41 +476,40 @@ static inline int get_sym_type(struct symbol *type)
 	return type->type;
 }
 
-static inline struct symbol *get_nth_symbol(struct ptr_list *list, unsigned int idx)
+static inline struct symbol *dmrC_get_nth_symbol(struct ptr_list *list, unsigned int idx)
 {
 	return (struct symbol *)ptrlist_nth_entry(list, idx);
 }
 
-static inline struct symbol *lookup_keyword(struct ident *ident,
+static inline struct symbol *dmrC_lookup_keyword(struct ident *ident,
 					    enum namespace_type ns)
 {
 	if (!ident->keyword)
 		return NULL;
-	return lookup_symbol(ident, ns);
+	return dmrC_lookup_symbol(ident, ns);
 }
 
-static inline void concat_symbol_list(struct ptr_list *from, struct ptr_list **to)
+static inline void dmrC_concat_symbol_list(struct ptr_list *from, struct ptr_list **to)
 {
 	ptrlist_concat(from, to);
 }
 
-static inline void add_symbol(struct dmr_C *C, struct ptr_list **list, struct symbol *sym)
+static inline void dmrC_add_symbol(struct dmr_C *C, struct ptr_list **list, struct symbol *sym)
 {
 	ptrlist_add(list, sym, &C->ptrlist_allocator);
 }
 
-static inline int symbol_list_size(struct ptr_list *list)
+static inline int dmrC_symbol_list_size(struct ptr_list *list)
 {
 	return ptrlist_size(list);
 }
 
-#define is_restricted_type(type) (get_sym_type(type) == SYM_RESTRICT)
-#define is_fouled_type(type) (get_sym_type(type) == SYM_FOULED)
-#define is_bitfield_type(type) (get_sym_type(type) == SYM_BITFIELD)
-extern int is_ptr_type(struct symbol *);
+#define dmrC_is_restricted_type(type) (dmrC_get_sym_type(type) == SYM_RESTRICT)
+#define dmrC_is_fouled_type(type) (dmrC_get_sym_type(type) == SYM_FOULED)
+#define dmrC_is_bitfield_type(type) (dmrC_get_sym_type(type) == SYM_BITFIELD)
 
-extern void create_fouled(struct global_symbols_t *S, struct symbol *type);
-extern struct symbol *befoul(struct global_symbols_t *S, struct symbol *type);
+extern void dmrC_create_fouled(struct global_symbols_t *S, struct symbol *type);
+extern struct symbol *dmrC_befoul(struct global_symbols_t *S, struct symbol *type);
 
 #ifdef __cplusplus
 }

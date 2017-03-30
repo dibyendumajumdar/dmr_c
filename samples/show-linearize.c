@@ -45,10 +45,10 @@ static void clean_up_symbols(struct dmr_C *C, struct ptr_list *list)
 	FOR_EACH_PTR(list, sym) {
 		struct entrypoint *ep;
 
-		expand_symbol(C, sym);
-		ep = linearize_symbol(C, sym);
+		dmrC_expand_symbol(C, sym);
+		ep = dmrC_linearize_symbol(C, sym);
 		if (ep)
-			show_entry(C, ep);
+			dmrC_show_entry(C, ep);
 	} END_FOR_EACH_PTR(sym);
 }
 
@@ -58,9 +58,9 @@ int main(int argc, char **argv)
 	char *file;
 
   struct dmr_C *C = new_dmr_C();
-	clean_up_symbols(C, sparse_initialize(C, argc, argv, &filelist));
+	clean_up_symbols(C, dmrC_sparse_initialize(C, argc, argv, &filelist));
 	FOR_EACH_PTR(filelist, file) {
-		clean_up_symbols(C, sparse(C, file));
+		clean_up_symbols(C, dmrC_sparse(C, file));
 	} END_FOR_EACH_PTR(file);
   
   destroy_dmr_C(C);

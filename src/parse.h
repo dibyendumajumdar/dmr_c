@@ -141,45 +141,39 @@ struct parse_state_t {
 	struct symbol ** types[7];
 };
 
-extern void init_parser(struct dmr_C *C, int stream);
-void destroy_parser(struct dmr_C *C);
+extern void dmrC_init_parser(struct dmr_C *C, int stream);
+void dmrC_destroy_parser(struct dmr_C *C);
 
-extern struct token *parse_expression(struct dmr_C *C, struct token *, struct expression **);
-extern struct symbol *label_symbol(struct dmr_C *C, struct token *token);
+extern struct token *dmrC_parse_expression(struct dmr_C *C, struct token *, struct expression **);
+extern struct symbol *dmrC_label_symbol(struct dmr_C *C, struct token *token);
 
-extern int show_statement(struct dmr_C *C, struct statement *);
-extern void show_statement_list(struct dmr_C *C, struct ptr_list *, const char *);
-extern int show_expression(struct dmr_C *C, struct expression *);
+extern int dmrC_show_statement(struct dmr_C *C, struct statement *);
+extern int dmrC_show_expression(struct dmr_C *C, struct expression *);
 
-extern struct token *external_declaration(struct dmr_C *C, struct token *token, struct ptr_list **symbol_list);
+extern struct token *dmrC_external_declaration(struct dmr_C *C, struct token *token, struct ptr_list **symbol_list);
 
-extern struct symbol *ctype_integer(struct dmr_C *C, int size, int want_unsigned);
+extern struct symbol *dmrC_ctype_integer(struct dmr_C *C, int size, int want_unsigned);
 
-extern void copy_statement(struct dmr_C *C, struct statement *src, struct statement *dst);
-extern int inline_function(struct dmr_C *C, struct expression *expr, struct symbol *sym);
-extern void uninline(struct dmr_C *C, struct symbol *sym);
+extern void dmrC_copy_statement(struct dmr_C *C, struct statement *src, struct statement *dst);
+extern int dmrC_inline_function(struct dmr_C *C, struct expression *expr, struct symbol *sym);
+extern void dmrC_uninline(struct dmr_C *C, struct symbol *sym);
 
-static inline void add_statement(struct dmr_C *C, struct ptr_list **list, struct statement *stmt)
+static inline void dmrC_add_statement(struct dmr_C *C, struct ptr_list **list, struct statement *stmt)
 {
 	ptrlist_add(list, stmt, &C->ptrlist_allocator);
 }
 
-static inline void add_expression(struct dmr_C *C, struct ptr_list **list, struct expression *expr)
+static inline void dmrC_add_expression(struct dmr_C *C, struct ptr_list **list, struct expression *expr)
 {
 	ptrlist_add(list, expr, &C->ptrlist_allocator);
 }
 
-static inline int statement_list_size(struct ptr_list *list)
+static inline int dmrC_expression_list_size(struct ptr_list *list)
 {
 	return ptrlist_size(list);
 }
 
-static inline int expression_list_size(struct ptr_list *list)
-{
-	return ptrlist_size(list);
-}
-
-extern int test_parse();
+extern int dmrC_test_parse();
 
 #ifdef __cplusplus
 }

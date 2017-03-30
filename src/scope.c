@@ -39,8 +39,8 @@
 #include <symbol.h>
 #include <scope.h>
 
-void init_scope(struct dmr_C *C) {
-	struct scope *scope = (struct scope *)allocator_allocate(&C->scope_allocator, 0);
+void dmrC_init_scope(struct dmr_C *C) {
+	struct scope *scope = (struct scope *)dmrC_allocator_allocate(&C->scope_allocator, 0);
 	memset(scope, 0, sizeof(*scope));
 	scope->next = scope;
 	C->builtin_scope = scope;
@@ -50,16 +50,16 @@ void init_scope(struct dmr_C *C) {
 	C->global_scope = C->builtin_scope;		// externally visible
 }
 
-void destroy_all_scopes(struct dmr_C *C) {
+void dmrC_destroy_all_scopes(struct dmr_C *C) {
 }
 
-void bind_scope(struct dmr_C *C, struct symbol *sym, struct scope *scope)
+void dmrC_bind_scope(struct dmr_C *C, struct symbol *sym, struct scope *scope)
 {
 	sym->scope = scope;
-	add_symbol(C, &scope->symbols, sym);
+	dmrC_add_symbol(C, &scope->symbols, sym);
 }
 
-void rebind_scope(struct dmr_C *C, struct symbol *sym, struct scope *news)
+void dmrC_rebind_scope(struct dmr_C *C, struct symbol *sym, struct scope *news)
 {
 	struct scope *old = sym->scope;
 
@@ -69,20 +69,20 @@ void rebind_scope(struct dmr_C *C, struct symbol *sym, struct scope *news)
 	if (old)
 		ptrlist_remove(&old->symbols, sym, 1);
 
-	bind_scope(C, sym, news);
+	dmrC_bind_scope(C, sym, news);
 }
 
 static void start_scope(struct dmr_C *C, struct scope **s)
 {
-	struct scope *scope = (struct scope *)allocator_allocate(&C->scope_allocator, 0);
+	struct scope *scope = (struct scope *)dmrC_allocator_allocate(&C->scope_allocator, 0);
 	memset(scope, 0, sizeof(*scope));
 	scope->next = *s;
 	*s = scope;
 }
 
-void start_file_scope(struct dmr_C *C)
+void dmrC_start_file_scope(struct dmr_C *C)
 {
-	struct scope *scope = (struct scope *)allocator_allocate(&C->scope_allocator, 0);
+	struct scope *scope = (struct scope *)dmrC_allocator_allocate(&C->scope_allocator, 0);
 
 	memset(scope, 0, sizeof(*scope));
 	scope->next = C->builtin_scope;
@@ -93,12 +93,12 @@ void start_file_scope(struct dmr_C *C)
 	C->block_scope = scope;
 }
 
-void start_symbol_scope(struct dmr_C *C)
+void dmrC_start_symbol_scope(struct dmr_C *C)
 {
 	start_scope(C, &C->block_scope);
 }
 
-void start_function_scope(struct dmr_C *C)
+void dmrC_start_function_scope(struct dmr_C *C)
 {
 	start_scope(C, &C->function_scope);
 	start_scope(C, &C->block_scope);
@@ -126,30 +126,30 @@ static void end_scope(struct dmr_C *C, struct scope **s)
 	} END_FOR_EACH_PTR(sym);
 }
 
-void end_file_scope(struct dmr_C *C)
+void dmrC_end_file_scope(struct dmr_C *C)
 {
 	end_scope(C, &C->file_scope);
 }
 
-void new_file_scope(struct dmr_C *C)
+void dmrC_new_file_scope(struct dmr_C *C)
 {
 	if (C->file_scope != C->builtin_scope)
-		end_file_scope(C);
-	start_file_scope(C);
+		dmrC_end_file_scope(C);
+	dmrC_start_file_scope(C);
 }
 
-void end_symbol_scope(struct dmr_C *C)
+void dmrC_end_symbol_scope(struct dmr_C *C)
 {
 	end_scope(C, &C->block_scope);
 }
 
-void end_function_scope(struct dmr_C *C)
+void dmrC_end_function_scope(struct dmr_C *C)
 {
 	end_scope(C, &C->block_scope);
 	end_scope(C, &C->function_scope);
 }
 
-int is_outer_scope(struct dmr_C *C, struct scope *scope)
+int dmrC_is_outer_scope(struct dmr_C *C, struct scope *scope)
 {
 	if (scope == C->block_scope)
 		return 0;

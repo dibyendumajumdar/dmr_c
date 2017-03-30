@@ -78,7 +78,7 @@
 
 static struct token *alloc_token(struct dmr_C *C, struct position *pos)
 {
-	struct token *token = (struct token *)allocator_allocate(&C->token_allocator, 0);
+	struct token *token = (struct token *)dmrC_allocator_allocate(&C->token_allocator, 0);
 
 	token->pos.stream = pos->stream;
 	token->pos.line = pos->line;
@@ -93,25 +93,25 @@ static int expand(struct dmr_C *C, struct token **, struct symbol *);
 static void replace_with_string(struct dmr_C *C, struct token *token, const char *str)
 {
 	int size = strlen(str) + 1;
-	struct string *s = (struct string *)allocator_allocate(&C->string_allocator, size);
+	struct string *s = (struct string *)dmrC_allocator_allocate(&C->string_allocator, size);
 
 	s->length = size;
 	memcpy(s->data, str, size);
-	token_type(token) = TOKEN_STRING;
+	dmrC_token_type(token) = TOKEN_STRING;
 	token->string = s;
 }
 
 static void replace_with_integer(struct dmr_C *C, struct token *token, unsigned int val)
 {
-	char *buf = (char *)allocator_allocate(&C->byte_allocator, 11);
+	char *buf = (char *)dmrC_allocator_allocate(&C->byte_allocator, 11);
 	sprintf(buf, "%u", val);
-	token_type(token) = TOKEN_NUMBER;
+	dmrC_token_type(token) = TOKEN_NUMBER;
 	token->number = buf;
 }
 
 static struct symbol *lookup_macro(struct dmr_C *C, struct ident *ident)
 {
-	struct symbol *sym = lookup_symbol(ident, (enum namespace_type) (NS_MACRO | NS_UNDEF));
+	struct symbol *sym = dmrC_lookup_symbol(ident, (enum namespace_type) (NS_MACRO | NS_UNDEF));
 	if (sym && sym->ns != NS_MACRO)
 		sym = NULL;
 	return sym;
@@ -119,7 +119,7 @@ static struct symbol *lookup_macro(struct dmr_C *C, struct ident *ident)
 
 static int token_defined(struct dmr_C *C, struct token *token)
 {
-	if (token_type(token) == TOKEN_IDENT) {
+	if (dmrC_token_type(token) == TOKEN_IDENT) {
 		struct symbol *sym = lookup_macro(C, token->ident);
 		if (sym) {
 			sym->used_in = C->file_scope;
@@ -128,7 +128,7 @@ static int token_defined(struct dmr_C *C, struct token *token)
 		return 0;
 	}
 
-	sparse_error(C, token->pos, "expected preprocessor identifier");
+	dmrC_sparse_error(C, token->pos, "expected preprocessor identifier");
 	return 0;
 }
 
@@ -137,7 +137,7 @@ static void replace_with_defined(struct dmr_C *C, struct token *token)
 	static const char *string[] = { "0", "1" };
 	int defined = token_defined(C, token);
 
-	token_type(token) = TOKEN_NUMBER;
+	dmrC_token_type(token) = TOKEN_NUMBER;
 	token->number = string[defined];
 }
 
@@ -157,7 +157,7 @@ static int expand_one_symbol(struct dmr_C *C, struct token **list)
 	if (token->ident == C->S->__LINE___ident) {
 		replace_with_integer(C, token, token->pos.line);
 	} else if (token->ident == C->S->__FILE___ident) {
-		replace_with_string(C, token, stream_name(C, token->pos.stream));
+		replace_with_string(C, token, dmrC_stream_name(C, token->pos.stream));
 	} else if (token->ident == C->S->__DATE___ident) {
 		if (!C->t)
 			time(&C->t);
@@ -177,12 +177,12 @@ static int expand_one_symbol(struct dmr_C *C, struct token **list)
 static inline struct token *scan_next(struct dmr_C *C, struct token **where)
 {
 	struct token *token = *where;
-	if (token_type(token) != TOKEN_UNTAINT)
+	if (dmrC_token_type(token) != TOKEN_UNTAINT)
 		return token;
 	do {
 		token->ident->tainted = 0;
 		token = token->next;
-	} while (token_type(token) == TOKEN_UNTAINT);
+	} while (dmrC_token_type(token) == TOKEN_UNTAINT);
 	*where = token;
 	return token;
 }
@@ -190,8 +190,8 @@ static inline struct token *scan_next(struct dmr_C *C, struct token **where)
 static void expand_list(struct dmr_C *C, struct token **list)
 {
 	struct token *next;
-	while (!eof_token(next = scan_next(C, list))) {
-		if (token_type(next) != TOKEN_IDENT || expand_one_symbol(C, list))
+	while (!dmrC_eof_token(next = scan_next(C, list))) {
+		if (dmrC_token_type(next) != TOKEN_IDENT || expand_one_symbol(C, list))
 			list = &next->next;
 	}
 }
@@ -205,20 +205,20 @@ static struct token *collect_arg(struct dmr_C *C, struct token *prev, int vararg
 	struct token *next;
 	int nesting = 0;
 
-	while (!eof_token(next = scan_next(C, p))) {
-		if (next->pos.newline && match_op(next, '#')) {
+	while (!dmrC_eof_token(next = scan_next(C, p))) {
+		if (next->pos.newline && dmrC_match_op(next, '#')) {
 			if (!next->pos.noexpand) {
-				sparse_error(C, next->pos,
+				dmrC_sparse_error(C, next->pos,
 					     "directive in argument list");
 				preprocessor_line(C, stream, p);
-				allocator_free(&C->token_allocator, next);	/* Free the '#' token */
+				dmrC_allocator_free(&C->token_allocator, next);	/* Free the '#' token */
 				continue;
 			}
 		}
-		switch (token_type(next)) {
+		switch (dmrC_token_type(next)) {
 		case TOKEN_STREAMEND:
 		case TOKEN_STREAMBEGIN:
-			*p = &eof_token_entry;
+			*p = &dmrC_eof_token_entry_;
 			return next;
 		case TOKEN_STRING:
 		case TOKEN_WIDE_STRING:
@@ -228,15 +228,15 @@ static struct token *collect_arg(struct dmr_C *C, struct token *prev, int vararg
 		}
 		if (C->false_nesting) {
 			*p = next->next;
-			allocator_free(&C->token_allocator, next);
+			dmrC_allocator_free(&C->token_allocator, next);
 			continue;
 		}
-		if (match_op(next, '(')) {
+		if (dmrC_match_op(next, '(')) {
 			nesting++;
-		} else if (match_op(next, ')')) {
+		} else if (dmrC_match_op(next, ')')) {
 			if (!nesting--)
 				break;
-		} else if (match_op(next, ',') && !nesting && !vararg) {
+		} else if (dmrC_match_op(next, ',') && !nesting && !vararg) {
 			break;
 		}
 		next->pos.stream = pos->stream;
@@ -244,7 +244,7 @@ static struct token *collect_arg(struct dmr_C *C, struct token *prev, int vararg
 		next->pos.pos = pos->pos;
 		p = &next->next;
 	}
-	*p = &eof_token_entry;
+	*p = &dmrC_eof_token_entry_;
 	return next;
 }
 
@@ -271,9 +271,9 @@ static int collect_arguments(struct dmr_C *C, struct token *start, struct token 
 
 	if (!wanted) {
 		next = collect_arg(C, start, 0, &what->pos, 0);
-		if (eof_token(next))
+		if (dmrC_eof_token(next))
 			goto Eclosing;
-		if (!eof_token(start->next) || !match_op(next, ')')) {
+		if (!dmrC_eof_token(start->next) || !dmrC_match_op(next, ')')) {
 			count++;
 			goto Emany;
 		}
@@ -282,19 +282,19 @@ static int collect_arguments(struct dmr_C *C, struct token *start, struct token 
 			struct argcount *p = &arglist->next->count;
 			next = collect_arg(C, start, p->vararg, &what->pos, p->normal);
 			arglist = arglist->next->next;
-			if (eof_token(next))
+			if (dmrC_eof_token(next))
 				goto Eclosing;
 			args[count].argument = start->next;
 			args[count].n_normal = p->normal;
 			args[count].n_quoted = p->quoted;
 			args[count].n_str = p->str;
-			if (match_op(next, ')')) {
+			if (dmrC_match_op(next, ')')) {
 				count++;
 				break;
 			}
 			start = next;
 		}
-		if (count == wanted && !match_op(next, ')'))
+		if (count == wanted && !dmrC_match_op(next, ')'))
 			goto Emany;
 		if (count == wanted - 1) {
 			struct argcount *p = &arglist->next->count;
@@ -312,22 +312,22 @@ static int collect_arguments(struct dmr_C *C, struct token *start, struct token 
 	return 1;
 
 Efew:
-	sparse_error(C, what->pos, "macro \"%s\" requires %d arguments, but only %d given",
-		show_token(C, what), wanted, count);
+	dmrC_sparse_error(C, what->pos, "macro \"%s\" requires %d arguments, but only %d given",
+		dmrC_show_token(C, what), wanted, count);
 	goto out;
 Emany:
-	while (match_op(next, ',')) {
+	while (dmrC_match_op(next, ',')) {
 		next = collect_arg(C, next, 0, &what->pos, 0);
 		count++;
 	}
-	if (eof_token(next))
+	if (dmrC_eof_token(next))
 		goto Eclosing;
-	sparse_error(C, what->pos, "macro \"%s\" passed %d arguments, but takes just %d",
-		show_token(C, what), count, wanted);
+	dmrC_sparse_error(C, what->pos, "macro \"%s\" passed %d arguments, but takes just %d",
+		dmrC_show_token(C, what), count, wanted);
 	goto out;
 Eclosing:
-	sparse_error(C, what->pos, "unterminated argument list invoking macro \"%s\"",
-		show_token(C, what));
+	dmrC_sparse_error(C, what->pos, "unterminated argument list invoking macro \"%s\"",
+		dmrC_show_token(C, what));
 out:
 	what->next = next->next;
 	return 0;
@@ -338,8 +338,8 @@ static struct token *dup_list(struct dmr_C *C, struct token *list)
 	struct token *res = NULL;
 	struct token **p = &res;
 
-	while (!eof_token(list)) {
-		struct token *newtok = (struct token *)allocator_allocate(&C->token_allocator, 0);
+	while (!dmrC_eof_token(list)) {
+		struct token *newtok = (struct token *)dmrC_allocator_allocate(&C->token_allocator, 0);
 		*newtok = *list;
 		*p = newtok;
 		p = &newtok->next;
@@ -355,12 +355,12 @@ static const char *show_token_sequence(struct dmr_C *C, struct token *token, int
 
 	if (!token && !quote)
 		return "<none>";
-	while (!eof_token(token)) {
-		const char *val = quote ? quote_token(C, token) : show_token(C, token);
+	while (!dmrC_eof_token(token)) {
+		const char *val = quote ? dmrC_quote_token(C, token) : dmrC_show_token(C, token);
 		int len = strlen(val);
 
 		if (ptr + whitespace + len >= C->preprocessor_buffer + sizeof C->preprocessor_buffer) {
-			sparse_error(C, token->pos, "too long token expansion");
+			dmrC_sparse_error(C, token->pos, "too long token expansion");
 			break;
 		}
 
@@ -379,15 +379,15 @@ static struct token *stringify(struct dmr_C *C, struct token *arg)
 {
 	const char *s = show_token_sequence(C, arg, 1);
 	int size = strlen(s)+1;
-	struct token *token = (struct token *)allocator_allocate(&C->token_allocator, 0);
-	struct string *string = (struct string *)allocator_allocate(&C->string_allocator, size);
+	struct token *token = (struct token *)dmrC_allocator_allocate(&C->token_allocator, 0);
+	struct string *string = (struct string *)dmrC_allocator_allocate(&C->string_allocator, size);
 
 	memcpy(string->data, s, size);
 	string->length = size;
 	token->pos = arg->pos;
-	token_type(token) = TOKEN_STRING;
+	dmrC_token_type(token) = TOKEN_STRING;
 	token->string = string;
-	token->next = &eof_token_entry;
+	token->next = &dmrC_eof_token_entry_;
 	return token;
 }
 
@@ -397,14 +397,14 @@ static void expand_arguments(struct dmr_C *C, int count, struct arg *args)
 	for (i = 0; i < count; i++) {
 		struct token *arg = args[i].argument;
 		if (!arg)
-			arg = &eof_token_entry;
+			arg = &dmrC_eof_token_entry_;
 		if (args[i].n_str)
 			args[i].str = stringify(C, arg);
 		if (args[i].n_normal) {
 			if (!args[i].n_quoted) {
 				args[i].expanded = arg;
 				args[i].argument = NULL;
-			} else if (eof_token(arg)) {
+			} else if (dmrC_eof_token(arg)) {
 				args[i].expanded = arg;
 			} else {
 				args[i].expanded = dup_list(C, arg);
@@ -430,7 +430,7 @@ static void expand_arguments(struct dmr_C *C, int count, struct arg *args)
 static enum e_token_type combine(struct dmr_C *C, struct token *left, struct token *right, char *p)
 {
 	int len;
-	enum e_token_type t1 = (enum e_token_type) token_type(left), t2 = (enum e_token_type) token_type(right);
+	enum e_token_type t1 = (enum e_token_type) dmrC_token_type(left), t2 = (enum e_token_type) dmrC_token_type(right);
 
 	if (t1 != TOKEN_IDENT && t1 != TOKEN_NUMBER && t1 != TOKEN_SPECIAL)
 		return TOKEN_ERROR;
@@ -445,8 +445,8 @@ static enum e_token_type combine(struct dmr_C *C, struct token *left, struct tok
 	if (t2 != TOKEN_IDENT && t2 != TOKEN_NUMBER && t2 != TOKEN_SPECIAL)
 		return TOKEN_ERROR;
 
-	strcpy(p, show_token(C, left));
-	strcat(p, show_token(C, right));
+	strcpy(p, dmrC_show_token(C, left));
+	strcat(p, dmrC_show_token(C, right));
 	len = strlen(p);
 
 	if (len >= 256)
@@ -488,14 +488,14 @@ static int merge(struct dmr_C *C, struct token *left, struct token *right)
 
 	switch (res) {
 	case TOKEN_IDENT:
-		left->ident = built_in_ident(C, C->preprocessor_mergebuffer);
+		left->ident = dmrC_built_in_ident(C, C->preprocessor_mergebuffer);
 		left->pos.noexpand = 0;
 		return 1;
 
 	case TOKEN_NUMBER: {
-		char *number = (char *) allocator_allocate(&C->byte_allocator, strlen(C->preprocessor_mergebuffer) + 1);
+		char *number = (char *) dmrC_allocator_allocate(&C->byte_allocator, strlen(C->preprocessor_mergebuffer) + 1);
 		memcpy(number, C->preprocessor_mergebuffer, strlen(C->preprocessor_mergebuffer) + 1);
-		token_type(left) = TOKEN_NUMBER;	/* could be . + num */
+		dmrC_token_type(left) = TOKEN_NUMBER;	/* could be . + num */
 		left->number = number;
 		return 1;
 	}
@@ -504,7 +504,7 @@ static int merge(struct dmr_C *C, struct token *left, struct token *right)
 		if (C->preprocessor_mergebuffer[2] && C->preprocessor_mergebuffer[3])
 			break;
 		for (n = SPECIAL_BASE; n < SPECIAL_ARG_SEPARATOR; n++) {
-			if (!memcmp(C->preprocessor_mergebuffer, combinations[n-SPECIAL_BASE], 3)) {
+			if (!memcmp(C->preprocessor_mergebuffer, dmrC_combinations_[n-SPECIAL_BASE], 3)) {
 				left->special = n;
 				return 1;
 			}
@@ -513,7 +513,7 @@ static int merge(struct dmr_C *C, struct token *left, struct token *right)
 
 	case TOKEN_WIDE_CHAR:
 	case TOKEN_WIDE_STRING:
-		token_type(left) = res;
+		dmrC_token_type(left) = res;
 		left->pos.noexpand = 0;
 		left->string = right->string;
 		return 1;
@@ -522,7 +522,7 @@ static int merge(struct dmr_C *C, struct token *left, struct token *right)
   case TOKEN_WIDE_CHAR_EMBEDDED_1:
   case TOKEN_WIDE_CHAR_EMBEDDED_2:
   case TOKEN_WIDE_CHAR_EMBEDDED_3:
-		token_type(left) = res;
+		dmrC_token_type(left) = res;
 		left->pos.noexpand = 0;
 		memcpy(left->embedded, right->embedded, 4);
 		return 1;
@@ -530,14 +530,14 @@ static int merge(struct dmr_C *C, struct token *left, struct token *right)
 	default:
 		;
 	}
-	sparse_error(C, left->pos, "'##' failed: concatenation is not a valid token");
+	dmrC_sparse_error(C, left->pos, "'##' failed: concatenation is not a valid token");
 	return 0;
 }
 
 static struct token *dup_token(struct dmr_C *C, struct token *token, struct position *streampos)
 {
 	struct token *alloc = alloc_token(C, streampos);
-	token_type(alloc) = token_type(token);
+	dmrC_token_type(alloc) = dmrC_token_type(token);
 	alloc->pos.newline = token->pos.newline;
 	alloc->pos.whitespace = token->pos.whitespace;
 	alloc->number = token->number;
@@ -548,19 +548,19 @@ static struct token *dup_token(struct dmr_C *C, struct token *token, struct posi
 static struct token **copy(struct dmr_C *C, struct token **where, struct token *list, int *count)
 {
 	int need_copy = --*count;
-	while (!eof_token(list)) {
+	while (!dmrC_eof_token(list)) {
 		struct token *token;
 		if (need_copy)
 			token = dup_token(C, list, &list->pos);
 		else
 			token = list;
-		if (token_type(token) == TOKEN_IDENT && token->ident->tainted)
+		if (dmrC_token_type(token) == TOKEN_IDENT && token->ident->tainted)
 			token->pos.noexpand = 1;
 		*where = token;
 		where = &token->next;
 		list = list->next;
 	}
-	*where = &eof_token_entry;
+	*where = &dmrC_eof_token_entry_;
 	return where;
 }
 
@@ -569,7 +569,7 @@ static int handle_kludge(struct dmr_C *C, struct token **p, struct arg *args)
 	struct token *t = (*p)->next->next;
 	while (1) {
 		struct arg *v = &args[t->argnum];
-		if (token_type(t->next) != TOKEN_CONCAT) {
+		if (dmrC_token_type(t->next) != TOKEN_CONCAT) {
 			if (v->argument) {
 				/* ignore the first ## */
 				*p = (*p)->next;
@@ -579,7 +579,7 @@ static int handle_kludge(struct dmr_C *C, struct token **p, struct arg *args)
 			*p = t;
 			return 1;
 		}
-		if (v->argument && !eof_token(v->argument))
+		if (v->argument && !dmrC_eof_token(v->argument))
 			return 0; /* no magic */
 		t = t->next->next;
 	}
@@ -591,12 +591,12 @@ static struct token **substitute(struct dmr_C *C, struct token **list, struct to
 	int *count;
 	enum {Normal, Placeholder, Concat} state = Normal;
 
-	for (; !eof_token(body); body = body->next) {
+	for (; !dmrC_eof_token(body); body = body->next) {
 		struct token *added, *arg;
 		struct token **tail;
 		struct token *t;
 
-		switch (token_type(body)) {
+		switch (dmrC_token_type(body)) {
 		case TOKEN_GNU_KLUDGE:
 			/*
 			 * GNU kludge: if we had <comma>##<vararg>, behaviour
@@ -616,7 +616,7 @@ static struct token **substitute(struct dmr_C *C, struct token **list, struct to
 				continue;
 			}
 			added = dup_token(C, t, base_pos);
-			token_type(added) = TOKEN_SPECIAL;
+			dmrC_token_type(added) = TOKEN_SPECIAL;
 			tail = &added->next;
 			break;
 
@@ -628,7 +628,7 @@ static struct token **substitute(struct dmr_C *C, struct token **list, struct to
 		case TOKEN_QUOTED_ARGUMENT:
 			arg = args[body->argnum].argument;
 			count = &args[body->argnum].n_quoted;
-			if (!arg || eof_token(arg)) {
+			if (!arg || dmrC_eof_token(arg)) {
 				if (state == Concat)
 					state = Normal;
 				else
@@ -640,7 +640,7 @@ static struct token **substitute(struct dmr_C *C, struct token **list, struct to
 		case TOKEN_MACRO_ARGUMENT:
 			arg = args[body->argnum].expanded;
 			count = &args[body->argnum].n_normal;
-			if (eof_token(arg)) {
+			if (dmrC_eof_token(arg)) {
 				state = Normal;
 				continue;
 			}
@@ -672,9 +672,9 @@ static struct token **substitute(struct dmr_C *C, struct token **list, struct to
 
 		/*
 		 * if we got to doing real concatenation, we already have
-		 * added something into the list, so containing_token() is OK.
+		 * added something into the list, so dmrC_containing_token() is OK.
 		 */
-		if (state == Concat && merge(C, containing_token(list), added)) {
+		if (state == Concat && merge(C, dmrC_containing_token(list), added)) {
 			*list = added->next;
 			if (tail != &added->next)
 				list = tail;
@@ -684,7 +684,7 @@ static struct token **substitute(struct dmr_C *C, struct token **list, struct to
 		}
 		state = Normal;
 	}
-	*list = &eof_token_entry;
+	*list = &dmrC_eof_token_entry_;
 	return list;
 }
 
@@ -707,7 +707,7 @@ static int expand(struct dmr_C *C, struct token **list, struct symbol *sym)
 	}
 
 	if (sym->arglist) {
-		if (!match_op(scan_next(C, &token->next), '('))
+		if (!dmrC_match_op(scan_next(C, &token->next), '('))
 			return 1;
 		if (!collect_arguments(C, token->next, sym->arglist, args, token))
 			return 1;
@@ -735,19 +735,19 @@ static const char *token_name_sequence(struct dmr_C *C, struct token *token, int
 {
 	char *ptr = C->preprocessor_tokenseqbuffer;
 
-	while (!eof_token(token) && !match_op(token, endop)) {
+	while (!dmrC_eof_token(token) && !dmrC_match_op(token, endop)) {
 		int len;
 		const char *val = token->string->data;
-		if (token_type(token) != TOKEN_STRING)
-			val = show_token(C, token);
+		if (dmrC_token_type(token) != TOKEN_STRING)
+			val = dmrC_show_token(C, token);
 		len = strlen(val);
 		memcpy(ptr, val, len);
 		ptr += len;
 		token = token->next;
 	}
 	*ptr = 0;
-	if (endop && !match_op(token, endop))
-		sparse_error(C, start->pos, "expected '>' at end of filename");
+	if (endop && !dmrC_match_op(token, endop))
+		dmrC_sparse_error(C, start->pos, "expected '>' at end of filename");
 	return C->preprocessor_tokenseqbuffer;
 }
 
@@ -755,7 +755,7 @@ static int already_tokenized(struct dmr_C *C, const char *path)
 {
 	int stream, next;
 
-	for (stream = *hash_stream(path); stream >= 0 ; stream = next) {
+	for (stream = *dmrC_hash_stream(path); stream >= 0 ; stream = next) {
 		struct stream *s = C->T->input_streams + stream;
 
 		next = s->next_stream;
@@ -824,7 +824,7 @@ static void set_stream_include_path(struct dmr_C *C, struct stream *stream)
 		path = "";
 		if (p) {
 			int len = (int)(p - stream->name + 1);
-			char *m = (char *)allocator_allocate(&C->byte_allocator, len+1);
+			char *m = (char *)dmrC_allocator_allocate(&C->byte_allocator, len+1);
 			/* This includes the final "/" */
 			memcpy(m, stream->name, len);
 			m[len] = 0;
@@ -852,9 +852,9 @@ static int try_include(struct dmr_C *C, const char *path, const char *filename, 
 	//printf("Opening %s\n", C->fullname);
 	fd = open(C->fullname, O_RDONLY);
 	if (fd >= 0) {
-		char * streamname = (char *)allocator_allocate(&C->byte_allocator, plen + flen);
+		char * streamname = (char *)dmrC_allocator_allocate(&C->byte_allocator, plen + flen);
 		memcpy(streamname, C->fullname, plen + flen);
-		*where = tokenize(C, streamname, fd, *where, next_path);
+		*where = dmrC_tokenize(C, streamname, fd, *where, next_path);
 		close(fd);
 		return 1;
 	}
@@ -875,10 +875,10 @@ static int do_include_path(struct dmr_C *C, const char **pptr, struct token **li
 
 static int free_preprocessor_line(struct dmr_C *C, struct token *token)
 {
-	while (token_type(token) != TOKEN_EOF) {
+	while (dmrC_token_type(token) != TOKEN_EOF) {
 		struct token *free = token;
 		token = token->next;
-		allocator_free(&C->token_allocator, free);
+		dmrC_allocator_free(&C->token_allocator, free);
 	};
 	return 1;
 }
@@ -893,11 +893,11 @@ static int handle_include_path(struct dmr_C *C, struct stream *stream, struct to
 
 	next = token->next;
 	expect = '>';
-	if (!match_op(next, '<')) {
+	if (!dmrC_match_op(next, '<')) {
 		expand_list(C, &token->next);
 		expect = 0;
 		next = token;
-		if (match_op(token->next, '<')) {
+		if (dmrC_match_op(token->next, '<')) {
 			next = token->next;
 			expect = '>';
 		}
@@ -932,7 +932,7 @@ static int handle_include_path(struct dmr_C *C, struct stream *stream, struct to
 	if (do_include_path(C, path, list, token, filename, flen))
 		return 0;
 out:
-	error_die(C, token->pos, "unable to open '%s'", filename);
+	dmrC_error_die(C, token->pos, "unable to open '%s'", filename);
   return 0;
 }
 
@@ -955,10 +955,10 @@ static int token_different(struct dmr_C *C, struct token *t1, struct token *t2)
 {
 	int different;
 
-	if (token_type(t1) != token_type(t2))
+	if (dmrC_token_type(t1) != dmrC_token_type(t2))
 		return 1;
 
-	switch (token_type(t1)) {
+	switch (dmrC_token_type(t1)) {
 	case TOKEN_IDENT:
 		different = t1->ident != t2->ident;
 		break;
@@ -1026,7 +1026,7 @@ static int token_list_different(struct dmr_C *C, struct token *list1, struct tok
 
 static inline void set_arg_count(struct dmr_C *C, struct token *token)
 {
-	token_type(token) = TOKEN_ARG_COUNT;
+	dmrC_token_type(token) = TOKEN_ARG_COUNT;
 	token->count.normal = token->count.quoted =
 	token->count.str = token->count.vararg = 0;
 }
@@ -1038,40 +1038,40 @@ static struct token *parse_arguments(struct dmr_C *C, struct token *list)
 
 	set_arg_count(C, list);
 
-	if (match_op(arg, ')')) {
+	if (dmrC_match_op(arg, ')')) {
 		next = arg->next;
-		list->next = &eof_token_entry;
+		list->next = &dmrC_eof_token_entry_;
 		return next;
 	}
 
-	while (token_type(arg) == TOKEN_IDENT) {
+	while (dmrC_token_type(arg) == TOKEN_IDENT) {
 		if (arg->ident == C->S->__VA_ARGS___ident)
 			goto Eva_args;
 		if (!++count->normal)
 			goto Eargs;
 		next = arg->next;
 
-		if (match_op(next, ',')) {
+		if (dmrC_match_op(next, ',')) {
 			set_arg_count(C, next);
 			arg = next->next;
 			continue;
 		}
 
-		if (match_op(next, ')')) {
+		if (dmrC_match_op(next, ')')) {
 			set_arg_count(C, next);
 			next = next->next;
-			arg->next->next = &eof_token_entry;
+			arg->next->next = &dmrC_eof_token_entry_;
 			return next;
 		}
 
 		/* normal cases are finished here */
 
-		if (match_op(next, SPECIAL_ELLIPSIS)) {
-			if (match_op(next->next, ')')) {
+		if (dmrC_match_op(next, SPECIAL_ELLIPSIS)) {
+			if (dmrC_match_op(next->next, ')')) {
 				set_arg_count(C, next);
 				next->count.vararg = 1;
 				next = next->next;
-				arg->next->next = &eof_token_entry;
+				arg->next->next = &dmrC_eof_token_entry_;
 				return next->next;
 			}
 
@@ -1079,7 +1079,7 @@ static struct token *parse_arguments(struct dmr_C *C, struct token *list)
 			goto Enotclosed;
 		}
 
-		if (eof_token(next)) {
+		if (dmrC_eof_token(next)) {
 			goto Enotclosed;
 		} else {
 			arg = next;
@@ -1087,46 +1087,46 @@ static struct token *parse_arguments(struct dmr_C *C, struct token *list)
 		}
 	}
 
-	if (match_op(arg, SPECIAL_ELLIPSIS)) {
+	if (dmrC_match_op(arg, SPECIAL_ELLIPSIS)) {
 		next = arg->next;
-		token_type(arg) = TOKEN_IDENT;
+		dmrC_token_type(arg) = TOKEN_IDENT;
 		arg->ident = C->S->__VA_ARGS___ident;
-		if (!match_op(next, ')'))
+		if (!dmrC_match_op(next, ')'))
 			goto Enotclosed;
 		if (!++count->normal)
 			goto Eargs;
 		set_arg_count(C, next);
 		next->count.vararg = 1;
 		next = next->next;
-		arg->next->next = &eof_token_entry;
+		arg->next->next = &dmrC_eof_token_entry_;
 		return next;
 	}
 
-	if (eof_token(arg)) {
+	if (dmrC_eof_token(arg)) {
 		arg = next;
 		goto Enotclosed;
 	}
-	if (match_op(arg, ','))
+	if (dmrC_match_op(arg, ','))
 		goto Emissing;
 	else
 		goto Ebadstuff;
 
 
 Emissing:
-	sparse_error(C, arg->pos, "parameter name missing");
+	dmrC_sparse_error(C, arg->pos, "parameter name missing");
 	return NULL;
 Ebadstuff:
-	sparse_error(C, arg->pos, "\"%s\" may not appear in macro parameter list",
-		show_token(C, arg));
+	dmrC_sparse_error(C, arg->pos, "\"%s\" may not appear in macro parameter list",
+		dmrC_show_token(C, arg));
 	return NULL;
 Enotclosed:
-	sparse_error(C, arg->pos, "missing ')' in macro parameter list");
+	dmrC_sparse_error(C, arg->pos, "missing ')' in macro parameter list");
 	return NULL;
 Eva_args:
-	sparse_error(C, arg->pos, "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro");
+	dmrC_sparse_error(C, arg->pos, "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro");
 	return NULL;
 Eargs:
-	sparse_error(C, arg->pos, "too many arguments in macro definition");
+	dmrC_sparse_error(C, arg->pos, "too many arguments in macro definition");
 	return NULL;
 }
 
@@ -1135,18 +1135,18 @@ static int try_arg(struct dmr_C *C, struct token *token, enum e_token_type type,
 	struct ident *ident = token->ident;
 	int nr;
 
-	if (!arglist || token_type(token) != TOKEN_IDENT)
+	if (!arglist || dmrC_token_type(token) != TOKEN_IDENT)
 		return 0;
 
 	arglist = arglist->next;
 
-	for (nr = 0; !eof_token(arglist); nr++, arglist = arglist->next->next) {
+	for (nr = 0; !dmrC_eof_token(arglist); nr++, arglist = arglist->next->next) {
 		if (arglist->ident == ident) {
 			struct argcount *count = &arglist->next->count;
 			int n;
 
 			token->argnum = nr;
-			token_type(token) = type;
+			dmrC_token_type(token) = type;
 			switch (type) {
 			case TOKEN_MACRO_ARGUMENT:
 				n = ++count->normal;
@@ -1163,7 +1163,7 @@ static int try_arg(struct dmr_C *C, struct token *token, enum e_token_type type,
 			 * XXX - need saner handling of that
 			 * (>= 1024 instances of argument)
 			 */
-			token_type(token) = TOKEN_ERROR;
+			dmrC_token_type(token) = TOKEN_ERROR;
 			return -1;
 		}
 	}
@@ -1178,7 +1178,7 @@ static struct token *handle_hash(struct dmr_C *C, struct token **p, struct token
 		if (!try_arg(C, next, TOKEN_STR_ARGUMENT, arglist))
 			goto Equote;
 		next->pos.whitespace = token->pos.whitespace;
-		allocator_free(&C->token_allocator, token);
+		dmrC_allocator_free(&C->token_allocator, token);
 		token = *p = next;
 	} else {
 		token->pos.noexpand = 1;
@@ -1186,7 +1186,7 @@ static struct token *handle_hash(struct dmr_C *C, struct token **p, struct token
 	return token;
 
 Equote:
-	sparse_error(C, token->pos, "'#' is not followed by a macro parameter");
+	dmrC_sparse_error(C, token->pos, "'#' is not followed by a macro parameter");
 	return NULL;
 }
 
@@ -1195,7 +1195,7 @@ static struct token *handle_hashhash(struct dmr_C *C, struct token *token, struc
 {
 	struct token *last = token;
 	struct token *concat;
-	int state = match_op(token, ',');
+	int state = dmrC_match_op(token, ',');
 	
 	try_arg(C, token, TOKEN_QUOTED_ARGUMENT, arglist);
 
@@ -1205,17 +1205,17 @@ static struct token *handle_hashhash(struct dmr_C *C, struct token *token, struc
 
 		/* eat duplicate ## */
 		concat = token->next;
-		while (match_op(t = concat->next, SPECIAL_HASHHASH)) {
+		while (dmrC_match_op(t = concat->next, SPECIAL_HASHHASH)) {
 			token->next = t;
-			allocator_free(&C->token_allocator, concat);
+			dmrC_allocator_free(&C->token_allocator, concat);
 			concat = t;
 		}
-		token_type(concat) = TOKEN_CONCAT;
+		dmrC_token_type(concat) = TOKEN_CONCAT;
 
-		if (eof_token(t))
+		if (dmrC_eof_token(t))
 			goto Econcat;
 
-		if (match_op(t, '#')) {
+		if (dmrC_match_op(t, '#')) {
 			t = handle_hash(C, &concat->next, arglist);
 			if (!t)
 				return NULL;
@@ -1227,20 +1227,20 @@ static struct token *handle_hashhash(struct dmr_C *C, struct token *token, struc
 			state = is_arg;
 		} else {
 			last = t;
-			state = match_op(t, ',');
+			state = dmrC_match_op(t, ',');
 		}
 
 		token = t;
-		if (!match_op(token->next, SPECIAL_HASHHASH))
+		if (!dmrC_match_op(token->next, SPECIAL_HASHHASH))
 			break;
 	}
 	/* handle GNU ,##__VA_ARGS__ kludge, in all its weirdness */
 	if (state == 2)
-		token_type(last) = TOKEN_GNU_KLUDGE;
+		dmrC_token_type(last) = TOKEN_GNU_KLUDGE;
 	return token;
 
 Econcat:
-	sparse_error(C, concat->pos, "'##' cannot appear at the ends of macro expansion");
+	dmrC_sparse_error(C, concat->pos, "'##' cannot appear at the ends of macro expansion");
 	return NULL;
 }
 
@@ -1249,23 +1249,23 @@ static struct token *parse_expansion(struct dmr_C *C, struct token *expansion, s
 	struct token *token = expansion;
 	struct token **p;
 
-	if (match_op(token, SPECIAL_HASHHASH))
+	if (dmrC_match_op(token, SPECIAL_HASHHASH))
 		goto Econcat;
 
-	for (p = &expansion; !eof_token(token); p = &token->next, token = *p) {
-		if (match_op(token, '#')) {
+	for (p = &expansion; !dmrC_eof_token(token); p = &token->next, token = *p) {
+		if (dmrC_match_op(token, '#')) {
 			token = handle_hash(C, p, arglist);
 			if (!token)
 				return NULL;
 		}
-		if (match_op(token->next, SPECIAL_HASHHASH)) {
+		if (dmrC_match_op(token->next, SPECIAL_HASHHASH)) {
 			token = handle_hashhash(C, token, arglist);
 			if (!token)
 				return NULL;
 		} else {
 			try_arg(C, token, TOKEN_MACRO_ARGUMENT, arglist);
 		}
-		switch (token_type(token)) {
+		switch (dmrC_token_type(token)) {
 		case TOKEN_ERROR:
 			goto Earg;
 
@@ -1276,17 +1276,17 @@ static struct token *parse_expansion(struct dmr_C *C, struct token *expansion, s
 		}
 	}
 	token = alloc_token(C, &expansion->pos);
-	token_type(token) = TOKEN_UNTAINT;
+	dmrC_token_type(token) = TOKEN_UNTAINT;
 	token->ident = name;
 	token->next = *p;
 	*p = token;
 	return expansion;
 
 Econcat:
-	sparse_error(C, token->pos, "'##' cannot appear at the ends of macro expansion");
+	dmrC_sparse_error(C, token->pos, "'##' cannot appear at the ends of macro expansion");
 	return NULL;
 Earg:
-	sparse_error(C, token->pos, "too many instances of argument in body");
+	dmrC_sparse_error(C, token->pos, "too many instances of argument in body");
 	return NULL;
 }
 
@@ -1298,8 +1298,8 @@ static int do_handle_define(struct dmr_C *C, struct stream *stream, struct token
 	struct ident *name;
 	int ret;
 
-	if (token_type(left) != TOKEN_IDENT) {
-		sparse_error(C, token->pos, "expected identifier to 'define'");
+	if (dmrC_token_type(left) != TOKEN_IDENT) {
+		dmrC_sparse_error(C, token->pos, "expected identifier to 'define'");
 		return 1;
 	}
 
@@ -1308,13 +1308,13 @@ static int do_handle_define(struct dmr_C *C, struct stream *stream, struct token
 	arglist = NULL;
 	expansion = left->next;
 	if (!expansion->pos.whitespace) {
-		if (match_op(expansion, '(')) {
+		if (dmrC_match_op(expansion, '(')) {
 			arglist = expansion;
 			expansion = parse_arguments(C, expansion);
 			if (!expansion)
 				return 1;
-		} else if (!eof_token(expansion)) {
-			warning(C, expansion->pos,
+		} else if (!dmrC_eof_token(expansion)) {
+			dmrC_warning(C, expansion->pos,
 				"no whitespace before object-like macro body");
 		}
 	}
@@ -1324,7 +1324,7 @@ static int do_handle_define(struct dmr_C *C, struct stream *stream, struct token
 		return 1;
 
 	ret = 1;
-	sym = lookup_symbol(name, (enum namespace_type) (NS_MACRO | NS_UNDEF));
+	sym = dmrC_lookup_symbol(name, (enum namespace_type) (NS_MACRO | NS_UNDEF));
 	if (sym) {
 		int clean;
 
@@ -1338,24 +1338,24 @@ static int do_handle_define(struct dmr_C *C, struct stream *stream, struct token
 			ret = 0;
 			if ((clean && attr == SYM_ATTR_NORMAL)
 					|| sym->used_in == C->file_scope) {
-				warning(C, left->pos, "preprocessor token %.*s redefined",
+				dmrC_warning(C, left->pos, "preprocessor token %.*s redefined",
 						name->len, name->name);
-				info(C, sym->pos, "this was the original definition");
+				dmrC_info(C, sym->pos, "this was the original definition");
 			}
 		} else if (clean)
 			goto out;
 	}
 
 	if (!sym || sym->scope != C->file_scope) {
-		sym = alloc_symbol(C->S, left->pos, SYM_NODE);
-		bind_symbol(C->S, sym, name, NS_MACRO);
+		sym = dmrC_alloc_symbol(C->S, left->pos, SYM_NODE);
+		dmrC_bind_symbol(C->S, sym, name, NS_MACRO);
 		ret = 0;
 	}
 
 	if (!ret) {
 		sym->expansion = expansion;
 		sym->arglist = arglist;
-		allocator_free(&C->token_allocator, token);	/* Free the "define" token, but not the rest of the line */
+		dmrC_allocator_free(&C->token_allocator, token);	/* Free the "define" token, but not the rest of the line */
 	}
 
 	sym->ns = NS_MACRO;
@@ -1385,12 +1385,12 @@ static int do_handle_undef(struct dmr_C *C, struct stream *stream, struct token 
 	struct token *left = token->next;
 	struct symbol *sym;
 
-	if (token_type(left) != TOKEN_IDENT) {
-		sparse_error(C, token->pos, "expected identifier to 'undef'");
+	if (dmrC_token_type(left) != TOKEN_IDENT) {
+		dmrC_sparse_error(C, token->pos, "expected identifier to 'undef'");
 		return 1;
 	}
 
-	sym = lookup_symbol(left->ident, (enum namespace_type) (NS_MACRO | NS_UNDEF));
+	sym = dmrC_lookup_symbol(left->ident, (enum namespace_type) (NS_MACRO | NS_UNDEF));
 	if (sym) {
 		if (attr < sym->attr)
 			return 1;
@@ -1400,8 +1400,8 @@ static int do_handle_undef(struct dmr_C *C, struct stream *stream, struct token 
 		return 1;
 
 	if (!sym || sym->scope != C->file_scope) {
-		sym = alloc_symbol(C->S, left->pos, SYM_NODE);
-		bind_symbol(C->S, sym, left->ident, NS_MACRO);
+		sym = dmrC_alloc_symbol(C->S, left->pos, SYM_NODE);
+		dmrC_bind_symbol(C->S, sym, left->ident, NS_MACRO);
 	}
 
 	sym->ns = NS_UNDEF;
@@ -1423,7 +1423,7 @@ static int handle_strong_undef(struct dmr_C *C, struct stream *stream, struct to
 
 static int preprocessor_if(struct dmr_C *C, struct stream *stream, struct token *token, int true_value)
 {
-	token_type(token) = C->false_nesting ? TOKEN_SKIP_GROUPS : TOKEN_IF;
+	dmrC_token_type(token) = C->false_nesting ? TOKEN_SKIP_GROUPS : TOKEN_IF;
 	free_preprocessor_line(C, token->next);
 	token->next = stream->top_if;
 	stream->top_if = token;
@@ -1436,12 +1436,12 @@ static int handle_ifdef(struct dmr_C *C, struct stream *stream, struct token **l
 {
 	struct token *next = token->next;
 	int arg;
-	if (token_type(next) == TOKEN_IDENT) {
+	if (dmrC_token_type(next) == TOKEN_IDENT) {
 		arg = token_defined(C, next);
 	} else {
 		dirty_stream(stream);
 		if (!C->false_nesting)
-			sparse_error(C, token->pos, "expected preprocessor identifier");
+			dmrC_sparse_error(C, token->pos, "expected preprocessor identifier");
 		arg = -1;
 	}
 	return preprocessor_if(C, stream, token, arg);
@@ -1451,7 +1451,7 @@ static int handle_ifndef(struct dmr_C *C, struct stream *stream, struct token **
 {
 	struct token *next = token->next;
 	int arg;
-	if (token_type(next) == TOKEN_IDENT) {
+	if (dmrC_token_type(next) == TOKEN_IDENT) {
 		if (!stream->dirty && !stream->ifndef) {
 			if (!stream->protect) {
 				stream->ifndef = token;
@@ -1465,7 +1465,7 @@ static int handle_ifndef(struct dmr_C *C, struct stream *stream, struct token **
 	} else {
 		dirty_stream(stream);
 		if (!C->false_nesting)
-			sparse_error(C, token->pos, "expected preprocessor identifier");
+			dmrC_sparse_error(C, token->pos, "expected preprocessor identifier");
 		arg = -1;
 	}
 
@@ -1486,10 +1486,10 @@ static int expression_value(struct dmr_C *C, struct token **where)
 	long long value;
 	int state = 0;
 
-	while (!eof_token(p = scan_next(C, list))) {
+	while (!dmrC_eof_token(p = scan_next(C, list))) {
 		switch (state) {
 		case 0:
-			if (token_type(p) != TOKEN_IDENT)
+			if (dmrC_token_type(p) != TOKEN_IDENT)
 				break;
 			if (p->ident == C->S->defined_ident) {
 				state = 1;
@@ -1498,12 +1498,12 @@ static int expression_value(struct dmr_C *C, struct token **where)
 			}
 			if (!expand_one_symbol(C, list))
 				continue;
-			if (token_type(p) != TOKEN_IDENT)
+			if (dmrC_token_type(p) != TOKEN_IDENT)
 				break;
-			token_type(p) = TOKEN_ZERO_IDENT;
+			dmrC_token_type(p) = TOKEN_ZERO_IDENT;
 			break;
 		case 1:
-			if (match_op(p, '(')) {
+			if (dmrC_match_op(p, '(')) {
 				state = 2;
 			} else {
 				state = 0;
@@ -1512,7 +1512,7 @@ static int expression_value(struct dmr_C *C, struct token **where)
 			}
 			break;
 		case 2:
-			if (token_type(p) == TOKEN_IDENT)
+			if (dmrC_token_type(p) == TOKEN_IDENT)
 				state = 3;
 			else
 				state = 0;
@@ -1521,18 +1521,18 @@ static int expression_value(struct dmr_C *C, struct token **where)
 			break;
 		case 3:
 			state = 0;
-			if (!match_op(p, ')'))
-				sparse_error(C, p->pos, "missing ')' after \"defined\"");
+			if (!dmrC_match_op(p, ')'))
+				dmrC_sparse_error(C, p->pos, "missing ')' after \"defined\"");
 			*list = p->next;
 			continue;
 		}
 		list = &p->next;
 	}
 
-	p = constant_expression(C, *where, &expr);
-	if (!eof_token(p))
-		sparse_error(C, p->pos, "garbage at end: %s", show_token_sequence(C, p, 0));
-	value = get_expression_value(C, expr);
+	p = dmrC_constant_expression(C, *where, &expr);
+	if (!dmrC_eof_token(p))
+		dmrC_sparse_error(C, p->pos, "garbage at end: %s", show_token_sequence(C, p, 0));
+	value = dmrC_get_expression_value(C, expr);
 	return value != 0;
 }
 
@@ -1553,20 +1553,20 @@ static int handle_elif(struct dmr_C *C, struct stream * stream, struct token **l
 
 	if (!top_if) {
 		nesting_error(stream);
-		sparse_error(C, token->pos, "unmatched #elif within stream");
+		dmrC_sparse_error(C, token->pos, "unmatched #elif within stream");
 		return 1;
 	}
 
-	if (token_type(top_if) == TOKEN_ELSE) {
+	if (dmrC_token_type(top_if) == TOKEN_ELSE) {
 		nesting_error(stream);
-		sparse_error(C, token->pos, "#elif after #else");
+		dmrC_sparse_error(C, token->pos, "#elif after #else");
 		if (!C->false_nesting)
 			C->false_nesting = 1;
 		return 1;
 	}
 
 	dirty_stream(stream);
-	if (token_type(top_if) != TOKEN_IF)
+	if (dmrC_token_type(top_if) != TOKEN_IF)
 		return 1;
 	if (C->false_nesting) {
 		C->false_nesting = 0;
@@ -1574,7 +1574,7 @@ static int handle_elif(struct dmr_C *C, struct stream * stream, struct token **l
 			C->false_nesting = 1;
 	} else {
 		C->false_nesting = 1;
-		token_type(top_if) = TOKEN_SKIP_GROUPS;
+		dmrC_token_type(top_if) = TOKEN_SKIP_GROUPS;
 	}
 	return 1;
 }
@@ -1586,21 +1586,21 @@ static int handle_else(struct dmr_C *C, struct stream *stream, struct token **li
 
 	if (!top_if) {
 		nesting_error(stream);
-		sparse_error(C, token->pos, "unmatched #else within stream");
+		dmrC_sparse_error(C, token->pos, "unmatched #else within stream");
 		return 1;
 	}
 
-	if (token_type(top_if) == TOKEN_ELSE) {
+	if (dmrC_token_type(top_if) == TOKEN_ELSE) {
 		nesting_error(stream);
-		sparse_error(C, token->pos, "#else after #else");
+		dmrC_sparse_error(C, token->pos, "#else after #else");
 	}
 	if (C->false_nesting) {
-		if (token_type(top_if) == TOKEN_IF)
+		if (dmrC_token_type(top_if) == TOKEN_IF)
 			C->false_nesting = 0;
 	} else {
 		C->false_nesting = 1;
 	}
-	token_type(top_if) = TOKEN_ELSE;
+	dmrC_token_type(top_if) = TOKEN_ELSE;
 	return 1;
 }
 
@@ -1610,25 +1610,25 @@ static int handle_endif(struct dmr_C *C, struct stream *stream, struct token **l
 	end_group(stream);
 	if (!top_if) {
 		nesting_error(stream);
-		sparse_error(C, token->pos, "unmatched #endif in stream");
+		dmrC_sparse_error(C, token->pos, "unmatched #endif in stream");
 		return 1;
 	}
 	if (C->false_nesting)
 		C->false_nesting--;
 	stream->top_if = top_if->next;
-	allocator_free(&C->token_allocator, top_if);
+	dmrC_allocator_free(&C->token_allocator, top_if);
 	return 1;
 }
 
 static int handle_warning(struct dmr_C *C, struct stream *stream, struct token **line, struct token *token)
 {
-	warning(C, token->pos, "%s", show_token_sequence(C, token->next, 0));
+	dmrC_warning(C, token->pos, "%s", show_token_sequence(C, token->next, 0));
 	return 1;
 }
 
 static int handle_error(struct dmr_C *C, struct stream *stream, struct token **line, struct token *token)
 {
-	sparse_error(C, token->pos, "%s", show_token_sequence(C, token->next, 0));
+	dmrC_sparse_error(C, token->pos, "%s", show_token_sequence(C, token->next, 0));
 	return 1;
 }
 
@@ -1683,7 +1683,7 @@ static void add_path_entry(struct dmr_C *C, struct token *token, const char *pat
 
 	/* Need one free entry.. */
 	if (C->includepath[INCLUDEPATHS-2])
-		error_die(C, token->pos, "too many include path entries");
+		dmrC_error_die(C, token->pos, "too many include path entries");
 
 	/* check that this is not a duplicate */
 	dst = C->includepath;
@@ -1713,10 +1713,10 @@ static int handle_add_include(struct dmr_C *C, struct stream *stream, struct tok
 {
 	for (;;) {
 		token = token->next;
-		if (eof_token(token))
+		if (dmrC_eof_token(token))
 			return 1;
-		if (token_type(token) != TOKEN_STRING) {
-			warning(C, token->pos, "expected path string");
+		if (dmrC_token_type(token) != TOKEN_STRING) {
+			dmrC_warning(C, token->pos, "expected path string");
 			return 1;
 		}
 		add_path_entry(C, token, token->string->data, &C->isys_includepath);
@@ -1727,10 +1727,10 @@ static int handle_add_isystem(struct dmr_C *C, struct stream *stream, struct tok
 {
 	for (;;) {
 		token = token->next;
-		if (eof_token(token))
+		if (dmrC_eof_token(token))
 			return 1;
-		if (token_type(token) != TOKEN_STRING) {
-			sparse_error(C, token->pos, "expected path string");
+		if (dmrC_token_type(token) != TOKEN_STRING) {
+			dmrC_sparse_error(C, token->pos, "expected path string");
 			return 1;
 		}
 		add_path_entry(C, token, token->string->data, &C->sys_includepath);
@@ -1741,10 +1741,10 @@ static int handle_add_system(struct dmr_C *C, struct stream *stream, struct toke
 {
 	for (;;) {
 		token = token->next;
-		if (eof_token(token))
+		if (dmrC_eof_token(token))
 			return 1;
-		if (token_type(token) != TOKEN_STRING) {
-			sparse_error(C, token->pos, "expected path string");
+		if (dmrC_token_type(token) != TOKEN_STRING) {
+			dmrC_sparse_error(C, token->pos, "expected path string");
 			return 1;
 		}
 		add_path_entry(C, token, token->string->data, &C->dirafter_includepath);
@@ -1758,7 +1758,7 @@ static void add_dirafter_entry(struct dmr_C *C, struct token *token, const char 
 
 	/* Need one free entry.. */
 	if (C->includepath[INCLUDEPATHS-2])
-		error_die(C, token->pos, "too many include path entries");
+		dmrC_error_die(C, token->pos, "too many include path entries");
 
 	/* Add to the end */
 	while (*dst)
@@ -1772,10 +1772,10 @@ static int handle_add_dirafter(struct dmr_C *C, struct stream *stream, struct to
 {
 	for (;;) {
 		token = token->next;
-		if (eof_token(token))
+		if (dmrC_eof_token(token))
 			return 1;
-		if (token_type(token) != TOKEN_STRING) {
-			sparse_error(C, token->pos, "expected path string");
+		if (dmrC_token_type(token) != TOKEN_STRING) {
+			dmrC_sparse_error(C, token->pos, "expected path string");
 			return 1;
 		}
 		add_dirafter_entry(C, token, token->string->data);
@@ -1817,7 +1817,7 @@ static int handle_pragma(struct dmr_C *C, struct stream *stream, struct token **
 {
 	struct token *next = *line;
 
-	if (match_ident(token->next, C->S->once_ident) && eof_token(token->next->next)) {
+	if (dmrC_match_ident(token->next, C->S->once_ident) && dmrC_eof_token(token->next->next)) {
 		stream->once = 1;
 		return 1;
 	}
@@ -1840,7 +1840,7 @@ static int handle_line(struct dmr_C *C, struct stream *stream, struct token **li
 
 static int handle_nondirective(struct dmr_C *C, struct stream *stream, struct token **line, struct token *token)
 {
-	sparse_error(C, token->pos, "unrecognized preprocessor line '%s'", show_token_sequence(C, token, 0));
+	dmrC_sparse_error(C, token->pos, "unrecognized preprocessor line '%s'", show_token_sequence(C, token, 0));
 	return 1;
 }
 
@@ -1848,7 +1848,7 @@ static int handle_nondirective(struct dmr_C *C, struct stream *stream, struct to
 static void init_preprocessor(struct dmr_C *C)
 {	
 	int i;
-	int stream = init_stream(C, "preprocessor", -1, C->includepath);
+	int stream = dmrC_init_stream(C, "preprocessor", -1, C->includepath);
 	static struct {
 		const char *name;
 		int (*handler)(struct dmr_C *, struct stream *, struct token **, struct token *);
@@ -1884,13 +1884,13 @@ static void init_preprocessor(struct dmr_C *C)
 
 	for (i = 0; i < ARRAY_SIZE(normal); i++) {
 		struct symbol *sym;
-		sym = create_symbol(C->S, stream, normal[i].name, SYM_PREPROCESSOR, NS_PREPROCESSOR);
+		sym = dmrC_create_symbol(C->S, stream, normal[i].name, SYM_PREPROCESSOR, NS_PREPROCESSOR);
 		sym->handler = normal[i].handler;
 		sym->normal = 1;
 	}
 	for (i = 0; i < ARRAY_SIZE(special); i++) {
 		struct symbol *sym;
-		sym = create_symbol(C->S, stream, special[i].name, SYM_PREPROCESSOR, NS_PREPROCESSOR);
+		sym = dmrC_create_symbol(C->S, stream, special[i].name, SYM_PREPROCESSOR, NS_PREPROCESSOR);
 		sym->handler = special[i].handler;
 		sym->normal = 0;
 	}
@@ -1904,18 +1904,18 @@ static void handle_preprocessor_line(struct dmr_C *C, struct stream *stream, str
 	struct token *token = start->next;
 	int is_normal = 1;
 
-	if (eof_token(token))
+	if (dmrC_eof_token(token))
 		return;
 
-	if (token_type(token) == TOKEN_IDENT) {
-		struct symbol *sym = lookup_symbol(token->ident, NS_PREPROCESSOR);
+	if (dmrC_token_type(token) == TOKEN_IDENT) {
+		struct symbol *sym = dmrC_lookup_symbol(token->ident, NS_PREPROCESSOR);
 		if (sym) {
 			handler = sym->handler;
 			is_normal = sym->normal;
 		} else {
 			handler = handle_nondirective;
 		}
-	} else if (token_type(token) == TOKEN_NUMBER) {
+	} else if (dmrC_token_type(token) == TOKEN_NUMBER) {
 		handler = handle_line;
 	} else {
 		handler = handle_nondirective;
@@ -1945,7 +1945,7 @@ static void preprocessor_line(struct dmr_C *C, struct stream *stream, struct tok
 		tp = &next->next;
 	}
 	*line = next;
-	*tp = &eof_token_entry;
+	*tp = &dmrC_eof_token_entry_;
 	handle_preprocessor_line(C, stream, line, start);
 }
 
@@ -1953,22 +1953,22 @@ static void do_preprocess(struct dmr_C *C, struct token **list)
 {
 	struct token *next;
 
-	while (!eof_token(next = scan_next(C, list))) {
+	while (!dmrC_eof_token(next = scan_next(C, list))) {
 		struct stream *stream = C->T->input_streams + next->pos.stream;
 
-		if (next->pos.newline && match_op(next, '#')) {
+		if (next->pos.newline && dmrC_match_op(next, '#')) {
 			if (!next->pos.noexpand) {
 				preprocessor_line(C, stream, list);
-				allocator_free(&C->token_allocator, next);	/* Free the '#' token */
+				dmrC_allocator_free(&C->token_allocator, next);	/* Free the '#' token */
 				continue;
 			}
 		}
 
-		switch (token_type(next)) {
+		switch (dmrC_token_type(next)) {
 		case TOKEN_STREAMEND:
 			if (stream->top_if) {
 				nesting_error(stream);
-				sparse_error(C, stream->top_if->pos, "unterminated preprocessor conditional");
+				dmrC_sparse_error(C, stream->top_if->pos, "unterminated preprocessor conditional");
 				stream->top_if = NULL;
 				C->false_nesting = 0;
 			}
@@ -1984,18 +1984,18 @@ static void do_preprocess(struct dmr_C *C, struct token **list)
 			dirty_stream(stream);
 			if (C->false_nesting) {
 				*list = next->next;
-				allocator_free(&C->token_allocator, next);
+				dmrC_allocator_free(&C->token_allocator, next);
 				continue;
 			}
 
-			if (token_type(next) != TOKEN_IDENT ||
+			if (dmrC_token_type(next) != TOKEN_IDENT ||
 			    expand_one_symbol(C, list))
 				list = &next->next;
 		}
 	}
 }
 
-struct token * preprocess(struct dmr_C *C, struct token *token)
+struct token * dmrC_preprocess(struct dmr_C *C, struct token *token)
 {
 	C->preprocessing = 1;
 	init_preprocessor(C);
@@ -2010,7 +2010,7 @@ struct token * preprocess(struct dmr_C *C, struct token *token)
 }
 
 
-void init_preprocessor_state(struct dmr_C *C) {
+void dmrC_init_preprocessor_state(struct dmr_C *C) {
 	assert(C->includepath[0] == NULL);
 	C->includepath[0] = "";
 	C->includepath[1] = "/usr/include";

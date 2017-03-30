@@ -42,28 +42,28 @@ struct scope {
 	struct scope *next;
 };
 
-static inline int toplevel(struct dmr_C *C, struct scope *scope)
+static inline int dmrC_toplevel(struct dmr_C *C, struct scope *scope)
 {
 	return scope == C->file_scope || scope == C->global_scope;
 }
 
-extern void start_file_scope(struct dmr_C *C);
-extern void end_file_scope(struct dmr_C *C);
-extern void new_file_scope(struct dmr_C *C);
+extern void dmrC_start_file_scope(struct dmr_C *C);
+extern void dmrC_end_file_scope(struct dmr_C *C);
+extern void dmrC_new_file_scope(struct dmr_C *C);
 
-extern void start_symbol_scope(struct dmr_C *C);
-extern void end_symbol_scope(struct dmr_C *C);
+extern void dmrC_start_symbol_scope(struct dmr_C *C);
+extern void dmrC_end_symbol_scope(struct dmr_C *C);
 
-extern void start_function_scope(struct dmr_C *C);
-extern void end_function_scope(struct dmr_C *C);
+extern void dmrC_start_function_scope(struct dmr_C *C);
+extern void dmrC_end_function_scope(struct dmr_C *C);
 
-extern void bind_scope(struct dmr_C *C, struct symbol *, struct scope *);
-extern void rebind_scope(struct dmr_C *C, struct symbol *sym, struct scope *news);
+extern void dmrC_bind_scope(struct dmr_C *C, struct symbol *, struct scope *);
+extern void dmrC_rebind_scope(struct dmr_C *C, struct symbol *sym, struct scope *news);
 
-extern int is_outer_scope(struct dmr_C *C, struct scope *);
+extern int dmrC_is_outer_scope(struct dmr_C *C, struct scope *);
 
-extern void init_scope(struct dmr_C *C);
-extern void destroy_all_scopes(struct dmr_C *C);
+extern void dmrC_init_scope(struct dmr_C *C);
+extern void dmrC_destroy_all_scopes(struct dmr_C *C);
 
 #ifdef __cplusplus
 }

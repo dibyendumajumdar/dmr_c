@@ -46,17 +46,17 @@
 /*
  * If the symbol is an inline symbol, add it to the list of symbols to parse
  */
-void access_symbol(struct global_symbols_t *S, struct symbol *sym)
+void dmrC_access_symbol(struct global_symbols_t *S, struct symbol *sym)
 {
 	if (sym->ctype.modifiers & MOD_INLINE) {
 		if (!(sym->ctype.modifiers & MOD_ACCESSED)) {
-			add_symbol(S->C, &S->translation_unit_used_list, sym);
+			dmrC_add_symbol(S->C, &S->translation_unit_used_list, sym);
 			sym->ctype.modifiers |= MOD_ACCESSED;
 		}
 	}
 }
 
-struct symbol *lookup_symbol(struct ident *ident, enum namespace_type ns)
+struct symbol *dmrC_lookup_symbol(struct ident *ident, enum namespace_type ns)
 {
 	struct symbol *sym;
 
@@ -69,14 +69,14 @@ struct symbol *lookup_symbol(struct ident *ident, enum namespace_type ns)
 	return NULL;
 }
 
-struct context *alloc_context(struct global_symbols_t *S)
+struct context *dmrC_alloc_context(struct global_symbols_t *S)
 {
-	return (struct context *)allocator_allocate(&S->context_allocator, 0);
+	return (struct context *)dmrC_allocator_allocate(&S->context_allocator, 0);
 }
 
-struct symbol *alloc_symbol(struct global_symbols_t *S, struct position pos, int type)
+struct symbol *dmrC_alloc_symbol(struct global_symbols_t *S, struct position pos, int type)
 {
-	struct symbol *sym = (struct symbol *) allocator_allocate(&S->symbol_allocator, 0);
+	struct symbol *sym = (struct symbol *) dmrC_allocator_allocate(&S->symbol_allocator, 0);
 	sym->type = type;
 	sym->pos = pos;
 	sym->endpos.type = 0;
@@ -94,10 +94,10 @@ struct struct_union_info {
  */
 static void lay_out_union(struct global_symbols_t *S, struct symbol *sym, struct struct_union_info *info)
 {
-	examine_symbol_type(S, sym);
+	dmrC_examine_symbol_type(S, sym);
 
 	// Unnamed bitfields do not affect alignment.
-	if (sym->ident || !is_bitfield_type(sym)) {
+	if (sym->ident || !dmrC_is_bitfield_type(sym)) {
 		if (sym->ctype.alignment > info->max_align)
 			info->max_align = sym->ctype.alignment;
 	}
@@ -125,10 +125,10 @@ static void lay_out_struct(struct global_symbols_t *S, struct symbol *sym, struc
 	unsigned long bit_size, align_bit_mask;
 	int base_size;
 
-	examine_symbol_type(S, sym);
+	dmrC_examine_symbol_type(S, sym);
 
 	// Unnamed bitfields do not affect alignment.
-	if (sym->ident || !is_bitfield_type(sym)) {
+	if (sym->ident || !dmrC_is_bitfield_type(sym)) {
 		if (sym->ctype.alignment > info->max_align)
 			info->max_align = sym->ctype.alignment;
 	}
@@ -145,12 +145,12 @@ static void lay_out_struct(struct global_symbols_t *S, struct symbol *sym, struc
 		base_size = 0;
 	}
 
-	align_bit_mask = bytes_to_bits(S->C->target, sym->ctype.alignment) - 1;
+	align_bit_mask = dmrC_bytes_to_bits(S->C->target, sym->ctype.alignment) - 1;
 
 	/*
 	 * Bitfields have some very special rules..
 	 */
-	if (is_bitfield_type (sym)) {
+	if (dmrC_is_bitfield_type (sym)) {
 		unsigned long bit_offset = bit_size & align_bit_mask;
 		int room = bitfield_base_size(sym) - bit_offset;
 		// Zero-width fields just fill up the unit.
@@ -160,11 +160,11 @@ static void lay_out_struct(struct global_symbols_t *S, struct symbol *sym, struc
 			bit_size = (bit_size + align_bit_mask) & ~align_bit_mask;
 			bit_offset = 0;
 		}
-		sym->offset = bits_to_bytes(S->C->target, bit_size - bit_offset);
+		sym->offset = dmrC_bits_to_bytes(S->C->target, bit_size - bit_offset);
 		sym->bit_offset = bit_offset;
 		sym->ctype.base_type->bit_offset = bit_offset;
 		info->bit_size = bit_size + width;
-		// warning (sym->pos, "bitfield: offset=%d:%d  size=:%d", sym->offset, sym->bit_offset, width);
+		// dmrC_warning (sym->pos, "bitfield: offset=%d:%d  size=:%d", sym->offset, sym->bit_offset, width);
 
 		return;
 	}
@@ -173,10 +173,10 @@ static void lay_out_struct(struct global_symbols_t *S, struct symbol *sym, struc
 	 * Otherwise, just align it right and add it up..
 	 */
 	bit_size = (bit_size + align_bit_mask) & ~align_bit_mask;
-	sym->offset = bits_to_bytes(S->C->target, bit_size);
+	sym->offset = dmrC_bits_to_bytes(S->C->target, bit_size);
 
 	info->bit_size = bit_size + base_size;
-	// warning (sym->pos, "regular: offset=%d", sym->offset);
+	// dmrC_warning (sym->pos, "regular: offset=%d", sym->offset);
 }
 
 static struct symbol * examine_struct_union_type(struct global_symbols_t *S, struct symbol *sym, int advance)
@@ -199,7 +199,7 @@ static struct symbol * examine_struct_union_type(struct global_symbols_t *S, str
 		sym->ctype.alignment = info.max_align;
 	bit_size = info.bit_size;
 	if (info.align_size) {
-		bit_align = bytes_to_bits(S->C->target, sym->ctype.alignment)-1;
+		bit_align = dmrC_bytes_to_bits(S->C->target, sym->ctype.alignment)-1;
 		bit_size = (bit_size + bit_align) & ~bit_align;
 	}
 	sym->bit_size = bit_size;
@@ -211,7 +211,7 @@ static struct symbol *examine_base_type(struct global_symbols_t *S, struct symbo
 	struct symbol *base_type;
 
 	/* Check the base type */
-	base_type = examine_symbol_type(S, sym->ctype.base_type);
+	base_type = dmrC_examine_symbol_type(S, sym->ctype.base_type);
 	if (!base_type || base_type->type == SYM_PTR)
 		return base_type;
 	sym->ctype.as |= base_type->ctype.as;
@@ -234,11 +234,11 @@ static struct symbol * examine_array_type(struct global_symbols_t *S, struct sym
 		return sym;
 
 	if (array_size) {	
-		bit_size = array_element_offset(S->C->target, base_type->bit_size,
-						get_expression_value_silent(S->C, array_size));
+		bit_size = dmrC_array_element_offset(S->C->target, base_type->bit_size,
+						dmrC_get_expression_value_silent(S->C, array_size));
 		if (array_size->type != EXPR_VALUE) {
 			if (S->C->Wvla)
-				warning(S->C, array_size->pos, "Variable length array is used.");
+				dmrC_warning(S->C, array_size->pos, "Variable length array is used.");
 			bit_size = -1;
 		}
 	}
@@ -258,7 +258,7 @@ static struct symbol *examine_bitfield_type(struct global_symbols_t *S, struct s
 		return sym;
 	bit_size = base_type->bit_size;
 	if (sym->bit_size > bit_size)
-		warning(S->C, sym->pos, "impossible field-width, %d, for this type",  sym->bit_size);
+		dmrC_warning(S->C, sym->pos, "impossible field-width, %d, for this type",  sym->bit_size);
 
 	alignment = base_type->ctype.alignment;
 	if (!sym->ctype.alignment)
@@ -275,14 +275,14 @@ static struct symbol *examine_bitfield_type(struct global_symbols_t *S, struct s
 /*
  * "typeof" will have to merge the types together
  */
-void merge_type(struct symbol *sym, struct symbol *base_type)
+void dmrC_merge_type(struct symbol *sym, struct symbol *base_type)
 {
 	sym->ctype.as |= base_type->ctype.as;
 	sym->ctype.modifiers |= (base_type->ctype.modifiers & ~MOD_STORAGE);
 	ptrlist_concat(base_type->ctype.contexts, &sym->ctype.contexts);
 	sym->ctype.base_type = base_type->ctype.base_type;
 	if (sym->ctype.base_type->type == SYM_NODE)
-		merge_type(sym, sym->ctype.base_type);
+		dmrC_merge_type(sym, sym->ctype.base_type);
 }
 
 static int count_array_initializer(struct global_symbols_t *S, struct symbol *t, struct expression *expr)
@@ -391,7 +391,7 @@ static struct symbol * examine_node_type(struct global_symbols_t *S, struct symb
 			int count = count_array_initializer(S, node_type, initializer);
 
 			if (node_type && node_type->bit_size >= 0)
-				bit_size = array_element_offset(S->C->target, node_type->bit_size, count);
+				bit_size = dmrC_array_element_offset(S->C->target, node_type->bit_size, count);
 			/* Note that the bit_size will be set on parent SYM_NODE rather than here */
 			//base_type->bit_size = bit_size;
 		}
@@ -434,7 +434,7 @@ static struct symbol *examine_pointer_type(struct global_symbols_t *S, struct sy
  * Fill in type size and alignment information for
  * regular SYM_TYPE things.
  */
-struct symbol *examine_symbol_type(struct global_symbols_t *S, struct symbol * sym)
+struct symbol *dmrC_examine_symbol_type(struct global_symbols_t *S, struct symbol * sym)
 {
 	if (!sym)
 		return sym;
@@ -464,12 +464,12 @@ struct symbol *examine_symbol_type(struct global_symbols_t *S, struct symbol * s
 		/* Size and alignment had better already be set up */
 		return sym;
 	case SYM_TYPEOF: {
-		struct symbol *base = evaluate_expression(S->C, sym->initializer);
+		struct symbol *base = dmrC_evaluate_expression(S->C, sym->initializer);
 		if (base) {
 			unsigned long mod = 0;
 
-			if (is_bitfield_type(base))
-				warning(S->C, base->pos, "typeof applied to bitfield type");
+			if (dmrC_is_bitfield_type(base))
+				dmrC_warning(S->C, base->pos, "typeof applied to bitfield type");
 			if (base->type == SYM_NODE) {
 				mod |= base->ctype.modifiers & MOD_TYPEOF;
 				base = base->ctype.base_type;
@@ -482,10 +482,10 @@ struct symbol *examine_symbol_type(struct global_symbols_t *S, struct symbol * s
 		break;
 	}
 	case SYM_PREPROCESSOR:
-		sparse_error(S->C, sym->pos, "ctype on preprocessor command? (%s)", show_ident(S->C, sym->ident));
+		dmrC_sparse_error(S->C, sym->pos, "ctype on preprocessor command? (%s)", dmrC_show_ident(S->C, sym->ident));
 		return NULL;
 	case SYM_UNINITIALIZED:
-		sparse_error(S->C, sym->pos, "ctype on uninitialized symbol %p", sym);
+		dmrC_sparse_error(S->C, sym->pos, "ctype on uninitialized symbol %p", sym);
 		return NULL;
 	case SYM_RESTRICT:
 		examine_base_type(S, sym);
@@ -494,13 +494,13 @@ struct symbol *examine_symbol_type(struct global_symbols_t *S, struct symbol * s
 		examine_base_type(S, sym);
 		return sym;
 	default:
-		sparse_error(S->C, sym->pos, "Examining unknown symbol type %d", sym->type);
+		dmrC_sparse_error(S->C, sym->pos, "Examining unknown symbol type %d", sym->type);
 		break;
 	}
 	return sym;
 }
 
-const char* get_type_name(enum type type)
+const char* dmrC_get_type_name(enum type type)
 {
 	const char *type_lookup[] = {
 	[SYM_UNINITIALIZED] = "uninitialized",
@@ -529,25 +529,25 @@ const char* get_type_name(enum type type)
 		return NULL;
 }
 
-struct symbol *examine_pointer_target(struct global_symbols_t *S, struct symbol *sym)
+struct symbol *dmrC_examine_pointer_target(struct global_symbols_t *S, struct symbol *sym)
 {
 	return examine_base_type(S, sym);
 }
 
-void create_fouled(struct global_symbols_t *S, struct symbol *type)
+void dmrC_create_fouled(struct global_symbols_t *S, struct symbol *type)
 {
 	if (type->bit_size < S->C->target->bits_in_int) {
-		struct symbol *news = alloc_symbol(S, type->pos, type->type);
+		struct symbol *news = dmrC_alloc_symbol(S, type->pos, type->type);
 		*news = *type;
 		news->bit_size = S->C->target->bits_in_int;
 		news->type = SYM_FOULED;
 		news->ctype.base_type = type;
-		add_symbol(S->C, &S->restr, type);
-		add_symbol(S->C, &S->fouled, news);
+		dmrC_add_symbol(S->C, &S->restr, type);
+		dmrC_add_symbol(S->C, &S->fouled, news);
 	}
 }
 
-struct symbol *befoul(struct global_symbols_t *S, struct symbol *type)
+struct symbol *dmrC_befoul(struct global_symbols_t *S, struct symbol *type)
 {
 	struct symbol *t1, *t2;
 	while (type->type == SYM_NODE)
@@ -567,7 +567,7 @@ struct symbol *befoul(struct global_symbols_t *S, struct symbol *type)
 	return NULL;
 }
 
-void check_declaration(struct global_symbols_t *S, struct symbol *sym)
+void dmrC_check_declaration(struct global_symbols_t *S, struct symbol *sym)
 {
 	int warned = 0;
 	struct symbol *next = sym;
@@ -590,40 +590,40 @@ void check_declaration(struct global_symbols_t *S, struct symbol *sym)
 
 		if (!S->C->Wshadow || warned)
 			continue;
-		if (get_sym_type(next) == SYM_FN)
+		if (dmrC_get_sym_type(next) == SYM_FN)
 			continue;
 		warned = 1;
-		warning(S->C, sym->pos, "symbol '%s' shadows an earlier one", show_ident(S->C, sym->ident));
-		info(S->C, next->pos, "originally declared here");
+		dmrC_warning(S->C, sym->pos, "symbol '%s' shadows an earlier one", dmrC_show_ident(S->C, sym->ident));
+		dmrC_info(S->C, next->pos, "originally declared here");
 	}
 }
 
-void bind_symbol(struct global_symbols_t *S, struct symbol *sym, struct ident *ident, enum namespace_type ns)
+void dmrC_bind_symbol(struct global_symbols_t *S, struct symbol *sym, struct ident *ident, enum namespace_type ns)
 {
 	struct scope *scope;
 	if (sym->bound) {
-		sparse_error(S->C, sym->pos, "internal error: symbol type already bound");
+		dmrC_sparse_error(S->C, sym->pos, "internal error: symbol type already bound");
 		return;
 	}
 	if (ident->reserved && (ns & (NS_TYPEDEF | NS_STRUCT | NS_LABEL | NS_SYMBOL))) {
-		sparse_error(S->C, sym->pos, "Trying to use reserved word '%s' as identifier", show_ident(S->C, ident));
+		dmrC_sparse_error(S->C, sym->pos, "Trying to use reserved word '%s' as identifier", dmrC_show_ident(S->C, ident));
 		return;
 	}
 	sym->ns = ns;
 	sym->next_id = ident->symbols;
 	ident->symbols = sym;
 	if (sym->ident && sym->ident != ident)
-		warning(S->C, sym->pos, "Symbol '%s' already bound", show_ident(S->C, sym->ident));
+		dmrC_warning(S->C, sym->pos, "Symbol '%s' already bound", dmrC_show_ident(S->C, sym->ident));
 	sym->ident = ident;
 	sym->bound = 1;
 
 	scope = S->C->block_scope;
-	if (ns == NS_SYMBOL && toplevel(S->C, scope)) {
+	if (ns == NS_SYMBOL && dmrC_toplevel(S->C, scope)) {
 		unsigned mod = MOD_ADDRESSABLE | MOD_TOPLEVEL;
 
 		scope = S->C->global_scope;
 		if (sym->ctype.modifiers & MOD_STATIC ||
-		    is_extern_inline(sym)) {
+		    dmrC_is_extern_inline(sym)) {
 			scope = S->C->file_scope;
 			mod = MOD_TOPLEVEL;
 		}
@@ -633,15 +633,15 @@ void bind_symbol(struct global_symbols_t *S, struct symbol *sym, struct ident *i
 		scope = S->C->file_scope;
 	if (ns == NS_LABEL)
 		scope = S->C->function_scope;
-	bind_scope(S->C, sym, scope);
+	dmrC_bind_scope(S->C, sym, scope);
 }
 
-struct symbol *create_symbol(struct global_symbols_t *S, int stream, const char *name, int type, int ns)
+struct symbol *dmrC_create_symbol(struct global_symbols_t *S, int stream, const char *name, int type, int ns)
 {
-	struct token *token = built_in_token(S->C, stream, name);
-	struct symbol *sym = alloc_symbol(S, token->pos, type);
+	struct token *token = dmrC_built_in_token(S->C, stream, name);
+	struct symbol *sym = dmrC_alloc_symbol(S, token->pos, type);
 
-	bind_symbol(S, sym, token->ident, ns);
+	dmrC_bind_symbol(S, sym, token->ident, ns);
 	return sym;
 }
 
@@ -659,51 +659,51 @@ struct symbol *get_nth1_arg(struct symbol *fn, int idx)
 }
 
 
-void init_symbols(struct dmr_C *C)
+void dmrC_init_symbols(struct dmr_C *C)
 {
 	struct global_symbols_t *S = (struct global_symbols_t *) calloc(1, sizeof(struct global_symbols_t));
 	C->S = S;
 	S->C = C; 
-	allocator_init(&S->context_allocator, "contexts", sizeof(struct context), __alignof__(struct context),
+	dmrC_allocator_init(&S->context_allocator, "contexts", sizeof(struct context), __alignof__(struct context),
 		CHUNK);
-	allocator_init(&S->global_ident_allocator, "global_identifiers", sizeof(struct ident),
+	dmrC_allocator_init(&S->global_ident_allocator, "global_identifiers", sizeof(struct ident),
 		__alignof__(struct ident), CHUNK);
-	allocator_init(&S->symbol_allocator, "symbols", sizeof(struct symbol),
+	dmrC_allocator_init(&S->symbol_allocator, "symbols", sizeof(struct symbol),
 		__alignof__(struct symbol), CHUNK);
 
-	int stream = init_stream(C, "builtin", -1, C->T->includepath);
+	int stream = dmrC_init_stream(C, "builtin", -1, C->T->includepath);
 
-#define __INIT_IDENT(n, str, res) (struct ident *) allocator_allocate(&S->global_ident_allocator, sizeof(str)); S->n->len = sizeof(str)-1; memcpy(S->n->name, str, sizeof(str)); S->n->reserved = res;
+#define __INIT_IDENT(n, str, res) (struct ident *) dmrC_allocator_allocate(&S->global_ident_allocator, sizeof(str)); S->n->len = sizeof(str)-1; memcpy(S->n->name, str, sizeof(str)); S->n->reserved = res;
 #define __IDENT(n,str,res) \
 	{S->n  = __INIT_IDENT(n, str, res)}
 #include "ident-list.h"
 
 #define __IDENT(n,str,res) \
-	hash_ident(C, S->n)
+	dmrC_hash_ident(C, S->n)
 #include "ident-list.h"
 
-	init_parser(C, stream);
-	init_builtins(C, stream);
+	dmrC_init_parser(C, stream);
+	dmrC_init_builtins(C, stream);
 }
 
-void destroy_symbols(struct dmr_C *C) {
+void dmrC_destroy_symbols(struct dmr_C *C) {
 	/* tokenizer must be destroyed before this */
 	assert(C->T == NULL);
 
-	destroy_parser(C);
+	dmrC_destroy_parser(C);
 	assert(C->P == NULL);
 
 	struct global_symbols_t *S = C->S;
 
-	allocator_destroy(&S->context_allocator);
-	allocator_destroy(&S->global_ident_allocator);
-	allocator_destroy(&S->symbol_allocator);
+	dmrC_allocator_destroy(&S->context_allocator);
+	dmrC_allocator_destroy(&S->global_ident_allocator);
+	dmrC_allocator_destroy(&S->symbol_allocator);
 
 	free(S);
 	C->S = NULL;
 }
 
-void init_ctype(struct dmr_C *C)
+void dmrC_init_ctype(struct dmr_C *C)
 {
 	assert(C);
 	struct global_symbols_t *S = C->S;
@@ -783,7 +783,7 @@ void init_ctype(struct dmr_C *C)
 		struct symbol *sym = ctype->ptr;
 		unsigned long bit_size = ctype->bit_size ? *ctype->bit_size : -1;
 		unsigned long maxalign = ctype->maxalign ? *ctype->maxalign : 0;
-		unsigned long alignment = bits_to_bytes(T, bit_size);
+		unsigned long alignment = dmrC_bits_to_bytes(T, bit_size);
 
 		if (alignment > maxalign)
 			alignment = maxalign;

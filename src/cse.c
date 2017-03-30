@@ -38,11 +38,11 @@ static void clean_up_one_instruction(struct dmr_C *C, struct basic_block *bb, st
 	if (!insn->bb)
 		return;
 	assert(insn->bb == bb);
-	C->L->repeat_phase |= simplify_instruction(C, insn);
+	C->L->repeat_phase |= dmrC_simplify_instruction(C, insn);
 	hash = (insn->opcode << 3) + (insn->size >> 3);
 	switch (insn->opcode) {
 	case OP_SEL:
-		hash += hashval(insn->src3);
+		hash += dmrC_hashval(insn->src3);
 		/* Fall through */	
 
 	/* Binary arithmetic */
@@ -64,20 +64,20 @@ static void clean_up_one_instruction(struct dmr_C *C, struct basic_block *bb, st
 	case OP_SET_LT: case OP_SET_GT:
 	case OP_SET_B:  case OP_SET_A:
 	case OP_SET_BE: case OP_SET_AE:
-		hash += hashval(insn->src2);
+		hash += dmrC_hashval(insn->src2);
 		/* Fall through */
 	
 	/* Unary */
 	case OP_NOT: case OP_NEG:
-		hash += hashval(insn->src1);
+		hash += dmrC_hashval(insn->src1);
 		break;
 
 	case OP_SETVAL:
-		hash += hashval(insn->val);
+		hash += dmrC_hashval(insn->val);
 		break;
 
 	case OP_SYMADDR:
-		hash += hashval(insn->symbol);
+		hash += dmrC_hashval(insn->symbol);
 		break;
 
 	case OP_CAST:
@@ -89,8 +89,8 @@ static void clean_up_one_instruction(struct dmr_C *C, struct basic_block *bb, st
 		 * some kind of "type hash" that is identical
 		 * for identical casts
 		 */
-		hash += hashval(insn->orig_type);
-		hash += hashval(insn->src);
+		hash += dmrC_hashval(insn->orig_type);
+		hash += dmrC_hashval(insn->src);
 		break;
 
 	/* Other */
@@ -101,8 +101,8 @@ static void clean_up_one_instruction(struct dmr_C *C, struct basic_block *bb, st
 			if (phi == VOID_PSEUDO(C) || !phi->def)
 				continue;
 			def = phi->def;
-			hash += hashval(def->src1);
-			hash += hashval(def->bb);
+			hash += dmrC_hashval(def->src1);
+			hash += dmrC_hashval(def->bb);
 		} END_FOR_EACH_PTR(phi);
 		break;
 	}
@@ -116,7 +116,7 @@ static void clean_up_one_instruction(struct dmr_C *C, struct basic_block *bb, st
 	}
 	hash += hash >> 16;
 	hash &= INSN_HASH_SIZE-1;
-	add_instruction(C, C->L->insn_hash_table + hash, insn);
+	dmrC_add_instruction(C, C->L->insn_hash_table + hash, insn);
 }
 
 static void clean_up_insns(struct dmr_C *C, struct entrypoint *ep)
@@ -232,7 +232,7 @@ static int insn_compare(void *ud, const void *_i1, const void *_i2)
 		break;
 
 	default:
-		warning(C, i1->pos, "bad instruction on hash chain");
+		dmrC_warning(C, i1->pos, "bad instruction on hash chain");
 	}
 	if (i1->size != i2->size)
 		return i1->size < i2->size ? -1 : 1;
@@ -246,9 +246,9 @@ static void sort_instruction_list(struct dmr_C *C, struct ptr_list **list)
 
 static struct instruction * cse_one_instruction(struct dmr_C *C, struct instruction *insn, struct instruction *def)
 {
-	convert_instruction_target(C, insn, def->target);
+	dmrC_convert_instruction_target(C, insn, def->target);
 
-	kill_instruction(C, insn);
+	dmrC_kill_instruction(C, insn);
 	C->L->repeat_phase |= REPEAT_CSE;
 	return def;
 }
@@ -279,12 +279,12 @@ static struct basic_block *trivial_common_parent(struct basic_block *bb1, struct
 {
 	struct basic_block *parent;
 
-	if (bb_list_size(bb1->parents) != 1)
+	if (dmrC_bb_list_size(bb1->parents) != 1)
 		return NULL;
-	parent = first_basic_block(bb1->parents);
-	if (bb_list_size(bb2->parents) != 1)
+	parent = dmrC_first_basic_block(bb1->parents);
+	if (dmrC_bb_list_size(bb2->parents) != 1)
 		return NULL;
-	if (first_basic_block(bb2->parents) != parent)
+	if (dmrC_first_basic_block(bb2->parents) != parent)
 		return NULL;
 	return parent;
 }
@@ -296,10 +296,10 @@ static inline void remove_instruction(struct ptr_list **list, struct instruction
 
 static void add_instruction_to_end(struct dmr_C *C, struct instruction *insn, struct basic_block *bb)
 {
-	struct instruction *br = delete_last_instruction(&bb->insns);
+	struct instruction *br = dmrC_delete_last_instruction(&bb->insns);
 	insn->bb = bb;
-	add_instruction(C, &bb->insns, insn);
-	add_instruction(C, &bb->insns, br);
+	dmrC_add_instruction(C, &bb->insns, insn);
+	dmrC_add_instruction(C, &bb->insns, br);
 }
 
 static struct instruction * try_to_cse(struct dmr_C *C, struct entrypoint *ep, struct instruction *i1, struct instruction *i2)
@@ -325,7 +325,7 @@ static struct instruction * try_to_cse(struct dmr_C *C, struct entrypoint *ep, s
 			if (insn == i2)
 				return cse_one_instruction(C, i1, i2);
 		} END_FOR_EACH_PTR(insn);
-		warning(C, b1->pos, "Whaa? unable to find CSE instructions");
+		dmrC_warning(C, b1->pos, "Whaa? unable to find CSE instructions");
 		return i1;
 	}
 	if (bb_dominates(ep, b1, b2, ++C->L->bb_generation))
@@ -345,18 +345,18 @@ static struct instruction * try_to_cse(struct dmr_C *C, struct entrypoint *ep, s
 	return i1;
 }
 
-void cleanup_and_cse(struct dmr_C *C, struct entrypoint *ep)
+void dmrC_cleanup_and_cse(struct dmr_C *C, struct entrypoint *ep)
 {
 	int i;
 
-	simplify_memops(C, ep);
+	dmrC_simplify_memops(C, ep);
 repeat:
 	C->L->repeat_phase = 0;
 	clean_up_insns(C, ep);
 	for (i = 0; i < INSN_HASH_SIZE; i++) {
 		struct ptr_list **list = C->L->insn_hash_table + i;
 		if (*list) {
-			if (instruction_list_size(*list) > 1) {
+			if (dmrC_instruction_list_size(*list) > 1) {
 				struct instruction *insn, *last;
 
 				sort_instruction_list(C, list);
@@ -377,7 +377,7 @@ repeat:
 	}
 
 	if (C->L->repeat_phase & REPEAT_SYMBOL_CLEANUP)
-		simplify_memops(C, ep);
+		dmrC_simplify_memops(C, ep);
 
 	if (C->L->repeat_phase & REPEAT_CSE)
 		goto repeat;

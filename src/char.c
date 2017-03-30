@@ -59,12 +59,12 @@ static const char *parse_escape(struct dmr_C *C, const char *p, unsigned *val, c
 	case 'x': {
 		unsigned mask = -(1U << (bits - 4));
 		for (c = 0; p < end; c = (c << 4) + d) {
-			d = hexval(*p);
+			d = dmrC_hexval(*p);
 			if (d > 16)
 				break;
 			p++;
 			if (c & mask) {
-				warning(C, pos,
+				dmrC_warning(C, pos,
 					"hex escape sequence out of range");
 				mask = 0;
 			}
@@ -81,12 +81,12 @@ static const char *parse_escape(struct dmr_C *C, const char *p, unsigned *val, c
 			p++;
 		}
 		if ((c & 0400) && bits < 9)
-			warning(C, pos,
+			dmrC_warning(C, pos,
 				"octal escape sequence out of range");
 		break;
 	}
 	default:	/* everything else is left as is */
-		warning(C, pos, "unknown escape sequence: '\\%c'", c);
+		dmrC_warning(C, pos, "unknown escape sequence: '\\%c'", c);
 		break;
 	case '\\':
 	case '\'':
@@ -98,11 +98,11 @@ static const char *parse_escape(struct dmr_C *C, const char *p, unsigned *val, c
 	return p;
 }
 
-void get_char_constant(struct dmr_C *C, struct token *token, unsigned long long *val)
+void dmrC_get_char_constant(struct dmr_C *C, struct token *token, unsigned long long *val)
 {
 	const char *p = token->embedded, *end;
 	unsigned v;
-	int type = token_type(token);
+	int type = dmrC_token_type(token);
 	switch (type) {
 	case TOKEN_CHAR:
 	case TOKEN_WIDE_CHAR:
@@ -121,16 +121,16 @@ void get_char_constant(struct dmr_C *C, struct token *token, unsigned long long 
 	p = parse_escape(C, p, &v, end,
 			type < TOKEN_WIDE_CHAR ? C->target->bits_in_char : 32, token->pos);
 	if (p != end)
-		warning(C, token->pos,
+		dmrC_warning(C, token->pos,
 			"multi-character character constant");
 	*val = v;
 }
 
-struct token *get_string_constant(struct dmr_C *C, struct token *token, struct expression *expr)
+struct token *dmrC_get_string_constant(struct dmr_C *C, struct token *token, struct expression *expr)
 {
 	struct string *string = token->string;
 	struct token *next = token->next, *done = NULL;
-	int stringtype = token_type(token);
+	int stringtype = dmrC_token_type(token);
 	int is_wide = stringtype == TOKEN_WIDE_STRING;
 	char buffer[MAX_STRING];
 	int len = 0;
@@ -138,7 +138,7 @@ struct token *get_string_constant(struct dmr_C *C, struct token *token, struct e
 	int esc_count = 0;
 
 	while (!done) {
-		switch (token_type(next)) {
+		switch (dmrC_token_type(next)) {
 		case TOKEN_WIDE_STRING:
 			is_wide = 1;
 		case TOKEN_STRING:
@@ -164,13 +164,13 @@ struct token *get_string_constant(struct dmr_C *C, struct token *token, struct e
 		token = token->next;
 	}
 	if (len > MAX_STRING) {
-		warning(C, token->pos, "trying to concatenate %d-character string (%d bytes max)", len, MAX_STRING);
+		dmrC_warning(C, token->pos, "trying to concatenate %d-character string (%d bytes max)", len, MAX_STRING);
 		len = MAX_STRING;
 	}
 
 	if (esc_count || len >= (int)string->length) {
 		if (string->immutable || len >= string->length)	/* can't cannibalize */
-			string = (struct string *)allocator_allocate(&C->string_allocator, len+1);
+			string = (struct string *)dmrC_allocator_allocate(&C->string_allocator, len+1);
 		string->length = len+1;
 		memcpy(string->data, buffer, len);
 		string->data[len] = '\0';

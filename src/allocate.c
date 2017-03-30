@@ -42,7 +42,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-void *blob_alloc(size_t size) {
+void *dmrC_blob_alloc(size_t size) {
   void *ptr;
   ptr = malloc(size);
   if (ptr != NULL)
@@ -50,12 +50,12 @@ void *blob_alloc(size_t size) {
   return ptr;
 }
 
-void blob_free(void *addr, size_t size) {
+void dmrC_blob_free(void *addr, size_t size) {
   (void)size;
   free(addr);
 }
 
-void allocator_init(struct allocator *A, const char *name, size_t size,
+void dmrC_allocator_init(struct allocator *A, const char *name, size_t size,
                     unsigned int alignment, unsigned int chunking) {
   A->name_ = name;
   A->blobs_ = NULL;
@@ -68,7 +68,7 @@ void allocator_init(struct allocator *A, const char *name, size_t size,
   A->useful_bytes = 0;
 }
 
-void *allocator_allocate(struct allocator *A, size_t extra) {
+void *dmrC_allocator_allocate(struct allocator *A, size_t extra) {
   size_t size = extra + A->size_;
   size_t alignment = A->alignment_;
   struct allocation_blob *blob = A->blobs_;
@@ -96,7 +96,7 @@ void *allocator_allocate(struct allocator *A, size_t extra) {
   if (!blob || blob->left < size) {
     size_t offset, chunking = A->chunking_;
     struct allocation_blob *newblob =
-        (struct allocation_blob *)blob_alloc(chunking);
+        (struct allocation_blob *)dmrC_blob_alloc(chunking);
     if (!newblob) {
       fprintf(stderr, "out of memory\n");
       abort();
@@ -116,19 +116,19 @@ void *allocator_allocate(struct allocator *A, size_t extra) {
   return retval;
 }
 
-void allocator_free(struct allocator *A, void *entry) {
+void dmrC_allocator_free(struct allocator *A, void *entry) {
   void **p = (void **)entry;
   *p = A->freelist_;
   A->freelist_ = p;
 }
-void allocator_show_allocations(struct allocator *A) {
+void dmrC_allocator_show_allocations(struct allocator *A) {
   fprintf(stderr, "%s: %d allocations, %d bytes (%d total bytes, "
                   "%6.2f%% usage, %6.2f average size)\n",
           A->name_, (int)A->allocations, (int)A->useful_bytes,
           (int)A->total_bytes, 100 * (double)A->useful_bytes / A->total_bytes,
           (double)A->useful_bytes / A->allocations);
 }
-void allocator_drop_all_allocations(struct allocator *A) {
+void dmrC_allocator_drop_all_allocations(struct allocator *A) {
   struct allocation_blob *blob = A->blobs_;
   A->blobs_ = NULL;
   A->allocations = 0;
@@ -137,19 +137,19 @@ void allocator_drop_all_allocations(struct allocator *A) {
   A->freelist_ = NULL;
   while (blob) {
     struct allocation_blob *next = blob->next;
-    blob_free(blob, A->chunking_);
+    dmrC_blob_free(blob, A->chunking_);
     blob = next;
   }
 }
-void allocator_destroy(struct allocator *A) {
-  allocator_drop_all_allocations(A);
+void dmrC_allocator_destroy(struct allocator *A) {
+  dmrC_allocator_drop_all_allocations(A);
   A->blobs_ = NULL;
   A->allocations = 0;
   A->total_bytes = 0;
   A->useful_bytes = 0;
   A->freelist_ = NULL;
 }
-void allocator_transfer(struct allocator *A, struct allocator *transfer_to) {
+void dmrC_allocator_transfer(struct allocator *A, struct allocator *transfer_to) {
   assert(transfer_to->blobs_ == NULL);
   assert(transfer_to->freelist_ == NULL);
   transfer_to->blobs_ = A->blobs_;
@@ -171,11 +171,11 @@ struct foo {
   int a, b;
 };
 
-int test_allocator() {
+int dmrC_test_allocator() {
   struct allocator alloc;
-  allocator_init(&alloc, "foo", sizeof(struct foo), __alignof__(struct foo),
+  dmrC_allocator_init(&alloc, "foo", sizeof(struct foo), __alignof__(struct foo),
                  sizeof(struct allocation_blob) + sizeof(struct foo) * 2);
-  struct foo *t1 = (struct foo *)allocator_allocate(&alloc, 0);
+  struct foo *t1 = (struct foo *)dmrC_allocator_allocate(&alloc, 0);
   if (t1 == NULL)
     return 1;
   if (alloc.alignment_ != __alignof__(struct foo))
@@ -184,31 +184,31 @@ int test_allocator() {
     return 1;
   if (alloc.freelist_ != NULL)
     return 1;
-  struct foo *t2 = (struct foo *)allocator_allocate(&alloc, 0);
+  struct foo *t2 = (struct foo *)dmrC_allocator_allocate(&alloc, 0);
   if (t2 != t1 + 1)
     return 1;
-  //allocator_show_allocations(&alloc);
-  allocator_free(&alloc, t1);
-  allocator_free(&alloc, t2);
-  struct foo *t3 = (struct foo *)allocator_allocate(&alloc, 0);
+  //dmrC_allocator_show_allocations(&alloc);
+  dmrC_allocator_free(&alloc, t1);
+  dmrC_allocator_free(&alloc, t2);
+  struct foo *t3 = (struct foo *)dmrC_allocator_allocate(&alloc, 0);
   if (t3 != t2)
     return 1;
-  struct foo *t4 = (struct foo *)allocator_allocate(&alloc, 0);
+  struct foo *t4 = (struct foo *)dmrC_allocator_allocate(&alloc, 0);
   if (t4 != t1)
     return 1;
-  struct foo *t5 = (struct foo *)allocator_allocate(&alloc, 0);
+  struct foo *t5 = (struct foo *)dmrC_allocator_allocate(&alloc, 0);
   (void)t5;
   if (alloc.total_bytes !=
       (sizeof(struct allocation_blob) + sizeof(struct foo) * 2) * 2)
     return 1;
   struct allocator alloc2 = { 0 };
   struct allocation_blob *saved = alloc.blobs_;
-  allocator_transfer(&alloc, &alloc2);
+  dmrC_allocator_transfer(&alloc, &alloc2);
   if (alloc.blobs_ != NULL)
 	  return 1;
   if (alloc2.blobs_ != saved)
 	  return 1;
-  allocator_destroy(&alloc2);
+  dmrC_allocator_destroy(&alloc2);
   printf("allocator tests okay\n");
   return 0;
 }

@@ -32,7 +32,7 @@ static int find_dominating_parents(struct dmr_C *C, pseudo_t pseudo, struct inst
 			int dominance;
 			if (one == insn)
 				goto no_dominance;
-			dominance = dominates(C, pseudo, insn, one, local);
+			dominance = dmrC_dominates(C, pseudo, insn, one, local);
 			if (dominance < 0) {
 				if (one->opcode == OP_LOAD)
 					continue;
@@ -52,11 +52,11 @@ no_dominance:
 		continue;
 
 found_dominator:
-		br = delete_last_instruction(&parent->insns);
-		phi = alloc_phi(C, parent, one->target, one->type);
+		br = dmrC_delete_last_instruction(&parent->insns);
+		phi = dmrC_alloc_phi(C, parent, one->target, one->type);
 		phi->ident = phi->ident ? phi->ident: one->target->ident;
-		add_instruction(C, &parent->insns, br);
-		use_pseudo(C, insn, phi, add_pseudo(C, dominators, phi));
+		dmrC_add_instruction(C, &parent->insns, br);
+		dmrC_use_pseudo(C, insn, phi, dmrC_add_pseudo(C, dominators, phi));
 	} END_FOR_EACH_PTR(parent);
 	return 1;
 }		
@@ -94,7 +94,7 @@ static void simplify_loads(struct dmr_C *C, struct basic_block *bb)
 			unsigned long generation;
 
 			/* Check for illegal offsets.. */
-			check_access(C, insn);
+			dmrC_check_access(C, insn);
 			
 			if (insn->type->ctype.modifiers & MOD_VOLATILE)
 				continue;
@@ -102,7 +102,7 @@ static void simplify_loads(struct dmr_C *C, struct basic_block *bb)
 				int dominance;
 				if (!dom->bb)
 					continue;
-				dominance = dominates(C, pseudo, insn, dom, local);
+				dominance = dmrC_dominates(C, pseudo, insn, dom, local);
 				if (dominance) {
 					/* possible partial dominance? */
 					if (dominance < 0)  {
@@ -111,7 +111,7 @@ static void simplify_loads(struct dmr_C *C, struct basic_block *bb)
 						goto next_load;
 					}
 					/* Yeehaa! Found one! */
-					convert_load_instruction(C, insn, dom->target);
+					dmrC_convert_load_instruction(C, insn, dom->target);
 					goto next_load;
 				}
 			} END_FOR_EACH_PTR_REVERSE(dom);
@@ -125,11 +125,11 @@ static void simplify_loads(struct dmr_C *C, struct basic_block *bb)
 				if (!dominators) {
 					if (local) {
 						assert(pseudo->type != PSEUDO_ARG);
-						convert_load_instruction(C, insn, value_pseudo(C, 0));
+						dmrC_convert_load_instruction(C, insn, dmrC_value_pseudo(C, 0));
 					}
 					goto next_load;
 				}
-				rewrite_load_instruction(C, insn, dominators);
+				dmrC_rewrite_load_instruction(C, insn, dominators);
 			}
 		}
 next_load:
@@ -142,7 +142,7 @@ static void kill_store(struct dmr_C *C, struct instruction *insn)
 	if (insn) {
 		insn->bb = NULL;
 		insn->opcode = OP_SNOP;
-		kill_use(C, &insn->target);
+		dmrC_kill_use(C, &insn->target);
 	}
 }
 
@@ -162,7 +162,7 @@ static void kill_dominated_stores(struct dmr_C *C, struct basic_block *bb)
 				int dominance;
 				if (!dom->bb)
 					continue;
-				dominance = dominates(C, pseudo, insn, dom, local);
+				dominance = dmrC_dominates(C, pseudo, insn, dom, local);
 				if (dominance) {
 					/* possible partial dominance? */
 					if (dominance < 0)
@@ -181,7 +181,7 @@ next_store:
 	} END_FOR_EACH_PTR_REVERSE(insn);
 }
 
-void simplify_memops(struct dmr_C *C, struct entrypoint *ep)
+void dmrC_simplify_memops(struct dmr_C *C, struct entrypoint *ep)
 {
 	struct basic_block *bb;
 

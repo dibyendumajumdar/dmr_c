@@ -22,9 +22,9 @@ static struct basic_block *phi_parent(struct dmr_C *C, struct basic_block *sourc
 		if (def->bb == source)
 			return source;
 	}
-	if (bb_list_size(source->children) != 1 || bb_list_size(source->parents) != 1)
+	if (dmrC_bb_list_size(source->children) != 1 || dmrC_bb_list_size(source->parents) != 1)
 		return source;
-	return first_basic_block(source->parents);
+	return dmrC_first_basic_block(source->parents);
 }
 
 static int if_convert_phi(struct dmr_C *C, struct instruction *insn)
@@ -67,7 +67,7 @@ static int if_convert_phi(struct dmr_C *C, struct instruction *insn)
 	 * conditional branches. No multijumps or computed
 	 * stuff. Verify that here.
 	 */
-	br = last_instruction(source->insns);
+	br = dmrC_last_instruction(source->insns);
 	if (!br || br->opcode != OP_BR)
 		return 0;
 
@@ -100,8 +100,8 @@ static int if_convert_phi(struct dmr_C *C, struct instruction *insn)
 	 * a phi-source, we'll be able to simplify
 	 * the conditional branch too.
 	 */
-	insert_select(C, source, br, insn, p1, p2);
-	kill_instruction(C, insn);
+	dmrC_insert_select(C, source, br, insn, p1, p2);
+	dmrC_kill_instruction(C, insn);
 	return REPEAT_CSE;
 }
 
@@ -130,8 +130,8 @@ static int clean_up_phi(struct dmr_C *C, struct instruction *insn)
 
 	if (same) {
 		pseudo_t pseudo = last ? last->src1 : VOID_PSEUDO(C);
-		convert_instruction_target(C, insn, pseudo);
-		kill_instruction(C, insn);
+		dmrC_convert_instruction_target(C, insn, pseudo);
+		dmrC_kill_instruction(C, insn);
 		return REPEAT_CSE;
 	}
 
@@ -157,14 +157,14 @@ out:
 
 static inline void remove_usage(struct dmr_C *C, pseudo_t p, pseudo_t *usep)
 {
-	if (has_use_list(p)) {
+	if (dmrC_has_use_list(p)) {
 		delete_pseudo_user_list_entry(C, &p->users, usep, 1);
 		if (!p->users)
-			kill_instruction(C, p->def);
+			dmrC_kill_instruction(C, p->def);
 	}
 }
 
-void kill_use(struct dmr_C *C, pseudo_t *usep)
+void dmrC_kill_use(struct dmr_C *C, pseudo_t *usep)
 {
 	if (usep) {
 		pseudo_t p = *usep;
@@ -179,7 +179,7 @@ static void kill_use_list(struct dmr_C *C, struct ptr_list *list)
 	FOR_EACH_PTR(list, p) {
 		if (p == VOID_PSEUDO(C))
 			continue;
-		kill_use(C, THIS_ADDRESS(pseudo_t, p));
+		dmrC_kill_use(C, THIS_ADDRESS(pseudo_t, p));
 	} END_FOR_EACH_PTR(p);
 }
 
@@ -187,7 +187,7 @@ static void kill_insn_list(struct dmr_C *C, struct ptr_list *list)
 {
 	struct instruction *insn;
 	FOR_EACH_PTR(list, insn) {
-		kill_insn(C, insn, 0);
+		dmrC_kill_insn(C, insn, 0);
 	} END_FOR_EACH_PTR(insn);
 }
 
@@ -200,7 +200,7 @@ static void kill_insn_list(struct dmr_C *C, struct ptr_list *list)
  * the function does that unconditionally (must only be used
  * for unreachable instructions.
  */
-void kill_insn(struct dmr_C *C, struct instruction *insn, int force)
+void dmrC_kill_insn(struct dmr_C *C, struct instruction *insn, int force)
 {
 	if (!insn || !insn->bb)
 		return;
@@ -208,7 +208,7 @@ void kill_insn(struct dmr_C *C, struct instruction *insn, int force)
 	switch (insn->opcode) {
 	case OP_SEL:
 	case OP_RANGE:
-		kill_use(C, &insn->src3);
+		dmrC_kill_use(C, &insn->src3);
 		/* fall through */
 
 	case OP_ADD:
@@ -240,7 +240,7 @@ void kill_insn(struct dmr_C *C, struct instruction *insn, int force)
 	case OP_SET_A:
 	case OP_SET_BE:
 	case OP_SET_AE:
-		kill_use(C, &insn->src2);
+		dmrC_kill_use(C, &insn->src2);
 		/* fall through */
 
 	case OP_CAST:
@@ -251,14 +251,14 @@ void kill_insn(struct dmr_C *C, struct instruction *insn, int force)
 	case OP_NOT: case OP_NEG:
 	case OP_SLICE:
 	case OP_PUSH:
-		kill_use(C, &insn->src1);
+		dmrC_kill_use(C, &insn->src1);
 		break;
 
 	case OP_PHI:
 		kill_use_list(C, insn->phi_list);
 		break;
 	case OP_PHISOURCE:
-		kill_use(C, &insn->phi_src);
+		dmrC_kill_use(C, &insn->phi_src);
 		break;
 
 	case OP_SYMADDR:
@@ -271,7 +271,7 @@ void kill_insn(struct dmr_C *C, struct instruction *insn, int force)
 		/* fall through */
 
 	case OP_COMPUTEDGOTO:
-		kill_use(C, &insn->cond);
+		dmrC_kill_use(C, &insn->cond);
 		break;
 
 	case OP_CALL:
@@ -284,20 +284,20 @@ void kill_insn(struct dmr_C *C, struct instruction *insn, int force)
 		}
 		kill_insn_list(C, insn->arguments);
 		if (insn->func->type == PSEUDO_REG)
-			kill_use(C, &insn->func);
+			dmrC_kill_use(C, &insn->func);
 		break;
 
 	case OP_LOAD:
 		if (!force && insn->type->ctype.modifiers & MOD_VOLATILE)
 			return;
-		kill_use(C, &insn->src);
+		dmrC_kill_use(C, &insn->src);
 		break;
 
 	case OP_STORE:
 		if (!force)
 			return;
-		kill_use(C, &insn->src);
-		kill_use(C, &insn->target);
+		dmrC_kill_use(C, &insn->src);
+		dmrC_kill_use(C, &insn->target);
 		break;
 
 	case OP_ENTRY:
@@ -325,9 +325,9 @@ static int dead_insn(struct dmr_C *C, struct instruction *insn, pseudo_t *src1, 
 	} END_FOR_EACH_PTR(pu);
 
 	insn->bb = NULL;
-	kill_use(C, src1);
-	kill_use(C, src2);
-	kill_use(C, src3);
+	dmrC_kill_use(C, src1);
+	dmrC_kill_use(C, src2);
+	dmrC_kill_use(C, src3);
 	return REPEAT_CSE;
 }
 
@@ -338,12 +338,12 @@ static inline int constant(pseudo_t pseudo)
 
 static int replace_with_pseudo(struct dmr_C *C, struct instruction *insn, pseudo_t pseudo)
 {
-	convert_instruction_target(C, insn, pseudo);
+	dmrC_convert_instruction_target(C, insn, pseudo);
 
 	switch (insn->opcode) {
 	case OP_SEL:
 	case OP_RANGE:
-		kill_use(C, &insn->src3);
+		dmrC_kill_use(C, &insn->src3);
 	case OP_ADD:
 	case OP_SUB:
 	case OP_MULU:
@@ -373,7 +373,7 @@ static int replace_with_pseudo(struct dmr_C *C, struct instruction *insn, pseudo
 	case OP_SET_A:
 	case OP_SET_BE:
 	case OP_SET_AE:
-		kill_use(C, &insn->src2);
+		dmrC_kill_use(C, &insn->src2);
 	case OP_NOT:
 	case OP_NEG:
 	case OP_SYMADDR:
@@ -381,7 +381,7 @@ static int replace_with_pseudo(struct dmr_C *C, struct instruction *insn, pseudo
 	case OP_SCAST:
 	case OP_FPCAST:
 	case OP_PTRCAST:
-		kill_use(C, &insn->src1);
+		dmrC_kill_use(C, &insn->src1);
 		break;
 
 	default:
@@ -436,8 +436,8 @@ static int simplify_asr(struct dmr_C *C, struct instruction *insn, pseudo_t pseu
 	unsigned int size = operand_size(insn, pseudo);
 
 	if (value >= size) {
-		warning(C, insn->pos, "right shift by bigger than source value");
-		return replace_with_pseudo(C, insn, value_pseudo(C, 0));
+		dmrC_warning(C, insn->pos, "right shift by bigger than source value");
+		return replace_with_pseudo(C, insn, dmrC_value_pseudo(C, 0));
 	}
 	if (!value)
 		return replace_with_pseudo(C, insn, pseudo);
@@ -533,8 +533,8 @@ static int simplify_seteq_setne(struct dmr_C *C, struct instruction *insn, long 
 		src1 = def->src1;
 		src2 = def->src2;
 		insn->opcode = compare_opcode(C, opcode, inverse);
-		use_pseudo(C, insn, src1, &insn->src1);
-		use_pseudo(C, insn, src2, &insn->src2);
+		dmrC_use_pseudo(C, insn, src1, &insn->src1);
+		dmrC_use_pseudo(C, insn, src2, &insn->src2);
 		remove_usage(C, old, &insn->src1);
 		return REPEAT_CSE;
 
@@ -556,7 +556,7 @@ static int simplify_constant_rightside(struct dmr_C *C, struct instruction *insn
 	case OP_SUB:
 		if (value) {
 			insn->opcode = OP_ADD;
-			insn->src2 = value_pseudo(C, -value);
+			insn->src2 = dmrC_value_pseudo(C, -value);
 			return REPEAT_CSE;
 		}
 	/* Fall through */
@@ -573,7 +573,7 @@ static int simplify_constant_rightside(struct dmr_C *C, struct instruction *insn
 
 	case OP_MODU: case OP_MODS:
 		if (value == 1)
-			return replace_with_pseudo(C, insn, value_pseudo(C, 0));
+			return replace_with_pseudo(C, insn, dmrC_value_pseudo(C, 0));
 		return 0;
 
 	case OP_DIVU: case OP_DIVS:
@@ -734,7 +734,7 @@ static int simplify_constant_binop(struct dmr_C *C, struct instruction *insn)
 	}
 	res &= bits;
 
-	replace_with_pseudo(C, insn, value_pseudo(C, res));
+	replace_with_pseudo(C, insn, dmrC_value_pseudo(C, res));
 	return REPEAT_CSE;
 }
 
@@ -745,17 +745,17 @@ static int simplify_binop_same_args(struct dmr_C *C, struct instruction *insn, p
 	case OP_SET_LT: case OP_SET_GT:
 	case OP_SET_B:  case OP_SET_A:
 		if (C->Wtautological_compare)
-			warning(C, insn->pos, "self-comparison always evaluates to false");
+			dmrC_warning(C, insn->pos, "self-comparison always evaluates to false");
 	case OP_SUB:
 	case OP_XOR:
-		return replace_with_pseudo(C, insn, value_pseudo(C, 0));
+		return replace_with_pseudo(C, insn, dmrC_value_pseudo(C, 0));
 
 	case OP_SET_EQ:
 	case OP_SET_LE: case OP_SET_GE:
 	case OP_SET_BE: case OP_SET_AE:
 		if (C->Wtautological_compare)
-			warning(C, insn->pos, "self-comparison always evaluates to true");
-		return replace_with_pseudo(C, insn, value_pseudo(C, 1));
+			dmrC_warning(C, insn->pos, "self-comparison always evaluates to true");
+		return replace_with_pseudo(C, insn, dmrC_value_pseudo(C, 1));
 
 	case OP_AND:
 	case OP_OR:
@@ -764,7 +764,7 @@ static int simplify_binop_same_args(struct dmr_C *C, struct instruction *insn, p
 	case OP_AND_BOOL:
 	case OP_OR_BOOL:
 		remove_usage(C, arg, &insn->src2);
-		insn->src2 = value_pseudo(C, 0);
+		insn->src2 = dmrC_value_pseudo(C, 0);
 		insn->opcode = OP_SET_NE;
 		return REPEAT_CSE;
 
@@ -795,8 +795,8 @@ static void switch_pseudo(struct dmr_C *C, struct instruction *insn1, pseudo_t *
 {
 	pseudo_t p1 = *pp1, p2 = *pp2;
 
-	use_pseudo(C, insn1, p2, pp1);
-	use_pseudo(C, insn2, p1, pp2);
+	dmrC_use_pseudo(C, insn1, p2, pp1);
+	dmrC_use_pseudo(C, insn2, p1, pp2);
 	remove_usage(C, p1, pp1);
 	remove_usage(C, p2, pp2);
 }
@@ -867,7 +867,7 @@ static int simplify_constant_unop(struct dmr_C *C, struct instruction *insn)
 	mask = 1ULL << (insn->size-1);
 	res &= mask | (mask-1);
 	
-	replace_with_pseudo(C, insn, value_pseudo(C, res));
+	replace_with_pseudo(C, insn, dmrC_value_pseudo(C, res));
 	return REPEAT_CSE;
 }
 
@@ -905,8 +905,8 @@ static int simplify_one_memop(struct dmr_C *C, struct instruction *insn, pseudo_
 	if (addr->type == PSEUDO_REG) {
 		struct instruction *def = addr->def;
 		if (def->opcode == OP_SYMADDR && def->src) {
-			kill_use(C, &insn->src);
-			use_pseudo(C, insn, def->src, &insn->src);
+			dmrC_kill_use(C, &insn->src);
+			dmrC_use_pseudo(C, insn, def->src, &insn->src);
 			return REPEAT_CSE | REPEAT_SYMBOL_CLEANUP;
 		}
 		if (def->opcode == OP_ADD) {
@@ -929,10 +929,10 @@ offset:
 		if (new == VOID_PSEUDO(C))
 			return 0;
 		new = VOID_PSEUDO(C);
-		warning(C, insn->pos, "crazy programmer");
+		dmrC_warning(C, insn->pos, "crazy programmer");
 	}
 	insn->offset += off->value;
-	use_pseudo(C, insn, new, &insn->src);
+	dmrC_use_pseudo(C, insn, new, &insn->src);
 	remove_usage(C, addr, &insn->src);
 	return REPEAT_CSE | REPEAT_SYMBOL_CLEANUP;
 }
@@ -980,7 +980,7 @@ static int simplify_cast(struct dmr_C *C, struct instruction *insn)
 		return 0;
 
 	/* Keep casts with pointer on either side (not only case of OP_PTRCAST) */
-	if (is_ptr_type(orig_type) || is_ptr_type(insn->type))
+	if (dmrC_is_ptr_type(orig_type) || dmrC_is_ptr_type(insn->type))
 		return 0;
 
 	orig_size = orig_type->bit_size;
@@ -991,7 +991,7 @@ static int simplify_cast(struct dmr_C *C, struct instruction *insn)
 	if (constant(src)) {
 		int sign = orig_type->ctype.modifiers & MOD_SIGNED;
 		long long val = get_cast_value(src->value, orig_size, size, sign);
-		src = value_pseudo(C, val);
+		src = dmrC_value_pseudo(C, val);
 		goto simplify;
 	}
 
@@ -1012,7 +1012,7 @@ static int simplify_cast(struct dmr_C *C, struct instruction *insn)
 		int op = (orig_type->ctype.modifiers & MOD_SIGNED) ? OP_SCAST : OP_CAST;
 		if (insn->opcode == op)
 			goto simplify;
-		if (insn->opcode == OP_FPCAST && is_float_type(C->S, orig_type))
+		if (insn->opcode == OP_FPCAST && dmrC_is_float_type(C->S, orig_type))
 			goto simplify;
 	}
 
@@ -1034,10 +1034,10 @@ static int simplify_select(struct dmr_C *C, struct instruction *insn)
 	src2 = insn->src3;
 	if (constant(cond) || src1 == src2) {
 		pseudo_t *kill, take;
-		kill_use(C, &insn->src1);
+		dmrC_kill_use(C, &insn->src1);
 		take = cond->value ? src1 : src2;
 		kill = cond->value ? &insn->src3 : &insn->src2;
-		kill_use(C, kill);
+		dmrC_kill_use(C, kill);
 		replace_with_pseudo(C, insn, take);
 		return REPEAT_CSE;
 	}
@@ -1084,7 +1084,7 @@ static int simplify_range(struct dmr_C *C, struct instruction *insn)
 	if (src2->type != PSEUDO_VAL || src3->type != PSEUDO_VAL)
 		return 0;
 	if (is_in_range(src1, src2->value, src3->value)) {
-		kill_instruction(C, insn);
+		dmrC_kill_instruction(C, insn);
 		return REPEAT_CSE;
 	}
 	return 0;
@@ -1095,7 +1095,7 @@ static int simplify_range(struct dmr_C *C, struct instruction *insn)
  */
 static int simplify_cond_branch(struct dmr_C *C, struct instruction *br, pseudo_t cond, struct instruction *def, pseudo_t *pp)
 {
-	use_pseudo(C, br, *pp, &br->cond);
+	dmrC_use_pseudo(C, br, *pp, &br->cond);
 	remove_usage(C, cond, &br->cond);
 	if (def->opcode == OP_SET_EQ) {
 		struct basic_block *true = br->bb_true;
@@ -1115,7 +1115,7 @@ static int simplify_branch(struct dmr_C *C, struct instruction *insn)
 
 	/* Constant conditional */
 	if (constant(cond)) {
-		insert_branch(C, insn->bb, insn, cond->value ? insn->bb_true : insn->bb_false);
+		dmrC_insert_branch(C, insn->bb, insn, cond->value ? insn->bb_true : insn->bb_false);
 		return REPEAT_CSE;
 	}
 
@@ -1123,10 +1123,10 @@ static int simplify_branch(struct dmr_C *C, struct instruction *insn)
 	if (insn->bb_true == insn->bb_false) {
 		struct basic_block *bb = insn->bb;
 		struct basic_block *target = insn->bb_false;
-		remove_bb_from_list(&target->parents, bb, 1);
-		remove_bb_from_list(&bb->children, target, 1);
+		dmrC_remove_bb_from_list(&target->parents, bb, 1);
+		dmrC_remove_bb_from_list(&bb->children, target, 1);
 		insn->bb_false = NULL;
-		kill_use(C, &insn->cond);
+		dmrC_kill_use(C, &insn->cond);
 		insn->cond = NULL;
 		return REPEAT_CSE;
 	}
@@ -1146,11 +1146,11 @@ static int simplify_branch(struct dmr_C *C, struct instruction *insn)
 				long long val1 = def->src2->value;
 				long long val2 = def->src3->value;
 				if (!val1 && !val2) {
-					insert_branch(C, insn->bb, insn, insn->bb_false);
+					dmrC_insert_branch(C, insn->bb, insn, insn->bb_false);
 					return REPEAT_CSE;
 				}
 				if (val1 && val2) {
-					insert_branch(C, insn->bb, insn, insn->bb_true);
+					dmrC_insert_branch(C, insn->bb, insn, insn->bb_true);
 					return REPEAT_CSE;
 				}
 				if (val2) {
@@ -1159,7 +1159,7 @@ static int simplify_branch(struct dmr_C *C, struct instruction *insn)
 					insn->bb_false = true;
 					insn->bb_true = false;
 				}
-				use_pseudo(C, insn, def->src1, &insn->cond);
+				dmrC_use_pseudo(C, insn, def->src1, &insn->cond);
 				remove_usage(C, cond, &insn->cond);
 				return REPEAT_CSE;
 			}
@@ -1167,7 +1167,7 @@ static int simplify_branch(struct dmr_C *C, struct instruction *insn)
 		if (def->opcode == OP_CAST || def->opcode == OP_SCAST) {
 			int orig_size = def->orig_type ? def->orig_type->bit_size : 0;
 			if (def->size > orig_size) {
-				use_pseudo(C, insn, def->src, &insn->cond);
+				dmrC_use_pseudo(C, insn, def->src, &insn->cond);
 				remove_usage(C, cond, &insn->cond);
 				return REPEAT_CSE;
 			}
@@ -1193,17 +1193,17 @@ static int simplify_switch(struct dmr_C *C, struct instruction *insn)
 		if (val >= jmp->begin && val <= jmp->end)
 			goto found;
 	} END_FOR_EACH_PTR(jmp);
-	warning(C, insn->pos, "Impossible case statement");
+	dmrC_warning(C, insn->pos, "Impossible case statement");
 	return 0;
 
 found:
-	insert_branch(C, insn->bb, insn, jmp->target);
+	dmrC_insert_branch(C, insn->bb, insn, jmp->target);
 	return REPEAT_CSE;
 }
 
-int simplify_instruction(struct dmr_C *C, struct instruction *insn)
+int dmrC_simplify_instruction(struct dmr_C *C, struct instruction *insn)
 {
-	if (!insn->bb || insn->type && is_float_type(C->S, insn->type))
+	if (!insn->bb || insn->type && dmrC_is_float_type(C->S, insn->type))
 		return 0;
 	switch (insn->opcode) {
 	case OP_ADD: case OP_MULS:

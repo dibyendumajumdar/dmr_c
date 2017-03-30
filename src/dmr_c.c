@@ -59,35 +59,35 @@ int gcc_major = __GNUC__;
 int gcc_minor = __GNUC_MINOR__;
 int gcc_patchlevel = __GNUC_PATCHLEVEL__;
 
-long double string_to_ld(const char *nptr, char **endptr)
+long double dmrC_string_to_ld(const char *nptr, char **endptr)
 {
 	return strtod(nptr, endptr);
 }
 
-struct token *skip_to(struct token *token, int op)
+struct token *dmrC_skip_to_token(struct token *token, int op)
 {
-	while (!match_op(token, op) && !eof_token(token))
+	while (!dmrC_match_op(token, op) && !dmrC_eof_token(token))
 		token = token->next;
 	return token;
 }
 
-struct token *expect(struct dmr_C *C, struct token *token, int op, const char *where)
+struct token *dmrC_expect_token(struct dmr_C *C, struct token *token, int op, const char *where)
 {
-	if (!match_op(token, op)) {
+	if (!dmrC_match_op(token, op)) {
 		static struct token bad_token;
 		if (token != &bad_token) {
 			bad_token.next = token;
-			sparse_error(C, token->pos, "Expected %s %s", show_special(C, op), where);
-			sparse_error(C, token->pos, "got %s", show_token(C, token));
+			dmrC_sparse_error(C, token->pos, "Expected %s %s", dmrC_show_special(C, op), where);
+			dmrC_sparse_error(C, token->pos, "got %s", dmrC_show_token(C, token));
 		}
 		if (op == ';')
-			return skip_to(token, op);
+			return dmrC_skip_to_token(token, op);
 		return &bad_token;
 	}
 	return token->next;
 }
 
-unsigned int hexval(unsigned int c)
+unsigned int dmrC_hexval(unsigned int c)
 {
 	int retval = 256;
 	switch (c) {
@@ -130,13 +130,13 @@ static void do_warn(struct dmr_C *C, const char *type, struct position pos,
 	const char *name;
 
 	vsprintf(buffer, fmt, args);
-	name = stream_name(C, pos.stream);
+	name = dmrC_stream_name(C, pos.stream);
 
 	fprintf(stderr, "%s:%d:%d: %s%s\n", name, pos.line, pos.pos, type,
 		buffer);
 }
 
-void info(struct dmr_C *C, struct position pos, const char *fmt, ...)
+void dmrC_info(struct dmr_C *C, struct position pos, const char *fmt, ...)
 {
 	va_list args;
 
@@ -167,7 +167,7 @@ static void do_error(struct dmr_C *C, struct position pos, const char *fmt,
 }
 
 
-void warning(struct dmr_C *C, struct position pos, const char *fmt, ...)
+void dmrC_warning(struct dmr_C *C, struct position pos, const char *fmt, ...)
 {
 	va_list args;
 
@@ -193,7 +193,7 @@ void warning(struct dmr_C *C, struct position pos, const char *fmt, ...)
 }
 
 
-void sparse_error(struct dmr_C *C, struct position pos, const char *fmt, ...)
+void dmrC_sparse_error(struct dmr_C *C, struct position pos, const char *fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);
@@ -201,7 +201,7 @@ void sparse_error(struct dmr_C *C, struct position pos, const char *fmt, ...)
 	va_end(args);
 }
 
-void expression_error(struct dmr_C *C, struct expression *expr, const char *fmt, ...)
+void dmrC_expression_error(struct dmr_C *C, struct expression *expr, const char *fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);
@@ -210,7 +210,7 @@ void expression_error(struct dmr_C *C, struct expression *expr, const char *fmt,
 	expr->ctype = &C->S->bad_ctype;
 }
 
-void error_die(struct dmr_C *C, struct position pos, const char *fmt, ...)
+void dmrC_error_die(struct dmr_C *C, struct position pos, const char *fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);
@@ -219,7 +219,7 @@ void error_die(struct dmr_C *C, struct position pos, const char *fmt, ...)
 	exit(1);
 }
 
-void die(struct dmr_C *C, const char *fmt, ...)
+void dmrC_die(struct dmr_C *C, const char *fmt, ...)
 {
 	va_list args;
 	static char buffer[512];
@@ -287,21 +287,21 @@ struct dmr_C *new_dmr_C()
 	C->max_warnings = 100;
 	C->show_info = 1;
 
-	allocator_init(&C->ptrlist_allocator, "ptrlist_nodes", sizeof(struct ptr_list),
+	dmrC_allocator_init(&C->ptrlist_allocator, "ptrlist_nodes", sizeof(struct ptr_list),
 		__alignof__(struct ptr_list), CHUNK);
-	allocator_init(&C->byte_allocator, "bytes", sizeof(char),
+	dmrC_allocator_init(&C->byte_allocator, "bytes", sizeof(char),
 		       __alignof__(char), CHUNK);
-	allocator_init(&C->ident_allocator, "identifiers", sizeof(struct ident),
+	dmrC_allocator_init(&C->ident_allocator, "identifiers", sizeof(struct ident),
 		       __alignof__(struct ident), CHUNK);
-	allocator_init(&C->string_allocator, "strings", sizeof(struct string),
+	dmrC_allocator_init(&C->string_allocator, "strings", sizeof(struct string),
 		       __alignof__(struct string), CHUNK);
-	allocator_init(&C->token_allocator, "tokens", sizeof(struct token),
+	dmrC_allocator_init(&C->token_allocator, "tokens", sizeof(struct token),
 		       __alignof__(struct token), CHUNK);
-	allocator_init(&C->scope_allocator, "scopes", sizeof(struct scope),
+	dmrC_allocator_init(&C->scope_allocator, "scopes", sizeof(struct scope),
 		__alignof__(struct scope), CHUNK);
-	allocator_init(&C->expression_allocator, "expressions", sizeof(struct expression),
+	dmrC_allocator_init(&C->expression_allocator, "expressions", sizeof(struct expression),
 		__alignof__(struct expression), CHUNK);
-	allocator_init(&C->statement_allocator, "statements", sizeof(struct statement),
+	dmrC_allocator_init(&C->statement_allocator, "statements", sizeof(struct statement),
 		__alignof__(struct statement), CHUNK);
 
 	C->warnings[0].name = "address-space";		C->warnings[0].flag = &C->Waddress_space;
@@ -336,36 +336,36 @@ struct dmr_C *new_dmr_C()
 	C->debugs[0].name = "entry"; C->debugs[0].flag = &C->dbg_entry;
 	C->debugs[1].name = "dead";  C->debugs[1].flag = &C->dbg_dead;
 
-	init_target(C);
-	init_tokenizer(C);
-	init_preprocessor_state(C);
-	init_scope(C);
-	init_symbols(C);
-	init_ctype(C);
-	init_linearizer(C);
+	dmrC_init_target(C);
+	dmrC_init_tokenizer(C);
+	dmrC_init_preprocessor_state(C);
+	dmrC_init_scope(C);
+	dmrC_init_symbols(C);
+	dmrC_init_ctype(C);
+	dmrC_init_linearizer(C);
 	return C;
 }
 
 void destroy_dmr_C(struct dmr_C *C)
 {
-	destroy_all_scopes(C);
-	destroy_tokenizer(C);
-	destroy_target(C);
-	destroy_symbols(C);
-	destroy_linearizer(C);
-	allocator_destroy(&C->token_allocator);
-	allocator_destroy(&C->protected_token_allocator);
-	allocator_destroy(&C->string_allocator);
-	allocator_destroy(&C->ident_allocator);
-	allocator_destroy(&C->byte_allocator);
-	allocator_destroy(&C->scope_allocator);
-	allocator_destroy(&C->expression_allocator);
-	allocator_destroy(&C->statement_allocator);
-	allocator_destroy(&C->ptrlist_allocator);
+	dmrC_destroy_all_scopes(C);
+	dmrC_destroy_tokenizer(C);
+	dmrC_destroy_target(C);
+	dmrC_destroy_symbols(C);
+	dmrC_destroy_linearizer(C);
+	dmrC_allocator_destroy(&C->token_allocator);
+	dmrC_allocator_destroy(&C->protected_token_allocator);
+	dmrC_allocator_destroy(&C->string_allocator);
+	dmrC_allocator_destroy(&C->ident_allocator);
+	dmrC_allocator_destroy(&C->byte_allocator);
+	dmrC_allocator_destroy(&C->scope_allocator);
+	dmrC_allocator_destroy(&C->expression_allocator);
+	dmrC_allocator_destroy(&C->statement_allocator);
+	dmrC_allocator_destroy(&C->ptrlist_allocator);
 	free(C);
 }
 
-void add_pre_buffer(struct dmr_C *C, const char *fmt, ...)
+void dmrC_add_pre_buffer(struct dmr_C *C, const char *fmt, ...)
 {
 	va_list args;
 	unsigned int size;
@@ -375,7 +375,7 @@ void add_pre_buffer(struct dmr_C *C, const char *fmt, ...)
 	va_start(args, fmt);
 	size = vsnprintf(buffer, sizeof(buffer), fmt, args);
 	va_end(args);
-	begin = tokenize_buffer(C, buffer, size, &end);
+	begin = dmrC_tokenize_buffer(C, buffer, size, &end);
 	if (!C->pre_buffer_begin)
 		C->pre_buffer_begin = begin;
 	if (C->pre_buffer_end)
@@ -389,7 +389,7 @@ static char **handle_switch_D(struct dmr_C *C, char *arg, char **next)
 	const char *value = "1";
 
 	if (!*name || isspace(*name))
-		die(C, "argument to `-D' is missing");
+		dmrC_die(C, "argument to `-D' is missing");
 
 	for (;;) {
 		char c;
@@ -402,7 +402,7 @@ static char **handle_switch_D(struct dmr_C *C, char *arg, char **next)
 			break;
 		}
 	}
-	add_pre_buffer(C, "#define %s %s\n", name, value);
+	dmrC_add_pre_buffer(C, "#define %s %s\n", name, value);
 	return next;
 }
 
@@ -419,16 +419,16 @@ static char **handle_switch_I(struct dmr_C *C, char *arg, char **next)
 
 	switch (arg[1]) {
 	case '-':
-		add_pre_buffer(C, "#split_include\n");
+		dmrC_add_pre_buffer(C, "#split_include\n");
 		break;
 
 	case '\0':	/* Plain "-I" */
 		path = *++next;
 		if (!path)
-			die(C, "missing argument for -I option");
+			dmrC_die(C, "missing argument for -I option");
 		/* Fall through */
 	default:
-		add_pre_buffer(C, "#add_include \"%s/\"\n", path);
+		dmrC_add_pre_buffer(C, "#add_include \"%s/\"\n", path);
 	}
 	return next;
 }
@@ -436,7 +436,7 @@ static char **handle_switch_I(struct dmr_C *C, char *arg, char **next)
 static void add_cmdline_include(struct dmr_C *C, char *filename)
 {
 	if (C->cmdline_include_nr >= CMDLINE_INCLUDE)
-		die(C, "too many include files for %s\n", filename);
+		dmrC_die(C, "too many include files for %s\n", filename);
 	C->cmdline_include[C->cmdline_include_nr++] = filename;
 }
 
@@ -449,14 +449,14 @@ static char **handle_switch_i(struct dmr_C *C, char *arg, char **next)
 	else if (*next && !strcmp(arg, "isystem")) {
 		char *path = *++next;
 		if (!path)
-			die(C, "missing argument for -isystem option");
-		add_pre_buffer(C, "#add_isystem \"%s/\"\n", path);
+			dmrC_die(C, "missing argument for -isystem option");
+		dmrC_add_pre_buffer(C, "#add_isystem \"%s/\"\n", path);
 	}
 	else if (*next && !strcmp(arg, "idirafter")) {
 		char *path = *++next;
 		if (!path)
-			die(C, "missing argument for -idirafter option");
-		add_pre_buffer(C, "#add_dirafter \"%s/\"\n", path);
+			dmrC_die(C, "missing argument for -idirafter option");
+		dmrC_add_pre_buffer(C, "#add_dirafter \"%s/\"\n", path);
 	}
 	return next;
 }
@@ -465,7 +465,7 @@ static char **handle_switch_M(struct dmr_C *C, char *arg, char **next)
 {
 	if (!strcmp(arg, "MF") || !strcmp(arg, "MQ") || !strcmp(arg, "MT")) {
 		if (!*next)
-			die(C, "missing argument for -%s option", arg);
+			dmrC_die(C, "missing argument for -%s option", arg);
 		return next + 1;
 	}
 	return next;
@@ -475,7 +475,7 @@ static char **handle_multiarch_dir(struct dmr_C *C, char *arg, char **next)
 {
 	C->multiarch_dir = *++next;
 	if (!C->multiarch_dir)
-		die(C, "missing argument for -multiarch-dir option");
+		dmrC_die(C, "missing argument for -multiarch-dir option");
 	return next;
 }
 static char **handle_switch_m(struct dmr_C *C, char *arg, char **next)
@@ -507,21 +507,21 @@ static void handle_arch_m64_finalize(struct dmr_C *C)
 		C->target->max_int_alignment = 8;
 		C->target->size_t_ctype = &C->S->ulong_ctype;
 		C->target->ssize_t_ctype = &C->S->long_ctype;
-		add_pre_buffer(C, "#weak_define __LP64__ 1\n");
-		add_pre_buffer(C, "#weak_define _LP64 1\n");
+		dmrC_add_pre_buffer(C, "#weak_define __LP64__ 1\n");
+		dmrC_add_pre_buffer(C, "#weak_define _LP64 1\n");
 		goto case_64bit_common;
 	case ARCH_LLP64:
 		C->target->bits_in_long = 32;
 		C->target->max_int_alignment = 8;
 		C->target->size_t_ctype = &C->S->ullong_ctype;
 		C->target->ssize_t_ctype = &C->S->llong_ctype;
-		add_pre_buffer(C, "#weak_define __LLP64__ 1\n");
+		dmrC_add_pre_buffer(C, "#weak_define __LLP64__ 1\n");
 		goto case_64bit_common;
 	case_64bit_common:
 		C->target->bits_in_pointer = 64;
 		C->target->pointer_alignment = 8;
 #ifdef __x86_64__
-		add_pre_buffer(C, "#weak_define __x86_64__ 1\n");
+		dmrC_add_pre_buffer(C, "#weak_define __x86_64__ 1\n");
 #endif
 		break;
 	}
@@ -546,7 +546,7 @@ static char **handle_switch_o(struct dmr_C *C, char *arg, char **next)
 {
 	if (!strcmp(arg, "o")) {       // "-o foo"
 		if (!*++next)
-			die(C, "argument to '-o' is missing");
+			dmrC_die(C, "argument to '-o' is missing");
 	}
 	snprintf(C->output_file_name, sizeof C->output_file_name, "%s", *next);
 	return next;
@@ -656,7 +656,7 @@ static void handle_switch_v_finalize(struct dmr_C *C)
 static char **handle_switch_U(struct dmr_C *C, char *arg, char **next)
 {
 	const char *name = arg + 1;
-	add_pre_buffer(C, "#undef %s\n", name);
+	dmrC_add_pre_buffer(C, "#undef %s\n", name);
 	return next;
 }
 
@@ -676,7 +676,7 @@ static char **handle_switch_ftabstop(struct dmr_C *C, char *arg, char **next)
 	unsigned long val;
 
 	if (*arg == '\0')
-		die(C, "error: missing argument to \"-ftabstop=\"");
+		dmrC_die(C, "error: missing argument to \"-ftabstop=\"");
 
 	/* we silently ignore silly values */
 	val = strtoul(arg, &end, 10);
@@ -752,7 +752,7 @@ static char **handle_switch_s(struct dmr_C *C, char *arg, char **next)
 			C->standard = STANDARD_GNU11;
 
 		else
-			die(C, "Unsupported C dialect");
+			dmrC_die(C, "Unsupported C dialect");
 	}
 
 	return next;
@@ -760,7 +760,7 @@ static char **handle_switch_s(struct dmr_C *C, char *arg, char **next)
 
 static char **handle_nostdinc(struct dmr_C *C, char *arg, char **next)
 {
-	add_pre_buffer(C, "#nostdinc\n");
+	dmrC_add_pre_buffer(C, "#nostdinc\n");
 	return next;
 }
 
@@ -775,7 +775,7 @@ static char **handle_base_dir(struct dmr_C *C, char *arg, char **next)
 {
 	C->gcc_base_dir = *++next;
 	if (!C->gcc_base_dir)
-		die(C, "missing argument for -gcc-base-dir option");
+		dmrC_die(C, "missing argument for -gcc-base-dir option");
 	return next;
 }
 
@@ -804,7 +804,7 @@ static char **handle_param(struct dmr_C *C, char *arg, char **next)
 	}
 
 	if (!value)
-		die(C, "missing argument for --param option");
+		dmrC_die(C, "missing argument for --param option");
 
 	return next;
 }
@@ -868,20 +868,20 @@ static char **handle_switch(struct dmr_C *C, char *arg, char **next)
 
 static void predefined_sizeof(struct dmr_C *C, const char *name, unsigned bits)
 {
-	add_pre_buffer(C, "#weak_define __SIZEOF_%s__ %d\n", name, bits/8);
+	dmrC_add_pre_buffer(C, "#weak_define __SIZEOF_%s__ %d\n", name, bits/8);
 }
 
 static void predefined_type_size(struct dmr_C *C, const char *name, const char *suffix, unsigned bits)
 {
 	unsigned long long max = (1ULL << (bits - 1 )) - 1;
 
-	add_pre_buffer(C, "#weak_define __%s_MAX__ %#llx%s\n", name, max, suffix);
+	dmrC_add_pre_buffer(C, "#weak_define __%s_MAX__ %#llx%s\n", name, max, suffix);
 	predefined_sizeof(C, name, bits);
 }
 
 static void predefined_macros(struct dmr_C *C)
 {
-	add_pre_buffer(C, "#define __CHECKER__ 1\n");
+	dmrC_add_pre_buffer(C, "#define __CHECKER__ 1\n");
 
 	predefined_sizeof(C, "SHORT", C->target->bits_in_short);
 
@@ -900,112 +900,112 @@ static void predefined_macros(struct dmr_C *C)
 	predefined_sizeof(C, "LONG_DOUBLE", C->target->bits_in_longdouble);
 }
 
-void declare_builtin_functions(struct dmr_C *C)
+void dmrC_declare_builtin_functions(struct dmr_C *C)
 {
 	/* Gaah. gcc knows tons of builtin <string.h> functions */
-	add_pre_buffer(C, "extern void *__builtin_memchr(const void *, int, __SIZE_TYPE__);\n");
-	add_pre_buffer(C, "extern void *__builtin_memcpy(void *, const void *, __SIZE_TYPE__);\n");
-	add_pre_buffer(C, "extern void *__builtin_mempcpy(void *, const void *, __SIZE_TYPE__);\n");
-	add_pre_buffer(C, "extern void *__builtin_memmove(void *, const void *, __SIZE_TYPE__);\n");
-	add_pre_buffer(C, "extern void *__builtin_memset(void *, int, __SIZE_TYPE__);\n");
-	add_pre_buffer(C, "extern int __builtin_memcmp(const void *, const void *, __SIZE_TYPE__);\n");
-	add_pre_buffer(C, "extern char *__builtin_strcat(char *, const char *);\n");
-	add_pre_buffer(C, "extern char *__builtin_strncat(char *, const char *, __SIZE_TYPE__);\n");
-	add_pre_buffer(C, "extern int __builtin_strcmp(const char *, const char *);\n");
-	add_pre_buffer(C, "extern int __builtin_strncmp(const char *, const char *, __SIZE_TYPE__);\n");
-	add_pre_buffer(C, "extern int __builtin_strcasecmp(const char *, const char *);\n");
-	add_pre_buffer(C, "extern int __builtin_strncasecmp(const char *, const char *, __SIZE_TYPE__);\n");
-	add_pre_buffer(C, "extern char *__builtin_strchr(const char *, int);\n");
-	add_pre_buffer(C, "extern char *__builtin_strrchr(const char *, int);\n");
-	add_pre_buffer(C, "extern char *__builtin_strcpy(char *, const char *);\n");
-	add_pre_buffer(C, "extern char *__builtin_strncpy(char *, const char *, __SIZE_TYPE__);\n");
-	add_pre_buffer(C, "extern char *__builtin_strdup(const char *);\n");
-	add_pre_buffer(C, "extern char *__builtin_strndup(const char *, __SIZE_TYPE__);\n");
-	add_pre_buffer(C, "extern __SIZE_TYPE__ __builtin_strspn(const char *, const char *);\n");
-	add_pre_buffer(C, "extern __SIZE_TYPE__ __builtin_strcspn(const char *, const char *);\n");
-	add_pre_buffer(C, "extern char * __builtin_strpbrk(const char *, const char *);\n");
-	add_pre_buffer(C, "extern char* __builtin_stpcpy(const char *, const char*);\n");
-	add_pre_buffer(C, "extern char* __builtin_stpncpy(const char *, const char*, __SIZE_TYPE__);\n");
-	add_pre_buffer(C, "extern __SIZE_TYPE__ __builtin_strlen(const char *);\n");
-	add_pre_buffer(C, "extern char *__builtin_strstr(const char *, const char *);\n");
-	add_pre_buffer(C, "extern char *__builtin_strcasestr(const char *, const char *);\n");
-	add_pre_buffer(C, "extern char *__builtin_strnstr(const char *, const char *, __SIZE_TYPE__);\n");
+	dmrC_add_pre_buffer(C, "extern void *__builtin_memchr(const void *, int, __SIZE_TYPE__);\n");
+	dmrC_add_pre_buffer(C, "extern void *__builtin_memcpy(void *, const void *, __SIZE_TYPE__);\n");
+	dmrC_add_pre_buffer(C, "extern void *__builtin_mempcpy(void *, const void *, __SIZE_TYPE__);\n");
+	dmrC_add_pre_buffer(C, "extern void *__builtin_memmove(void *, const void *, __SIZE_TYPE__);\n");
+	dmrC_add_pre_buffer(C, "extern void *__builtin_memset(void *, int, __SIZE_TYPE__);\n");
+	dmrC_add_pre_buffer(C, "extern int __builtin_memcmp(const void *, const void *, __SIZE_TYPE__);\n");
+	dmrC_add_pre_buffer(C, "extern char *__builtin_strcat(char *, const char *);\n");
+	dmrC_add_pre_buffer(C, "extern char *__builtin_strncat(char *, const char *, __SIZE_TYPE__);\n");
+	dmrC_add_pre_buffer(C, "extern int __builtin_strcmp(const char *, const char *);\n");
+	dmrC_add_pre_buffer(C, "extern int __builtin_strncmp(const char *, const char *, __SIZE_TYPE__);\n");
+	dmrC_add_pre_buffer(C, "extern int __builtin_strcasecmp(const char *, const char *);\n");
+	dmrC_add_pre_buffer(C, "extern int __builtin_strncasecmp(const char *, const char *, __SIZE_TYPE__);\n");
+	dmrC_add_pre_buffer(C, "extern char *__builtin_strchr(const char *, int);\n");
+	dmrC_add_pre_buffer(C, "extern char *__builtin_strrchr(const char *, int);\n");
+	dmrC_add_pre_buffer(C, "extern char *__builtin_strcpy(char *, const char *);\n");
+	dmrC_add_pre_buffer(C, "extern char *__builtin_strncpy(char *, const char *, __SIZE_TYPE__);\n");
+	dmrC_add_pre_buffer(C, "extern char *__builtin_strdup(const char *);\n");
+	dmrC_add_pre_buffer(C, "extern char *__builtin_strndup(const char *, __SIZE_TYPE__);\n");
+	dmrC_add_pre_buffer(C, "extern __SIZE_TYPE__ __builtin_strspn(const char *, const char *);\n");
+	dmrC_add_pre_buffer(C, "extern __SIZE_TYPE__ __builtin_strcspn(const char *, const char *);\n");
+	dmrC_add_pre_buffer(C, "extern char * __builtin_strpbrk(const char *, const char *);\n");
+	dmrC_add_pre_buffer(C, "extern char* __builtin_stpcpy(const char *, const char*);\n");
+	dmrC_add_pre_buffer(C, "extern char* __builtin_stpncpy(const char *, const char*, __SIZE_TYPE__);\n");
+	dmrC_add_pre_buffer(C, "extern __SIZE_TYPE__ __builtin_strlen(const char *);\n");
+	dmrC_add_pre_buffer(C, "extern char *__builtin_strstr(const char *, const char *);\n");
+	dmrC_add_pre_buffer(C, "extern char *__builtin_strcasestr(const char *, const char *);\n");
+	dmrC_add_pre_buffer(C, "extern char *__builtin_strnstr(const char *, const char *, __SIZE_TYPE__);\n");
 
 	/* And even some from <strings.h> */
-	add_pre_buffer(C, "extern int  __builtin_bcmp(const void *, const void *, __SIZE_TYPE_);\n");
-	add_pre_buffer(C, "extern void __builtin_bcopy(const void *, void *, __SIZE_TYPE__);\n");
-	add_pre_buffer(C, "extern void __builtin_bzero(void *, __SIZE_TYPE__);\n");
-	add_pre_buffer(C, "extern char*__builtin_index(const char *, int);\n");
-	add_pre_buffer(C, "extern char*__builtin_rindex(const char *, int);\n");
+	dmrC_add_pre_buffer(C, "extern int  __builtin_bcmp(const void *, const void *, __SIZE_TYPE_);\n");
+	dmrC_add_pre_buffer(C, "extern void __builtin_bcopy(const void *, void *, __SIZE_TYPE__);\n");
+	dmrC_add_pre_buffer(C, "extern void __builtin_bzero(void *, __SIZE_TYPE__);\n");
+	dmrC_add_pre_buffer(C, "extern char*__builtin_index(const char *, int);\n");
+	dmrC_add_pre_buffer(C, "extern char*__builtin_rindex(const char *, int);\n");
 
 	/* And bitwise operations.. */
-	add_pre_buffer(C, "extern int __builtin_clrsb(int);\n");
-	add_pre_buffer(C, "extern int __builtin_clrsbl(long);\n");
-	add_pre_buffer(C, "extern int __builtin_clrsbll(long long);\n");
+	dmrC_add_pre_buffer(C, "extern int __builtin_clrsb(int);\n");
+	dmrC_add_pre_buffer(C, "extern int __builtin_clrsbl(long);\n");
+	dmrC_add_pre_buffer(C, "extern int __builtin_clrsbll(long long);\n");
 
 	/* And bitwise operations.. */
-	add_pre_buffer(C, "extern int __builtin_clz(int);\n");
-	add_pre_buffer(C, "extern int __builtin_clzl(long);\n");
-	add_pre_buffer(C, "extern int __builtin_clzll(long long);\n");
-	add_pre_buffer(C, "extern int __builtin_ctz(int);\n");
-	add_pre_buffer(C, "extern int __builtin_ctzl(long);\n");
-	add_pre_buffer(C, "extern int __builtin_ctzll(long long);\n");
-	add_pre_buffer(C, "extern int __builtin_ffs(int);\n");
-	add_pre_buffer(C, "extern int __builtin_ffsl(long);\n");
-	add_pre_buffer(C, "extern int __builtin_ffsll(long long);\n");
-	add_pre_buffer(C, "extern int __builtin_parity(unsigned int);\n");
-	add_pre_buffer(C, "extern int __builtin_parityl(unsigned long);\n");
-	add_pre_buffer(C, "extern int __builtin_parityll(unsigned long long);\n");
-	add_pre_buffer(C, "extern int __builtin_popcount(unsigned int);\n");
-	add_pre_buffer(C, "extern int __builtin_popcountl(unsigned long);\n");
-	add_pre_buffer(C, "extern int __builtin_popcountll(unsigned long long);\n");
+	dmrC_add_pre_buffer(C, "extern int __builtin_clz(int);\n");
+	dmrC_add_pre_buffer(C, "extern int __builtin_clzl(long);\n");
+	dmrC_add_pre_buffer(C, "extern int __builtin_clzll(long long);\n");
+	dmrC_add_pre_buffer(C, "extern int __builtin_ctz(int);\n");
+	dmrC_add_pre_buffer(C, "extern int __builtin_ctzl(long);\n");
+	dmrC_add_pre_buffer(C, "extern int __builtin_ctzll(long long);\n");
+	dmrC_add_pre_buffer(C, "extern int __builtin_ffs(int);\n");
+	dmrC_add_pre_buffer(C, "extern int __builtin_ffsl(long);\n");
+	dmrC_add_pre_buffer(C, "extern int __builtin_ffsll(long long);\n");
+	dmrC_add_pre_buffer(C, "extern int __builtin_parity(unsigned int);\n");
+	dmrC_add_pre_buffer(C, "extern int __builtin_parityl(unsigned long);\n");
+	dmrC_add_pre_buffer(C, "extern int __builtin_parityll(unsigned long long);\n");
+	dmrC_add_pre_buffer(C, "extern int __builtin_popcount(unsigned int);\n");
+	dmrC_add_pre_buffer(C, "extern int __builtin_popcountl(unsigned long);\n");
+	dmrC_add_pre_buffer(C, "extern int __builtin_popcountll(unsigned long long);\n");
 
 	/* And byte swaps.. */
-	add_pre_buffer(C, "extern unsigned short __builtin_bswap16(unsigned short);\n");
-	add_pre_buffer(C, "extern unsigned int __builtin_bswap32(unsigned int);\n");
-	add_pre_buffer(C, "extern unsigned long long __builtin_bswap64(unsigned long long);\n");
+	dmrC_add_pre_buffer(C, "extern unsigned short __builtin_bswap16(unsigned short);\n");
+	dmrC_add_pre_buffer(C, "extern unsigned int __builtin_bswap32(unsigned int);\n");
+	dmrC_add_pre_buffer(C, "extern unsigned long long __builtin_bswap64(unsigned long long);\n");
 
 	/* And atomic memory access functions.. */
-	add_pre_buffer(C, "extern int __sync_fetch_and_add(void *, ...);\n");
-	add_pre_buffer(C, "extern int __sync_fetch_and_sub(void *, ...);\n");
-	add_pre_buffer(C, "extern int __sync_fetch_and_or(void *, ...);\n");
-	add_pre_buffer(C, "extern int __sync_fetch_and_and(void *, ...);\n");
-	add_pre_buffer(C, "extern int __sync_fetch_and_xor(void *, ...);\n");
-	add_pre_buffer(C, "extern int __sync_fetch_and_nand(void *, ...);\n");
-	add_pre_buffer(C, "extern int __sync_add_and_fetch(void *, ...);\n");
-	add_pre_buffer(C, "extern int __sync_sub_and_fetch(void *, ...);\n");
-	add_pre_buffer(C, "extern int __sync_or_and_fetch(void *, ...);\n");
-	add_pre_buffer(C, "extern int __sync_and_and_fetch(void *, ...);\n");
-	add_pre_buffer(C, "extern int __sync_xor_and_fetch(void *, ...);\n");
-	add_pre_buffer(C, "extern int __sync_nand_and_fetch(void *, ...);\n");
-	add_pre_buffer(C, "extern int __sync_bool_compare_and_swap(void *, ...);\n");
-	add_pre_buffer(C, "extern int __sync_val_compare_and_swap(void *, ...);\n");
-	add_pre_buffer(C, "extern void __sync_synchronize();\n");
-	add_pre_buffer(C, "extern int __sync_lock_test_and_set(void *, ...);\n");
-	add_pre_buffer(C, "extern void __sync_lock_release(void *, ...);\n");
+	dmrC_add_pre_buffer(C, "extern int __sync_fetch_and_add(void *, ...);\n");
+	dmrC_add_pre_buffer(C, "extern int __sync_fetch_and_sub(void *, ...);\n");
+	dmrC_add_pre_buffer(C, "extern int __sync_fetch_and_or(void *, ...);\n");
+	dmrC_add_pre_buffer(C, "extern int __sync_fetch_and_and(void *, ...);\n");
+	dmrC_add_pre_buffer(C, "extern int __sync_fetch_and_xor(void *, ...);\n");
+	dmrC_add_pre_buffer(C, "extern int __sync_fetch_and_nand(void *, ...);\n");
+	dmrC_add_pre_buffer(C, "extern int __sync_add_and_fetch(void *, ...);\n");
+	dmrC_add_pre_buffer(C, "extern int __sync_sub_and_fetch(void *, ...);\n");
+	dmrC_add_pre_buffer(C, "extern int __sync_or_and_fetch(void *, ...);\n");
+	dmrC_add_pre_buffer(C, "extern int __sync_and_and_fetch(void *, ...);\n");
+	dmrC_add_pre_buffer(C, "extern int __sync_xor_and_fetch(void *, ...);\n");
+	dmrC_add_pre_buffer(C, "extern int __sync_nand_and_fetch(void *, ...);\n");
+	dmrC_add_pre_buffer(C, "extern int __sync_bool_compare_and_swap(void *, ...);\n");
+	dmrC_add_pre_buffer(C, "extern int __sync_val_compare_and_swap(void *, ...);\n");
+	dmrC_add_pre_buffer(C, "extern void __sync_synchronize();\n");
+	dmrC_add_pre_buffer(C, "extern int __sync_lock_test_and_set(void *, ...);\n");
+	dmrC_add_pre_buffer(C, "extern void __sync_lock_release(void *, ...);\n");
 
 	/* And some random ones.. */
-	add_pre_buffer(C, "extern void *__builtin_return_address(unsigned int);\n");
-	add_pre_buffer(C, "extern void *__builtin_extract_return_addr(void *);\n");
-	add_pre_buffer(C, "extern void *__builtin_frame_address(unsigned int);\n");
-	add_pre_buffer(C, "extern void __builtin_trap(void);\n");
-	add_pre_buffer(C, "extern void *__builtin_alloca(__SIZE_TYPE__);\n");
-	add_pre_buffer(C, "extern void __builtin_prefetch (const void *, ...);\n");
-	add_pre_buffer(C, "extern long __builtin_alpha_extbl(long, long);\n");
-	add_pre_buffer(C, "extern long __builtin_alpha_extwl(long, long);\n");
-	add_pre_buffer(C, "extern long __builtin_alpha_insbl(long, long);\n");
-	add_pre_buffer(C, "extern long __builtin_alpha_inswl(long, long);\n");
-	add_pre_buffer(C, "extern long __builtin_alpha_insql(long, long);\n");
-	add_pre_buffer(C, "extern long __builtin_alpha_inslh(long, long);\n");
-	add_pre_buffer(C, "extern long __builtin_alpha_cmpbge(long, long);\n");
-	add_pre_buffer(C, "extern int  __builtin_abs(int);\n");
-	add_pre_buffer(C, "extern long __builtin_labs(long);\n");
-	add_pre_buffer(C, "extern long long __builtin_llabs(long long);\n");
-	add_pre_buffer(C, "extern double __builtin_fabs(double);\n");
-	add_pre_buffer(C, "extern __SIZE_TYPE__ __builtin_va_arg_pack_len(void);\n");
+	dmrC_add_pre_buffer(C, "extern void *__builtin_return_address(unsigned int);\n");
+	dmrC_add_pre_buffer(C, "extern void *__builtin_extract_return_addr(void *);\n");
+	dmrC_add_pre_buffer(C, "extern void *__builtin_frame_address(unsigned int);\n");
+	dmrC_add_pre_buffer(C, "extern void __builtin_trap(void);\n");
+	dmrC_add_pre_buffer(C, "extern void *__builtin_alloca(__SIZE_TYPE__);\n");
+	dmrC_add_pre_buffer(C, "extern void __builtin_prefetch (const void *, ...);\n");
+	dmrC_add_pre_buffer(C, "extern long __builtin_alpha_extbl(long, long);\n");
+	dmrC_add_pre_buffer(C, "extern long __builtin_alpha_extwl(long, long);\n");
+	dmrC_add_pre_buffer(C, "extern long __builtin_alpha_insbl(long, long);\n");
+	dmrC_add_pre_buffer(C, "extern long __builtin_alpha_inswl(long, long);\n");
+	dmrC_add_pre_buffer(C, "extern long __builtin_alpha_insql(long, long);\n");
+	dmrC_add_pre_buffer(C, "extern long __builtin_alpha_inslh(long, long);\n");
+	dmrC_add_pre_buffer(C, "extern long __builtin_alpha_cmpbge(long, long);\n");
+	dmrC_add_pre_buffer(C, "extern int  __builtin_abs(int);\n");
+	dmrC_add_pre_buffer(C, "extern long __builtin_labs(long);\n");
+	dmrC_add_pre_buffer(C, "extern long long __builtin_llabs(long long);\n");
+	dmrC_add_pre_buffer(C, "extern double __builtin_fabs(double);\n");
+	dmrC_add_pre_buffer(C, "extern __SIZE_TYPE__ __builtin_va_arg_pack_len(void);\n");
 
 	/* Add Blackfin-specific stuff */
-	add_pre_buffer(C, 
+	dmrC_add_pre_buffer(C, 
 		"#ifdef __bfin__\n"
 		"extern void __builtin_bfin_csync(void);\n"
 		"extern void __builtin_bfin_ssync(void);\n"
@@ -1014,82 +1014,82 @@ void declare_builtin_functions(struct dmr_C *C)
 	);
 
 	/* And some floating point stuff.. */
-	add_pre_buffer(C, "extern int __builtin_isgreater(float, float);\n");
-	add_pre_buffer(C, "extern int __builtin_isgreaterequal(float, float);\n");
-	add_pre_buffer(C, "extern int __builtin_isless(float, float);\n");
-	add_pre_buffer(C, "extern int __builtin_islessequal(float, float);\n");
-	add_pre_buffer(C, "extern int __builtin_islessgreater(float, float);\n");
-	add_pre_buffer(C, "extern int __builtin_isunordered(float, float);\n");
+	dmrC_add_pre_buffer(C, "extern int __builtin_isgreater(float, float);\n");
+	dmrC_add_pre_buffer(C, "extern int __builtin_isgreaterequal(float, float);\n");
+	dmrC_add_pre_buffer(C, "extern int __builtin_isless(float, float);\n");
+	dmrC_add_pre_buffer(C, "extern int __builtin_islessequal(float, float);\n");
+	dmrC_add_pre_buffer(C, "extern int __builtin_islessgreater(float, float);\n");
+	dmrC_add_pre_buffer(C, "extern int __builtin_isunordered(float, float);\n");
 
 	/* And some INFINITY / NAN stuff.. */
-	add_pre_buffer(C, "extern double __builtin_huge_val(void);\n");
-	add_pre_buffer(C, "extern float __builtin_huge_valf(void);\n");
-	add_pre_buffer(C, "extern long double __builtin_huge_vall(void);\n");
-	add_pre_buffer(C, "extern double __builtin_inf(void);\n");
-	add_pre_buffer(C, "extern float __builtin_inff(void);\n");
-	add_pre_buffer(C, "extern long double __builtin_infl(void);\n");
-	add_pre_buffer(C, "extern double __builtin_nan(const char *);\n");
-	add_pre_buffer(C, "extern float __builtin_nanf(const char *);\n");
-	add_pre_buffer(C, "extern long double __builtin_nanl(const char *);\n");
+	dmrC_add_pre_buffer(C, "extern double __builtin_huge_val(void);\n");
+	dmrC_add_pre_buffer(C, "extern float __builtin_huge_valf(void);\n");
+	dmrC_add_pre_buffer(C, "extern long double __builtin_huge_vall(void);\n");
+	dmrC_add_pre_buffer(C, "extern double __builtin_inf(void);\n");
+	dmrC_add_pre_buffer(C, "extern float __builtin_inff(void);\n");
+	dmrC_add_pre_buffer(C, "extern long double __builtin_infl(void);\n");
+	dmrC_add_pre_buffer(C, "extern double __builtin_nan(const char *);\n");
+	dmrC_add_pre_buffer(C, "extern float __builtin_nanf(const char *);\n");
+	dmrC_add_pre_buffer(C, "extern long double __builtin_nanl(const char *);\n");
 
 	/* And some __FORTIFY_SOURCE ones.. */
-	add_pre_buffer(C, "extern __SIZE_TYPE__ __builtin_object_size(void *, int);\n");
-	add_pre_buffer(C, "extern void * __builtin___memcpy_chk(void *, const void *, __SIZE_TYPE__, __SIZE_TYPE__);\n");
-	add_pre_buffer(C, "extern void * __builtin___memmove_chk(void *, const void *, __SIZE_TYPE__, __SIZE_TYPE__);\n");
-	add_pre_buffer(C, "extern void * __builtin___mempcpy_chk(void *, const void *, __SIZE_TYPE__, __SIZE_TYPE__);\n");
-	add_pre_buffer(C, "extern void * __builtin___memset_chk(void *, int, __SIZE_TYPE__, __SIZE_TYPE__);\n");
-	add_pre_buffer(C, "extern int __builtin___sprintf_chk(char *, int, __SIZE_TYPE__, const char *, ...);\n");
-	add_pre_buffer(C, "extern int __builtin___snprintf_chk(char *, __SIZE_TYPE__, int , __SIZE_TYPE__, const char *, ...);\n");
-	add_pre_buffer(C, "extern char * __builtin___stpcpy_chk(char *, const char *, __SIZE_TYPE__);\n");
-	add_pre_buffer(C, "extern char * __builtin___strcat_chk(char *, const char *, __SIZE_TYPE__);\n");
-	add_pre_buffer(C, "extern char * __builtin___strcpy_chk(char *, const char *, __SIZE_TYPE__);\n");
-	add_pre_buffer(C, "extern char * __builtin___strncat_chk(char *, const char *, __SIZE_TYPE__, __SIZE_TYPE__);\n");
-	add_pre_buffer(C, "extern char * __builtin___strncpy_chk(char *, const char *, __SIZE_TYPE__, __SIZE_TYPE__);\n");
-	add_pre_buffer(C, "extern int __builtin___vsprintf_chk(char *, int, __SIZE_TYPE__, const char *, __builtin_va_list);\n");
-	add_pre_buffer(C, "extern int __builtin___vsnprintf_chk(char *, __SIZE_TYPE__, int, __SIZE_TYPE__, const char *, __builtin_va_list ap);\n");
-	add_pre_buffer(C, "extern void __builtin_unreachable(void);\n");
+	dmrC_add_pre_buffer(C, "extern __SIZE_TYPE__ __builtin_object_size(void *, int);\n");
+	dmrC_add_pre_buffer(C, "extern void * __builtin___memcpy_chk(void *, const void *, __SIZE_TYPE__, __SIZE_TYPE__);\n");
+	dmrC_add_pre_buffer(C, "extern void * __builtin___memmove_chk(void *, const void *, __SIZE_TYPE__, __SIZE_TYPE__);\n");
+	dmrC_add_pre_buffer(C, "extern void * __builtin___mempcpy_chk(void *, const void *, __SIZE_TYPE__, __SIZE_TYPE__);\n");
+	dmrC_add_pre_buffer(C, "extern void * __builtin___memset_chk(void *, int, __SIZE_TYPE__, __SIZE_TYPE__);\n");
+	dmrC_add_pre_buffer(C, "extern int __builtin___sprintf_chk(char *, int, __SIZE_TYPE__, const char *, ...);\n");
+	dmrC_add_pre_buffer(C, "extern int __builtin___snprintf_chk(char *, __SIZE_TYPE__, int , __SIZE_TYPE__, const char *, ...);\n");
+	dmrC_add_pre_buffer(C, "extern char * __builtin___stpcpy_chk(char *, const char *, __SIZE_TYPE__);\n");
+	dmrC_add_pre_buffer(C, "extern char * __builtin___strcat_chk(char *, const char *, __SIZE_TYPE__);\n");
+	dmrC_add_pre_buffer(C, "extern char * __builtin___strcpy_chk(char *, const char *, __SIZE_TYPE__);\n");
+	dmrC_add_pre_buffer(C, "extern char * __builtin___strncat_chk(char *, const char *, __SIZE_TYPE__, __SIZE_TYPE__);\n");
+	dmrC_add_pre_buffer(C, "extern char * __builtin___strncpy_chk(char *, const char *, __SIZE_TYPE__, __SIZE_TYPE__);\n");
+	dmrC_add_pre_buffer(C, "extern int __builtin___vsprintf_chk(char *, int, __SIZE_TYPE__, const char *, __builtin_va_list);\n");
+	dmrC_add_pre_buffer(C, "extern int __builtin___vsnprintf_chk(char *, __SIZE_TYPE__, int, __SIZE_TYPE__, const char *, __builtin_va_list ap);\n");
+	dmrC_add_pre_buffer(C, "extern void __builtin_unreachable(void);\n");
 
 	/* And some from <stdlib.h> */
-	add_pre_buffer(C, "extern void __builtin_abort(void);\n");
-	add_pre_buffer(C, "extern void *__builtin_calloc(__SIZE_TYPE__, __SIZE_TYPE__);\n");
-	add_pre_buffer(C, "extern void __builtin_exit(int);\n");
-	add_pre_buffer(C, "extern void *__builtin_malloc(__SIZE_TYPE__);\n");
-	add_pre_buffer(C, "extern void *__builtin_realloc(void *, __SIZE_TYPE__);\n");
-	add_pre_buffer(C, "extern void __builtin_free(void *);\n");
+	dmrC_add_pre_buffer(C, "extern void __builtin_abort(void);\n");
+	dmrC_add_pre_buffer(C, "extern void *__builtin_calloc(__SIZE_TYPE__, __SIZE_TYPE__);\n");
+	dmrC_add_pre_buffer(C, "extern void __builtin_exit(int);\n");
+	dmrC_add_pre_buffer(C, "extern void *__builtin_malloc(__SIZE_TYPE__);\n");
+	dmrC_add_pre_buffer(C, "extern void *__builtin_realloc(void *, __SIZE_TYPE__);\n");
+	dmrC_add_pre_buffer(C, "extern void __builtin_free(void *);\n");
 
 	/* And some from <stdio.h> */
-	add_pre_buffer(C, "extern int __builtin_printf(const char *, ...);\n");
-	add_pre_buffer(C, "extern int __builtin_sprintf(char *, const char *, ...);\n");
-	add_pre_buffer(C, "extern int __builtin_snprintf(char *, __SIZE_TYPE__, const char *, ...);\n");
-	add_pre_buffer(C, "extern int __builtin_puts(const char *);\n");
-	add_pre_buffer(C, "extern int __builtin_vprintf(const char *, __builtin_va_list);\n");
-	add_pre_buffer(C, "extern int __builtin_vsprintf(char *, const char *, __builtin_va_list);\n");
-	add_pre_buffer(C, "extern int __builtin_vsnprintf(char *, __SIZE_TYPE__, const char *, __builtin_va_list ap);\n");
+	dmrC_add_pre_buffer(C, "extern int __builtin_printf(const char *, ...);\n");
+	dmrC_add_pre_buffer(C, "extern int __builtin_sprintf(char *, const char *, ...);\n");
+	dmrC_add_pre_buffer(C, "extern int __builtin_snprintf(char *, __SIZE_TYPE__, const char *, ...);\n");
+	dmrC_add_pre_buffer(C, "extern int __builtin_puts(const char *);\n");
+	dmrC_add_pre_buffer(C, "extern int __builtin_vprintf(const char *, __builtin_va_list);\n");
+	dmrC_add_pre_buffer(C, "extern int __builtin_vsprintf(char *, const char *, __builtin_va_list);\n");
+	dmrC_add_pre_buffer(C, "extern int __builtin_vsnprintf(char *, __SIZE_TYPE__, const char *, __builtin_va_list ap);\n");
 }
 
-void create_builtin_stream(struct dmr_C *C)
+void dmrC_create_builtin_stream(struct dmr_C *C)
 {
-	add_pre_buffer(C, "#define __DMR_C__ 1\n");
+	dmrC_add_pre_buffer(C, "#define __DMR_C__ 1\n");
 
-	add_pre_buffer(C, "#weak_define __GNUC__ %d\n", gcc_major);
-	add_pre_buffer(C, "#weak_define __GNUC_MINOR__ %d\n", gcc_minor);
-	add_pre_buffer(C, "#weak_define __GNUC_PATCHLEVEL__ %d\n", gcc_patchlevel);
+	dmrC_add_pre_buffer(C, "#weak_define __GNUC__ %d\n", gcc_major);
+	dmrC_add_pre_buffer(C, "#weak_define __GNUC_MINOR__ %d\n", gcc_minor);
+	dmrC_add_pre_buffer(C, "#weak_define __GNUC_PATCHLEVEL__ %d\n", gcc_patchlevel);
 
 	/* add the multiarch include directories, if any */
 	if (C->multiarch_dir && *C->multiarch_dir) {
-		add_pre_buffer(C, "#add_system \"/usr/include/%s\"\n", C->multiarch_dir);
-		add_pre_buffer(C, "#add_system \"/usr/local/include/%s\"\n", C->multiarch_dir);
+		dmrC_add_pre_buffer(C, "#add_system \"/usr/include/%s\"\n", C->multiarch_dir);
+		dmrC_add_pre_buffer(C, "#add_system \"/usr/local/include/%s\"\n", C->multiarch_dir);
 	}
 
 	/* We add compiler headers path here because we have to parse
 	* the arguments to get it, falling back to default. */
 	if (C->gcc_base_dir && *C->gcc_base_dir) {
-		add_pre_buffer(C, "#add_system \"%s/include\"\n", C->gcc_base_dir);
-		add_pre_buffer(C, "#add_system \"%s/include-fixed\"\n", C->gcc_base_dir);
+		dmrC_add_pre_buffer(C, "#add_system \"%s/include\"\n", C->gcc_base_dir);
+		dmrC_add_pre_buffer(C, "#add_system \"%s/include-fixed\"\n", C->gcc_base_dir);
 	}
 
-	add_pre_buffer(C, "#define __extension__\n");
-	add_pre_buffer(C, "#define __pragma__\n");
+	dmrC_add_pre_buffer(C, "#define __extension__\n");
+	dmrC_add_pre_buffer(C, "#define __pragma__\n");
 
 	// gcc defines __SIZE_TYPE__ to be size_t.  For linux/i86 and
 	// solaris/sparc that is really "unsigned int" and for linux/x86_64
@@ -1097,88 +1097,88 @@ void create_builtin_stream(struct dmr_C *C)
 	// get away with this.  We need the #weak_define as cgcc will define
 	// the right __SIZE_TYPE__.
 	if (C->target->size_t_ctype == &C->S->ullong_ctype)
-		add_pre_buffer(C, "#weak_define __SIZE_TYPE__ unsigned long long int\n");
+		dmrC_add_pre_buffer(C, "#weak_define __SIZE_TYPE__ unsigned long long int\n");
 	else if (C->target->size_t_ctype == &C->S->ulong_ctype)
-		add_pre_buffer(C, "#weak_define __SIZE_TYPE__ unsigned long int\n");
+		dmrC_add_pre_buffer(C, "#weak_define __SIZE_TYPE__ unsigned long int\n");
 	else
-		add_pre_buffer(C, "#weak_define __SIZE_TYPE__ unsigned int\n");
-	add_pre_buffer(C, "#weak_define __STDC__ 1\n");
+		dmrC_add_pre_buffer(C, "#weak_define __SIZE_TYPE__ unsigned int\n");
+	dmrC_add_pre_buffer(C, "#weak_define __STDC__ 1\n");
 
 	switch (C->standard)
 	{
 	case STANDARD_C89:
-		add_pre_buffer(C, "#weak_define __STRICT_ANSI__\n");
+		dmrC_add_pre_buffer(C, "#weak_define __STRICT_ANSI__\n");
 		break;
 
 	case STANDARD_C94:
-		add_pre_buffer(C, "#weak_define __STDC_VERSION__ 199409L\n");
-		add_pre_buffer(C, "#weak_define __STRICT_ANSI__\n");
+		dmrC_add_pre_buffer(C, "#weak_define __STDC_VERSION__ 199409L\n");
+		dmrC_add_pre_buffer(C, "#weak_define __STRICT_ANSI__\n");
 		break;
 
 	case STANDARD_C99:
-		add_pre_buffer(C, "#weak_define __STDC_VERSION__ 199901L\n");
-		add_pre_buffer(C, "#weak_define __STRICT_ANSI__\n");
+		dmrC_add_pre_buffer(C, "#weak_define __STDC_VERSION__ 199901L\n");
+		dmrC_add_pre_buffer(C, "#weak_define __STRICT_ANSI__\n");
 		break;
 
 	case STANDARD_GNU89:
 		break;
 
 	case STANDARD_GNU99:
-		add_pre_buffer(C, "#weak_define __STDC_VERSION__ 199901L\n");
+		dmrC_add_pre_buffer(C, "#weak_define __STDC_VERSION__ 199901L\n");
 		break;
 
 	case STANDARD_C11:
-		add_pre_buffer(C, "#weak_define __STRICT_ANSI__ 1\n");
+		dmrC_add_pre_buffer(C, "#weak_define __STRICT_ANSI__ 1\n");
 
 	case STANDARD_GNU11:
-		add_pre_buffer(C, "#weak_define __STDC_NO_ATOMICS__ 1\n");
-		add_pre_buffer(C, "#weak_define __STDC_NO_COMPLEX__ 1\n");
-		add_pre_buffer(C, "#weak_define __STDC_NO_THREADS__ 1\n");
-		add_pre_buffer(C, "#weak_define __STDC_VERSION__ 201112L\n");
+		dmrC_add_pre_buffer(C, "#weak_define __STDC_NO_ATOMICS__ 1\n");
+		dmrC_add_pre_buffer(C, "#weak_define __STDC_NO_COMPLEX__ 1\n");
+		dmrC_add_pre_buffer(C, "#weak_define __STDC_NO_THREADS__ 1\n");
+		dmrC_add_pre_buffer(C, "#weak_define __STDC_VERSION__ 201112L\n");
 		break;
 
 	default:
 		assert(0);
 	}
 
-	add_pre_buffer(C, "#define __builtin_stdarg_start(a,b) ((a) = (__builtin_va_list)(&(b)))\n");
-	add_pre_buffer(C, "#define __builtin_va_start(a,b) ((a) = (__builtin_va_list)(&(b)))\n");
-	add_pre_buffer(C, "#define __builtin_ms_va_start(a,b) ((a) = (__builtin_ms_va_list)(&(b)))\n");
-	add_pre_buffer(C, "#define __builtin_va_arg(arg,type)  ({ type __va_arg_ret = *(type *)(arg); arg += sizeof(type); __va_arg_ret; })\n");
-	add_pre_buffer(C, "#define __builtin_va_alist (*(void *)0)\n");
-	add_pre_buffer(C, "#define __builtin_va_arg_incr(x) ((x) + 1)\n");
-	add_pre_buffer(C, "#define __builtin_va_copy(dest, src) ({ dest = src; (void)0; })\n");
-	add_pre_buffer(C, "#define __builtin_ms_va_copy(dest, src) ({ dest = src; (void)0; })\n");
-	add_pre_buffer(C, "#define __builtin_va_end(arg)\n");
-	add_pre_buffer(C, "#define __builtin_ms_va_end(arg)\n");
-	add_pre_buffer(C, "#define __builtin_va_arg_pack()\n");
+	dmrC_add_pre_buffer(C, "#define __builtin_stdarg_start(a,b) ((a) = (__builtin_va_list)(&(b)))\n");
+	dmrC_add_pre_buffer(C, "#define __builtin_va_start(a,b) ((a) = (__builtin_va_list)(&(b)))\n");
+	dmrC_add_pre_buffer(C, "#define __builtin_ms_va_start(a,b) ((a) = (__builtin_ms_va_list)(&(b)))\n");
+	dmrC_add_pre_buffer(C, "#define __builtin_va_arg(arg,type)  ({ type __va_arg_ret = *(type *)(arg); arg += sizeof(type); __va_arg_ret; })\n");
+	dmrC_add_pre_buffer(C, "#define __builtin_va_alist (*(void *)0)\n");
+	dmrC_add_pre_buffer(C, "#define __builtin_va_arg_incr(x) ((x) + 1)\n");
+	dmrC_add_pre_buffer(C, "#define __builtin_va_copy(dest, src) ({ dest = src; (void)0; })\n");
+	dmrC_add_pre_buffer(C, "#define __builtin_ms_va_copy(dest, src) ({ dest = src; (void)0; })\n");
+	dmrC_add_pre_buffer(C, "#define __builtin_va_end(arg)\n");
+	dmrC_add_pre_buffer(C, "#define __builtin_ms_va_end(arg)\n");
+	dmrC_add_pre_buffer(C, "#define __builtin_va_arg_pack()\n");
 
 	/* FIXME! We need to do these as special magic macros at expansion time! */
-	add_pre_buffer(C, "#define __BASE_FILE__ \"base_file.c\"\n");
+	dmrC_add_pre_buffer(C, "#define __BASE_FILE__ \"base_file.c\"\n");
 
 	if (C->optimize)
-		add_pre_buffer(C, "#define __OPTIMIZE__ 1\n");
+		dmrC_add_pre_buffer(C, "#define __OPTIMIZE__ 1\n");
 	if (C->optimize_size)
-		add_pre_buffer(C, "#define __OPTIMIZE_SIZE__ 1\n");
+		dmrC_add_pre_buffer(C, "#define __OPTIMIZE_SIZE__ 1\n");
 
 	/* GCC defines these for limits.h */
-	add_pre_buffer(C, "#weak_define __SHRT_MAX__ " STRINGIFY(__SHRT_MAX__) "\n");
-	add_pre_buffer(C, "#weak_define __SCHAR_MAX__ " STRINGIFY(__SCHAR_MAX__) "\n");
-	add_pre_buffer(C, "#weak_define __INT_MAX__ " STRINGIFY(__INT_MAX__) "\n");
-	add_pre_buffer(C, "#weak_define __LONG_MAX__ " STRINGIFY(__LONG_MAX__) "\n");
-	add_pre_buffer(C, "#weak_define __LONG_LONG_MAX__ " STRINGIFY(__LONG_LONG_MAX__) "\n");
-	add_pre_buffer(C, "#weak_define __WCHAR_MAX__ " STRINGIFY(__WCHAR_MAX__) "\n");
-	add_pre_buffer(C, "#weak_define __SIZEOF_POINTER__ " STRINGIFY(__SIZEOF_POINTER__) "\n");
-	add_pre_buffer(C, "#weak_define __CHAR_BIT__ " STRINGIFY(__CHAR_BIT__) "\n");
+	dmrC_add_pre_buffer(C, "#weak_define __SHRT_MAX__ " STRINGIFY(__SHRT_MAX__) "\n");
+	dmrC_add_pre_buffer(C, "#weak_define __SCHAR_MAX__ " STRINGIFY(__SCHAR_MAX__) "\n");
+	dmrC_add_pre_buffer(C, "#weak_define __INT_MAX__ " STRINGIFY(__INT_MAX__) "\n");
+	dmrC_add_pre_buffer(C, "#weak_define __LONG_MAX__ " STRINGIFY(__LONG_MAX__) "\n");
+	dmrC_add_pre_buffer(C, "#weak_define __LONG_LONG_MAX__ " STRINGIFY(__LONG_LONG_MAX__) "\n");
+	dmrC_add_pre_buffer(C, "#weak_define __WCHAR_MAX__ " STRINGIFY(__WCHAR_MAX__) "\n");
+	dmrC_add_pre_buffer(C, "#weak_define __SIZEOF_POINTER__ " STRINGIFY(__SIZEOF_POINTER__) "\n");
+	dmrC_add_pre_buffer(C, "#weak_define __CHAR_BIT__ " STRINGIFY(__CHAR_BIT__) "\n");
 }
 
 static struct ptr_list *sparse_tokenstream(struct dmr_C *C, struct token *token)
 {
 	// Preprocess the stream
-	token = preprocess(C, token);
+	token = dmrC_preprocess(C, token);
 
 	if (C->preprocess_only) {
-		while (!eof_token(token)) {
+		while (!dmrC_eof_token(token)) {
 			int prec = 1;
 			struct token *next = token->next;
 			const char *separator = "";
@@ -1190,7 +1190,7 @@ static struct ptr_list *sparse_tokenstream(struct dmr_C *C, struct token *token)
 				if (prec > 4)
 					prec = 4;
 			}
-			printf("%s%.*s", show_token(C, token), prec, separator);
+			printf("%s%.*s", dmrC_show_token(C, token), prec, separator);
 			token = next;
 		}
 		putchar('\n');
@@ -1199,8 +1199,8 @@ static struct ptr_list *sparse_tokenstream(struct dmr_C *C, struct token *token)
 	}
 
 	// Parse the resulting C code
-	while (!eof_token(token))
-		token = external_declaration(C, token, &C->S->translation_unit_used_list);
+	while (!dmrC_eof_token(token))
+		token = dmrC_external_declaration(C, token, &C->S->translation_unit_used_list);
 	return C->S->translation_unit_used_list;
 }
 
@@ -1214,11 +1214,11 @@ static struct ptr_list *sparse_file(struct dmr_C *C, const char *filename)
 	} else {
 		fd = open(filename, O_RDONLY);
 		if (fd < 0)
-			die(C, "No such file: %s", filename);
+			dmrC_die(C, "No such file: %s", filename);
 	}
 
 	// Tokenize the input stream
-	token = tokenize(C, filename, fd, NULL, C->T->includepath);
+	token = dmrC_tokenize(C, filename, fd, NULL, C->T->includepath);
 	close(fd);
 
 	return sparse_tokenstream(C, token);
@@ -1240,22 +1240,22 @@ static struct ptr_list *sparse_initial(struct dmr_C *C)
 	// Prepend any "include" file to the stream.
 	// We're in global scope, it will affect all files!
 	for (i = 0; i < C->cmdline_include_nr; i++)
-		add_pre_buffer(C, "#argv_include \"%s\"\n", C->cmdline_include[i]);
+		dmrC_add_pre_buffer(C, "#argv_include \"%s\"\n", C->cmdline_include[i]);
 
 	return sparse_tokenstream(C, C->pre_buffer_begin);
 }
 
 void protect_token_alloc(struct dmr_C *C) {
 	/* prevent tokens from being deallocated ? */
-	allocator_transfer(&C->token_allocator, &C->protected_token_allocator);
+	dmrC_allocator_transfer(&C->token_allocator, &C->protected_token_allocator);
 }
 
 void clear_token_alloc(struct dmr_C *C) {
 	/* prevent tokens from being deallocated ? */
-	allocator_drop_all_allocations(&C->token_allocator);
+	dmrC_allocator_drop_all_allocations(&C->token_allocator);
 }
 
-struct ptr_list *sparse_initialize(struct dmr_C *C, int argc, char **argv, struct ptr_list **filelist)
+struct ptr_list *dmrC_sparse_initialize(struct dmr_C *C, int argc, char **argv, struct ptr_list **filelist)
 {
 	char **args;
 	struct ptr_list *list;
@@ -1280,10 +1280,10 @@ struct ptr_list *sparse_initialize(struct dmr_C *C, int argc, char **argv, struc
 	list = NULL;
 	if (!ptr_list_empty(filelist)) {
 
-		create_builtin_stream(C);
+		dmrC_create_builtin_stream(C);
 		predefined_macros(C);
 		if (!C->preprocess_only)
-			declare_builtin_functions(C);
+			dmrC_declare_builtin_functions(C);
 
 		list = sparse_initial(C);
 
@@ -1296,14 +1296,14 @@ struct ptr_list *sparse_initialize(struct dmr_C *C, int argc, char **argv, struc
 	return list;
 }
 
-struct ptr_list * sparse_keep_tokens(struct dmr_C *C, char *filename)
+struct ptr_list * dmrC_sparse_keep_tokens(struct dmr_C *C, char *filename)
 {
 	struct ptr_list *res;
 
 	/* Clear previous symbol list */
 	C->S->translation_unit_used_list = NULL;
 
-	new_file_scope(C);
+	dmrC_new_file_scope(C);
 	res = sparse_file(C, filename);
 
 	/* And return it */
@@ -1311,11 +1311,11 @@ struct ptr_list * sparse_keep_tokens(struct dmr_C *C, char *filename)
 }
 
 
-struct ptr_list * __sparse(struct dmr_C *C, char *filename)
+struct ptr_list * dmrC__sparse(struct dmr_C *C, char *filename)
 {
 	struct ptr_list *res;
 
-	res = sparse_keep_tokens(C, filename);
+	res = dmrC_sparse_keep_tokens(C, filename);
 
 	/* Drop the tokens for this file after parsing */
 	clear_token_alloc(C);
@@ -1324,12 +1324,12 @@ struct ptr_list * __sparse(struct dmr_C *C, char *filename)
 	return res;
 }
 
-struct ptr_list * sparse(struct dmr_C *C, char *filename)
+struct ptr_list * dmrC_sparse(struct dmr_C *C, char *filename)
 {
-	struct ptr_list *res = __sparse(C, filename);
+	struct ptr_list *res = dmrC__sparse(C, filename);
 
 	/* Evaluate the complete symbol list */
-	evaluate_symbol_list(C, res);
+	dmrC_evaluate_symbol_list(C, res);
 
 	return res;
 }

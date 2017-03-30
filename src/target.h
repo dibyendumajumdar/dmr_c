@@ -61,15 +61,15 @@ struct target_t {
 * Helper functions for converting bits to bytes and vice versa.
 */
 
-static inline int bits_to_bytes(const struct target_t *target, int bits) {
+static inline int dmrC_bits_to_bytes(const struct target_t *target, int bits) {
   return bits >= 0 ? (bits + target->bits_in_char - 1) / target->bits_in_char : -1;
 }
 
-static inline int bytes_to_bits(const struct target_t *target, int bytes) {
+static inline int dmrC_bytes_to_bits(const struct target_t *target, int bytes) {
   return bytes * target->bits_in_char;
 }
 
-static inline unsigned long array_element_offset(const struct target_t *target, unsigned long base_bits, int idx)
+static inline unsigned long dmrC_array_element_offset(const struct target_t *target, unsigned long base_bits, int idx)
 {
 	int fragment = base_bits % target->bits_in_char;
 	if (fragment)
@@ -77,8 +77,8 @@ static inline unsigned long array_element_offset(const struct target_t *target, 
 	return base_bits * idx;
 }
 
-extern void init_target(struct dmr_C *C);
-extern void destroy_target(struct dmr_C *C);
+extern void dmrC_init_target(struct dmr_C *C);
+extern void dmrC_destroy_target(struct dmr_C *C);
 
 
 #endif

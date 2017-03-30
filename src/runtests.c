@@ -7,10 +7,10 @@
 int main()
 {
 	int failure_count = 0;
-	failure_count += test_allocator();
+	failure_count += dmrC_test_allocator();
 	failure_count += test_ptrlist();
 	//failure_count += test_tokenizer();
-	//failure_count += test_parse();
+	//failure_count += dmrC_test_parse();
 
 	if (failure_count == 0)
 		printf("Tests OK\n");

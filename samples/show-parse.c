@@ -43,7 +43,7 @@ static void clean_up_symbols(struct dmr_C *C, struct ptr_list *list)
 {
 	struct symbol *sym;
 
-	FOR_EACH_PTR(list, sym) { expand_symbol(C, sym); }
+	FOR_EACH_PTR(list, sym) { dmrC_expand_symbol(C, sym); }
 	END_FOR_EACH_PTR(sym);
 }
 
@@ -55,22 +55,22 @@ int main(int argc, char **argv)
 
 	struct dmr_C *C = new_dmr_C();
 
-	list = sparse_initialize(C, argc, argv, &filelist);
+	list = dmrC_sparse_initialize(C, argc, argv, &filelist);
 
 	// Simplification
 	clean_up_symbols(C, list);
-	show_symbol_list(C, list, "\n\n");
+	dmrC_show_symbol_list(C, list, "\n\n");
 	printf("\n\n");
 
 	FOR_EACH_PTR(filelist, file)
 	{
-		list = sparse(C, file);
+		list = dmrC_sparse(C, file);
 
 		// Simplification
 		clean_up_symbols(C, list);
 
 		// Show the end result.
-		show_symbol_list(C, list, "\n\n");
+		dmrC_show_symbol_list(C, list, "\n\n");
 		printf("\n\n");
 	}
 	END_FOR_EACH_PTR(file);

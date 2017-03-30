@@ -59,7 +59,7 @@ static int simplify_phi_node(struct dmr_C *C, struct instruction *phi, pseudo_t 
 	// no need to make a copy of this one
 	// -> replace the target pseudo by the tmp
 	FOR_EACH_PTR(target->users, pu) {
-		use_pseudo(C, pu->insn, tmp, pu->userp);
+		dmrC_use_pseudo(C, pu->insn, tmp, pu->userp);
 	} END_FOR_EACH_PTR(pu);
 
 	phi->bb = NULL;
@@ -71,7 +71,7 @@ static void replace_phi_node(struct dmr_C *C, struct instruction *phi)
 	pseudo_t tmp;
 	pseudo_t p;
 
-	tmp = alloc_pseudo(C, NULL);
+	tmp = dmrC_alloc_pseudo(C, NULL);
 	tmp->type = phi->target->type;
 	tmp->ident = phi->target->ident;
 	tmp->def = NULL;		// defined by all the phisrc
@@ -104,7 +104,7 @@ static void replace_phi_node(struct dmr_C *C, struct instruction *phi)
 				break;
 			insn->target = tmp;
 		case 0:
-			kill_instruction(C, def);
+			dmrC_kill_instruction(C, def);
 			def->bb = NULL;
 		}
 	} END_FOR_EACH_PTR(p);
@@ -117,7 +117,7 @@ static void replace_phi_node(struct dmr_C *C, struct instruction *phi)
 	// to:
 	//	copy	%rt, %tmp
 	phi->opcode = OP_COPY;
-	use_pseudo(C, phi, tmp, &phi->src);
+	dmrC_use_pseudo(C, phi, tmp, &phi->src);
 }
 
 static void rewrite_phi_bb(struct dmr_C *C, struct basic_block *bb)
@@ -136,7 +136,7 @@ static void rewrite_phi_bb(struct dmr_C *C, struct basic_block *bb)
 	} END_FOR_EACH_PTR(insn);
 }
 
-int unssa(struct dmr_C *C, struct entrypoint *ep)
+int dmrC_unssa(struct dmr_C *C, struct entrypoint *ep)
 {
 	struct basic_block *bb;
 

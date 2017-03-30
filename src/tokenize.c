@@ -55,7 +55,7 @@ typedef struct {
 	unsigned char *buffer;
 } stream_t;
 
-const char *stream_name(struct dmr_C *C, int stream)
+const char *dmrC_stream_name(struct dmr_C *C, int stream)
 {
 	if (stream == 0 && C->T->input_stream_nr == 0)
 		return "<buffer>";
@@ -77,17 +77,17 @@ static struct position stream_pos(stream_t *stream)
 	return pos;
 }
 
-const char *show_special(struct dmr_C *C, int val)
+const char *dmrC_show_special(struct dmr_C *C, int val)
 {
 	C->T->special_buffer[0] = val;
 	C->T->special_buffer[1] = 0;
 	if (val >= SPECIAL_BASE)
 		strcpy(C->T->special_buffer,
-		       (char *)combinations[val - SPECIAL_BASE]);
+		       (char *)dmrC_combinations_[val - SPECIAL_BASE]);
 	return C->T->special_buffer;
 }
 
-const char *show_ident(struct dmr_C *C, const struct ident *ident)
+const char *dmrC_show_ident(struct dmr_C *C, const struct ident *ident)
 {
 	if (!ident)
 		return "<noident>";
@@ -118,7 +118,7 @@ static char *charstr(char *ptr, unsigned char c, unsigned char escape, unsigned 
 	return ptr + sprintf(ptr, "%03o", c);
 }
 
-const char *show_string(struct dmr_C *C, const struct string *string)
+const char *dmrC_show_string(struct dmr_C *C, const struct string *string)
 {
 	char *ptr;
 	int i;
@@ -170,11 +170,11 @@ static const char *quote_char(struct dmr_C *C, const char *s, size_t len, char p
 	return C->T->quote_buffer;
 }
 
-const char *show_token(struct dmr_C *C, const struct token *token)
+const char *dmrC_show_token(struct dmr_C *C, const struct token *token)
 {
 	if (!token)
 		return "<no token>";
-	switch (token_type(token)) {
+	switch (dmrC_token_type(token)) {
 	case TOKEN_ERROR:
 		return "syntax error";
 
@@ -182,13 +182,13 @@ const char *show_token(struct dmr_C *C, const struct token *token)
 		return "end-of-input";
 
 	case TOKEN_IDENT:
-		return show_ident(C, token->ident);
+		return dmrC_show_ident(C, token->ident);
 
 	case TOKEN_NUMBER:
 		return token->number;
 
 	case TOKEN_SPECIAL:
-		return show_special(C, token->special);
+		return dmrC_show_special(C, token->special);
 
 	case TOKEN_CHAR:
 		return show_char(C, token->string->data,
@@ -198,7 +198,7 @@ const char *show_token(struct dmr_C *C, const struct token *token)
 	case TOKEN_CHAR_EMBEDDED_2:
 	case TOKEN_CHAR_EMBEDDED_3:
 		return show_char(C, token->embedded,
-				 token_type(token) - TOKEN_CHAR, 0, '\'');
+				 dmrC_token_type(token) - TOKEN_CHAR, 0, '\'');
 	case TOKEN_WIDE_CHAR:
 		return show_char(C, token->string->data,
 				 token->string->length - 1, 'L', '\'');
@@ -207,7 +207,7 @@ const char *show_token(struct dmr_C *C, const struct token *token)
 	case TOKEN_WIDE_CHAR_EMBEDDED_2:
 	case TOKEN_WIDE_CHAR_EMBEDDED_3:
 		return show_char(C, token->embedded,
-				 token_type(token) - TOKEN_WIDE_CHAR, 'L', '\'');
+				 dmrC_token_type(token) - TOKEN_WIDE_CHAR, 'L', '\'');
 	case TOKEN_STRING:
 		return show_char(C, token->string->data,
 				 token->string->length - 1, 0, '"');
@@ -218,12 +218,12 @@ const char *show_token(struct dmr_C *C, const struct token *token)
 	case TOKEN_STREAMBEGIN:
 		snprintf(C->T->token_buffer, sizeof C->T->token_buffer,
 			 "<beginning of '%s'>",
-			 stream_name(C, token->pos.stream));
+			 dmrC_stream_name(C, token->pos.stream));
 		return C->T->token_buffer;
 
 	case TOKEN_STREAMEND:
 		snprintf(C->T->token_buffer, sizeof C->T->token_buffer,
-			 "<end of '%s'>", stream_name(C, token->pos.stream));
+			 "<end of '%s'>", dmrC_stream_name(C, token->pos.stream));
 		return C->T->token_buffer;
 
 	case TOKEN_UNTAINT:
@@ -238,25 +238,25 @@ const char *show_token(struct dmr_C *C, const struct token *token)
 
 	default:
 		snprintf(C->T->token_buffer, sizeof C->T->token_buffer,
-			 "unhandled token type '%d' ", token_type(token));
+			 "unhandled token type '%d' ", dmrC_token_type(token));
 		return C->T->token_buffer;
 	}
 }
 
-const char *quote_token(struct dmr_C *C, const struct token *token)
+const char *dmrC_quote_token(struct dmr_C *C, const struct token *token)
 {
-	switch (token_type(token)) {
+	switch (dmrC_token_type(token)) {
 	case TOKEN_ERROR:
 		return "syntax error";
 
 	case TOKEN_IDENT:
-		return show_ident(C, token->ident);
+		return dmrC_show_ident(C, token->ident);
 
 	case TOKEN_NUMBER:
 		return token->number;
 
 	case TOKEN_SPECIAL:
-		return show_special(C, token->special);
+		return dmrC_show_special(C, token->special);
 
 	case TOKEN_CHAR:
 		return quote_char(C, token->string->data,
@@ -266,7 +266,7 @@ const char *quote_token(struct dmr_C *C, const struct token *token)
 	case TOKEN_CHAR_EMBEDDED_2:
 	case TOKEN_CHAR_EMBEDDED_3:
 		return quote_char(C, token->embedded,
-				  token_type(token) - TOKEN_CHAR, 0, '\'');
+				  dmrC_token_type(token) - TOKEN_CHAR, 0, '\'');
 	case TOKEN_WIDE_CHAR:
 		return quote_char(C, token->string->data,
 				  token->string->length - 1, 'L', '\'');
@@ -275,7 +275,7 @@ const char *quote_token(struct dmr_C *C, const struct token *token)
 	case TOKEN_WIDE_CHAR_EMBEDDED_2:
 	case TOKEN_WIDE_CHAR_EMBEDDED_3:
 		return quote_char(C, token->embedded,
-				  token_type(token) - TOKEN_WIDE_CHAR, 'L',
+				  dmrC_token_type(token) - TOKEN_WIDE_CHAR, 'L',
 				  '\'');
 	case TOKEN_STRING:
 		return quote_char(C, token->string->data,
@@ -286,7 +286,7 @@ const char *quote_token(struct dmr_C *C, const struct token *token)
 	default:
 		snprintf(C->T->quoted_token_buffer,
 			 sizeof C->T->quoted_token_buffer,
-			 "unhandled token type '%d' ", token_type(token));
+			 "unhandled token type '%d' ", dmrC_token_type(token));
 		return C->T->quoted_token_buffer;
 	}
 }
@@ -305,7 +305,7 @@ static int input_stream_hashes[HASHED_INPUT] = {
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
 #endif
 
-int *hash_stream(const char *name)
+int *dmrC_hash_stream(const char *name)
 {
 	uint32_t hash = 0;
 	unsigned char c;
@@ -318,7 +318,7 @@ int *hash_stream(const char *name)
 	return input_stream_hashes + hash;
 }
 
-int init_stream(struct dmr_C *C, const char *name, int fd, const char **next_path)
+int dmrC_init_stream(struct dmr_C *C, const char *name, int fd, const char **next_path)
 {
 	int stream = C->T->input_stream_nr, *hash;
 	struct stream *current;
@@ -327,7 +327,7 @@ int init_stream(struct dmr_C *C, const char *name, int fd, const char **next_pat
 		int newalloc = stream * 4 / 3 + 10;
 		C->T->input_streams = (struct stream *)realloc(C->T->input_streams, newalloc * sizeof(struct stream));
 		if (!C->T->input_streams)
-			die(C, "Unable to allocate more streams space");
+			dmrC_die(C, "Unable to allocate more streams space");
 		C->T->input_streams_allocated = newalloc;
 	}
 	current = C->T->input_streams + stream;
@@ -338,7 +338,7 @@ int init_stream(struct dmr_C *C, const char *name, int fd, const char **next_pat
 	current->path = NULL;
 	current->constant = CONSTANT_FILE_MAYBE;
 	C->T->input_stream_nr = stream + 1;
-	hash = hash_stream(name);
+	hash = dmrC_hash_stream(name);
 	current->next_stream = *hash;
 	*hash = stream;
 	return stream;
@@ -346,7 +346,7 @@ int init_stream(struct dmr_C *C, const char *name, int fd, const char **next_pat
 
 static struct token *alloc_token(struct dmr_C *C, stream_t *stream)
 {
-	struct token *token = (struct token *)allocator_allocate(&C->token_allocator, 0);
+	struct token *token = (struct token *)dmrC_allocator_allocate(&C->token_allocator, 0);
 	token->pos = stream_pos(stream);
 	return token;
 }
@@ -430,9 +430,9 @@ got_eof:
 		goto out;
 	}
 	if (stream->pos)
-		warning(C, stream_pos(stream), "no newline at end of file");
+		dmrC_warning(C, stream_pos(stream), "no newline at end of file");
 	else if (spliced)
-		warning(C, stream_pos(stream), "backslash-newline at end of file");
+		dmrC_warning(C, stream_pos(stream), "backslash-newline at end of file");
 	return EOF;
 }
 
@@ -456,20 +456,20 @@ static inline int nextchar(struct dmr_C *C, stream_t *stream)
 	return nextchar_slow(C, stream);
 }
 
-struct token eof_token_entry;
+struct token dmrC_eof_token_entry_;
 
 static struct token *mark_eof(struct dmr_C *C, stream_t *stream)
 {
 	struct token *end;
 
 	end = alloc_token(C, stream);
-	token_type(end) = TOKEN_STREAMEND;
+	dmrC_token_type(end) = TOKEN_STREAMEND;
 	end->pos.newline = 1;
 
-	eof_token_entry.next = &eof_token_entry;
-	eof_token_entry.pos.newline = 1;
+	dmrC_eof_token_entry_.next = &dmrC_eof_token_entry_;
+	dmrC_eof_token_entry_.pos.newline = 1;
 
-	end->next = &eof_token_entry;
+	end->next = &dmrC_eof_token_entry_;
 	*stream->tokenlist = end;
 	stream->tokenlist = NULL;
 	return end;
@@ -539,7 +539,7 @@ static int get_one_number(struct dmr_C *C, int c, int next, stream_t *stream)
 	}
 
 	if (p == buffer_end) {
-		sparse_error(C, stream_pos(stream),
+		dmrC_sparse_error(C, stream_pos(stream),
 			     "number token exceeds %td characters",
 			     buffer_end - buffer);
 		// Pretend we saw just "1".
@@ -549,11 +549,11 @@ static int get_one_number(struct dmr_C *C, int c, int next, stream_t *stream)
 
 	*p++ = 0;
 	len = p - buffer;
-	buf = (char *)allocator_allocate(&C->byte_allocator, len);
+	buf = (char *)dmrC_allocator_allocate(&C->byte_allocator, len);
 	memcpy(buf, buffer, len);
 
 	token = stream->token;
-	token_type(token) = TOKEN_NUMBER;
+	dmrC_token_type(token) = TOKEN_NUMBER;
 	token->number = buf;
 	add_token(stream);
 
@@ -576,19 +576,19 @@ static int eat_string(struct dmr_C *C, int next, stream_t *stream,
 			buffer[len] = next;
 		len++;
 		if (next == '\n') {
-			warning(C, stream_pos(stream),
+			dmrC_warning(C, stream_pos(stream),
 				"Newline in string or character constant");
 			if (delim == '\'') /* assume it's lost ' */
 				break;
 		}
 		if (next == EOF) {
-			warning(C, stream_pos(stream),
+			dmrC_warning(C, stream_pos(stream),
 				"End of file in middle of string");
 			return next;
 		}
 		if (!escape) {
 			if (want_hex && !(C->T->cclass[next + 1] & Hex))
-				warning(
+				dmrC_warning(
 				    C, stream_pos(stream),
 				    "\\x used with no following hex digits");
 			want_hex = 0;
@@ -599,25 +599,25 @@ static int eat_string(struct dmr_C *C, int next, stream_t *stream,
 		}
 	}
 	if (want_hex)
-		warning(C, stream_pos(stream),
+		dmrC_warning(C, stream_pos(stream),
 			"\\x used with no following hex digits");
 	if (len > MAX_STRING) {
-		warning(C, stream_pos(stream),
+		dmrC_warning(C, stream_pos(stream),
 			"string too long (%d bytes, %d bytes max)", len, MAX_STRING);
 		len = MAX_STRING;
 	}
 	if (delim == '\'' && len <= 4) {
 		if (len == 0) {
-			sparse_error(C, stream_pos(stream),
+			dmrC_sparse_error(C, stream_pos(stream),
 				     "empty character constant");
 			return nextchar(C, stream);
 		}
-		token_type(token) = type + len;
+		dmrC_token_type(token) = type + len;
 		memset(buffer + len, '\0', 4 - len);
 		memcpy(token->embedded, buffer, 4);
 	} else {
-		token_type(token) = type;
-		string = (struct string *)allocator_allocate(&C->string_allocator, len + 1);
+		dmrC_token_type(token) = type;
+		string = (struct string *)dmrC_allocator_allocate(&C->string_allocator, len + 1);
 		memcpy(string->data, buffer, len);
 		string->data[len] = '\0';
 		string->length = len + 1;
@@ -654,7 +654,7 @@ static int drop_stream_comment(struct dmr_C *C, stream_t *stream)
 	for (;;) {
 		int curr = next;
 		if (curr == EOF) {
-			warning(C, stream_pos(stream),
+			dmrC_warning(C, stream_pos(stream),
 				"End of file in the middle of a comment");
 			return curr;
 		}
@@ -666,7 +666,7 @@ static int drop_stream_comment(struct dmr_C *C, stream_t *stream)
 	return nextchar(C, stream);
 }
 
-unsigned char combinations[][4] = COMBINATION_STRINGS;
+unsigned char dmrC_combinations_[][4] = COMBINATION_STRINGS;
 
 #define NR_COMBINATIONS (SPECIAL_ARG_SEPARATOR - SPECIAL_BASE)
 
@@ -718,7 +718,7 @@ static int get_one_special(struct dmr_C *C, int c, stream_t *stream)
 
 	/* Pass it on.. */
 	token = stream->token;
-	token_type(token) = TOKEN_SPECIAL;
+	dmrC_token_type(token) = TOKEN_SPECIAL;
 	token->special = value;
 	add_token(stream);
 	return next;
@@ -732,7 +732,7 @@ static int get_one_special(struct dmr_C *C, int c, stream_t *stream)
 #define ident_hash_add(oldhash,c)	((oldhash)*11 + (c))
 #define ident_hash_end(hash)		((((hash) >> IDENT_HASH_BITS) + (hash)) & IDENT_HASH_MASK)
 
-void show_identifier_stats(struct dmr_C *C)
+void dmrC_show_identifier_stats(struct dmr_C *C)
 {
 	int i;
 	int distribution[100];
@@ -765,7 +765,7 @@ void show_identifier_stats(struct dmr_C *C)
 
 static struct ident *alloc_ident(struct dmr_C *C, const char *name, size_t len)
 {
-	struct ident *ident = (struct ident *)allocator_allocate(&C->ident_allocator, len);
+	struct ident *ident = (struct ident *)dmrC_allocator_allocate(&C->ident_allocator, len);
 	ident->symbols = NULL;
 	assert(len <= 256);
 	ident->len = (unsigned char)len;
@@ -823,25 +823,25 @@ static unsigned long hash_name(const char *name, int len)
 	return ident_hash_end(hash);
 }
 
-struct ident *hash_ident(struct dmr_C *C, struct ident *ident)
+struct ident *dmrC_hash_ident(struct dmr_C *C, struct ident *ident)
 {
 	return insert_hash(C, ident, hash_name(ident->name, (int)ident->len));
 }
 
-struct ident *built_in_ident(struct dmr_C *C, const char *name)
+struct ident *dmrC_built_in_ident(struct dmr_C *C, const char *name)
 {
 	size_t len = strlen(name);
 	return create_hashed_ident(C, name, len, hash_name(name, (int)len));
 }
 
-struct token *built_in_token(struct dmr_C *C, int stream, const char *name)
+struct token *dmrC_built_in_token(struct dmr_C *C, int stream, const char *name)
 {
 	struct token *token;
 
-	token = (struct token *)allocator_allocate(&C->token_allocator, 0);
+	token = (struct token *)dmrC_allocator_allocate(&C->token_allocator, 0);
 	token->pos.stream = stream;
-	token_type(token) = TOKEN_IDENT;
-	token->ident = built_in_ident(C, name);
+	dmrC_token_type(token) = TOKEN_IDENT;
+	token->ident = dmrC_built_in_ident(C, name);
 	return token;
 }
 
@@ -881,7 +881,7 @@ static int get_one_identifier(struct dmr_C *C, int c, stream_t *stream)
 
 	/* Pass it on.. */
 	token = stream->token;
-	token_type(token) = TOKEN_IDENT;
+	dmrC_token_type(token) = TOKEN_IDENT;
 	token->ident = ident;
 	add_token(stream);
 	return next;
@@ -916,7 +916,7 @@ static struct token *setup_stream(struct dmr_C *C, stream_t *stream,
 	stream->buffer = buf;
 
 	begin = alloc_token(C, stream);
-	token_type(begin) = TOKEN_STREAMBEGIN;
+	dmrC_token_type(begin) = TOKEN_STREAMBEGIN;
 	stream->tokenlist = &begin->next;
 	return begin;
 }
@@ -939,7 +939,7 @@ static struct token *tokenize_stream(struct dmr_C *C, stream_t *stream)
 	return mark_eof(C, stream);
 }
 
-struct token *tokenize_buffer(struct dmr_C *C, unsigned char *buffer,
+struct token *dmrC_tokenize_buffer(struct dmr_C *C, unsigned char *buffer,
 			      unsigned long size, struct token **endtoken)
 {
 	stream_t stream;
@@ -950,7 +950,7 @@ struct token *tokenize_buffer(struct dmr_C *C, unsigned char *buffer,
 	return begin;
 }
 
-struct token *tokenize(struct dmr_C *C, const char *name, int fd,
+struct token *dmrC_tokenize(struct dmr_C *C, const char *name, int fd,
 		       struct token *endtoken, const char **next_path)
 {
 	struct token *begin, *end;
@@ -958,9 +958,9 @@ struct token *tokenize(struct dmr_C *C, const char *name, int fd,
 	unsigned char buffer[BUFSIZE];
 	int idx;
 
-	idx = init_stream(C, name, fd, next_path);
+	idx = dmrC_init_stream(C, name, fd, next_path);
 	if (idx < 0) {
-		// info(endtoken->pos, "File %s is const", name);
+		// dmrC_info(endtoken->pos, "File %s is const", name);
 		return endtoken;
 	}
 
@@ -971,7 +971,7 @@ struct token *tokenize(struct dmr_C *C, const char *name, int fd,
 	return begin;
 }
 
-void init_tokenizer(struct dmr_C *C)
+void dmrC_init_tokenizer(struct dmr_C *C)
 {
 	C->T = (struct tokenizer_state_t *)calloc(
 	    1, sizeof(struct tokenizer_state_t));
@@ -1115,7 +1115,7 @@ void init_tokenizer(struct dmr_C *C)
 	    (struct ident **)calloc(IDENT_HASH_SIZE, sizeof(struct ident *));
 }
 
-void destroy_tokenizer(struct dmr_C *C)
+void dmrC_destroy_tokenizer(struct dmr_C *C)
 {
 	free(C->T->input_streams);
 	free(C->T->hash_table);
@@ -1123,7 +1123,7 @@ void destroy_tokenizer(struct dmr_C *C)
 	C->T = NULL;
 }
 
-int test_tokenizer()
+int dmrC_test_tokenizer()
 {
 	struct dmr_C *C = new_dmr_C();
 	char test1[100] =
@@ -1147,7 +1147,7 @@ int test_tokenizer()
 
 	struct token *start;
 	struct token *end;
-	start = tokenize_buffer(C, (unsigned char *)test1,
+	start = dmrC_tokenize_buffer(C, (unsigned char *)test1,
 				(unsigned long)strlen(test1), &end);
 	int i = 0;
 	int failure_count = 0;
@@ -1156,9 +1156,9 @@ int test_tokenizer()
 			failure_count++;
 			break;
 		}
-		if (strcmp(show_token(C, p), expected[i]) != 0) {
+		if (strcmp(dmrC_show_token(C, p), expected[i]) != 0) {
 			fprintf(stderr, "Expected '%s' got '%s'\n", expected[i],
-				show_token(C, p));
+				dmrC_show_token(C, p));
 			failure_count++;
 			break;
 		}

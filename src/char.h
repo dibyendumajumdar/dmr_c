@@ -14,8 +14,8 @@
 extern "C" {
 #endif
 
-extern void get_char_constant(struct dmr_C *C, struct token *, unsigned long long *);
-extern struct token *get_string_constant(struct dmr_C *C, struct token *, struct expression *);
+extern void dmrC_get_char_constant(struct dmr_C *C, struct token *, unsigned long long *);
+extern struct token *dmrC_get_string_constant(struct dmr_C *C, struct token *, struct expression *);
 
 #ifdef __cplusplus
 }

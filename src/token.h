@@ -130,7 +130,7 @@ enum e_token_type {
 	"<", ">", "<=", ">="	\
 }
 
-extern unsigned char combinations[][4];
+extern unsigned char dmrC_combinations_[][4];
 
 enum special_token {
 	SPECIAL_BASE = 256,
@@ -198,7 +198,7 @@ struct token {
 	};
 };
 
-static inline struct token *containing_token(struct token **p)
+static inline struct token *dmrC_containing_token(struct token **p)
 {
 	void *addr = (char *)p - ((char *)&((struct token *)0)->next - (char *)0);
 	return (struct token *)addr;
@@ -228,49 +228,49 @@ struct tokenizer_state_t {
 };
 
 
-#define token_type(x) ((x)->pos.type)
+#define dmrC_token_type(x) ((x)->pos.type)
 
 /*
  * Last token in the stream - points to itself.
  * This allows us to not test for NULL pointers
  * when following the token->next chain..
  */
-extern struct token eof_token_entry;
-#define eof_token(x) ((x) == &eof_token_entry)
-extern void init_tokenizer(struct dmr_C *C);
-extern void destroy_tokenizer(struct dmr_C *C);
+extern struct token dmrC_eof_token_entry_;
+#define dmrC_eof_token(x) ((x) == &dmrC_eof_token_entry_)
+extern void dmrC_init_tokenizer(struct dmr_C *C);
+extern void dmrC_destroy_tokenizer(struct dmr_C *C);
 
-extern int init_stream(struct dmr_C *C, const char *name, int fd,
+extern int dmrC_init_stream(struct dmr_C *C, const char *name, int fd,
 	const char **next_path);
-extern const char *stream_name(struct dmr_C *C, int stream);
-extern struct ident *hash_ident(struct dmr_C *C, struct ident *ident);
-extern struct ident *built_in_ident(struct dmr_C *C, const char *name);
-extern struct token *built_in_token(struct dmr_C *C, int stream, const char *name);
-extern const char *show_special(struct dmr_C *C, int val);
-extern const char *show_ident(struct dmr_C *C, const struct ident *ident);
-extern const char *show_string(struct dmr_C *C, const struct string *string);
-extern const char *show_token(struct dmr_C *C, const struct token *token);
-extern const char *quote_token(struct dmr_C *C, const struct token *token);
-extern int *hash_stream(const char *name);
-extern struct token *tokenize(struct dmr_C *C, const char *name, int fd,
+extern const char *dmrC_stream_name(struct dmr_C *C, int stream);
+extern struct ident *dmrC_hash_ident(struct dmr_C *C, struct ident *ident);
+extern struct ident *dmrC_built_in_ident(struct dmr_C *C, const char *name);
+extern struct token *dmrC_built_in_token(struct dmr_C *C, int stream, const char *name);
+extern const char *dmrC_show_special(struct dmr_C *C, int val);
+extern const char *dmrC_show_ident(struct dmr_C *C, const struct ident *ident);
+extern const char *dmrC_show_string(struct dmr_C *C, const struct string *string);
+extern const char *dmrC_show_token(struct dmr_C *C, const struct token *token);
+extern const char *dmrC_quote_token(struct dmr_C *C, const struct token *token);
+extern int *dmrC_hash_stream(const char *name);
+extern struct token *dmrC_tokenize(struct dmr_C *C, const char *name, int fd,
 	struct token *endtoken, const char **next_path);
-extern struct token *tokenize_buffer(struct dmr_C *C, unsigned char *buffer,
+extern struct token *dmrC_tokenize_buffer(struct dmr_C *C, unsigned char *buffer,
 	unsigned long size,
 	struct token **endtoken);
-extern void show_identifier_stats(struct dmr_C *C);
-extern struct token *preprocess(struct dmr_C *C, struct token *);
-extern void init_preprocessor_state(struct dmr_C *C);
-static inline int match_op(struct token *token, unsigned int op)
+extern void dmrC_show_identifier_stats(struct dmr_C *C);
+extern struct token *dmrC_preprocess(struct dmr_C *C, struct token *);
+extern void dmrC_init_preprocessor_state(struct dmr_C *C);
+static inline int dmrC_match_op(struct token *token, unsigned int op)
 {
 	return token->pos.type == TOKEN_SPECIAL && token->special == op;
 }
 
-static inline int match_ident(struct token *token, struct ident *id)
+static inline int dmrC_match_ident(struct token *token, struct ident *id)
 {
 	return token->pos.type == TOKEN_IDENT && token->ident == id;
 }
 
-extern int test_tokenizer();
+extern int dmrC_test_tokenizer();
 
 #ifdef __cplusplus
 }

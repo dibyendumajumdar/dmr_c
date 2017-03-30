@@ -73,9 +73,11 @@ The same pseudo can have many different types.
 
 With an example:
 == C code ==
+
     void *foo(int *p) { return p + 5; }
 
 == linearized code ==
+
     foo:
     .L0:
     <entry-point>
@@ -86,6 +88,7 @@ With an example:
 This is correct.
 
 == LLVM code from sparse-llvm ==
+    
     define i8* @foo(i32* %ARG1) {
     L0:
     %0 = getelementptr i32, i32* %ARG1, inttoptr (i64 20 to i32*)

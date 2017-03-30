@@ -1995,8 +1995,9 @@ LLVMModuleRef dmrC_llvmcompile(int argc, char **argv, LLVMContextRef context, co
 		dump_module = 1;
 		rc = 1;
 	}
-	if (error_message && strlen(error_message) > 0) {
-		fprintf(stderr, "%s\n\n", error_message);
+	if (error_message) {
+		if (strlen(error_message) > 0)
+			fprintf(stderr, "%s\n\n", error_message);
 		LLVMDisposeMessage(error_message);
 	}
 	if (rc == 0) {

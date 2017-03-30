@@ -35,3 +35,37 @@ pseudo case is a very very very limited case of the full local
 variable case.
 
 [Source](http://marc.info/?l=linux-sparse&m=149073824506042&w=3)
+
+### Linear IR is typeless
+
+To explain, let me give a completely idiotic example:
+
+    unsigned int test(int arg)
+    {
+        return arg + (unsigned int)arg;
+    }
+
+note how we're adding a "int" and an "unsigned int" together. But the
+CSE etc doesn't actually care at all, and we will linearize this to
+just
+
+    test:
+        add.32      %r5 <- %arg1, %arg1
+        ret.32      %r5
+
+because the type just isn't relevant at the linearization phase.
+
+You can tell that there *used* to be multiple pseudos from the
+numbering ("%r5"? What happened to "%r1..4"?), but they have all been
+smushed together.
+
+Linearization has fundamentally gotten rid of all the C types, and all
+you can find are some rough remnants of them (you can find the *size*
+of the type, and you can find the rough "type" of type - is it a
+pointer, FP value or integer. There aren't even any signs, although
+some _operations_ are signed (but not the pseudos).
+
+The same pseudo can have many different types.
+
+[Source](http://marc.info/?l=linux-sparse&m=148968511522310&w=3)
+

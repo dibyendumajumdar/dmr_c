@@ -42,7 +42,9 @@ cmake -DLLVM_JIT=ON -DLLVM_DIR=$LLVM_INSTALL_DIR\lib\cmake\llvm -G "Visual Studi
 
 Here $LLVM_INSTALL_DIR refers to the path where LLVM is installed. 
 
-Build on Linux and Mac OSX is similar.
+Generation of build scripts follows the same process on Linux and Mac OSX platforms.
+
+Once the build files are generated you can use the normal build tools i.e. Visual Studio on Windows and make on UNIX platforms.
 
 ## Using dmr_C command line tools
 
@@ -78,7 +80,7 @@ The following command line tools are built:
 
 ```
 sparse-llvm test.c -o test.bc
-llc test.c
+llc test.bc
 gcc -o test test.s
 
 ```
@@ -121,15 +123,16 @@ Details of each of these is given below.
 
 There is a single API call:
 
-```
-LLVMModuleRef dmrC_llvmcompile(int argc, char **argv, LLVMContextRef context, const char *modulename, const char *inputbuffer);
+```C
+LLVMModuleRef dmrC_llvmcompile(int argc, char **argv, 
+	LLVMContextRef context, const char *modulename, const char *inputbuffer);
 ```
 
 The call accepts the arguments passed to a main() function, an LLVMContext, a module name, and an optional buffer to be compiled. It will preprocess files if needed, and compile each of the source files given in the argument list. Although not yet implemented the intention is that it will also compile the supplied input buffer. The results of the compilation are returned as an LLVM Module for the calling program to use as it wishes. 
 
 A very simple use is below:
 
-```
+```C
 #include <dmr_c_llvm.h>
 #include <stdio.h>
 
@@ -153,7 +156,7 @@ This is basically what the sparse-llvm command does.
 
 Here is a simple program that uses the tokenizer. The tokenizer converts the input into a stream of tokens.
 
-```
+```C
 	struct dmr_C *C = new_dmr_C();
 
 	char test1[100] =
@@ -182,7 +185,7 @@ The destroy_dmr_C() call cleans up the parser state except for the globally main
 
 The above example can be extended to use the preprocessor by just adding one line.
 
-```
+```C
 	start = dmrC_tokenize_buffer(C, (unsigned char *)test1,
 				(unsigned long)strlen(test1), &end);
 

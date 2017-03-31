@@ -4,7 +4,7 @@
 
 ### Parser Overview
 
-Credit: Josh Triplett
+Credit: [Josh Triplett](https://git.kernel.org/pub/scm/devel/sparse/sparse.git/tree/Documentation/data-structures.txt)
 
 #### Statements and Expressions
 
@@ -52,7 +52,7 @@ That much occurs in pretty much any program using the Sparse frontend.
 
 ### Overview 
 
-Credit: Josh Triplett
+Credit: [Josh Triplett](https://git.kernel.org/pub/scm/devel/sparse/sparse.git/tree/Documentation/data-structures.txt)
 
 The linearized bytecode itself has a set of nested structures.
 [linearize.h](https://github.com/dibyendumajumdar/dmr_c/blob/master/src/linearize.h) defines all of them.
@@ -109,7 +109,7 @@ But local variables do not start out as pseudos, exactly because the
 pseudo case is a very very very limited case of the full local
 variable case.
 
-[Source](http://marc.info/?l=linux-sparse&m=149073824506042&w=3)
+Source: [Linus](http://marc.info/?l=linux-sparse&m=149073824506042&w=3)
 
 ### Linear IR is typeless
 
@@ -142,7 +142,7 @@ some _operations_ are signed (but not the pseudos).
 
 The same pseudo can have many different types.
 
-[Source](http://marc.info/?l=linux-sparse&m=148968511522310&w=3)
+Source [Linus](http://marc.info/?l=linux-sparse&m=148968511522310&w=3)
 
 ### Pointer arithmetic uses byte offsets
 
@@ -181,6 +181,6 @@ cast to a simple address-unit pointer (ie unsigned char).
 
 Or not use GEP at all.
 
-[Source](http://marc.info/?l=linux-sparse&m=148882818325232&w=3)
+Source: [Linus](http://marc.info/?l=linux-sparse&m=148882818325232&w=3)
 
 

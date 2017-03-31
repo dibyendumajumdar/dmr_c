@@ -22,7 +22,9 @@
 * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ******************************************************************************/
-#define INITIALIZER_SUPPORTED !__DMR_C__
+#ifndef __DMR_C__
+#define INITIALIZER_SUPPORTED 1
+#endif
 #ifdef _MSC_VER
 typedef unsigned __int64 U64;
 #else
@@ -811,7 +813,7 @@ static int luaO_fb2int(int x)
 	else
 		return ((x & 7) + 8) << (e - 1);
 }
-#if !INITIALIZER_SUPPORTED
+#ifndef INITIALIZER_SUPPORTED
 static lu_byte log_2[256];
 #endif
 static int luaO_log2(unsigned int x)
@@ -3043,7 +3045,7 @@ static char *luaZ_openspace(lua_State *L, Mbuffer *buff, size_t n)
 #define opmode(t, a, b, c, m)                                                  \
 	(((t) << 7) | ((a) << 6) | ((b) << 4) | ((c) << 2) | (m))
 #if INITIALIZER_SUPPORTED
-static const lu_byte luaP_opmodes[(cast(int, OP_VARARG) + 1)] = {
+static lu_byte luaP_opmodes[(cast(int, OP_VARARG) + 1)] = {
     opmode(0, 1, OpArgR, OpArgN, iABC),  opmode(0, 1, OpArgK, OpArgN, iABx),
     opmode(0, 1, OpArgU, OpArgU, iABC),  opmode(0, 1, OpArgR, OpArgN, iABC),
     opmode(0, 1, OpArgU, OpArgN, iABC),  opmode(0, 1, OpArgK, OpArgN, iABx),
@@ -8919,7 +8921,7 @@ static const struct luaL_Reg bitlib[] = {
 #else
 static struct luaL_Reg bitlib[13];
 #endif
-#if !INITIALIZER_SUPPORTED
+#ifndef INITIALIZER_SUPPORTED
 static void init_globals(void)
 {
 
@@ -9547,8 +9549,9 @@ static void init_globals(void)
 #endif
 int main(int argc, char **argv)
 {
-	printf("In minilua\n");
+#ifndef INITIALIZER_SUPPORTED
 	init_globals();
+#endif
 	lua_State *L = luaL_newstate();
 	int i;
 	luaL_openlibs(L);

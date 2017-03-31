@@ -1,0 +1,1 @@
+io.write('hello\n')

@@ -66,9 +66,10 @@ The following command line tools are built:
 
 #### Limitations
 
-* The main limitation is that initializers on local static and globals do not work yet except for simple strings and scalar variables. The front-end does handle these - the limitation is in the sparse-llvm backend.
+* Initializers on static and globals do not work yet except for simple strings and scalar variables. The front-end does handle these - the limitation is in the sparse-llvm backend.
 * Aggregate assignments are not yet supported by the sparse-llvm backend.
-* There is no support for computed gotos, slices and ranges yet in the sparse-llvm backend.
+* The va_arg mechanism is not supported.
+* There is no support for computed gotos yet in the sparse-llvm backend.
 * The front-end parser and pre-processor knows about many Linux constructs hence it can process C header files on Linux. However, it doesn't know about Windows or Mac OSX features. As typically the vendor supplied header files have many platform specific extensions, unfortunately this means that you cannot process vendor supplied header files on these platforms.
 
 #### Usage

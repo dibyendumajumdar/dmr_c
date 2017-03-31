@@ -2,16 +2,6 @@
 
 ## Parser
 
-### Symbols
-
-A symbol node of type SYM_NODE contains the C name of the symbol, but you should never have a SYM_NODE that points
-to another SYM_NODE, it always points to some actual type (ie ptr, whatever).
-
-So the rule should be that the node can have specific information about that particular named symbol (so: name, array size, modifiers,
-address space, initializer etc), and then the node->ctype.base_type should point to a non-NODE symbol describing the base type.
-
-[Source](http://marc.info/?l=linux-sparse&m=149080567024897&w=3)
-
 ### Parser Overview
 
 Credit: Josh Triplett
@@ -22,9 +12,9 @@ As far as the parsing structures go...
 
 The C parser exists in two main files: parse.c, which parses statements, and expression.c, which parses expressions.
 
-parse.h contains the definition of struct statement, which represents a C statement. That includes only those things which can't appear as an expression, which primarily includes control flow statements such as if, loops, switch/case, and goto.
+[parse.h](https://github.com/dibyendumajumdar/dmr_c/blob/master/src/parse.h) contains the definition of struct statement, which represents a C statement. That includes only those things which can't appear as an expression, which primarily includes control flow statements such as if, loops, switch/case, and goto.
 
-expression.h contains the definition of struct expression, which represents a C expression.  That has a lot more content, since most C constructs can appear in expressions.
+[expression.h](https://github.com/dibyendumajumdar/dmr_c/blob/master/src/expression.h) contains the definition of struct expression, which represents a C expression.  That has a lot more content, since most C constructs can appear in expressions.
 
 A series of statements forms a compound statement (STMT_COMPOUND). That appears as another struct statement which has a statement_list member.
 
@@ -36,11 +26,21 @@ for, while, and do-while.
 #### Symbols
 
 A symbol, then, represents a name in a C file.  A symbol might represent a variable, a function, a label, or various other things.
-See symbol.h.
+See [symbol.h](https://github.com/dibyendumajumdar/dmr_c/blob/master/src/symbol.h).
 
 "struct symbol" represents one symbol.
 
 As with the various other structures, it has some common data and a union of sub-structures for the parts that differ between different types. Most of the interesting bits come in the NS_SYMBOL case. Among other things, it has a struct statement for the body of a function (if any), a list of symbols for the arguments, an expression for a variable initializer, and so on.
+
+### More on Symbols
+
+A symbol node of type SYM_NODE contains the C name of the symbol, but you should never have a SYM_NODE that points
+to another SYM_NODE, it always points to some actual type (ie ptr, whatever).
+
+So the rule should be that the node can have specific information about that particular named symbol (so: name, array size, modifiers,
+address space, initializer etc), and then the node->ctype.base_type should point to a non-NODE symbol describing the base type.
+
+[Source](http://marc.info/?l=linux-sparse&m=149080567024897&w=3)
 
 #### Summary
 
@@ -55,13 +55,15 @@ That much occurs in pretty much any program using the Sparse frontend.
 Credit: Josh Triplett
 
 The linearized bytecode itself has a set of nested structures.
-linearize.h defines all of them.
+[linearize.h](https://github.com/dibyendumajumdar/dmr_c/blob/master/src/linearize.h) defines all of them.
 
 #### entrypoint
+
 At the top level, it has struct entrypoint. That represents an entrypoint to the code, which would normally mean a function.
 An entrypoint has a list of basic blocks.
 
 #### basic_block
+
 struct basic_block.
 A basic block represents a series of instructions with no branches. Straight-line code.
 A branch only occurs at the end of a basic block, and branches can only target the beginning of a basic block.
@@ -72,6 +74,7 @@ So basic blocks represent a node in the control flow graph.
 The edges in that graph lead from one basic block to a basic block which can follow it in the execution of the program.
 
 #### instructions
+
 Each basic block has a series of instructions, "struct instruction".
 "enum opcode" lists all the instructions.
 Fairly high-level instruction set, corresponding directly to bits of C.
@@ -79,13 +82,14 @@ So you have an entrypoint, which has a graph of basic blocks, each of which has 
 An entrypoint also has a pointer to the first instruction.
 
 #### pseudos
+
 One last bit of trickiness: struct pseudo.
 Have you ever heard of "static single assignment" or SSA form?
 struct pseudo represents one of those single-assignment variables.
 Each one has a pointer to the symbol it represents (which may have many pseudos referencing it).
 Each one also has a pointer to the instruction that defines it.
 
-### pseudos
+### More about pseudos
 
 A pseudo is a "register", and in SSA format. Local variables are not
 registers, and do not honor SSA.
@@ -178,7 +182,5 @@ cast to a simple address-unit pointer (ie unsigned char).
 Or not use GEP at all.
 
 [Source](http://marc.info/?l=linux-sparse&m=148882818325232&w=3)
-
-
 
 

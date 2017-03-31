@@ -1959,6 +1959,7 @@ LLVMModuleRef dmrC_llvmcompile(int argc, char **argv, LLVMContextRef context, co
 	char *file;
 
 	struct dmr_C *C = new_dmr_C();
+	C->codegen = 1;	/* disables macros related to vararg processing */
 
 	symlist = dmrC_sparse_initialize(C, argc, argv, &filelist);
 

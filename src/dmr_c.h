@@ -124,6 +124,7 @@ struct dmr_C {
 	int die_if_error;
 	int once;
 	int preprocess_only;
+	int codegen;
 
 	const char *gcc_base_dir;
 	const char *multiarch_dir;

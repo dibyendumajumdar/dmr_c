@@ -1141,17 +1141,20 @@ void dmrC_create_builtin_stream(struct dmr_C *C)
 		assert(0);
 	}
 
-	dmrC_add_pre_buffer(C, "#define __builtin_stdarg_start(a,b) ((a) = (__builtin_va_list)(&(b)))\n");
-	dmrC_add_pre_buffer(C, "#define __builtin_va_start(a,b) ((a) = (__builtin_va_list)(&(b)))\n");
-	dmrC_add_pre_buffer(C, "#define __builtin_ms_va_start(a,b) ((a) = (__builtin_ms_va_list)(&(b)))\n");
-	dmrC_add_pre_buffer(C, "#define __builtin_va_arg(arg,type)  ({ type __va_arg_ret = *(type *)(arg); arg += sizeof(type); __va_arg_ret; })\n");
-	dmrC_add_pre_buffer(C, "#define __builtin_va_alist (*(void *)0)\n");
-	dmrC_add_pre_buffer(C, "#define __builtin_va_arg_incr(x) ((x) + 1)\n");
-	dmrC_add_pre_buffer(C, "#define __builtin_va_copy(dest, src) ({ dest = src; (void)0; })\n");
-	dmrC_add_pre_buffer(C, "#define __builtin_ms_va_copy(dest, src) ({ dest = src; (void)0; })\n");
-	dmrC_add_pre_buffer(C, "#define __builtin_va_end(arg)\n");
-	dmrC_add_pre_buffer(C, "#define __builtin_ms_va_end(arg)\n");
-	dmrC_add_pre_buffer(C, "#define __builtin_va_arg_pack()\n");
+	if (!C->codegen) {
+		/* Do not output these macros when we are generating code e.g. via LLVM as these macros are not correct */
+		dmrC_add_pre_buffer(C, "#define __builtin_stdarg_start(a,b) ((a) = (__builtin_va_list)(&(b)))\n");
+		dmrC_add_pre_buffer(C, "#define __builtin_va_start(a,b) ((a) = (__builtin_va_list)(&(b)))\n");
+		dmrC_add_pre_buffer(C, "#define __builtin_ms_va_start(a,b) ((a) = (__builtin_ms_va_list)(&(b)))\n");
+		dmrC_add_pre_buffer(C, "#define __builtin_va_arg(arg,type)  ({ type __va_arg_ret = *(type *)(arg); arg += sizeof(type); __va_arg_ret; })\n");
+		dmrC_add_pre_buffer(C, "#define __builtin_va_alist (*(void *)0)\n");
+		dmrC_add_pre_buffer(C, "#define __builtin_va_arg_incr(x) ((x) + 1)\n");
+		dmrC_add_pre_buffer(C, "#define __builtin_va_copy(dest, src) ({ dest = src; (void)0; })\n");
+		dmrC_add_pre_buffer(C, "#define __builtin_ms_va_copy(dest, src) ({ dest = src; (void)0; })\n");
+		dmrC_add_pre_buffer(C, "#define __builtin_va_end(arg)\n");
+		dmrC_add_pre_buffer(C, "#define __builtin_ms_va_end(arg)\n");
+		dmrC_add_pre_buffer(C, "#define __builtin_va_arg_pack()\n");
+	}
 
 	/* FIXME! We need to do these as special magic macros at expansion time! */
 	dmrC_add_pre_buffer(C, "#define __BASE_FILE__ \"base_file.c\"\n");

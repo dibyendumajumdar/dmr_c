@@ -1024,8 +1024,8 @@ static LLVMValueRef calc_memop_addr(struct dmr_C *C, struct function *fn, struct
 	addr_type = LLVMPointerType(symtype, as);
 #if 1
 	src = ptr_toint(C, fn, src);
-	addr = LLVMBuildAdd(fn->builder, src, off, LLVMGetValueName(src));
-	addr = LLVMBuildIntToPtr(fn->builder, addr, addr_type, LLVMGetValueName(src));
+	addr = LLVMBuildAdd(fn->builder, src, off, "");
+	addr = LLVMBuildIntToPtr(fn->builder, addr, addr_type, "");
 #else
 	src = LLVMBuildPointerCast(fn->builder, src, addr_type, "");
 

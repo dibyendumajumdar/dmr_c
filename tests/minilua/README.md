@@ -5,4 +5,11 @@ The orginal code has been modified to avoid initializers for structs, arrays and
 ## Status
 
 * Compiles without LLVM errors - as include headers are not supported on Windows, you can only compile this on Linux.
-* Crashes when run 
+* We can now run the hello.lua script!
+
+## Steps to run
+
+```
+sparse-llvm minilua.c -o minilua.bc
+lli minilua.bc hello.lua
+```

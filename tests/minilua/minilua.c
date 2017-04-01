@@ -755,9 +755,9 @@ static const TValue *luaV_tonumber(const TValue *obj, TValue *n);
 static int luaV_tostring(lua_State *L, StkId obj);
 static void luaV_execute(lua_State *L, int nexeccalls);
 static void luaV_concat(lua_State *L, int total, int last);
-const char *luaO_pushfstring(lua_State *L, const char *fmt, ...);
-void luaG_runerror(lua_State *L, const char *fmt, ...);
-const char *lua_pushfstring(lua_State *L, const char *fmt, ...);
+extern const char *luaO_pushfstring(lua_State *L, const char *fmt, ...);
+extern void luaG_runerror(lua_State *L, const char *fmt, ...);
+extern const char *lua_pushfstring(lua_State *L, const char *fmt, ...);
 
 #if INITIALIZER_SUPPORTED
 static const TValue luaO_nilobject_ = {{NULL}, 0};

@@ -199,7 +199,6 @@ static void luaC_barrierback(lua_State *L, Table *t);
 #define luaS_newliteral(L, s)                                                  \
 	(luaS_newlstr(L, ""s, (sizeof(s) / sizeof(char)) - 1))
 #define luaS_fix(s) l_setbit((s)->tsv.marked, 5)
-static TString *luaS_newlstr(lua_State *L, const char *str, size_t l);
 #define tostring(L, o) ((ttype(o) == 4) || (luaV_tostring(L, o)))
 #define tonumber(o, n) (ttype(o) == 3 || (((o) = luaV_tonumber(o, n)) != NULL))
 #define equalobj(L, o1, o2) (ttype(o1) == ttype(o2) && luaV_equalval(L, o1, o2))
@@ -207,7 +206,6 @@ static int luaV_equalval(lua_State *L, const TValue *t1, const TValue *t2);
 static const TValue *luaV_tonumber(const TValue *obj, TValue *n);
 static int luaV_tostring(lua_State *L, StkId obj);
 static void luaV_execute(lua_State *L, int nexeccalls);
-static void luaV_concat(lua_State *L, int total, int last);
 extern const char *luaO_pushfstring(lua_State *L, const char *fmt, ...);
 extern const char *lua_pushfstring(lua_State *L, const char *fmt, ...);
 
@@ -713,7 +711,7 @@ static void correctstack(lua_State *L, TValue *oldstack)
 	}
 	L->base = (L->base - oldstack) + L->stack;
 }
-static void luaD_reallocstack(lua_State *L, int newsize)
+void luaD_reallocstack(lua_State *L, int newsize)
 {
 	TValue *oldstack = L->stack;
 	int realsize = newsize + 1 + 5;
@@ -730,7 +728,7 @@ static void luaD_reallocCI(lua_State *L, int newsize)
 	L->ci = (L->ci - oldci) + L->base_ci;
 	L->end_ci = L->base_ci + L->size_ci - 1;
 }
-static void luaD_growstack(lua_State *L, int n)
+void luaD_growstack(lua_State *L, int n)
 {
 	if (n <= L->stacksize)
 		luaD_reallocstack(L, 2 * L->stacksize);

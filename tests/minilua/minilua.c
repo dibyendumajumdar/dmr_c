@@ -188,7 +188,6 @@ static void luaD_throw(lua_State *L, int errcode);
 		if (iswhite(obj2gco(o)) && isblack(obj2gco(t)))                \
 			luaC_barrierback(L, t);                                \
 	}
-static void luaC_step(lua_State *L);
 static void luaC_link(lua_State *L, GCObject *o, lu_byte tt);
 static void luaC_linkupval(lua_State *L, UpVal *uv);
 static void luaC_barrierf(lua_State *L, GCObject *o, GCObject *v);
@@ -2367,7 +2366,7 @@ static int luaG_ordererror(lua_State *L, const TValue *p1, const TValue *p2)
 		luaG_runerror(L, "attempt to compare %s with %s", t1, t2);
 	return 0;
 }
-static void addinfo(lua_State *L, const char *msg)
+void addinfo(lua_State *L, const char *msg)
 {
 	CallInfo *ci = L->ci;
 	if (isLua(ci)) {
@@ -2377,7 +2376,7 @@ static void addinfo(lua_State *L, const char *msg)
 		luaO_pushfstring(L, "%s:%d: %s", buff, line, msg);
 	}
 }
-static void luaG_errormsg(lua_State *L)
+void luaG_errormsg(lua_State *L)
 {
 	if (L->errfunc != 0) {
 		StkId errfunc = restorestack(L, L->errfunc);

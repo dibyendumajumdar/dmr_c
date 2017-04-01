@@ -580,6 +580,18 @@ extern void luaV_concat(lua_State *L, int total, int last);
 extern TString *luaS_newlstr(lua_State *L, const char *str, size_t l);
 extern void luaD_reallocstack(lua_State *L, int newsize);
 extern void luaD_growstack(lua_State *L, int n);
-
+extern void addinfo(lua_State *L, const char *msg);
+extern void luaG_errormsg(lua_State *L);
+extern void luaC_step(lua_State *L);
+#define luaC_checkGC(L)                                                        \
+	{                                                                      \
+		condhardstacktests(                                            \
+		    luaD_reallocstack(L, L->stacksize - 5 - 1));               \
+		if (G(L)->totalbytes >= G(L)->GCthreshold)                     \
+			luaC_step(L);                                          \
+	}
+extern void luaL_where(lua_State *L, int level);
+extern int lua_error(lua_State *L);
+extern void lua_concat(lua_State *L, int n);
 
 #endif

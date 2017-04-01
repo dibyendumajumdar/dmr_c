@@ -666,7 +666,7 @@ static void luaE_freethread(lua_State *L, lua_State *L1);
 #define getline_(f, pc) (((f)->lineinfo) ? (f)->lineinfo[pc] : 0)
 #define resethookcount(L) (L->hookcount = L->basehookcount)
 static void luaG_typeerror(lua_State *L, const TValue *o, const char *opname);
-static void luaG_runerror(lua_State *L, const char *fmt, ...);
+extern void luaG_runerror(lua_State *L, const char *fmt, ...);
 #define luaD_checkstack(L, n)                                                  \
 	if ((char *)L->stack_last - (char *)L->top <=                          \
 	    (n) * (int)sizeof(TValue))                                         \
@@ -756,7 +756,6 @@ static int luaV_tostring(lua_State *L, StkId obj);
 static void luaV_execute(lua_State *L, int nexeccalls);
 static void luaV_concat(lua_State *L, int total, int last);
 extern const char *luaO_pushfstring(lua_State *L, const char *fmt, ...);
-extern void luaG_runerror(lua_State *L, const char *fmt, ...);
 extern const char *lua_pushfstring(lua_State *L, const char *fmt, ...);
 
 #if INITIALIZER_SUPPORTED
@@ -6671,7 +6670,7 @@ static const char *luaL_optlstring(lua_State *L, int numArg, const char *def,
 				   size_t *l);
 static lua_Integer luaL_checkinteger(lua_State *L, int numArg);
 static lua_Integer luaL_optinteger(lua_State *L, int nArg, lua_Integer def);
-static int luaL_error(lua_State *L, const char *fmt, ...);
+extern int luaL_error(lua_State *L, const char *fmt, ...);
 static const char *luaL_findtable(lua_State *L, int idx, const char *fname,
 				  int szhint);
 #define luaL_argcheck(L, cond, numarg, extramsg)                               \

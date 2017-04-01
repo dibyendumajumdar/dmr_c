@@ -102,7 +102,7 @@ const char *lua_pushfstring(lua_State *L, const char *fmt, ...)
 	return ret;
 }
 
-static int luaL_error(lua_State *L, const char *fmt, ...)
+int luaL_error(lua_State *L, const char *fmt, ...)
 {
 	va_list argp;
 	va_start(argp, fmt);

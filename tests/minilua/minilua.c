@@ -161,13 +161,6 @@ static void luaD_throw(lua_State *L, int errcode);
 #define gray2black(x) l_setbit((x)->gch.marked, 2)
 #define valiswhite(x) (iscollectable(x) && iswhite(gcvalue(x)))
 #define luaC_white(g) cast(lu_byte, (g)->currentwhite &bit2mask(0, 1))
-#define luaC_checkGC(L)                                                        \
-	{                                                                      \
-		condhardstacktests(                                            \
-		    luaD_reallocstack(L, L->stacksize - 5 - 1));               \
-		if (G(L)->totalbytes >= G(L)->GCthreshold)                     \
-			luaC_step(L);                                          \
-	}
 #define luaC_barrier(L, p, v)                                                  \
 	{                                                                      \
 		if (valiswhite(v) && isblack(obj2gco(p)))                      \
@@ -1943,7 +1936,7 @@ static l_mem singlestep(lua_State *L)
 		return 0;
 	}
 }
-static void luaC_step(lua_State *L)
+void luaC_step(lua_State *L)
 {
 	global_State *g = G(L);
 	l_mem lim = (1024u / 100) * g->gcstepmul;
@@ -6066,7 +6059,7 @@ static int lua_load(lua_State *L, lua_Reader reader, void *data,
 	status = luaD_protectedparser(L, &z, chunkname);
 	return status;
 }
-static int lua_error(lua_State *L)
+int lua_error(lua_State *L)
 {
 	api_checknelems(L, 1);
 	luaG_errormsg(L);
@@ -6085,7 +6078,7 @@ static int lua_next(lua_State *L, int idx)
 		L->top -= 1;
 	return more;
 }
-static void lua_concat(lua_State *L, int n)
+void lua_concat(lua_State *L, int n)
 {
 	api_checknelems(L, n);
 	if (n >= 2) {
@@ -6171,7 +6164,7 @@ static void tag_error(lua_State *L, int narg, int tag)
 {
 	luaL_typerror(L, narg, lua_typename(L, tag));
 }
-static void luaL_where(lua_State *L, int level)
+void luaL_where(lua_State *L, int level)
 {
 	lua_Debug ar;
 	if (lua_getstack(L, level, &ar)) {

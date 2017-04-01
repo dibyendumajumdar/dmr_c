@@ -688,39 +688,6 @@ static void luaD_reallocCI(lua_State *L, int newsize);
 static void luaD_reallocstack(lua_State *L, int newsize);
 static void luaD_growstack(lua_State *L, int n);
 static void luaD_throw(lua_State *L, int errcode);
-static void *luaM_growaux_(lua_State *L, void *block, int *size,
-			   size_t size_elems, int limit, const char *errormsg)
-{
-	void *newblock;
-	int newsize;
-	if (*size >= limit / 2) {
-		if (*size >= limit)
-			luaG_runerror(L, errormsg);
-		newsize = limit;
-	} else {
-		newsize = (*size) * 2;
-		if (newsize < 4)
-			newsize = 4;
-	}
-	newblock = luaM_reallocv(L, block, *size, newsize, size_elems);
-	*size = newsize;
-	return newblock;
-}
-static void *luaM_toobig(lua_State *L)
-{
-	luaG_runerror(L, "memory allocation error: block too big");
-	return NULL;
-}
-static void *luaM_realloc_(lua_State *L, void *block, size_t osize,
-			   size_t nsize)
-{
-	global_State *g = G(L);
-	block = g->frealloc(g->ud, block, osize, nsize);
-	if (block == NULL && nsize > 0)
-		luaD_throw(L, 4);
-	g->totalbytes = (g->totalbytes - osize) + nsize;
-	return block;
-}
 #define resetbits(x, m) ((x) &= cast(lu_byte, ~(m)))
 #define setbits(x, m) ((x) |= (m))
 #define testbits(x, m) ((x) & (m))
@@ -788,11 +755,50 @@ static const TValue *luaV_tonumber(const TValue *obj, TValue *n);
 static int luaV_tostring(lua_State *L, StkId obj);
 static void luaV_execute(lua_State *L, int nexeccalls);
 static void luaV_concat(lua_State *L, int total, int last);
+const char *luaO_pushfstring(lua_State *L, const char *fmt, ...);
+void luaG_runerror(lua_State *L, const char *fmt, ...);
+const char *lua_pushfstring(lua_State *L, const char *fmt, ...);
+
 #if INITIALIZER_SUPPORTED
 static const TValue luaO_nilobject_ = {{NULL}, 0};
 #else
 static TValue luaO_nilobject_;
 #endif
+
+static void *luaM_growaux_(lua_State *L, void *block, int *size,
+			   size_t size_elems, int limit, const char *errormsg)
+{
+	void *newblock;
+	int newsize;
+	if (*size >= limit / 2) {
+		if (*size >= limit)
+			luaG_runerror(L, errormsg);
+		newsize = limit;
+	} else {
+		newsize = (*size) * 2;
+		if (newsize < 4)
+			newsize = 4;
+	}
+	newblock = luaM_reallocv(L, block, *size, newsize, size_elems);
+	*size = newsize;
+	return newblock;
+}
+static void *luaM_toobig(lua_State *L)
+{
+	luaG_runerror(L, "memory allocation error: block too big");
+	return NULL;
+}
+static void *luaM_realloc_(lua_State *L, void *block, size_t osize,
+			   size_t nsize)
+{
+	global_State *g = G(L);
+	block = g->frealloc(g->ud, block, osize, nsize);
+	if (block == NULL && nsize > 0)
+		luaD_throw(L, 4);
+	g->totalbytes = (g->totalbytes - osize) + nsize;
+	return block;
+}
+
 static int luaO_int2fb(unsigned int x)
 {
 	int e = 0;
@@ -879,78 +885,7 @@ static void pushstr(lua_State *L, const char *str)
 	setsvalue(L, L->top, luaS_new(L, str));
 	incr_top(L);
 }
-static const char *luaO_pushvfstring(lua_State *L, const char *fmt,
-				     va_list argp)
-{
-	int n = 1;
-	pushstr(L, "");
-	for (;;) {
-		const char *e = strchr(fmt, '%');
-		if (e == NULL)
-			break;
-		setsvalue(L, L->top, luaS_newlstr(L, fmt, e - fmt));
-		incr_top(L);
-		switch (*(e + 1)) {
-		case 's': {
-			const char *s = va_arg(argp, char *);
-			if (s == NULL)
-				s = "(null)";
-			pushstr(L, s);
-			break;
-		}
-		case 'c': {
-			char buff[2];
-			buff[0] = cast(char, va_arg(argp, int));
-			buff[1] = '\0';
-			pushstr(L, buff);
-			break;
-		}
-		case 'd': {
-			setnvalue(L->top, cast_num(va_arg(argp, int)));
-			incr_top(L);
-			break;
-		}
-		case 'f': {
-			setnvalue(L->top, cast_num(va_arg(argp, l_uacNumber)));
-			incr_top(L);
-			break;
-		}
-		case 'p': {
-			char buff[4 * sizeof(void *) + 8];
-			sprintf(buff, "%p", va_arg(argp, void *));
-			pushstr(L, buff);
-			break;
-		}
-		case '%': {
-			pushstr(L, "%");
-			break;
-		}
-		default: {
-			char buff[3];
-			buff[0] = '%';
-			buff[1] = *(e + 1);
-			buff[2] = '\0';
-			pushstr(L, buff);
-			break;
-		}
-		}
-		n += 2;
-		fmt = e + 2;
-	}
-	pushstr(L, fmt);
-	luaV_concat(L, n + 1, cast_int(L->top - L->base) - 1);
-	L->top -= n;
-	return svalue(L->top - 1);
-}
-static const char *luaO_pushfstring(lua_State *L, const char *fmt, ...)
-{
-	const char *msg;
-	va_list argp;
-	va_start(argp, fmt);
-	msg = luaO_pushvfstring(L, fmt, argp);
-	va_end(argp);
-	return msg;
-}
+
 static void luaO_chunkid(char *out, const char *source, size_t bufflen)
 {
 	if (*source == '=') {
@@ -3004,14 +2939,6 @@ static void luaG_errormsg(lua_State *L)
 		luaD_call(L, L->top - 2, 1);
 	}
 	luaD_throw(L, 2);
-}
-static void luaG_runerror(lua_State *L, const char *fmt, ...)
-{
-	va_list argp;
-	va_start(argp, fmt);
-	addinfo(L, luaO_pushvfstring(L, fmt, argp));
-	va_end(argp);
-	luaG_errormsg(L);
 }
 static int luaZ_fill(ZIO *z)
 {
@@ -6424,23 +6351,6 @@ static void lua_pushstring(lua_State *L, const char *s)
 	else
 		lua_pushlstring(L, s, strlen(s));
 }
-static const char *lua_pushvfstring(lua_State *L, const char *fmt, va_list argp)
-{
-	const char *ret;
-	luaC_checkGC(L);
-	ret = luaO_pushvfstring(L, fmt, argp);
-	return ret;
-}
-static const char *lua_pushfstring(lua_State *L, const char *fmt, ...)
-{
-	const char *ret;
-	va_list argp;
-	luaC_checkGC(L);
-	va_start(argp, fmt);
-	ret = luaO_pushvfstring(L, fmt, argp);
-	va_end(argp);
-	return ret;
-}
 static void lua_pushcclosure(lua_State *L, lua_CFunction fn, int n)
 {
 	Closure *cl;
@@ -6824,16 +6734,6 @@ static void luaL_where(lua_State *L, int level)
 		}
 	}
 	lua_pushliteral(L, "");
-}
-static int luaL_error(lua_State *L, const char *fmt, ...)
-{
-	va_list argp;
-	va_start(argp, fmt);
-	luaL_where(L, 1);
-	lua_pushvfstring(L, fmt, argp);
-	va_end(argp);
-	lua_concat(L, 2);
-	return lua_error(L);
 }
 static int luaL_newmetatable(lua_State *L, const char *tname)
 {

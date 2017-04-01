@@ -3,7 +3,8 @@ project(dmr_c)
 
 enable_language(C)
 enable_language(CXX)
-enable_testing()
+
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
 option(LLVM_JIT "Controls whether LLVM JIT compilation will be enabled, default is OFF" OFF)
 
@@ -15,6 +16,10 @@ if (LLVM_JIT)
 
     include_directories(${LLVM_INCLUDE_DIRS})
     add_definitions(${LLVM_DEFINITIONS})
+else()
+    find_package(NanoJIT REQUIRED)
+
+    include_directories(${NANOJITEXTRA_INCLUDE_DIRS})
 endif()
 
 
@@ -183,6 +188,10 @@ if (LLVM_JIT)
 
     set(LIB_LLVM_SRCS llvm-backend/sparse-llvm.c)
     include_directories("${PROJECT_SOURCE_DIR}/llvm-backend")
+else()
+    set(LIB_LLVM_SRCS nanojit-backend/sparse-nanojit.cpp)
+    include_directories("${PROJECT_SOURCE_DIR}/nanojit-backend")
+    set(LLVM_LIBS ${NANOJITEXTRA_LIBRARIES})
 endif ()
 
 if (MSVC OR APPLE)
@@ -216,4 +225,7 @@ target_link_libraries(showsymbols dmr_c)
 if (LLVM_JIT)
     add_executable(sparse-llvm llvm-backend/llvmbackend.c)
     target_link_libraries(sparse-llvm dmr_c) 
+else()
+    add_executable(sparse-nanojit nanojit-backend/nanobackend.cpp)
+    target_link_libraries(sparse-nanojit dmr_c)     
 endif()

@@ -109,14 +109,8 @@ static void *luaM_realloc_(lua_State *L, void *block, size_t oldsize,
 static void *luaM_toobig(lua_State *L);
 static void *luaM_growaux_(lua_State *L, void *block, int *size,
 			   size_t size_elem, int limit, const char *errormsg);
-typedef struct Zio ZIO;
 #define char2int(c) cast(int, cast(unsigned char, (c)))
 #define zgetc(z) (((z)->n--) > 0 ? char2int(*(z)->p++) : luaZ_fill(z))
-typedef struct Mbuffer {
-	char *buffer;
-	size_t n;
-	size_t buffsize;
-} Mbuffer;
 #define luaZ_initbuffer(L, buff) ((buff)->buffer = NULL, (buff)->buffsize = 0)
 #define luaZ_buffer(buff) ((buff)->buffer)
 #define luaZ_sizebuffer(buff) ((buff)->buffsize)
@@ -126,130 +120,19 @@ typedef struct Mbuffer {
 	(luaM_reallocvector(L, (buff)->buffer, (buff)->buffsize, size, char),  \
 	 (buff)->buffsize = size)
 #define luaZ_freebuffer(L, buff) luaZ_resizebuffer(L, buff, 0)
-struct Zio {
-	size_t n;
-	const char *p;
-	lua_Reader reader;
-	void *data;
-	lua_State *L;
-};
 static int luaZ_fill(ZIO *z);
-struct lua_longjmp;
 #define gt(L) (&L->l_gt)
 #define registry(L) (&G(L)->l_registry)
-typedef struct stringtable {
-	GCObject **hash;
-	lu_int32 nuse;
-	int size;
-} stringtable;
-typedef struct CallInfo {
-	StkId base;
-	StkId func;
-	StkId top;
-	const Instruction *savedpc;
-	int nresults;
-	int tailcalls;
-} CallInfo;
 #define curr_func(L) (clvalue(L->ci->func))
 #define ci_func(ci) (clvalue((ci)->func))
 #define f_isLua(ci) (!ci_func(ci)->c.isC)
 #define isLua(ci) (ttisfunction((ci)->func) && f_isLua(ci))
-typedef struct global_State {
-	stringtable strt;
-	lua_Alloc frealloc;
-	void *ud;
-	lu_byte currentwhite;
-	lu_byte gcstate;
-	int sweepstrgc;
-	GCObject *rootgc;
-	GCObject **sweepgc;
-	GCObject *gray;
-	GCObject *grayagain;
-	GCObject *weak;
-	GCObject *tmudata;
-	Mbuffer buff;
-	lu_mem GCthreshold;
-	lu_mem totalbytes;
-	lu_mem estimate;
-	lu_mem gcdept;
-	int gcpause;
-	int gcstepmul;
-	lua_CFunction panic;
-	TValue l_registry;
-	struct lua_State *mainthread;
-	UpVal uvhead;
-	struct Table *mt[(8 + 1)];
-	TString *tmname[TM_N];
-} global_State;
-struct lua_State {
-	GCObject *next;
-	lu_byte tt;
-	lu_byte marked;
-	lu_byte status;
-	StkId top;
-	StkId base;
-	global_State *l_G;
-	CallInfo *ci;
-	const Instruction *savedpc;
-	StkId stack_last;
-	StkId stack;
-	CallInfo *end_ci;
-	CallInfo *base_ci;
-	int stacksize;
-	int size_ci;
-	unsigned short nCcalls;
-	unsigned short baseCcalls;
-	lu_byte hookmask;
-	lu_byte allowhook;
-	int basehookcount;
-	int hookcount;
-	lua_Hook hook;
-	TValue l_gt;
-	TValue env;
-	GCObject *openupval;
-	GCObject *gclist;
-	struct lua_longjmp *errorJmp;
-	ptrdiff_t errfunc;
-};
-#define G(L) (L->l_G)
-union GCObject {
-	GCheader gch;
-	union TString ts;
-	union Udata u;
-	union Closure cl;
-	struct Table h;
-	struct Proto p;
-	struct UpVal uv;
-	struct lua_State th;
-};
-#define rawgco2ts(o) check_exp((o)->gch.tt == 4, &((o)->ts))
-#define gco2ts(o) (&rawgco2ts(o)->tsv)
-#define rawgco2u(o) check_exp((o)->gch.tt == 7, &((o)->u))
-#define gco2u(o) (&rawgco2u(o)->uv)
-#define gco2cl(o) check_exp((o)->gch.tt == 6, &((o)->cl))
-#define gco2h(o) check_exp((o)->gch.tt == 5, &((o)->h))
-#define gco2p(o) check_exp((o)->gch.tt == (8 + 1), &((o)->p))
-#define gco2uv(o) check_exp((o)->gch.tt == (8 + 2), &((o)->uv))
-#define ngcotouv(o) check_exp((o) == NULL || (o)->gch.tt == (8 + 2), &((o)->uv))
-#define gco2th(o) check_exp((o)->gch.tt == 8, &((o)->th))
-#define obj2gco(v) (cast(GCObject *, (v)))
 static void luaE_freethread(lua_State *L, lua_State *L1);
 #define pcRel(pc, p) (cast(int, (pc) - (p)->code) - 1)
 #define getline_(f, pc) (((f)->lineinfo) ? (f)->lineinfo[pc] : 0)
 #define resethookcount(L) (L->hookcount = L->basehookcount)
 static void luaG_typeerror(lua_State *L, const TValue *o, const char *opname);
 extern void luaG_runerror(lua_State *L, const char *fmt, ...);
-#define luaD_checkstack(L, n)                                                  \
-	if ((char *)L->stack_last - (char *)L->top <=                          \
-	    (n) * (int)sizeof(TValue))                                         \
-		luaD_growstack(L, n);                                          \
-	else                                                                   \
-		condhardstacktests(luaD_reallocstack(L, L->stacksize - 5 - 1));
-#define incr_top(L)                                                            \
-	{                                                                      \
-		luaD_checkstack(L, 1);                                         \
-		L->top++;                                                      \
-	}
 #define savestack(L, p) ((char *)(p) - (char *)L->stack)
 #define restorestack(L, n) ((TValue *)((char *)L->stack + (n)))
 #define saveci(L, p) ((char *)(p) - (char *)L->base_ci)
@@ -257,8 +140,6 @@ extern void luaG_runerror(lua_State *L, const char *fmt, ...);
 typedef void (*Pfunc)(lua_State *L, void *ud);
 static int luaD_poscall(lua_State *L, StkId firstResult);
 static void luaD_reallocCI(lua_State *L, int newsize);
-static void luaD_reallocstack(lua_State *L, int newsize);
-static void luaD_growstack(lua_State *L, int n);
 static void luaD_throw(lua_State *L, int errcode);
 #define resetbits(x, m) ((x) &= cast(lu_byte, ~(m)))
 #define setbits(x, m) ((x) |= (m))

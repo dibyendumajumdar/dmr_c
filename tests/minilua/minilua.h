@@ -468,6 +468,7 @@ struct Zio {
 	void *data;
 	lua_State *L;
 };
+typedef struct Zio ZIO;
 struct lua_longjmp;
 typedef struct stringtable {
 	GCObject **hash;
@@ -572,7 +573,6 @@ union GCObject {
 		luaD_checkstack(L, 1);                                         \
 		L->top++;                                                      \
 	}
-
 
 
 extern void pushstr(lua_State *L, const char *str);

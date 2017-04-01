@@ -6113,7 +6113,6 @@ static const char *luaL_optlstring(lua_State *L, int numArg, const char *def,
 				   size_t *l);
 static lua_Integer luaL_checkinteger(lua_State *L, int numArg);
 static lua_Integer luaL_optinteger(lua_State *L, int nArg, lua_Integer def);
-extern int luaL_error(lua_State *L, const char *fmt, ...);
 static const char *luaL_findtable(lua_State *L, int idx, const char *fname,
 				  int szhint);
 #define luaL_argcheck(L, cond, numarg, extramsg)                               \

@@ -593,5 +593,7 @@ extern void luaC_step(lua_State *L);
 extern void luaL_where(lua_State *L, int level);
 extern int lua_error(lua_State *L);
 extern void lua_concat(lua_State *L, int n);
+extern int luaL_error(lua_State *L, const char *fmt, ...);
+extern const char *lua_pushfstring(lua_State *L, const char *fmt, ...);
 
 #endif

@@ -1,8 +1,9 @@
 This test is essentially a fairly complex program called minilua, which is part of the LuaJIT distribution.
 
 The orginal code has been modified:
-* to avoid initializers for structs, arrays and unions, as these are not yet supported.
+* to avoid complex initializers for structs, arrays and unions that are declared static or global, as these are not yet supported.
 * the use of var arg macros in stdarg.h is not supported, hence all functions making use of these are moved to a separate source file.
+* assignment of a struct or union to another as aggregate assignments are not yet supported by the LLVM backend
 
 ## Status
 

@@ -11,8 +11,16 @@
 #include <port.h>
 #include <symbol.h>
 
-#define MAX_ARGS 6
-#define MAX_JMP_INSTRUCTIONS 50
+/*
+* Only upto 4 arguments are supported as Nanojit only supports
+* parameters passed via registers
+*/
+#define MAX_ARGS 4
+/*
+* The maximum number of jumps we can handle in a single
+* function. This is just a memory allocation issue.
+*/
+#define MAX_JMP_INSTRUCTIONS 100
 
 struct jmp_target {
 	struct basic_block *bb;
@@ -35,6 +43,12 @@ struct function {
 	struct jmp_target jumps[MAX_JMP_INSTRUCTIONS];
 };
 
+/*
+* We need to note any jump instructions we get as we do not yet have the label
+* instruction to set the target of the jump. The labels are created as each
+* basic block is processed. At the end of code generation, the resolve_jump()
+* function below is called to set the target for each jump.
+*/
 static bool add_jump_instruction(struct function *fn, struct basic_block *bb,
 				 NJXLInsRef ins)
 {
@@ -70,7 +84,8 @@ static bool check_supported_argtype(struct dmr_C *C, struct symbol *sym)
 		if (sym->bit_size == C->target->bits_in_pointer)
 			return true;
 	}
-	fprintf(stderr, "Unsupported type in function argument\n");
+	fprintf(stderr, "Unsupported type in function argument, only pointers "
+			"and 64-bit integers are supported\n");
 	return false;
 }
 
@@ -92,12 +107,13 @@ static enum ReturnType check_supported_returntype(struct dmr_C *C,
 	return RT_UNSUPPORTED;
 }
 
-static int32_t instruction_size(struct dmr_C *C, struct instruction *insn)
+static int32_t instruction_size_in_bytes(struct dmr_C *C,
+					 struct instruction *insn)
 {
 	return insn->size / C->target->bits_in_char;
 }
 
-static int32_t sym_size(struct dmr_C *C, struct symbol *sym)
+static int32_t symbol_size_in_bytes(struct dmr_C *C, struct symbol *sym)
 {
 	return sym->bit_size / C->target->bits_in_char;
 }
@@ -112,13 +128,15 @@ static NJXLInsRef output_op_phi(struct dmr_C *C, struct function *fn,
 
 	// Unlike LLVM version which creates the Load instruction
 	// early on and inserts it into the IR stream here, we
-	// create the Load instruction here. 
+	// create the Load instruction here.
 	NJXLInsRef load = NULL;
 	switch (insn->size) {
 	case 8:
+		// TODO do we need to do unsigned here?
 		load = NJX_load_c2i(fn->builder, ptr, 0);
 		break;
 	case 16:
+		// TODO do we need to do unsigned here?
 		load = NJX_load_s2i(fn->builder, ptr, 0);
 		break;
 	case 32:
@@ -157,6 +175,7 @@ static NJXLInsRef pseudo_to_value(struct dmr_C *C, struct function *fn,
 		break;
 	case PSEUDO_SYM:
 		// result = get_sym_value(C, fn, pseudo);
+		fprintf(stderr, "pseudo from symbol not supported\n");
 		break;
 	case PSEUDO_VAL:
 		result = val_to_value(C, fn, pseudo->value, ctype);
@@ -206,28 +225,27 @@ static NJXLInsRef output_op_phisrc(struct dmr_C *C, struct function *fn,
 		if (!ptr)
 			return NULL;
 
-		if (dmrC_is_int_type(C->S, insn->type)) {
-			switch (phi->size) {
-			case 8:
-				NJX_store_i2c(fn->builder, v, ptr, 0);
-				break;
-			case 16:
-				NJX_store_i2s(fn->builder, v, ptr, 0);
-				break;
-			case 32:
+		switch (phi->size) {
+		case 8:
+			NJX_store_i2c(fn->builder, v, ptr, 0);
+			break;
+		case 16:
+			NJX_store_i2s(fn->builder, v, ptr, 0);
+			break;
+		case 32:
+			if (dmrC_is_float_type(C->S, insn->type))
+				NJX_store_f(fn->builder, v, ptr, 0);
+			else
 				NJX_store_i(fn->builder, v, ptr, 0);
-				break;
-			case 64:
-				NJX_store_q(fn->builder, v, ptr, 0);
-				break;
-			}
-		} else if (dmrC_is_ptr_type(insn->type)) {
-			NJX_store_q(fn->builder, v, ptr, 0);
-		} else if (dmrC_is_float_type(C->S, insn->type)) {
-			if (insn->size == 64)
+			break;
+		case 64:
+			if (dmrC_is_float_type(C->S, insn->type))
 				NJX_store_d(fn->builder, v, ptr, 0);
 			else
-				NJX_store_f(fn->builder, v, ptr, 0);
+				NJX_store_q(fn->builder, v, ptr, 0);
+			break;
+		default:
+			return NULL;
 		}
 	}
 	END_FOR_EACH_PTR(phi);
@@ -251,10 +269,16 @@ static NJXLInsRef output_op_load(struct dmr_C *C, struct function *fn,
 		value = NJX_load_s2i(fn->builder, ptr, (int)insn->offset);
 		break;
 	case 32:
-		value = NJX_load_i(fn->builder, ptr, (int)insn->offset);
+		if (dmrC_is_float_type(C->S, insn->type))
+			value = NJX_load_f(fn->builder, ptr, (int)insn->offset);
+		else
+			value = NJX_load_i(fn->builder, ptr, (int)insn->offset);
 		break;
 	case 64:
-		value = NJX_load_q(fn->builder, ptr, (int)insn->offset);
+		if (dmrC_is_float_type(C->S, insn->type))
+			value = NJX_load_d(fn->builder, ptr, (int)insn->offset);
+		else
+			value = NJX_load_q(fn->builder, ptr, (int)insn->offset);
 		break;
 	}
 	insn->target->priv = value;
@@ -264,7 +288,7 @@ static NJXLInsRef output_op_load(struct dmr_C *C, struct function *fn,
 static NJXLInsRef output_op_binary(struct dmr_C *C, struct function *fn,
 				   struct instruction *insn)
 {
-	NJXLInsRef lhs, rhs, target;
+	NJXLInsRef lhs, rhs, target = NULL;
 
 	lhs = pseudo_to_value(C, fn, insn->type, insn->src1);
 	if (!lhs)
@@ -277,29 +301,21 @@ static NJXLInsRef output_op_binary(struct dmr_C *C, struct function *fn,
 	switch (insn->opcode) {
 	/* Binary */
 	case OP_ADD:
-		if (dmrC_is_float_type(C->S, insn->type)) {
-			if (insn->size == 64)
+		switch (insn->size) {
+		case 64:
+			if (dmrC_is_float_type(C->S, insn->type))
 				target = NJX_addd(fn->builder, lhs, rhs);
 			else
-				target = NJX_addf(fn->builder, lhs, rhs);
-		} else if (dmrC_is_ptr_type(insn->type)) {
-			target = NJX_addq(fn->builder, lhs, rhs);
-		} else {
-			switch (insn->size) {
-			case 64:
 				target = NJX_addq(fn->builder, lhs, rhs);
-				break;
-			case 32:
+			break;
+		case 32:
+			if (dmrC_is_float_type(C->S, insn->type))
+				target = NJX_addf(fn->builder, lhs, rhs);
+			else
 				target = NJX_addi(fn->builder, lhs, rhs);
-				break;
-			default:
-				return NULL;
-			}
+			break;
 		}
 		break;
-
-	default:
-		return NULL;
 	}
 
 	insn->target->priv = target;
@@ -325,8 +341,8 @@ static NJXLInsRef output_op_br(struct dmr_C *C, struct function *fn,
 			cond = NJX_eqd(fn->builder, value,
 				       NJX_immd(fn->builder, 0));
 		} else if (NJX_is_f(value)) {
-			// cond = NJX_eqf(fn->builder, value,
-			// NJX_immf(fn->builder, 0));
+			cond = NJX_eqf(fn->builder, value,
+				       NJX_immf(fn->builder, 0));
 		}
 		if (cond == NULL)
 			return NULL;
@@ -340,10 +356,7 @@ static NJXLInsRef output_op_br(struct dmr_C *C, struct function *fn,
 			return NULL;
 		return br1;
 	} else {
-		NJXLInsRef br1 =
-		    NJX_br(fn->builder, NULL); // br->bb_true ?
-					       // br->bb_true->priv :
-					       // br->bb_false->priv;
+		NJXLInsRef br1 = NJX_br(fn->builder, NULL); 
 		if (br->bb_true) {
 			if (!add_jump_instruction(fn, br->bb_true, br1))
 				return NULL;
@@ -548,12 +561,13 @@ static bool output_fn(struct dmr_C *C, NJXContextRef module,
 				continue;
 			/* insert alloca into entry block */
 
-			NJXLInsRef ptr = NJX_alloca(function.builder,
-						    instruction_size(C, insn));
+			NJXLInsRef ptr =
+			    NJX_alloca(function.builder,
+				       instruction_size_in_bytes(C, insn));
 			// Unlike the Sparse LLVM version we
 			// save the pointer here and perform the load
 			// when we encounter the PHI instruction
-			// The LLVM version generates the Load instruction 
+			// The LLVM version generates the Load instruction
 			// but doesn't insert it into the IR at this point.
 			// But in Nanojit it seems we cannot do that - i.e.
 			// the instruction gets inserted into the IR stream

@@ -423,7 +423,7 @@ static int output_insn(struct dmr_C *C, struct function *fn,
 	case OP_SCAST:
 	case OP_FPCAST:
 	case OP_PTRCAST:
-		return 1;
+		return 0;
 
 	case OP_ADD:
 		v = output_op_binary(C, fn, insn);
@@ -462,7 +462,7 @@ static int output_insn(struct dmr_C *C, struct function *fn,
 	case OP_RANGE:
 	case OP_NOP:
 	case OP_ASM:
-		return 1;
+		return 0;
 
 	default:
 		return 1;

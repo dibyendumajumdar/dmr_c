@@ -51,6 +51,7 @@ struct pseudo {
 		long long value;	     // PSEUDO_VAL
 	};
 	void *priv;
+	void *priv2; /* FIXME - we use this to save ptr to allocated stack in PHI instructions (nanojit) */
 };
 
 struct linearizer_state_t {

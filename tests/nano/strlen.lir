@@ -1,0 +1,35 @@
+=== BEGIN Initial LIR ===
+  00: start
+  01: paramq1 = paramq 0 rbx
+  02: paramq2 = paramq 1 rsi
+  03: paramq3 = paramq 2 rdi
+  04: paramq4 = paramq 3 r12
+  05: paramq5 = paramq 4 r13
+  06: paramq6 = paramq 5 r14
+  07: paramq7 = paramq 6 r15
+  08: paramq8 = paramq 0 rcx
+  09: allocp1 = allocp 8
+  10: stq.o allocp1[0] = paramq8
+  11: allocp2 = allocp 8
+  12: label1:
+  13: immq1 = immq 0LL
+  14: stq.o allocp2[0] = immq1/*0LL*/
+  15: j -> label2
+  16: label2:
+  17: ldq1 = ldq.o allocp2[0]
+  18: ldq2 = ldq.o allocp1[0]
+  19: addq1 = addq ldq2, ldq1
+  20: ldc2i1 = ldc2i.o addq1[0]
+  21: immi1 = immi 0
+  22: eqi1 = eqi ldc2i1, immi1/*0*/
+  23: jt eqi1 -> label4
+  24: jf eqi1 -> label3
+  25: label3:
+  26: immq2 = immq 1LL
+  27: addq2 = addq ldq1, immq2/*1LL*/
+  28: stq.o allocp2[0] = addq2
+  29: j -> label2
+  30: label4:
+  31: retq ldq1
+  32: x1: x  -> line=0 (GuardID=000)
+=== END Initial LIR ===

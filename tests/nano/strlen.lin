@@ -1,0 +1,21 @@
+strlen:
+.L0:
+	<entry-point>
+	phisrc.64   %phi4(n) <- $0
+	br          .L4
+
+.L4:
+	phi.64      %r2(n) <- %phi4(n), %phi5(n)
+	add.64*     %r3 <- %arg1, %r2(n)
+	load.8      %r4 <- 0[%r3]
+	br          %r4, .L1, .L5
+
+.L1:
+	add.64      %r8 <- %r2(n), $1
+	phisrc.64   %phi5(n) <- %r8
+	br          .L4
+
+.L5:
+	ret.64      %r2(n)
+
+

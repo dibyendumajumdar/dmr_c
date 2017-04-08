@@ -107,10 +107,12 @@ static NJXLInsRef output_op_phi(struct dmr_C *C, struct function *fn,
 {
 	NJXLInsRef ptr = insn->target->priv2;
 
-	assert(ptr);
 	if (!ptr)
 		return NULL;
 
+	// Unlike LLVM version which creates the Load instruction
+	// early on and inserts it into the IR stream here, we
+	// create the Load instruction here. 
 	NJXLInsRef load = NULL;
 	switch (insn->size) {
 	case 8:
@@ -161,6 +163,11 @@ static NJXLInsRef pseudo_to_value(struct dmr_C *C, struct function *fn,
 		break;
 	case PSEUDO_ARG:
 		result = fn->args[pseudo->nr - 1];
+#if 1
+		// See function definition for reasons for copying the
+		// parameters; so we need to load the parameter being accessed
+		result = NJX_load_q(fn->builder, result, 0);
+#endif
 		break;
 	case PSEUDO_PHI:
 		result = pseudo->priv;
@@ -168,8 +175,6 @@ static NJXLInsRef pseudo_to_value(struct dmr_C *C, struct function *fn,
 	case PSEUDO_VOID:
 		result = NULL;
 		break;
-	default:
-		assert(0);
 	}
 	if (!result) {
 		fprintf(stderr, "error: no result for pseudo\n");
@@ -198,7 +203,6 @@ static NJXLInsRef output_op_phisrc(struct dmr_C *C, struct function *fn,
 		assert(phi->opcode == OP_PHI);
 		/* phi must be load from alloca */
 		ptr = phi->target->priv2;
-		assert(ptr);
 		if (!ptr)
 			return NULL;
 
@@ -235,7 +239,6 @@ static NJXLInsRef output_op_load(struct dmr_C *C, struct function *fn,
 {
 	NJXLInsRef ptr = pseudo_to_value(C, fn, insn->type, insn->src);
 
-	assert(ptr);
 	if (!ptr)
 		return NULL;
 
@@ -296,7 +299,6 @@ static NJXLInsRef output_op_binary(struct dmr_C *C, struct function *fn,
 		break;
 
 	default:
-		assert(0);
 		return NULL;
 	}
 
@@ -457,7 +459,7 @@ static int output_insn(struct dmr_C *C, struct function *fn,
 		dmrC_sparse_error(C, insn->pos,
 				  "failed to output instruction %s\n",
 				  dmrC_show_instruction(C, insn));
-	return 1; //  v != NULL;
+	return v != NULL;
 }
 
 /* return 1 on success, 0 on failure */
@@ -520,7 +522,18 @@ static bool output_fn(struct dmr_C *C, NJXContextRef module,
 
 	function.builder = NJX_create_function_builder(module, name, true);
 	for (int i = 0; i < nr_args; i++) {
+#if 0
 		function.args[i] = NJX_insert_parameter(function.builder);
+#else
+		// It is unclear what the LIR_paramp instruction does.
+		// It seems that we need to copy the parameters as the
+		// code generator does not preserve the parameter values.
+		// For now we allocate stack space and copy the parameters.
+		NJXLInsRef p = NJX_insert_parameter(function.builder);
+		NJXLInsRef ptr = NJX_alloca(function.builder, sizeof(int64_t));
+		NJXLInsRef arg = NJX_store_q(function.builder, p, ptr, 0);
+		function.args[i] = ptr;
+#endif
 	}
 
 	/* create the BBs */
@@ -537,6 +550,13 @@ static bool output_fn(struct dmr_C *C, NJXContextRef module,
 
 			NJXLInsRef ptr = NJX_alloca(function.builder,
 						    instruction_size(C, insn));
+			// Unlike the Sparse LLVM version we
+			// save the pointer here and perform the load
+			// when we encounter the PHI instruction
+			// The LLVM version generates the Load instruction 
+			// but doesn't insert it into the IR at this point.
+			// But in Nanojit it seems we cannot do that - i.e.
+			// the instruction gets inserted into the IR stream
 			insn->target->priv2 = ptr;
 			insn->target->priv = NULL;
 		}
@@ -557,7 +577,8 @@ static bool output_fn(struct dmr_C *C, NJXContextRef module,
 	if (resolve_jumps(&function))
 		success = true;
 
-	NJX_finalize(function.builder);
+	if (success && !NJX_finalize(function.builder))
+		success = false;
 
 	NJX_destroy_function_builder(function.builder);
 

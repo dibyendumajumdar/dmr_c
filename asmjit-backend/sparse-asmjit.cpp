@@ -13,17 +13,29 @@
 
 using namespace asmjit;
 
+// Error handler that just prints the error and lets AsmJit ignore it.
+class PrintErrorHandler : public asmjit::ErrorHandler {
+public:
+	// Return `true` to set last error to `err`, return `false` to do nothing.
+	bool handleError(asmjit::Error err, const char* message, asmjit::CodeEmitter* origin) override {
+		fprintf(stderr, "ERROR: %s\n", message);
+		return false;
+	}
+};
+
 struct AsmJitContext {
 	// Runtime specialized for JIT code execution.
 	JitRuntime rt;
 	// Holds code and relocation information.
 	CodeHolder code;
 	FileLogger logger;
+	PrintErrorHandler eh;
 
-	AsmJitContext() {
+	AsmJitContext() : logger(stderr) {
 		// Initialize to the same arch as JIT runtime.
 		code.init(rt.getCodeInfo());
 		code.setLogger(&logger);
+		code.setErrorHandler(&eh);
 	}
 };
 
@@ -377,7 +389,6 @@ static bool output_op_br(struct dmr_C *C, struct function *fn,
 		fn->cc->cmp(value, 0);
 		fn->cc->je(unwrap_label(br->bb_false->priv));
 		fn->cc->jne(unwrap_label(br->bb_true->priv));
-		return true;
 	} else {
 		if (br->bb_true) {
 			fn->cc->jmp(unwrap_label(br->bb_true->priv));
@@ -413,11 +424,11 @@ static int output_insn(struct dmr_C *C, struct function *fn,
 	case OP_RET:
 		if (!output_op_ret(C, fn, insn))
 			return 0;
-		break;
+		return 1;
 	case OP_BR:
 		if (!output_op_br(C, fn, insn))
 			return 0;
-		break;
+		return 1;
 	case OP_PHISOURCE:
 		v = output_op_phisrc(C, fn, insn);
 		break;
@@ -489,7 +500,7 @@ static int output_insn(struct dmr_C *C, struct function *fn,
 		dmrC_sparse_error(C, insn->pos,
 				  "failed to output instruction %s\n",
 				  dmrC_show_instruction(C, insn));
-	return v.isNone();
+	return !v.isNone();
 }
 
 /* return 1 on success, 0 on failure */
@@ -546,12 +557,30 @@ static bool output_fn(struct dmr_C *C, AsmJitContext *module,
 		if (!get_type(C, arg_base_type, arg_type_id))
 			return false;
 		fn.sig.addArg(arg_type_id);
-		fn.cc->setArg(nr_args, get_register(&fn, arg_type_id));
 		nr_args++;
 	}
 	END_FOR_EACH_PTR(arg);
 
 	fn.builder = fn.cc->addFunc(fn.sig);
+
+	nr_args = 0;
+	FOR_EACH_PTR_TYPED(base_type->arguments, struct symbol *, arg)
+	{
+		struct symbol *arg_base_type = arg->ctype.base_type;
+		if (nr_args >= MAX_ARGS) {
+			fprintf(stderr, "Only upto 6 arguments supported");
+			return false;
+		}
+		TypeId::Id arg_type_id;
+		if (!get_type(C, arg_base_type, arg_type_id))
+			return false;
+		auto arg = get_register(&fn, arg_type_id);
+		fn.args[nr_args] = arg;
+		fn.cc->setArg(nr_args, arg);
+		nr_args++;
+	}
+	END_FOR_EACH_PTR(arg);
+
 
 	/* create the BBs */
 	FOR_EACH_PTR_TYPED(ep->bbs, struct basic_block *, bb)
@@ -593,6 +622,7 @@ static bool output_fn(struct dmr_C *C, AsmJitContext *module,
 	bool success = false;
 
 	fn.cc->endFunc();
+	auto error = fn.cc->finalize();
 
 //	if (success && !NJX_finalize(function.builder))
 //		success = false;

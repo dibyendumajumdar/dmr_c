@@ -23,4 +23,4 @@ cd build
 cmake -DNANO_JIT=ON -G "Visual Studio 15 2017 Win64" ..
 ```
 
-Process on Linus should be similar except for the CMake generator target.
+Process on Linux should be similar except for the CMake generator target.

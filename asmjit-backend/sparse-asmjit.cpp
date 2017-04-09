@@ -14,10 +14,14 @@
 using namespace asmjit;
 
 // Error handler that just prints the error and lets AsmJit ignore it.
-class PrintErrorHandler : public asmjit::ErrorHandler {
-public:
-	// Return `true` to set last error to `err`, return `false` to do nothing.
-	bool handleError(asmjit::Error err, const char* message, asmjit::CodeEmitter* origin) override {
+class PrintErrorHandler : public asmjit::ErrorHandler
+{
+      public:
+	// Return `true` to set last error to `err`, return `false` to do
+	// nothing.
+	bool handleError(asmjit::Error err, const char *message,
+			 asmjit::CodeEmitter *origin) override
+	{
 		fprintf(stderr, "ERROR: %s\n", message);
 		return false;
 	}
@@ -31,7 +35,8 @@ struct AsmJitContext {
 	FileLogger logger;
 	PrintErrorHandler eh;
 
-	AsmJitContext() : logger(stderr) {
+	AsmJitContext() : logger(stderr)
+	{
 		// Initialize to the same arch as JIT runtime.
 		code.init(rt.getCodeInfo());
 		code.setLogger(&logger);
@@ -39,28 +44,33 @@ struct AsmJitContext {
 	}
 };
 
-typedef struct ASMJITContext* ASMJITContextRef;
+typedef struct ASMJITContext *ASMJITContextRef;
 
-struct backend_data wrap(Operand& op) {
+struct backend_data wrap(Operand &op)
+{
 	struct backend_data d;
-	static_assert(sizeof(struct backend_data) == sizeof(Operand), "mismatch in operand and backend data type size");
+	static_assert(sizeof(struct backend_data) == sizeof(Operand),
+		      "mismatch in operand and backend data type size");
 	memcpy(&d, &op, sizeof d);
 	return d;
 }
 
-X86Gp unwrap_register(struct backend_data &d) {
+X86Gp unwrap_register(struct backend_data &d)
+{
 	X86Gp op;
 	memcpy(&op, &d, sizeof op);
 	return op;
 }
 
-Label unwrap_label(struct backend_data &d) {
+Label unwrap_label(struct backend_data &d)
+{
 	Label op;
 	memcpy(&op, &d, sizeof op);
 	return op;
 }
 
-X86Mem unwrap_ptr(struct backend_data &d) {
+X86Mem unwrap_ptr(struct backend_data &d)
+{
 	X86Mem op;
 	memcpy(&op, &d, sizeof op);
 	return op;
@@ -81,33 +91,32 @@ enum ReturnType {
 };
 
 struct function {
-	CCFunc *builder;
+	CCFunc *func;
 	AsmJitContext *module;
 	X86Compiler *cc;
 	FuncSignatureX sig;
 	TypeId::Id return_type;
 	X86Gp args[MAX_ARGS];
 
-	function(AsmJitContext *module) {
+	function(AsmJitContext *module)
+	{
 		this->module = module;
 		// Create and attach X86Compiler to `code`.
 		cc = new X86Compiler(&module->code);
 	}
 
-	~function() {
-		delete cc;
-	}
+	~function() { delete cc; }
 };
 
-bool get_type(struct dmr_C *C, struct symbol *type, TypeId::Id &id) {
+bool get_type(struct dmr_C *C, struct symbol *type, TypeId::Id &id)
+{
 	if (type->type == SYM_NODE)
 		type = type->ctype.base_type;
 	if (dmrC_is_void_type(C->S, type))
 		id = TypeId::kVoid;
 	else if (dmrC_is_ptr_type(type)) {
 		id = TypeId::kIntPtr;
-	}
-	else if (dmrC_is_int_type(C->S, type)) {
+	} else if (dmrC_is_int_type(C->S, type)) {
 		switch (type->bit_size) {
 		case 1:
 		case 8:
@@ -125,8 +134,7 @@ bool get_type(struct dmr_C *C, struct symbol *type, TypeId::Id &id) {
 		default:
 			return false;
 		}
-	}
-	else if (dmrC_is_float_type(C->S, type)) {
+	} else if (dmrC_is_float_type(C->S, type)) {
 		switch (type->bit_size) {
 		case 32:
 			id = TypeId::kF32;
@@ -137,15 +145,14 @@ bool get_type(struct dmr_C *C, struct symbol *type, TypeId::Id &id) {
 		default:
 			return false;
 		}
-	}
-	else {
+	} else {
 		return false;
 	}
 }
 
 static X86Gp get_register(struct function *fn, TypeId::Id id)
 {
-	switch(id) {
+	switch (id) {
 	case TypeId::kI8:
 		return fn->cc->newGpb();
 	case TypeId::kI16:
@@ -174,13 +181,13 @@ static int32_t symbol_size_in_bytes(struct dmr_C *C, struct symbol *sym)
 	return sym->bit_size / C->target->bits_in_char;
 }
 
-static X86Reg output_op_phi(struct dmr_C *C, struct function *fn,
-				struct instruction *insn)
+static bool output_op_phi(struct dmr_C *C, struct function *fn,
+			  struct instruction *insn)
 {
 	X86Mem ptr = unwrap_ptr(insn->target->priv2);
 
 	if (ptr.isNone())
-		return X86Reg();
+		return false;
 
 	// Unlike LLVM version which creates the Load instruction
 	// early on and inserts it into the IR stream here, we
@@ -207,11 +214,11 @@ static X86Reg output_op_phi(struct dmr_C *C, struct function *fn,
 		break;
 	}
 	insn->target->priv = wrap(load);
-	return load;
+	return true;
 }
 
-static X86Gp val_to_value(struct dmr_C *C, struct function *fn,
-			       long long value, struct symbol *ctype)
+static X86Gp val_to_value(struct dmr_C *C, struct function *fn, long long value,
+			  struct symbol *ctype)
 {
 	switch (ctype->bit_size) {
 	case 8: {
@@ -239,7 +246,7 @@ static X86Gp val_to_value(struct dmr_C *C, struct function *fn,
 }
 
 static X86Gp pseudo_to_value(struct dmr_C *C, struct function *fn,
-				  struct symbol *ctype, pseudo_t pseudo)
+			     struct symbol *ctype, pseudo_t pseudo)
 {
 	X86Gp result;
 
@@ -269,8 +276,8 @@ static X86Gp pseudo_to_value(struct dmr_C *C, struct function *fn,
 	return result;
 }
 
-static X86Gp output_op_phisrc(struct dmr_C *C, struct function *fn,
-				   struct instruction *insn)
+static bool output_op_phisrc(struct dmr_C *C, struct function *fn,
+			     struct instruction *insn)
 {
 	X86Gp v;
 	struct instruction *phi;
@@ -278,7 +285,7 @@ static X86Gp output_op_phisrc(struct dmr_C *C, struct function *fn,
 	/* target = src */
 	v = pseudo_to_value(C, fn, insn->type, insn->phi_src);
 	if (v.isNone())
-		return v;
+		return false;
 
 	FOR_EACH_PTR_TYPED(insn->phi_users, struct instruction *, phi)
 	{
@@ -288,21 +295,21 @@ static X86Gp output_op_phisrc(struct dmr_C *C, struct function *fn,
 		/* phi must be load from alloca */
 		ptr = unwrap_ptr(phi->target->priv2);
 		if (ptr.isNone())
-			return X86Gp();
+			return false;
 
 		fn->cc->mov(ptr, v);
 	}
 	END_FOR_EACH_PTR(phi);
-	return v;
+	return true;
 }
 
-static X86Gp output_op_load(struct dmr_C *C, struct function *fn,
-				 struct instruction *insn)
+static bool output_op_load(struct dmr_C *C, struct function *fn,
+			   struct instruction *insn)
 {
 	X86Gp ptr = pseudo_to_value(C, fn, insn->type, insn->src);
 
 	if (ptr.isNone())
-		return ptr;
+		return false;
 
 	X86Gp value;
 	switch (insn->size) {
@@ -311,40 +318,42 @@ static X86Gp output_op_load(struct dmr_C *C, struct function *fn,
 		fn->cc->mov(value, X86Mem(ptr, (int)insn->offset));
 		break;
 	case 16:
-		value = fn->cc->newGpb();
+		value = fn->cc->newGpw();
 		fn->cc->mov(value, X86Mem(ptr, (int)insn->offset));
 		break;
 	case 32:
-		value = fn->cc->newGpb();
+		value = fn->cc->newGpd();
 		if (dmrC_is_float_type(C->S, insn->type))
-			fn->cc->mov(value, X86Mem(ptr, (int)insn->offset));
+			// fn->cc->mov(value, X86Mem(ptr, (int)insn->offset));
+			return false;
 		else
 			fn->cc->mov(value, X86Mem(ptr, (int)insn->offset));
 		break;
-	case 64: 
-		value = fn->cc->newGpb();
+	case 64:
+		value = fn->cc->newGpq();
 		if (dmrC_is_float_type(C->S, insn->type))
-			fn->cc->mov(value, X86Mem(ptr, (int)insn->offset));
+			// fn->cc->mov(value, X86Mem(ptr, (int)insn->offset));
+			return false;
 		else
 			fn->cc->mov(value, X86Mem(ptr, (int)insn->offset));
 		break;
 	}
 	insn->target->priv = wrap(value);
-	return value;
+	return true;
 }
 
-static X86Gp output_op_binary(struct dmr_C *C, struct function *fn,
-				   struct instruction *insn)
+static bool output_op_binary(struct dmr_C *C, struct function *fn,
+			     struct instruction *insn)
 {
 	X86Gp lhs, rhs, target;
 
 	lhs = pseudo_to_value(C, fn, insn->type, insn->src1);
 	if (lhs.isNone())
-		return lhs;
+		return false;
 
 	rhs = pseudo_to_value(C, fn, insn->type, insn->src2);
 	if (rhs.isNone())
-		return rhs;
+		return false;
 
 	switch (insn->opcode) {
 	/* Binary */
@@ -352,9 +361,8 @@ static X86Gp output_op_binary(struct dmr_C *C, struct function *fn,
 		switch (insn->size) {
 		case 64:
 			if (dmrC_is_float_type(C->S, insn->type)) {
-				//target = fn->cc->add(lhs, rhs);
-			}
-			else {
+				return false;
+			} else {
 				target = fn->cc->newGpq();
 				fn->cc->mov(target, lhs);
 				fn->cc->add(target, rhs);
@@ -362,9 +370,8 @@ static X86Gp output_op_binary(struct dmr_C *C, struct function *fn,
 			break;
 		case 32:
 			if (dmrC_is_float_type(C->S, insn->type)) {
-				//target = NJX_addf(fn->builder, lhs, rhs);
-			}
-			else {
+				return false;
+			} else {
 				target = fn->cc->newGpd();
 				fn->cc->mov(target, lhs);
 				fn->cc->add(target, rhs);
@@ -376,11 +383,11 @@ static X86Gp output_op_binary(struct dmr_C *C, struct function *fn,
 
 	insn->target->priv = wrap(target);
 
-	return target;
+	return true;
 }
 
 static bool output_op_br(struct dmr_C *C, struct function *fn,
-			       struct instruction *br)
+			 struct instruction *br)
 {
 	if (br->cond) {
 		X86Gp value = pseudo_to_value(C, fn, br->type, br->cond);
@@ -400,7 +407,7 @@ static bool output_op_br(struct dmr_C *C, struct function *fn,
 }
 
 static bool output_op_ret(struct dmr_C *C, struct function *fn,
-				struct instruction *insn)
+			  struct instruction *insn)
 {
 	pseudo_t pseudo = insn->src;
 
@@ -409,8 +416,7 @@ static bool output_op_ret(struct dmr_C *C, struct function *fn,
 		if (result.isNone())
 			return false;
 		fn->cc->ret(result);
-	}
-	else
+	} else
 		fn->cc->ret();
 	return true;
 }
@@ -419,24 +425,22 @@ static bool output_op_ret(struct dmr_C *C, struct function *fn,
 static int output_insn(struct dmr_C *C, struct function *fn,
 		       struct instruction *insn)
 {
-	Operand v;
+	bool success = false;
 	switch (insn->opcode) {
 	case OP_RET:
-		if (!output_op_ret(C, fn, insn))
-			return 0;
-		return 1;
+		success = output_op_ret(C, fn, insn);
+		break;
 	case OP_BR:
-		if (!output_op_br(C, fn, insn))
-			return 0;
-		return 1;
+		success = output_op_br(C, fn, insn);
+		break;
 	case OP_PHISOURCE:
-		v = output_op_phisrc(C, fn, insn);
+		success = output_op_phisrc(C, fn, insn);
 		break;
 	case OP_PHI:
-		v = output_op_phi(C, fn, insn);
+		success = output_op_phi(C, fn, insn);
 		break;
 	case OP_LOAD:
-		v = output_op_load(C, fn, insn);
+		success = output_op_load(C, fn, insn);
 		break;
 
 	case OP_SYMADDR:
@@ -451,10 +455,10 @@ static int output_insn(struct dmr_C *C, struct function *fn,
 	case OP_SCAST:
 	case OP_FPCAST:
 	case OP_PTRCAST:
-		return 0;
+		break;
 
 	case OP_ADD:
-		v = output_op_binary(C, fn, insn);
+		success = output_op_binary(C, fn, insn);
 		break;
 
 	case OP_SUB:
@@ -490,17 +494,17 @@ static int output_insn(struct dmr_C *C, struct function *fn,
 	case OP_RANGE:
 	case OP_NOP:
 	case OP_ASM:
-		return 0;
+		break;
 
 	default:
-		return 1;
+		success = true;
 	}
 
-	if (v.isNone())
+	if (!success)
 		dmrC_sparse_error(C, insn->pos,
 				  "failed to output instruction %s\n",
 				  dmrC_show_instruction(C, insn));
-	return !v.isNone();
+	return success;
 }
 
 /* return 1 on success, 0 on failure */
@@ -550,7 +554,8 @@ static bool output_fn(struct dmr_C *C, AsmJitContext *module,
 	{
 		struct symbol *arg_base_type = arg->ctype.base_type;
 		if (nr_args >= MAX_ARGS) {
-			fprintf(stderr, "Only upto 6 arguments supported");
+			fprintf(stderr, "Only upto %d arguments supported\n",
+				MAX_ARGS);
 			return false;
 		}
 		TypeId::Id arg_type_id;
@@ -561,26 +566,17 @@ static bool output_fn(struct dmr_C *C, AsmJitContext *module,
 	}
 	END_FOR_EACH_PTR(arg);
 
-	fn.builder = fn.cc->addFunc(fn.sig);
-
-	nr_args = 0;
-	FOR_EACH_PTR_TYPED(base_type->arguments, struct symbol *, arg)
-	{
-		struct symbol *arg_base_type = arg->ctype.base_type;
-		if (nr_args >= MAX_ARGS) {
-			fprintf(stderr, "Only upto 6 arguments supported");
-			return false;
-		}
-		TypeId::Id arg_type_id;
-		if (!get_type(C, arg_base_type, arg_type_id))
-			return false;
+	fn.func = fn.cc->addFunc(fn.sig);
+	for (int i = 0; i < fn.sig.getArgCount(); i++) {
+		// It is not clear to me exactly how ASMJIT sets
+		// up function arguments. Looking at the samples it
+		// appears that we need to set a register for each
+		// argument
+		TypeId::Id arg_type_id = (TypeId::Id)fn.sig.getArg(i);
 		auto arg = get_register(&fn, arg_type_id);
-		fn.args[nr_args] = arg;
-		fn.cc->setArg(nr_args, arg);
-		nr_args++;
+		fn.args[i] = arg;
+		fn.cc->setArg(i, arg);
 	}
-	END_FOR_EACH_PTR(arg);
-
 
 	/* create the BBs */
 	FOR_EACH_PTR_TYPED(ep->bbs, struct basic_block *, bb)
@@ -597,7 +593,9 @@ static bool output_fn(struct dmr_C *C, AsmJitContext *module,
 				continue;
 			/* insert alloca into entry block */
 
-			X86Mem ptr = fn.cc->newStack(instruction_size_in_bytes(C, insn), C->target->pointer_alignment);
+			X86Mem ptr =
+			    fn.cc->newStack(instruction_size_in_bytes(C, insn),
+					    C->target->pointer_alignment);
 			// Unlike the Sparse LLVM version we
 			// save the pointer here and perform the load
 			// when we encounter the PHI instruction
@@ -619,15 +617,10 @@ static bool output_fn(struct dmr_C *C, AsmJitContext *module,
 	}
 	END_FOR_EACH_PTR(bb);
 
-	bool success = false;
-
 	fn.cc->endFunc();
 	auto error = fn.cc->finalize();
 
-//	if (success && !NJX_finalize(function.builder))
-//		success = false;
-
-	return success;
+	return !error;
 }
 
 static int is_prototype(struct symbol *sym)
@@ -638,7 +631,8 @@ static int is_prototype(struct symbol *sym)
 }
 
 /* returns 1 on success, 0 on failure */
-static int compile(struct dmr_C *C, AsmJitContext *module, struct ptr_list *list)
+static int compile(struct dmr_C *C, AsmJitContext *module,
+		   struct ptr_list *list)
 {
 	struct symbol *sym;
 
@@ -666,12 +660,13 @@ static int compile(struct dmr_C *C, AsmJitContext *module, struct ptr_list *list
 }
 
 extern "C" bool dmrC_asmjitcompile(int argc, char **argv, ASMJITContextRef jit,
-		      const char *inputbuffer)
+				   const char *inputbuffer)
 {
 	struct ptr_list *filelist = NULL;
 	struct ptr_list *symlist;
 	char *file;
-	//AsmJitContext *module = reinterpret_cast<AsmJitContext *>(jit);
+	// AsmJitContext *module = reinterpret_cast<AsmJitContext *>(jit);
+	// Temp for testing
 	AsmJitContext *module = new AsmJitContext();
 
 	struct dmr_C *C = new_dmr_C();
@@ -706,6 +701,9 @@ extern "C" bool dmrC_asmjitcompile(int argc, char **argv, ASMJITContextRef jit,
 		fprintf(stderr, "Failed to compile given inputs\n");
 	}
 	destroy_dmr_C(C);
+
+	// Temp for testing
+	delete module;
 
 	return rc == 0;
 }

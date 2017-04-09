@@ -11,7 +11,7 @@ This is very early days. Right now, we cannot generate code successfully. Our in
 
 ## Building 
 
-* You will need to generate the CMake build scripts. I use following on Windows 10.
+You will need to generate the CMake build scripts. I use following on Windows 10.
 
 ```
 mkdir build

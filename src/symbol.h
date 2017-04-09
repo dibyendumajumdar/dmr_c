@@ -203,7 +203,7 @@ struct symbol {
 		};
 	};
 	pseudo_t pseudo;
-	void *priv;
+	DMRC_BACKEND_TYPE priv;
 };
 
 /* Modifiers */

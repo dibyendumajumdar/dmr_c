@@ -42,6 +42,15 @@ void *dmrC_blob_alloc(size_t size);
 void dmrC_blob_free(void *addr, size_t size);
 long double dmrC_string_to_ld(const char *nptr, char **endptr);
 
+#include <stdint.h>
+
+#ifdef ASMJIT_STATIC
+struct backend_data { uint64_t x[2]; };
+#define DMRC_BACKEND_TYPE struct backend_data
+#else
+#define DMRC_BACKEND_TYPE void *
+#endif
+
 #ifdef __cplusplus
 }
 #endif

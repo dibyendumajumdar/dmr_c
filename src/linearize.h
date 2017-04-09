@@ -23,7 +23,6 @@
 extern "C" {
 #endif
 
-
 struct instruction;
 
 struct pseudo_user {
@@ -50,8 +49,8 @@ struct pseudo {
 		struct instruction *def; // PSEUDO_REG & PHI
 		long long value;	     // PSEUDO_VAL
 	};
-	void *priv;
-	void *priv2; /* FIXME - we use this to save ptr to allocated stack in PHI instructions (nanojit) */
+	DMRC_BACKEND_TYPE priv;
+	DMRC_BACKEND_TYPE priv2;	/* FIXME - we use this to save ptr to allocated stack in PHI instructions (nanojit) */
 };
 
 struct linearizer_state_t {
@@ -275,7 +274,7 @@ struct basic_block {
 	struct ptr_list *needs, *defines; /* pseudo lists */
 	union {
 		unsigned int nr;	/* unique id for label's names */
-		void *priv;
+		DMRC_BACKEND_TYPE priv;
 	};
 };
 

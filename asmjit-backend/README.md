@@ -1,6 +1,6 @@
-# ASMJIT backend
+# AsmJit backend
 
-This backend is trying to use the [asmjit](https://github.com/asmjit/asmjit) code generator. We are using the X86Compiler component as 
+This backend is trying to use the [AsmJit](https://github.com/asmjit/asmjit) code generator. We are using the X86Compiler component as 
 this allows working at a higher level using virtual registers, with asmjit taking care of the register allocation.
 
 ## Status

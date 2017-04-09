@@ -9,4 +9,14 @@ This is very early days. Right now, we cannot generate code successfully. Our in
 
 * [strlen](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/strlen.c)
 
+## Building 
 
+* You will need to generate the CMake build scripts. I use following on Windows 10.
+
+```
+mkdir build
+cd build
+cmake -DASM_JIT=ON -G "Visual Studio 15 2017 Win64" ..
+```
+
+Process on Linus should be similar except for the CMake generator target.

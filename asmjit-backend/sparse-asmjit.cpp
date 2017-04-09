@@ -100,12 +100,16 @@ bool get_type(struct dmr_C *C, struct symbol *type, TypeId::Id &id) {
 		case 1:
 		case 8:
 			id = TypeId::kI8;
+			break;
 		case 16:
 			id = TypeId::kI16;
+			break;
 		case 32:
 			id = TypeId::kI32;
+			break;
 		case 64:
 			id = TypeId::kI64;
+			break;
 		default:
 			return false;
 		}
@@ -114,8 +118,10 @@ bool get_type(struct dmr_C *C, struct symbol *type, TypeId::Id &id) {
 		switch (type->bit_size) {
 		case 32:
 			id = TypeId::kF32;
+			break;
 		case 64:
 			id = TypeId::kF64;
+			break;
 		default:
 			return false;
 		}

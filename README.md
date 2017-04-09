@@ -13,7 +13,7 @@ The code base is a fork of Sparse. The main changes are:
 * Ensure the library can be built on Windows using MSVC
 * Modify the code to be more C++ friendly
 * Convert the LLVM backend to a JIT compiler
-* Add other backends - possibly based on [nanojit](https://github.com/dibyendumajumdar/dmr_c/tree/master/nanojit-backend) and asmjit.
+* Add other backends - possibly based on [nanojit](https://github.com/dibyendumajumdar/dmr_c/tree/master/nanojit-backend) and [asmjit](https://github.com/dibyendumajumdar/dmr_c/tree/master/asmjit-backend).
 
 ## Current status
 

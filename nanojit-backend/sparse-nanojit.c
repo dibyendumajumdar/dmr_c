@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <allocate.h>
 #include <expression.h>
 #include <flow.h>
 #include <linearize.h>
@@ -27,19 +28,46 @@ struct jmp_target {
 	NJXLInsRef jmp_instruction;
 };
 
-enum ReturnType {
+enum NanoTypeKind {
 	RT_UNSUPPORTED = 0,
-	RT_INT32 = 1,
-	RT_INT64 = 2,
-	RT_DOUBLE = 3,
-	RT_PTR = 4
+	RT_VOID = 1,
+	RT_INT = 2,
+	RT_INT32 = 3,
+	RT_INT64 = 4,
+	RT_FLOAT = 5,
+	RT_DOUBLE = 6,
+	RT_PTR = 7,
+	RT_AGGREGATE = 8,
+	RT_FUNCTION = 9,
 };
+
+struct NanoType {
+	enum NanoTypeKind type;
+	struct NanoType *return_type;
+	uint32_t bit_size;
+};
+
+static struct NanoType VoidType = {
+    .type = RT_VOID, .return_type = NULL, .bit_size = 0};
+static struct NanoType Int32Type = {
+    .type = RT_INT32, .return_type = NULL, .bit_size = sizeof(int32_t) * 8};
+static struct NanoType Int64Type = {
+    .type = RT_INT64, .return_type = NULL, .bit_size = sizeof(int64_t) * 8};
+static struct NanoType FloatType = {
+    .type = RT_FLOAT, .return_type = NULL, .bit_size = sizeof(float) * 8};
+static struct NanoType DoubleType = {
+    .type = RT_DOUBLE, .return_type = NULL, .bit_size = sizeof(double) * 8};
+static struct NanoType PtrType = {
+    .type = RT_PTR, .return_type = NULL, .bit_size = sizeof(void *) * 8};
+static struct NanoType BadType = {
+    .type = RT_UNSUPPORTED, .return_type = NULL, .bit_size = 0};
 
 struct function {
 	NJXFunctionBuilderRef builder;
 	NJXContextRef module;
+	struct allocator type_allocator;
 	NJXLInsRef args[MAX_ARGS];
-	enum ReturnType return_type;
+	struct NanoType *return_type;
 	struct jmp_target jumps[MAX_JMP_INSTRUCTIONS];
 };
 
@@ -76,6 +104,187 @@ static bool resolve_jumps(struct function *fn)
 	return true;
 }
 
+static struct NanoType *alloc_nanotype(struct function *fn,
+				       enum NanoTypeKind kind,
+				       unsigned int bit_size)
+{
+	struct NanoType *type = dmrC_allocator_allocate(&fn->type_allocator, 0);
+	type->type = kind;
+	type->bit_size = bit_size;
+	type->return_type = RT_UNSUPPORTED;
+}
+
+static struct NanoType *sym_basetype_type(struct dmr_C *C, struct function *fn,
+					  struct symbol *sym,
+					  struct symbol *sym_node)
+{
+	if (dmrC_is_float_type(C->S, sym)) {
+		switch (sym->bit_size) {
+		case 32:
+			return &FloatType;
+		case 64:
+			return &DoubleType;
+		default:
+			fprintf(stderr, "invalid bit size %d for type %d\n",
+				sym->bit_size, sym->type);
+			return &BadType;
+		}
+	} else {
+		switch (sym->bit_size) {
+		case -1:
+			return &VoidType;
+		case 32:
+			return &Int32Type;
+		case 64:
+			return &Int64Type;
+		default:
+			return alloc_nanotype(fn, RT_INT, sym->bit_size);
+		}
+	}
+}
+
+static int is_aggregate_type(struct symbol *sym)
+{
+	if (sym->type == SYM_NODE)
+		return is_aggregate_type(sym->ctype.base_type);
+	switch (sym->type) {
+	case SYM_UNION:
+	case SYM_STRUCT:
+	case SYM_ARRAY:
+		return true;
+	default:
+		return false;
+	}
+}
+
+static struct NanoType *type_to_nanotype(struct dmr_C *C, struct function *fn,
+					 struct symbol *sym,
+					 struct symbol *sym_node);
+
+static struct NanoType *get_symnode_type(struct dmr_C *C, struct function *fn,
+					 struct symbol *sym)
+{
+	assert(sym->type == SYM_NODE);
+	return type_to_nanotype(C, fn, sym->ctype.base_type, sym);
+}
+
+static struct NanoType *get_symnode_or_basetype(struct dmr_C *C,
+						struct function *fn,
+						struct symbol *sym)
+{
+	if (sym->type == SYM_NODE) {
+		assert(sym->ctype.base_type->type != SYM_NODE);
+		return type_to_nanotype(C, fn, sym->ctype.base_type, sym);
+	}
+	return type_to_nanotype(C, fn, sym, NULL);
+}
+
+static struct NanoType *func_return_type(struct dmr_C *C, struct function *fn,
+					 struct symbol *sym,
+					 struct symbol *sym_node)
+{
+	return type_to_nanotype(C, fn, sym->ctype.base_type, sym_node);
+}
+
+static struct NanoType *sym_func_type(struct dmr_C *C, struct function *fn,
+				      struct symbol *sym,
+				      struct symbol *sym_node)
+{
+	struct NanoType *ret_type;
+	struct symbol *arg;
+	int n_arg = 0;
+
+	// TODO we probably need a better way to encode function type
+
+	ret_type = func_return_type(C, fn, sym, sym_node);
+	struct NanoType *type = alloc_nanotype(fn, RT_FUNCTION, 0);
+	type->return_type = ret_type;
+	return type;
+}
+
+static struct NanoType *sym_array_type(struct dmr_C *C, struct function *fn,
+				       struct symbol *sym,
+				       struct symbol *sym_node)
+{
+	struct symbol *base_type;
+	base_type = sym->ctype.base_type;
+	/* empty struct is undefined [6.7.2.1(8)] */
+	unsigned int array_bit_size = sym->bit_size;
+	if (array_bit_size == 0 || array_bit_size == -1) {
+		if (sym_node != NULL)
+			array_bit_size = sym_node->bit_size;
+	}
+	if (base_type->bit_size == 0 || base_type->bit_size == -1 ||
+	    array_bit_size == 0 || array_bit_size == -1) {
+		fprintf(stderr, "array size can not be determined\n");
+		return &BadType;
+	}
+	return alloc_nanotype(fn, RT_AGGREGATE, array_bit_size);
+}
+
+static struct NanoType *sym_struct_type(struct dmr_C *C, struct function *fn,
+					struct symbol *sym,
+					struct symbol *sym_node)
+{
+	unsigned int bit_size = 0;
+	if (sym->bit_size > 0 && sym->bit_size != -1) {
+		bit_size = sym->bit_size;
+	}
+	return alloc_nanotype(fn, RT_AGGREGATE, bit_size);
+}
+
+static struct NanoType *sym_ptr_type(struct dmr_C *C, struct function *fn,
+				     struct symbol *sym,
+				     struct symbol *sym_node)
+{
+	return &PtrType;
+}
+
+static struct NanoType *type_to_nanotype(struct dmr_C *C, struct function *fn,
+					 struct symbol *sym,
+					 struct symbol *sym_node)
+{
+	assert(sym->type != SYM_NODE);
+	assert(sym_node == NULL || sym_node->type == SYM_NODE);
+	switch (sym->type) {
+	case SYM_BITFIELD: {
+		return alloc_nanotype(fn, RT_INT, sym->bit_size);
+	}
+	case SYM_RESTRICT:
+	case SYM_ENUM:
+		return type_to_nanotype(C, fn, sym->ctype.base_type, sym_node);
+	case SYM_BASETYPE:
+		return sym_basetype_type(C, fn, sym, sym_node);
+	case SYM_PTR:
+		return sym_ptr_type(C, fn, sym, sym_node);
+	case SYM_UNION:
+	case SYM_STRUCT:
+		return sym_struct_type(C, fn, sym, sym_node);
+	case SYM_ARRAY:
+		return sym_array_type(C, fn, sym, sym_node);
+	case SYM_FN:
+		return sym_func_type(C, fn, sym, sym_node);
+	default:
+		return &BadType;
+	}
+}
+
+static struct NanoType *insn_symbol_type(struct dmr_C *C, struct function *fn,
+					 struct instruction *insn)
+{
+	if (insn->type) {
+		return get_symnode_or_basetype(C, fn, insn->type);
+	}
+	switch (insn->size) {
+	case 32:
+		return &Int32Type;
+	case 64:
+		return &Int64Type;
+	default:
+		return alloc_nanotype(fn, RT_INT, insn->size);
+	}
+}
+
 static bool check_supported_argtype(struct dmr_C *C, struct symbol *sym)
 {
 	if (dmrC_is_ptr_type(sym))
@@ -89,22 +298,95 @@ static bool check_supported_argtype(struct dmr_C *C, struct symbol *sym)
 	return false;
 }
 
-static enum ReturnType check_supported_returntype(struct dmr_C *C,
-						  struct symbol *sym)
+static struct NanoType *check_supported_returntype(struct dmr_C *C,
+						   struct NanoType *type)
 {
-	if (dmrC_is_ptr_type(sym))
-		return RT_PTR;
-	if (dmrC_is_int_type(C->S, sym)) {
-		if (sym->bit_size == C->target->bits_in_longlong)
-			return RT_INT64;
-		else if (sym->bit_size == C->target->bits_in_int)
-			return RT_INT32;
-	} else if (dmrC_is_float_type(C->S, sym)) {
-		if (sym->bit_size == C->target->bits_in_double)
-			return RT_DOUBLE;
+
+	if (type->type == RT_AGGREGATE || type->type == RT_FUNCTION ||
+	    type->type == RT_INT || type->type == RT_UNSUPPORTED)
+		return &BadType;
+	return type;
+}
+
+static NJXLInsRef build_cast(struct dmr_C *C, struct function *fn,
+			     NJXLInsRef val, struct NanoType *dtype,
+			     int unsigned_cast)
+{
+	switch (dtype->type) {
+	case RT_INT32:
+		if (NJX_is_q(val)) {
+			return NJX_q2i(fn->builder, val);
+		} else if (NJX_is_f(val)) {
+			return NJX_f2i(fn->builder, val);
+		} else if (NJX_is_d(val)) {
+			return NJX_d2i(fn->builder, val);
+		} else if (NJX_is_i(val)) {
+			return val;
+		}
+		break;
+
+	case RT_INT64:
+		if (NJX_is_i(val)) {
+			if (unsigned_cast)
+				return NJX_ui2uq(fn->builder, val);
+			else
+				return NJX_i2q(fn->builder, val);
+		} else if (NJX_is_f(val)) {
+			if (unsigned_cast)
+				return NJX_ui2uq(fn->builder,
+						 NJX_f2i(fn->builder, val));
+			else
+				return NJX_i2q(fn->builder,
+					       NJX_f2i(fn->builder, val));
+		} else if (NJX_is_d(val)) {
+			/// FIXME this doesn't look right
+			if (unsigned_cast)
+				return NJX_ui2uq(fn->builder,
+						 NJX_d2i(fn->builder, val));
+			else
+				return NJX_i2q(fn->builder,
+					       NJX_d2i(fn->builder, val));
+		} else if (NJX_is_q(val)) {
+			return val;
+		}
+		break;
+
+	case RT_PTR:
+		if (NJX_is_i(val)) {
+			return NJX_i2q(fn->builder, val);
+		} else if (NJX_is_q(val)) {
+			return val;
+		} else {
+			return NULL;
+		}
+		break;
+
+	case RT_FLOAT:
+		if (NJX_is_i(val)) {
+			return NJX_i2f(fn->builder, val);
+		} else if (NJX_is_q(val)) {
+			return NJX_d2f(fn->builder, NJX_q2d(fn->builder, val));
+		} else if (NJX_is_d(val)) {
+			return NJX_d2f(fn->builder, val);
+		} else if (NJX_is_f(val))
+			return val;
+		break;
+
+	case RT_DOUBLE:
+		if (NJX_is_i(val)) {
+			return NJX_i2d(fn->builder, val);
+		} else if (NJX_is_q(val)) {
+			return NJX_q2d(fn->builder, val);
+		} else if (NJX_is_f(val)) {
+			return NJX_f2d(fn->builder, val);
+		} else if (NJX_is_d(val)) {
+			return val;
+		}
+		break;
+	default:
+		break;
 	}
-	fprintf(stderr, "Unsupported function return type\n");
-	return RT_UNSUPPORTED;
+	return NULL;
 }
 
 static int32_t instruction_size_in_bytes(struct dmr_C *C,
@@ -285,16 +567,41 @@ static NJXLInsRef output_op_load(struct dmr_C *C, struct function *fn,
 	return value;
 }
 
+/**
+* Convert the pseudo to a value, and cast it to the expected type of the
+* instruction. If ptrtoint is true then convert pointer values to integers.
+*/
+static NJXLInsRef get_operand(struct dmr_C *C, struct function *fn,
+			      struct symbol *ctype, pseudo_t pseudo,
+			      bool ptrtoint, bool unsigned_cast)
+{
+	NJXLInsRef target;
+
+	struct NanoType *instruction_type =
+	    get_symnode_or_basetype(C, fn, ctype);
+	if (instruction_type == NULL)
+		return NULL;
+	target = pseudo_to_value(C, fn, ctype, pseudo);
+	if (!target)
+		return NULL;
+	if (ptrtoint && dmrC_is_ptr_type(ctype))
+		target = build_cast(C, fn, target, instruction_type, 0);
+	else
+		target =
+		    build_cast(C, fn, target, instruction_type, unsigned_cast);
+	return target;
+}
+
 static NJXLInsRef output_op_binary(struct dmr_C *C, struct function *fn,
 				   struct instruction *insn)
 {
 	NJXLInsRef lhs, rhs, target = NULL;
 
-	lhs = pseudo_to_value(C, fn, insn->type, insn->src1);
+	lhs = get_operand(C, fn, insn->type, insn->src1, 1, 0);
 	if (!lhs)
 		return NULL;
 
-	rhs = pseudo_to_value(C, fn, insn->type, insn->src2);
+	rhs = get_operand(C, fn, insn->type, insn->src2, 1, 0);
 	if (!rhs)
 		return NULL;
 
@@ -356,7 +663,7 @@ static NJXLInsRef output_op_br(struct dmr_C *C, struct function *fn,
 			return NULL;
 		return br1;
 	} else {
-		NJXLInsRef br1 = NJX_br(fn->builder, NULL); 
+		NJXLInsRef br1 = NJX_br(fn->builder, NULL);
 		if (br->bb_true) {
 			if (!add_jump_instruction(fn, br->bb_true, br1))
 				return NULL;
@@ -508,29 +815,37 @@ static bool output_fn(struct dmr_C *C, NJXContextRef module,
 	struct symbol *arg;
 	const char *name;
 	int nr_args = 0;
+	bool success = false;
 
 	if (base_type->variadic) {
 		fprintf(stderr, "Variadic functions are not supported\n");
 		return false;
 	}
 
+	dmrC_allocator_init(&function.type_allocator, "nanotypes",
+			    sizeof(struct NanoType),
+			    __alignof__(struct NanoType), CHUNK);
+
 	FOR_EACH_PTR(base_type->arguments, arg)
 	{
 		struct symbol *arg_base_type = arg->ctype.base_type;
 		if (nr_args >= MAX_ARGS) {
-			fprintf(stderr, "Only upto 6 arguments supported");
-			return false;
+			fprintf(stderr, "Only upto %d arguments supported\n",
+				MAX_ARGS);
+			goto Ereturn;
 		}
 		if (!check_supported_argtype(C, arg_base_type))
-			return false;
+			goto Ereturn;
 		nr_args++;
 	}
 	END_FOR_EACH_PTR(arg);
 
 	name = dmrC_show_ident(C, sym->ident);
 
-	function.return_type = check_supported_returntype(C, ret_type);
-	if (function.return_type == RT_UNSUPPORTED)
+	struct NanoType *function_type =
+	    type_to_nanotype(C, &function, ret_type, NULL);
+	function.return_type = check_supported_returntype(C, function_type);
+	if (function.return_type == &BadType)
 		return false;
 
 	function.builder = NJX_create_function_builder(module, name, true);
@@ -581,20 +896,22 @@ static bool output_fn(struct dmr_C *C, NJXContextRef module,
 	FOR_EACH_PTR(ep->bbs, bb)
 	{
 		if (!output_bb(C, &function, bb)) {
-			NJX_destroy_function_builder(function.builder);
-			return false;
+			goto Efailed;
 		}
 	}
 	END_FOR_EACH_PTR(bb);
 
-	bool success = false;
 	if (resolve_jumps(&function))
 		success = true;
 
 	if (success && !NJX_finalize(function.builder))
 		success = false;
 
+Efailed:
 	NJX_destroy_function_builder(function.builder);
+
+Ereturn:
+	dmrC_allocator_destroy(&function.type_allocator);
 
 	return success;
 }

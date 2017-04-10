@@ -846,7 +846,7 @@ static bool output_fn(struct dmr_C *C, NJXContextRef module,
 	    type_to_nanotype(C, &function, ret_type, NULL);
 	function.return_type = check_supported_returntype(C, function_type);
 	if (function.return_type == &BadType)
-		return false;
+		goto Ereturn;
 
 	function.builder = NJX_create_function_builder(module, name, true);
 	for (int i = 0; i < nr_args; i++) {

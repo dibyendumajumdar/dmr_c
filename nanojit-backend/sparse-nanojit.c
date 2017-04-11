@@ -464,7 +464,7 @@ static NJXLInsRef pseudo_to_value(struct dmr_C *C, struct function *fn,
 		break;
 	case PSEUDO_ARG:
 		result = fn->args[pseudo->nr - 1];
-#if 1
+#if 0
 		// See function definition for reasons for copying the
 		// parameters; so we need to load the parameter being accessed
 		result = NJX_load_q(fn->builder, result, 0);
@@ -483,6 +483,24 @@ static NJXLInsRef pseudo_to_value(struct dmr_C *C, struct function *fn,
 	}
 	return result;
 }
+
+static NJXLInsRef pseudo_ins(struct dmr_C *C, struct function *fn, pseudo_t pseudo)
+{
+	NJXLInsRef result = NULL;
+	switch (pseudo->type) {
+	case PSEUDO_REG:
+		result = pseudo->priv;
+		break;
+	case PSEUDO_ARG:
+		result = fn->args[pseudo->nr - 1];
+		break;
+	case PSEUDO_PHI:
+		result = pseudo->priv;
+		break;
+	}
+	return result;
+}
+
 
 static NJXLInsRef output_op_phisrc(struct dmr_C *C, struct function *fn,
 				   struct instruction *insn)
@@ -782,6 +800,46 @@ static int output_insn(struct dmr_C *C, struct function *fn,
 	return v != NULL;
 }
 
+/* 
+* Add liveness data to help Nanojit's
+* register allocator, which does a scan of the Nanojit instructions
+* from bottom up and can miss the fact that some registers are
+* needed. It is not yet clear the implementation below is correct.
+*/
+static void output_liveness(struct dmr_C *C, struct function *fn,
+	struct basic_block *bb, struct instruction *insn) {
+	if (insn->opcode == OP_BR) {
+		pseudo_t need;
+		FOR_EACH_PTR(bb->needs, need) {
+			NJXLInsRef value = pseudo_ins(C, fn, need);
+			if (value) {
+				if (NJX_is_d(value))
+					NJX_lived(fn->builder, value);
+				else if (NJX_is_f(value))
+					NJX_livef(fn->builder, value);
+				else if (NJX_is_i(value))
+					NJX_livei(fn->builder, value);
+				else
+					NJX_liveq(fn->builder, value);
+			}
+		}
+		END_FOR_EACH_PTR(need);
+	}
+}
+
+/*
+* Add liveness data to help Nanojit's
+* register allocator, which does a scan of the Nanojit instructions
+* from bottom up and can miss the fact that some registers are
+* needed. It is not yet clear the implementation below is correct.
+*/
+static void output_parameter_liveness(struct dmr_C *C, struct function *fn) {
+	for (int i = 0; fn->args[i]; i++) {
+		NJX_liveq(fn->builder, fn->args[i]);
+	}
+}
+
+
 /* return 1 on success, 0 on failure */
 static int output_bb(struct dmr_C *C, struct function *fn,
 		     struct basic_block *bb)
@@ -794,6 +852,9 @@ static int output_bb(struct dmr_C *C, struct function *fn,
 		if (!insn->bb)
 			continue;
 
+		// TODO unsure about this
+		// output_liveness(C, fn, bb, insn);
+
 		if (!output_insn(C, fn, insn)) {
 			dmrC_sparse_error(C, insn->pos, "failed to output %s\n",
 					  dmrC_show_instruction(C, insn));
@@ -801,6 +862,7 @@ static int output_bb(struct dmr_C *C, struct function *fn,
 		}
 	}
 	END_FOR_EACH_PTR(insn);
+
 	return 1;
 }
 
@@ -850,7 +912,7 @@ static bool output_fn(struct dmr_C *C, NJXContextRef module,
 
 	function.builder = NJX_create_function_builder(module, name, true);
 	for (int i = 0; i < nr_args; i++) {
-#if 0
+#if 1
 		function.args[i] = NJX_insert_parameter(function.builder);
 #else
 		// It is unclear what the LIR_paramp instruction does.
@@ -904,8 +966,13 @@ static bool output_fn(struct dmr_C *C, NJXContextRef module,
 	if (resolve_jumps(&function))
 		success = true;
 
-	if (success && !NJX_finalize(function.builder))
-		success = false;
+	output_parameter_liveness(C, &function);
+
+	if (success) {
+		void *p = NJX_finalize(function.builder);
+		if (!p) 
+			success = false;
+	}
 
 Efailed:
 	NJX_destroy_function_builder(function.builder);

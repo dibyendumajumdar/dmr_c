@@ -648,6 +648,33 @@ static NJXLInsRef output_op_binary(struct dmr_C *C, struct function *fn,
 	return target;
 }
 
+/*
+* Add liveness data to help Nanojit's
+* register allocator, which does a scan of the Nanojit instructions
+* from bottom up and can miss the fact that some registers are
+* needed.
+*/
+static void output_liveness(struct dmr_C *C, struct function *fn,
+			    struct basic_block *bb)
+{
+	pseudo_t need;
+	FOR_EACH_PTR(bb->needs, need)
+	{
+		NJXLInsRef value = pseudo_ins(C, fn, need);
+		if (value) {
+			if (NJX_is_d(value))
+				NJX_lived(fn->builder, value);
+			else if (NJX_is_f(value))
+				NJX_livef(fn->builder, value);
+			else if (NJX_is_i(value))
+				NJX_livei(fn->builder, value);
+			else
+				NJX_liveq(fn->builder, value);
+		}
+	}
+	END_FOR_EACH_PTR(need);
+}
+
 static NJXLInsRef output_op_br(struct dmr_C *C, struct function *fn,
 			       struct instruction *br)
 {
@@ -671,16 +698,32 @@ static NJXLInsRef output_op_br(struct dmr_C *C, struct function *fn,
 		}
 		if (cond == NULL)
 			return NULL;
+		// Mark registers needed by destination BB as live
+		// TODO we should only output if bb_false precedes current bb
+		output_liveness(C, fn, br->bb_false);
 		NJXLInsRef br1 =
 		    NJX_cbr_true(fn->builder, cond, NULL); // br->bb_false->priv
 		if (!add_jump_instruction(fn, br->bb_false, br1))
 			return NULL;
+		// Mark registers needed by destination BB as live
+		// TODO we should only output if bb_false precedes current bb
+		output_liveness(C, fn, br->bb_true);
 		NJXLInsRef br2 =
 		    NJX_cbr_false(fn->builder, cond, NULL); // br->bb_true->priv
 		if (!add_jump_instruction(fn, br->bb_true, br2))
 			return NULL;
 		return br1;
 	} else {
+		if (br->bb_true) {
+			// Mark registers needed by destination BB as live
+			// TODO we should only output if bb_true precedes current bb
+			output_liveness(C, fn, br->bb_true);
+		}
+		else if (br->bb_false) {
+			// Mark registers needed by destination BB as live
+			// TODO we should only output if bb_false precedes current bb
+			output_liveness(C, fn, br->bb_false);
+		}
 		NJXLInsRef br1 = NJX_br(fn->builder, NULL);
 		if (br->bb_true) {
 			if (!add_jump_instruction(fn, br->bb_true, br1))
@@ -715,7 +758,7 @@ static NJXLInsRef output_op_ret(struct dmr_C *C, struct function *fn,
 }
 
 /* return 1 on success, 0 on failure */
-static int output_insn(struct dmr_C *C, struct function *fn,
+static int output_insn(struct dmr_C *C, struct function *fn, 
 		       struct instruction *insn)
 {
 	NJXLInsRef v = NULL;
@@ -800,33 +843,6 @@ static int output_insn(struct dmr_C *C, struct function *fn,
 	return v != NULL;
 }
 
-/* 
-* Add liveness data to help Nanojit's
-* register allocator, which does a scan of the Nanojit instructions
-* from bottom up and can miss the fact that some registers are
-* needed. It is not yet clear the implementation below is correct.
-*/
-static void output_liveness(struct dmr_C *C, struct function *fn,
-	struct basic_block *bb, struct instruction *insn) {
-	if (insn->opcode == OP_BR) {
-		pseudo_t need;
-		FOR_EACH_PTR(bb->needs, need) {
-			NJXLInsRef value = pseudo_ins(C, fn, need);
-			if (value) {
-				if (NJX_is_d(value))
-					NJX_lived(fn->builder, value);
-				else if (NJX_is_f(value))
-					NJX_livef(fn->builder, value);
-				else if (NJX_is_i(value))
-					NJX_livei(fn->builder, value);
-				else
-					NJX_liveq(fn->builder, value);
-			}
-		}
-		END_FOR_EACH_PTR(need);
-	}
-}
-
 /*
 * Add liveness data to help Nanojit's
 * register allocator, which does a scan of the Nanojit instructions
@@ -839,7 +855,6 @@ static void output_parameter_liveness(struct dmr_C *C, struct function *fn) {
 	}
 }
 
-
 /* return 1 on success, 0 on failure */
 static int output_bb(struct dmr_C *C, struct function *fn,
 		     struct basic_block *bb)
@@ -851,9 +866,6 @@ static int output_bb(struct dmr_C *C, struct function *fn,
 	{
 		if (!insn->bb)
 			continue;
-
-		// TODO unsure about this
-		// output_liveness(C, fn, bb, insn);
 
 		if (!output_insn(C, fn, insn)) {
 			dmrC_sparse_error(C, insn->pos, "failed to output %s\n",

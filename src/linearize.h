@@ -272,10 +272,10 @@ struct basic_block {
 	struct ptr_list *children; /* basic_block destinations */
 	struct ptr_list *insns;	/* Linear list of instructions */
 	struct ptr_list *needs, *defines; /* pseudo lists */
-	union {
+	//union {
 		unsigned int nr;	/* unique id for label's names */
 		DMRC_BACKEND_TYPE priv;
-	};
+	//};
 };
 
 static inline int dmrC_instruction_list_size(struct ptr_list *list)

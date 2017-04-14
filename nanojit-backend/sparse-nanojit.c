@@ -111,7 +111,7 @@ static struct NanoType *alloc_nanotype(struct function *fn,
 	struct NanoType *type = dmrC_allocator_allocate(&fn->type_allocator, 0);
 	type->type = kind;
 	type->bit_size = bit_size;
-	type->return_type = RT_UNSUPPORTED;
+	type->return_type = NULL;
 }
 
 static struct NanoType *sym_basetype_type(struct dmr_C *C, struct function *fn,
@@ -484,7 +484,8 @@ static NJXLInsRef pseudo_to_value(struct dmr_C *C, struct function *fn,
 	return result;
 }
 
-static NJXLInsRef pseudo_ins(struct dmr_C *C, struct function *fn, pseudo_t pseudo)
+static NJXLInsRef pseudo_ins(struct dmr_C *C, struct function *fn,
+			     pseudo_t pseudo)
 {
 	NJXLInsRef result = NULL;
 	switch (pseudo->type) {
@@ -500,7 +501,6 @@ static NJXLInsRef pseudo_ins(struct dmr_C *C, struct function *fn, pseudo_t pseu
 	}
 	return result;
 }
-
 
 static NJXLInsRef output_op_phisrc(struct dmr_C *C, struct function *fn,
 				   struct instruction *insn)
@@ -699,15 +699,17 @@ static NJXLInsRef output_op_br(struct dmr_C *C, struct function *fn,
 		if (cond == NULL)
 			return NULL;
 		// Mark registers needed by destination BB as live
-		// TODO we should only output if bb_false precedes current bb
-		output_liveness(C, fn, br->bb_false);
+		// we should only output if bb_false precedes current bb
+		if (br->bb->nr > br->bb_false->nr)
+			output_liveness(C, fn, br->bb_false);
 		NJXLInsRef br1 =
 		    NJX_cbr_true(fn->builder, cond, NULL); // br->bb_false->priv
 		if (!add_jump_instruction(fn, br->bb_false, br1))
 			return NULL;
 		// Mark registers needed by destination BB as live
-		// TODO we should only output if bb_false precedes current bb
-		output_liveness(C, fn, br->bb_true);
+		// we should only output if bb_false precedes current bb
+		if (br->bb->nr > br->bb_true->nr)
+			output_liveness(C, fn, br->bb_true);
 		NJXLInsRef br2 =
 		    NJX_cbr_false(fn->builder, cond, NULL); // br->bb_true->priv
 		if (!add_jump_instruction(fn, br->bb_true, br2))
@@ -716,13 +718,16 @@ static NJXLInsRef output_op_br(struct dmr_C *C, struct function *fn,
 	} else {
 		if (br->bb_true) {
 			// Mark registers needed by destination BB as live
-			// TODO we should only output if bb_true precedes current bb
-			output_liveness(C, fn, br->bb_true);
-		}
-		else if (br->bb_false) {
+			// we should only output if bb_true precedes
+			// current bb
+			if (br->bb->nr > br->bb_true->nr)
+				output_liveness(C, fn, br->bb_true);
+		} else if (br->bb_false) {
 			// Mark registers needed by destination BB as live
-			// TODO we should only output if bb_false precedes current bb
-			output_liveness(C, fn, br->bb_false);
+			// we should only output if bb_false precedes
+			// current bb
+			if (br->bb->nr > br->bb_false->nr)
+				output_liveness(C, fn, br->bb_false);
 		}
 		NJXLInsRef br1 = NJX_br(fn->builder, NULL);
 		if (br->bb_true) {
@@ -757,25 +762,39 @@ static NJXLInsRef output_op_ret(struct dmr_C *C, struct function *fn,
 		    fn->builder); // return LLVMBuildRetVoid(fn->builder);
 }
 
+const char *make_comment(struct dmr_C *C, struct instruction *insn)
+{
+	const char *comment = dmrC_show_instruction(C, insn);
+	char *copy =
+	    dmrC_allocator_allocate(&C->byte_allocator, strlen(comment) + 1);
+	strcpy(copy, comment);
+	return copy;
+}
+
 /* return 1 on success, 0 on failure */
-static int output_insn(struct dmr_C *C, struct function *fn, 
+static int output_insn(struct dmr_C *C, struct function *fn,
 		       struct instruction *insn)
 {
 	NJXLInsRef v = NULL;
 	switch (insn->opcode) {
 	case OP_RET:
+		NJX_comment(fn->builder, make_comment(C, insn));
 		v = output_op_ret(C, fn, insn);
 		break;
 	case OP_BR:
+		NJX_comment(fn->builder, make_comment(C, insn));
 		v = output_op_br(C, fn, insn);
 		break;
 	case OP_PHISOURCE:
+		NJX_comment(fn->builder, make_comment(C, insn));
 		v = output_op_phisrc(C, fn, insn);
 		break;
 	case OP_PHI:
+		NJX_comment(fn->builder, make_comment(C, insn));
 		v = output_op_phi(C, fn, insn);
 		break;
 	case OP_LOAD:
+		NJX_comment(fn->builder, make_comment(C, insn));
 		v = output_op_load(C, fn, insn);
 		break;
 
@@ -794,6 +813,7 @@ static int output_insn(struct dmr_C *C, struct function *fn,
 		return 0;
 
 	case OP_ADD:
+		NJX_comment(fn->builder, make_comment(C, insn));
 		v = output_op_binary(C, fn, insn);
 		break;
 
@@ -849,7 +869,8 @@ static int output_insn(struct dmr_C *C, struct function *fn,
 * from bottom up and can miss the fact that some registers are
 * needed. It is not yet clear the implementation below is correct.
 */
-static void output_parameter_liveness(struct dmr_C *C, struct function *fn) {
+static void output_parameter_liveness(struct dmr_C *C, struct function *fn)
+{
 	for (int i = 0; fn->args[i]; i++) {
 		NJX_liveq(fn->builder, fn->args[i]);
 	}
@@ -938,6 +959,7 @@ static bool output_fn(struct dmr_C *C, NJXContextRef module,
 #endif
 	}
 
+	unsigned int bbnr = 0;
 	/* create the BBs */
 	FOR_EACH_PTR(ep->bbs, bb)
 	{
@@ -964,6 +986,12 @@ static bool output_fn(struct dmr_C *C, NJXContextRef module,
 			insn->target->priv = NULL;
 		}
 		END_FOR_EACH_PTR(insn);
+		/* The bb->nr field is not used by the
+		   frontend anymore so we can use it to
+		   decide which the order of basic blocks. This
+		   is used to decide when to emit liveness instructions
+		*/
+		bb->nr = bbnr++;
 	}
 	END_FOR_EACH_PTR(bb);
 
@@ -982,7 +1010,7 @@ static bool output_fn(struct dmr_C *C, NJXContextRef module,
 
 	if (success) {
 		void *p = NJX_finalize(function.builder);
-		if (!p) 
+		if (!p)
 			success = false;
 	}
 

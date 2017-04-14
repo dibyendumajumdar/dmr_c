@@ -753,6 +753,8 @@ static NJXLInsRef output_op_ret(struct dmr_C *C, struct function *fn,
 			return NJX_reti(fn->builder, result);
 		else if (NJX_is_q(result))
 			return NJX_retq(fn->builder, result);
+		else if (NJX_is_f(result))
+			return NJX_retf(fn->builder, result);
 		else if (NJX_is_d(result))
 			return NJX_retd(fn->builder, result);
 		else

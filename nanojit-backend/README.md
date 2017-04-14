@@ -10,6 +10,11 @@ This is very early days. We are just able to generate code for following simple 
   [like this](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/strlen.lir). Note that the front-end needs to be run with
   -O1 option to enable Sparse IR simplications.
   
+## Issues
+
+* Nanojit lacks instructions for 64-bit multiply and divide - this is a problem for dmrC as 64-bit multiply in particular is used for pointer arithmetic. (This is a blocker - I am investigating how to add these instructions to Nanojit).
+* Nanojit lacks instruction for converting a 64-bit integer value to double.
+  
 ## Building 
 
 * First follow instructions to build a [NanoJIT](https://github.com/dibyendumajumdar/nanojit) library.

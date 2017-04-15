@@ -1,0 +1,27 @@
+sumq:
+.L0:
+	<entry-point>
+	phisrc.64   %phi4(n) <- $0
+	phisrc.64   %phi8(i) <- $0
+	br          .L4
+
+.L4:
+	phi.64      %r1(i) <- %phi8(i), %phi9(i)
+	setlt.32    %r3 <- %r1(i), %arg1
+	phi.64      %r9 <- %phi4(n), %phi5(n)
+	br          %r3, .L1, .L5
+
+.L1:
+	muls.64     %r6 <- %r1(i), $8
+	add.64*     %r7 <- %arg2, %r6
+	load.64     %r8 <- 0[%r7]
+	add.64      %r11 <- %r9, %r8
+	phisrc.64   %phi5(n) <- %r11
+	add.64      %r14 <- %r1(i), $1
+	phisrc.64   %phi9(i) <- %r14
+	br          .L4
+
+.L5:
+	ret.64      %r9
+
+

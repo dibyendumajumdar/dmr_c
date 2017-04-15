@@ -6,14 +6,16 @@ This backend is trying to use a [NanoJIT](https://github.com/dibyendumajumdar/na
 
 This is very early days. We are just able to generate code for following simple C function.
 
-* [strlen](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/strlen.c). The generated LIR instructions look 
+* [strlen](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/strlen.c). The generated LIR and assembly instructions look 
   [like this](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/strlen.lir). Note that the front-end needs to be run with
   -O1 option to enable Sparse IR simplications.
+* [sumq](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/sumq.c). The generated LIR and assembly instructions look
+  [like this](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/sumq.lir).
   
 ## Issues
 
-* Nanojit lacks instructions for 64-bit multiply and divide - this is a problem for dmrC as 64-bit multiply in particular is used for pointer arithmetic. (This is a blocker - I am investigating how to add these instructions to Nanojit).
-* Nanojit lacks instruction for converting a 64-bit integer value to double.
+* Nanojit lacks instructions for 64-bit multiply and divide - this is a problem for dmrC as 64-bit multiply in particular is used for pointer arithmetic. (This is a blocker - I am investigating how to add these instructions to Nanojit). Update: I have [added support](https://github.com/dibyendumajumdar/nanojit/commit/54939aa859bfd84fae9e9fb876e807e6a76e89f0) for these operations in Nanojit.
+* Nanojit lacks instruction for converting a double to 64-bit integer.
   
 ## Building 
 

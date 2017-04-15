@@ -610,6 +610,66 @@ static NJXLInsRef get_operand(struct dmr_C *C, struct function *fn,
 	return target;
 }
 
+static struct symbol *pseudo_type(struct dmr_C *C, pseudo_t pseudo)
+{
+	switch (pseudo->type) {
+	case PSEUDO_SYM:
+	case PSEUDO_ARG:
+		return pseudo->sym;
+	case PSEUDO_REG:
+	case PSEUDO_PHI:
+		return pseudo->def->type;
+	case PSEUDO_VAL:
+		return C->target->size_t_ctype;
+	case PSEUDO_VOID:
+	default:
+		return &C->S->void_ctype;
+	}
+}
+
+static NJXLInsRef output_op_compare(struct dmr_C *C, struct function *fn,
+				    struct instruction *insn)
+{
+	NJXLInsRef lhs, rhs, target = NULL;
+
+	if (insn->src1->type == PSEUDO_VAL)
+		lhs = val_to_value(C, fn, insn->src1->value,
+				   pseudo_type(C, insn->src2));
+	else
+		lhs = pseudo_to_value(C, fn, insn->type, insn->src1);
+	if (!lhs)
+		return NULL;
+	if (insn->src2->type == PSEUDO_VAL)
+		rhs = val_to_value(C, fn, insn->src2->value,
+				   pseudo_type(C, insn->src1));
+	else
+		rhs = pseudo_to_value(C, fn, insn->type, insn->src2);
+	if (!rhs)
+		return NULL;
+
+	struct NanoType *dst_type = insn_symbol_type(C, fn->module, insn);
+	if (!dst_type)
+		return NULL;
+
+	switch (insn->opcode) {
+	case OP_SET_LT:
+		if (NJX_is_d(lhs))
+			target = NJX_ltd(fn->builder, lhs, rhs);
+		else if (NJX_is_f(lhs))
+			target = NJX_ltf(fn->builder, lhs, rhs);
+		else if (NJX_is_q(lhs))
+			target = NJX_ltq(fn->builder, lhs, rhs);
+		else if (NJX_is_i(lhs))
+			target = NJX_lti(fn->builder, lhs, rhs);
+		break;
+	default:
+		break;
+	}
+
+	insn->target->priv = target;
+	return target;
+}
+
 static NJXLInsRef output_op_binary(struct dmr_C *C, struct function *fn,
 				   struct instruction *insn)
 {
@@ -641,8 +701,33 @@ static NJXLInsRef output_op_binary(struct dmr_C *C, struct function *fn,
 			break;
 		}
 		break;
+	case OP_MULU:
+		switch (insn->size) {
+		case 64:
+			if (dmrC_is_float_type(C->S, insn->type))
+				target = NJX_muld(fn->builder, lhs, rhs);
+			else
+				target = NJX_mulq(fn->builder, lhs, rhs);
+			break;
+		case 32:
+			if (dmrC_is_float_type(C->S, insn->type))
+				target = NJX_mulf(fn->builder, lhs, rhs);
+			else
+				target = NJX_muli(fn->builder, lhs, rhs);
+			break;
+		}
+		break;
+	case OP_MULS:
+		switch (insn->size) {
+		case 64:
+			target = NJX_mulq(fn->builder, lhs, rhs);
+			break;
+		case 32:
+			target = NJX_muli(fn->builder, lhs, rhs);
+			break;
+		}
+		break;
 	}
-
 	insn->target->priv = target;
 
 	return target;
@@ -753,8 +838,8 @@ static NJXLInsRef output_op_ret(struct dmr_C *C, struct function *fn,
 			return NJX_reti(fn->builder, result);
 		else if (NJX_is_q(result))
 			return NJX_retq(fn->builder, result);
-		else if (NJX_is_f(result))
-			return NJX_retf(fn->builder, result);
+		//		else if (NJX_is_f(result))
+		//			return NJX_retf(fn->builder, result);
 		else if (NJX_is_d(result))
 			return NJX_retd(fn->builder, result);
 		else
@@ -820,8 +905,17 @@ static int output_insn(struct dmr_C *C, struct function *fn,
 		break;
 
 	case OP_SUB:
+		return 0;
+
 	case OP_MULU:
+		NJX_comment(fn->builder, make_comment(C, insn));
+		v = output_op_binary(C, fn, insn);
+		break;
 	case OP_MULS:
+		NJX_comment(fn->builder, make_comment(C, insn));
+		v = output_op_binary(C, fn, insn);
+		break;
+
 	case OP_DIVU:
 	case OP_DIVS:
 	case OP_MODU:
@@ -838,7 +932,13 @@ static int output_insn(struct dmr_C *C, struct function *fn,
 	case OP_SET_NE:
 	case OP_SET_LE:
 	case OP_SET_GE:
+		return 0;
+
 	case OP_SET_LT:
+		NJX_comment(fn->builder, make_comment(C, insn));
+		v = output_op_compare(C, fn, insn);
+		break;
+
 	case OP_SET_GT:
 	case OP_SET_B:
 	case OP_SET_A:

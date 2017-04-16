@@ -339,13 +339,7 @@ static NJXLInsRef build_cast(struct dmr_C *C, struct function *fn,
 				return NJX_i2q(fn->builder,
 					       NJX_f2i(fn->builder, val));
 		} else if (NJX_is_d(val)) {
-			/// FIXME this doesn't look right
-			if (unsigned_cast)
-				return NJX_ui2uq(fn->builder,
-						 NJX_d2i(fn->builder, val));
-			else
-				return NJX_i2q(fn->builder,
-					       NJX_d2i(fn->builder, val));
+			return NJX_d2q(fn->builder, val);
 		} else if (NJX_is_q(val)) {
 			return val;
 		}
@@ -662,6 +656,26 @@ static NJXLInsRef output_op_compare(struct dmr_C *C, struct function *fn,
 		else if (NJX_is_i(lhs))
 			target = NJX_lti(fn->builder, lhs, rhs);
 		break;
+	case OP_SET_LE:
+		if (NJX_is_d(lhs))
+			target = NJX_led(fn->builder, lhs, rhs);
+		else if (NJX_is_f(lhs))
+			target = NJX_lef(fn->builder, lhs, rhs);
+		else if (NJX_is_q(lhs))
+			target = NJX_leq(fn->builder, lhs, rhs);
+		else if (NJX_is_i(lhs))
+			target = NJX_lei(fn->builder, lhs, rhs);
+		break;
+	case OP_SET_EQ:
+		if (NJX_is_d(lhs))
+			target = NJX_eqd(fn->builder, lhs, rhs);
+		else if (NJX_is_f(lhs))
+			target = NJX_eqf(fn->builder, lhs, rhs);
+		else if (NJX_is_q(lhs))
+			target = NJX_eqq(fn->builder, lhs, rhs);
+		else if (NJX_is_i(lhs))
+			target = NJX_eqi(fn->builder, lhs, rhs);
+		break;
 	default:
 		break;
 	}
@@ -928,9 +942,21 @@ static int output_insn(struct dmr_C *C, struct function *fn,
 	case OP_XOR:
 	case OP_AND_BOOL:
 	case OP_OR_BOOL:
+		return 0;
+
 	case OP_SET_EQ:
+		NJX_comment(fn->builder, make_comment(C, insn));
+		v = output_op_compare(C, fn, insn);
+		break;
+
 	case OP_SET_NE:
+		return 0;
+
 	case OP_SET_LE:
+		NJX_comment(fn->builder, make_comment(C, insn));
+		v = output_op_compare(C, fn, insn);
+		break;
+
 	case OP_SET_GE:
 		return 0;
 

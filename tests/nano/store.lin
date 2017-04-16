@@ -1,0 +1,14 @@
+storeint:
+.L0:
+	<entry-point>
+	store.8     $104 -> 16[%arg1]
+	store.8     $101 -> 17[%arg1]
+	store.8     $108 -> 18[%arg1]
+	store.8     $108 -> 19[%arg1]
+	store.8     $111 -> 20[%arg1]
+	store.8     $0 -> 21[%arg1]
+	store.32    $42 -> 8[%arg1]
+	store.32    $96 -> 12[%arg1]
+	ret.32      $0
+
+

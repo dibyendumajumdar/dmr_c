@@ -64,7 +64,7 @@ static struct NanoType BadType = {
 
 struct function {
 	NJXFunctionBuilderRef builder;
-	NJXContextRef module;
+	NJXContextRef context;
 	struct allocator type_allocator;
 	NJXLInsRef args[MAX_ARGS];
 	struct NanoType *return_type;
@@ -112,6 +112,7 @@ static struct NanoType *alloc_nanotype(struct function *fn,
 	type->type = kind;
 	type->bit_size = bit_size;
 	type->return_type = NULL;
+	return type;
 }
 
 static struct NanoType *sym_basetype_type(struct dmr_C *C, struct function *fn,
@@ -191,7 +192,7 @@ static struct NanoType *sym_func_type(struct dmr_C *C, struct function *fn,
 				      struct symbol *sym_node)
 {
 	struct NanoType *ret_type;
-	struct symbol *arg;
+	// struct symbol *arg;
 	int n_arg = 0;
 
 	// TODO we probably need a better way to encode function type
@@ -313,6 +314,11 @@ static NJXLInsRef build_cast(struct dmr_C *C, struct function *fn,
 			     int unsigned_cast)
 {
 	switch (dtype->type) {
+	case RT_INT:
+		if (dtype->bit_size == 8 || dtype->bit_size == 16)
+			return val;
+		break;
+
 	case RT_INT32:
 		if (NJX_is_q(val)) {
 			return NJX_q2i(fn->builder, val);
@@ -641,7 +647,7 @@ static NJXLInsRef output_op_compare(struct dmr_C *C, struct function *fn,
 	if (!rhs)
 		return NULL;
 
-	struct NanoType *dst_type = insn_symbol_type(C, fn->module, insn);
+	struct NanoType *dst_type = insn_symbol_type(C, fn, insn);
 	if (!dst_type)
 		return NULL;
 
@@ -793,6 +799,65 @@ static NJXLInsRef output_op_binary(struct dmr_C *C, struct function *fn,
 	return target;
 }
 
+static NJXLInsRef output_op_store(struct dmr_C *C, struct function *fn,
+				  struct instruction *insn)
+{
+	NJXLInsRef ptr, target_in;
+	//struct NanoType *desttype;
+	int32_t off;
+
+	/* int type large enough to hold a pointer */
+	off = (int32_t)insn->offset;
+
+	if (is_aggregate_type(insn->type)) {
+		dmrC_sparse_error(C, insn->pos, "store to aggregate type is "
+						"not yet supported, failure at "
+						"insn %s\n",
+				  dmrC_show_instruction(C, insn));
+		return NULL;
+	}
+
+	ptr = pseudo_to_value(C, fn, insn->type, insn->src);
+	if (!ptr)
+		return NULL;
+	ptr = build_cast(C, fn, ptr, &PtrType, 0);
+
+	target_in = pseudo_to_value(C, fn, insn->type, insn->target);
+	if (!target_in)
+		return NULL;
+
+	// desttype = insn_symbol_type(C, fn, insn);
+	// if (!desttype)
+	//	return NULL;
+
+	// target_in = build_cast(C, fn, target_in, desttype, 0);
+	// if (!target_in)
+	//	return NULL;
+
+	NJXLInsRef value = NULL;
+	switch (insn->size) {
+	case 8:
+		value = NJX_store_i2c(fn->builder, target_in, ptr, off);
+		break;
+	case 16:
+		value = NJX_store_i2s(fn->builder, target_in, ptr, off);
+		break;
+	case 32:
+		if (NJX_is_f(target_in))
+			value = NJX_store_f(fn->builder, target_in, ptr, off);
+		else
+			value = NJX_store_i(fn->builder, target_in, ptr, off);
+		break;
+	case 64:
+		if (NJX_is_d(target_in))
+			value = NJX_store_d(fn->builder, target_in, ptr, off);
+		else
+			value = NJX_store_q(fn->builder, target_in, ptr, off);
+		break;
+	}
+	return value;
+}
+
 /*
 * Add liveness data to help Nanojit's
 * register allocator, which does a scan of the Nanojit instructions
@@ -882,6 +947,7 @@ static NJXLInsRef output_op_br(struct dmr_C *C, struct function *fn,
 			if (!add_jump_instruction(fn, br->bb_false, br1))
 				return NULL;
 		}
+		return br1;
 	}
 }
 
@@ -905,8 +971,88 @@ static NJXLInsRef output_op_ret(struct dmr_C *C, struct function *fn,
 		else
 			return NULL;
 	} else
-		return NJX_ret(
-		    fn->builder); // return LLVMBuildRetVoid(fn->builder);
+		// TODO How to support void return in NanoJIT is not clear
+		return NULL;
+}
+
+static NJXLInsRef output_op_ptrcast(struct dmr_C *C, struct function *fn,
+				    struct instruction *insn)
+{
+	NJXLInsRef src, target;
+	struct NanoType *dtype;
+	struct symbol *otype = insn->orig_type;
+
+	assert(dmrC_is_ptr_type(insn->type));
+
+	src = insn->src->priv;
+	if (!src)
+		src = get_operand(C, fn, otype, insn->src, 1, 0);
+	if (!src)
+		return NULL;
+
+	dtype = insn_symbol_type(C, fn, insn);
+	if (!dtype)
+		return NULL;
+
+	target = build_cast(C, fn, src, dtype, false);
+	insn->target->priv = target;
+
+	return target;
+}
+
+static NJXLInsRef output_op_cast(struct dmr_C *C, struct function *fn,
+				 struct instruction *insn, bool unsignedcast)
+{
+	NJXLInsRef src, target;
+	struct NanoType *dtype;
+	struct symbol *otype = insn->orig_type;
+
+	if (dmrC_is_ptr_type(insn->type)) {
+		return output_op_ptrcast(C, fn, insn);
+	}
+
+	src = insn->src->priv;
+	if (!src)
+		src = pseudo_to_value(C, fn, insn->type, insn->src);
+	if (dmrC_is_int_type(C->S, otype)) {
+		struct NanoType *stype = get_symnode_or_basetype(C, fn, otype);
+		src = build_cast(C, fn, src, stype, unsignedcast);
+	}
+	if (!src)
+		return NULL;
+
+	assert(!dmrC_is_float_type(C->S, insn->type));
+
+	dtype = insn_symbol_type(C, fn, insn);
+	if (!dtype)
+		return NULL;
+	target = build_cast(C, fn, src, dtype, unsignedcast);
+	insn->target->priv = target;
+
+	return target;
+}
+
+static NJXLInsRef output_op_fpcast(struct dmr_C *C, struct function *fn,
+				   struct instruction *insn)
+{
+	NJXLInsRef src, target;
+	struct NanoType *dtype;
+	struct symbol *otype = insn->orig_type;
+
+	src = insn->src->priv;
+	if (!src)
+		src = pseudo_to_value(C, fn, insn->type, insn->src);
+	if (!src)
+		return NULL;
+
+	dtype = insn_symbol_type(C, fn, insn);
+	if (!dtype)
+		return NULL;
+
+	target = build_cast(C, fn, src, dtype, !dmrC_is_signed_type(otype));
+	insn->target->priv = target;
+
+	return target;
 }
 
 const char *make_comment(struct dmr_C *C, struct instruction *insn)
@@ -950,14 +1096,31 @@ static int output_insn(struct dmr_C *C, struct function *fn,
 	case OP_SWITCH:
 	case OP_COMPUTEDGOTO:
 	case OP_LNOP:
+		return 0;
+
 	case OP_STORE:
+		NJX_comment(fn->builder, make_comment(C, insn));
+		v = output_op_store(C, fn, insn);
+		break;
+
 	case OP_SNOP:
 	case OP_CALL:
 	case OP_CAST:
+		NJX_comment(fn->builder, make_comment(C, insn));
+		v = output_op_cast(C, fn, insn, true);
+		break;
 	case OP_SCAST:
+		NJX_comment(fn->builder, make_comment(C, insn));
+		v = output_op_cast(C, fn, insn, false);
+		break;
 	case OP_FPCAST:
+		NJX_comment(fn->builder, make_comment(C, insn));
+		v = output_op_fpcast(C, fn, insn);
+		break;
 	case OP_PTRCAST:
-		return 0;
+		NJX_comment(fn->builder, make_comment(C, insn));
+		v = output_op_ptrcast(C, fn, insn);
+		break;
 
 	case OP_ADD:
 	case OP_SUB:
@@ -1070,7 +1233,7 @@ static bool output_fn(struct dmr_C *C, NJXContextRef module,
 	struct symbol *sym = ep->name;
 	struct symbol *base_type = sym->ctype.base_type;
 	struct symbol *ret_type = sym->ctype.base_type->ctype.base_type;
-	struct function function = {.module = module};
+	struct function function = {.context = module};
 	struct basic_block *bb;
 	struct symbol *arg;
 	const char *name;

@@ -1,0 +1,244 @@
+    start
+    paramq1 = paramq 0 rbx
+    paramq2 = paramq 1 rsi
+    paramq3 = paramq 2 rdi
+    paramq4 = paramq 3 r12
+    paramq5 = paramq 4 r13
+    paramq6 = paramq 5 r14
+    paramq7 = paramq 6 r15
+    paramq8 = paramq 0 rcx
+    label1:
+    ------------------------------ # store.8     $104 -> 16[%arg1]
+    immi1 = immi 104
+    sti2c.o paramq8[16] = immi1/*104*/
+    ------------------------------ # store.8     $101 -> 17[%arg1]
+    immi2 = immi 101
+    sti2c.o paramq8[17] = immi2/*101*/
+    ------------------------------ # store.8     $108 -> 18[%arg1]
+    immi3 = immi 108
+    sti2c.o paramq8[18] = immi3/*108*/
+    ------------------------------ # store.8     $108 -> 19[%arg1]
+    sti2c.o paramq8[19] = immi3/*108*/
+    ------------------------------ # store.8     $111 -> 20[%arg1]
+    immi4 = immi 111
+    sti2c.o paramq8[20] = immi4/*111*/
+    ------------------------------ # store.8     $0 -> 21[%arg1]
+    immi5 = immi 0
+    sti2c.o paramq8[21] = immi5/*0*/
+    ------------------------------ # store.32    $42 -> 8[%arg1]
+    immi6 = immi 42
+    sti.o paramq8[8] = immi6/*42*/
+    ------------------------------ # store.32    $96 -> 12[%arg1]
+    immi7 = immi 96
+    sti.o paramq8[12] = immi7/*96*/
+    ------------------------------ # ret.32      $0
+    reti immi5/*0*/
+    liveq paramq8
+    x1: x  -> line=0 (GuardID=000)
+================================================================================
+=== BEGIN LIR::compile(000001F9160FA050, 000001F9160EBBF0)
+===
+=== Translating LIR fragments into assembly:
+=== -- Compile trunk 000001F9160EBBF0: begin
+
+=== BEGIN Initial LIR ===
+  00: start
+  01: paramq1 = paramq 0 rbx
+  02: paramq2 = paramq 1 rsi
+  03: paramq3 = paramq 2 rdi
+  04: paramq4 = paramq 3 r12
+  05: paramq5 = paramq 4 r13
+  06: paramq6 = paramq 5 r14
+  07: paramq7 = paramq 6 r15
+  08: paramq8 = paramq 0 rcx
+  09: label1:
+  10: ------------------------------ # store.8     $104 -> 16[%arg1]
+  11: immi1 = immi 104
+  12: sti2c.o paramq8[16] = immi1/*104*/
+  13: ------------------------------ # store.8     $101 -> 17[%arg1]
+  14: immi2 = immi 101
+  15: sti2c.o paramq8[17] = immi2/*101*/
+  16: ------------------------------ # store.8     $108 -> 18[%arg1]
+  17: immi3 = immi 108
+  18: sti2c.o paramq8[18] = immi3/*108*/
+  19: ------------------------------ # store.8     $108 -> 19[%arg1]
+  20: sti2c.o paramq8[19] = immi3/*108*/
+  21: ------------------------------ # store.8     $111 -> 20[%arg1]
+  22: immi4 = immi 111
+  23: sti2c.o paramq8[20] = immi4/*111*/
+  24: ------------------------------ # store.8     $0 -> 21[%arg1]
+  25: immi5 = immi 0
+  26: sti2c.o paramq8[21] = immi5/*0*/
+  27: ------------------------------ # store.32    $42 -> 8[%arg1]
+  28: immi6 = immi 42
+  29: sti.o paramq8[8] = immi6/*42*/
+  30: ------------------------------ # store.32    $96 -> 12[%arg1]
+  31: immi7 = immi 96
+  32: sti.o paramq8[12] = immi7/*96*/
+  33: ------------------------------ # ret.32      $0
+  34: reti immi5/*0*/
+  35: liveq paramq8
+  36: x1: x  -> line=0 (GuardID=000)
+=== END Initial LIR ===
+
+=== -- Compile trunk 000001F9160EBBF0: end
+
+=== Aggregated assembly output: BEGIN
+===
+  000001F915F9FF82                             [prologue]
+  000001F915F9FF82  55                         push rbp
+  000001F915F9FF83  48 8b ec                   movq rbp, rsp
+  000001F915F9FF86                             [patch entry]
+  000001F915F9FF86  48 83 ec 40                subq rsp, 64
+      paramq1 = paramq 0 rbx (in reg? -1)
+  000001F915F9FF8A  48 89 5d c8                movq -56(rbp), rbx  <= spill paramq1
+                            RR
+                            AR 52-56(paramq1)
+      paramq2 = paramq 1 rsi (in reg? -1)
+  000001F915F9FF8E  48 89 75 d0                movq -48(rbp), rsi  <= spill paramq2
+                            RR
+                            AR 44-48(paramq2) 52-56(paramq1)
+      paramq3 = paramq 2 rdi (in reg? -1)
+  000001F915F9FF92  48 89 7d d8                movq -40(rbp), rdi  <= spill paramq3
+                            RR
+                            AR 36-40(paramq3) 44-48(paramq2) 52-56(paramq1)
+      paramq4 = paramq 3 r12 (in reg? -1)
+  000001F915F9FF96  4c 89 65 e0                movq -32(rbp), r12  <= spill paramq4
+                            RR
+                            AR 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1)
+      paramq5 = paramq 4 r13 (in reg? -1)
+  000001F915F9FF9A  4c 89 6d e8                movq -24(rbp), r13  <= spill paramq5
+                            RR
+                            AR 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1)
+      paramq6 = paramq 5 r14 (in reg? -1)
+  000001F915F9FF9E  4c 89 75 f0                movq -16(rbp), r14  <= spill paramq6
+                            RR
+                            AR 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1)
+      paramq7 = paramq 6 r15 (in reg? -1)
+  000001F915F9FFA2  4c 89 7d f8                movq -8(rbp), r15  <= spill paramq7
+                            RR
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1)
+      paramq8 = paramq 0 rcx (in reg? -1)
+                            RR rcx(paramq8)
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1)
+      label1: (in reg? -1)
+  000001F915F9FFA6                             [label1]
+                            RR rcx(paramq8)
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1)
+  ------------------------------ # store.8     $104 -> 16[%arg1]
+                            RR rcx(paramq8)
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1)
+      immi1 = immi 104 (in reg? -1)
+                            RR rcx(paramq8)
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1)
+      sti2c.o paramq8[16] = immi1/*104*/ (in reg? -1)
+  000001F915F9FFA6  c6 41 10 68                movb 16(rcx), 104
+                            RR rcx(paramq8)
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1)
+  ------------------------------ # store.8     $101 -> 17[%arg1]
+                            RR rcx(paramq8)
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1)
+      immi2 = immi 101 (in reg? -1)
+                            RR rcx(paramq8)
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1)
+      sti2c.o paramq8[17] = immi2/*101*/ (in reg? -1)
+  000001F915F9FFAA  c6 41 11 65                movb 17(rcx), 101
+                            RR rcx(paramq8)
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1)
+  ------------------------------ # store.8     $108 -> 18[%arg1]
+                            RR rcx(paramq8)
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1)
+      immi3 = immi 108 (in reg? -1)
+                            RR rcx(paramq8)
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1)
+      sti2c.o paramq8[18] = immi3/*108*/ (in reg? -1)
+  000001F915F9FFAE  c6 41 12 6c                movb 18(rcx), 108
+                            RR rcx(paramq8)
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1)
+  ------------------------------ # store.8     $108 -> 19[%arg1]
+                            RR rcx(paramq8)
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1)
+      sti2c.o paramq8[19] = immi3/*108*/ (in reg? -1)
+  000001F915F9FFB2  c6 41 13 6c                movb 19(rcx), 108
+                            RR rcx(paramq8)
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1)
+  ------------------------------ # store.8     $111 -> 20[%arg1]
+                            RR rcx(paramq8)
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1)
+      immi4 = immi 111 (in reg? -1)
+                            RR rcx(paramq8)
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1)
+      sti2c.o paramq8[20] = immi4/*111*/ (in reg? -1)
+  000001F915F9FFB6  c6 41 14 6f                movb 20(rcx), 111
+                            RR rcx(paramq8)
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1)
+  ------------------------------ # store.8     $0 -> 21[%arg1]
+                            RR rcx(paramq8)
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1)
+      immi5 = immi 0 (in reg? -1)
+  000001F915F9FFBA  33 c0                      xorl eax, eax
+                            RR rax(immi5/*0*/) rcx(paramq8)
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1)
+      sti2c.o paramq8[21] = immi5/*0*/ (in reg? -1)
+  000001F915F9FFBC  c6 41 15 00                movb 21(rcx), 0
+                            RR rax(immi5/*0*/) rcx(paramq8)
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1)
+  ------------------------------ # store.32    $42 -> 8[%arg1]
+                            RR rax(immi5/*0*/) rcx(paramq8)
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1)
+      immi6 = immi 42 (in reg? -1)
+                            RR rax(immi5/*0*/) rcx(paramq8)
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1)
+      sti.o paramq8[8] = immi6/*42*/ (in reg? -1)
+  000001F915F9FFC0  c7 41 08 2a 00 00 00       movl 8(rcx), 42
+                            RR rax(immi5/*0*/) rcx(paramq8)
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1)
+  ------------------------------ # store.32    $96 -> 12[%arg1]
+                            RR rax(immi5/*0*/) rcx(paramq8)
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1)
+      immi7 = immi 96 (in reg? -1)
+                            RR rax(immi5/*0*/) rcx(paramq8)
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1)
+      sti.o paramq8[12] = immi7/*96*/ (in reg? -1)
+  000001F915F9FFC7  c7 41 0c 60 00 00 00       movl 12(rcx), 96
+                            RR rax(immi5/*0*/)
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1)
+  ------------------------------ # ret.32      $0
+                            RR rax(immi5/*0*/)
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1)
+      reti immi5/*0*/ (in reg? -1)
+  000001F915F9FFCE  48 8b e5                   movq rsp, rbp
+  000001F915F9FFD1  5d                         pop rbp
+  000001F915F9FFD2  c3                         ret
+                            RR
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1)
+      liveq paramq8 (in reg? -1)
+                            RR
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1)
+      x1: x  -> line=369950673 (GuardID=000) (in reg? -1)
+  000001F915F9FFD3  e9 d3 ff 12 00             jmp 000001F9160CFFAB
+  ----------------------------------- ## BEGIN exit block (LIR_xt|LIR_xf)
+  000001F9160CFFAB:
+  ## merging registers (intersect) with existing edge
+  000001F9160CFFAB  48 8b 5d c8                movq rbx, -56(rbp)  <= restore paramq1
+  000001F9160CFFAF  48 8b 75 d0                movq rsi, -48(rbp)  <= restore paramq2
+  000001F9160CFFB3  48 8b 7d d8                movq rdi, -40(rbp)  <= restore paramq3
+  000001F9160CFFB7  4c 8b 65 e0                movq r12, -32(rbp)  <= restore paramq4
+  000001F9160CFFBB  4c 8b 6d e8                movq r13, -24(rbp)  <= restore paramq5
+  000001F9160CFFBF  4c 8b 75 f0                movq r14, -16(rbp)  <= restore paramq6
+  000001F9160CFFC3  4c 8b 7d f8                movq r15, -8(rbp)  <= restore paramq7
+  000001F9160CFFC7  48 8d 05 ba 35 10 00       lea rax, 1062330(rip)
+  000001F9160CFFCE  48 8b e5                   movq rsp, rbp
+  000001F9160CFFD1  e9 00 00 00 00             jmp 000001F9160CFFD6
+  000001F9160CFFD6  5d                         pop rbp
+  000001F9160CFFD7  c3                         ret
+  ----------------------------------- ## END exit block 000001F916102E70
+                            RR
+                            AR
+===
+=== Aggregated assembly output: END
+
+===
+=== END LIR::compile(000001F9160FA050, 000001F9160EBBF0)
+================================================================================
+

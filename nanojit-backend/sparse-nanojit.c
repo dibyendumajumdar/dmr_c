@@ -689,11 +689,15 @@ static NJXLInsRef output_op_binary(struct dmr_C *C, struct function *fn,
 {
 	NJXLInsRef lhs, rhs, target = NULL;
 
-	lhs = get_operand(C, fn, insn->type, insn->src1, 1, 0);
+	// TODO is this enough or do we need special unsigned opcodes?
+	bool unsigned_op = insn->opcode == OP_MULU || insn->opcode == OP_DIVU ||
+			   insn->opcode == OP_MODU;
+
+	lhs = get_operand(C, fn, insn->type, insn->src1, 1, unsigned_op);
 	if (!lhs)
 		return NULL;
 
-	rhs = get_operand(C, fn, insn->type, insn->src2, 1, 0);
+	rhs = get_operand(C, fn, insn->type, insn->src2, 1, unsigned_op);
 	if (!rhs)
 		return NULL;
 
@@ -712,6 +716,22 @@ static NJXLInsRef output_op_binary(struct dmr_C *C, struct function *fn,
 				target = NJX_addf(fn->builder, lhs, rhs);
 			else
 				target = NJX_addi(fn->builder, lhs, rhs);
+			break;
+		}
+		break;
+	case OP_SUB:
+		switch (insn->size) {
+		case 64:
+			if (dmrC_is_float_type(C->S, insn->type))
+				target = NJX_subd(fn->builder, lhs, rhs);
+			else
+				target = NJX_subq(fn->builder, lhs, rhs);
+			break;
+		case 32:
+			if (dmrC_is_float_type(C->S, insn->type))
+				target = NJX_subf(fn->builder, lhs, rhs);
+			else
+				target = NJX_subi(fn->builder, lhs, rhs);
 			break;
 		}
 		break;
@@ -738,6 +758,32 @@ static NJXLInsRef output_op_binary(struct dmr_C *C, struct function *fn,
 			break;
 		case 32:
 			target = NJX_muli(fn->builder, lhs, rhs);
+			break;
+		}
+		break;
+	case OP_DIVU:
+		switch (insn->size) {
+		case 64:
+			if (dmrC_is_float_type(C->S, insn->type))
+				target = NJX_divd(fn->builder, lhs, rhs);
+			else
+				target = NJX_divq(fn->builder, lhs, rhs);
+			break;
+		case 32:
+			if (dmrC_is_float_type(C->S, insn->type))
+				target = NJX_divf(fn->builder, lhs, rhs);
+			else
+				target = NJX_divi(fn->builder, lhs, rhs);
+			break;
+		}
+		break;
+	case OP_DIVS:
+		switch (insn->size) {
+		case 64:
+			target = NJX_divq(fn->builder, lhs, rhs);
+			break;
+		case 32:
+			target = NJX_divi(fn->builder, lhs, rhs);
 			break;
 		}
 		break;
@@ -852,8 +898,8 @@ static NJXLInsRef output_op_ret(struct dmr_C *C, struct function *fn,
 			return NJX_reti(fn->builder, result);
 		else if (NJX_is_q(result))
 			return NJX_retq(fn->builder, result);
-		//		else if (NJX_is_f(result))
-		//			return NJX_retf(fn->builder, result);
+		else if (NJX_is_f(result))
+			return NJX_retf(fn->builder, result);
 		else if (NJX_is_d(result))
 			return NJX_retd(fn->builder, result);
 		else
@@ -914,24 +960,15 @@ static int output_insn(struct dmr_C *C, struct function *fn,
 		return 0;
 
 	case OP_ADD:
-		NJX_comment(fn->builder, make_comment(C, insn));
-		v = output_op_binary(C, fn, insn);
-		break;
-
 	case OP_SUB:
-		return 0;
-
 	case OP_MULU:
-		NJX_comment(fn->builder, make_comment(C, insn));
-		v = output_op_binary(C, fn, insn);
-		break;
 	case OP_MULS:
-		NJX_comment(fn->builder, make_comment(C, insn));
-		v = output_op_binary(C, fn, insn);
-		break;
-
 	case OP_DIVU:
 	case OP_DIVS:
+		NJX_comment(fn->builder, make_comment(C, insn));
+		v = output_op_binary(C, fn, insn);
+		break;
+
 	case OP_MODU:
 	case OP_MODS:
 	case OP_SHL:

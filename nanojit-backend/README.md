@@ -4,11 +4,10 @@ This backend is trying to use a [NanoJIT](https://github.com/dibyendumajumdar/na
 
 ## Status
 
-This is very early days. We are just able to generate code for following simple C function.
+This is very early days. We are able to generate code for following simple C programs. 
 
 * [strlen](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/strlen.c). The generated LIR and assembly instructions look 
-  [like this](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/strlen.lir). Note that the front-end needs to be run with
-  -O1 option to enable Sparse IR simplications.
+  [like this](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/strlen.lir). 
 * [sumq](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/sumq.c). The generated LIR and assembly instructions look
   [like this](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/sumq.lir).
 * [store](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/store.c). The generated LIR and assembly instructions look

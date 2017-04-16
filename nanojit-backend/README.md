@@ -18,7 +18,7 @@ This is very early days. We are just able to generate code for following simple 
 ## Issues
 
 * Nanojit lacks instructions for 64-bit multiply and divide - this is a problem for dmrC as 64-bit multiply in particular is used for pointer arithmetic. (This is a blocker - I am investigating how to add these instructions to Nanojit). Update: I have [added support](https://github.com/dibyendumajumdar/nanojit/commit/54939aa859bfd84fae9e9fb876e807e6a76e89f0) for these operations in Nanojit.
-* Nanojit lacks instruction for converting a double to 64-bit integer.
+* Nanojit lacks instruction for converting a double to 64-bit integer. Update: I have [added support](https://github.com/dibyendumajumdar/nanojit/commit/b2d63c3e77bcfc8272bdd0cbd971d8e2e3ed7f48) for this, although not tested yet.
   
 ## Building 
 

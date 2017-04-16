@@ -11,6 +11,9 @@ This is very early days. We are just able to generate code for following simple 
   -O1 option to enable Sparse IR simplications.
 * [sumq](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/sumq.c). The generated LIR and assembly instructions look
   [like this](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/sumq.lir).
+* [store](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/store.c). The generated LIR and assembly instructions look
+  [like this](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/store.lir).
+  
   
 ## Issues
 

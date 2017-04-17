@@ -662,6 +662,16 @@ static NJXLInsRef output_op_compare(struct dmr_C *C, struct function *fn,
 		else if (NJX_is_i(lhs))
 			target = NJX_lti(fn->builder, lhs, rhs);
 		break;
+	case OP_SET_B:
+		if (NJX_is_d(lhs))
+			target = NJX_ltd(fn->builder, lhs, rhs);
+		else if (NJX_is_f(lhs))
+			target = NJX_ltf(fn->builder, lhs, rhs);
+		else if (NJX_is_q(lhs))
+			target = NJX_ltuq(fn->builder, lhs, rhs);
+		else if (NJX_is_i(lhs))
+			target = NJX_ltui(fn->builder, lhs, rhs);
+		break;
 	case OP_SET_LE:
 		if (NJX_is_d(lhs))
 			target = NJX_led(fn->builder, lhs, rhs);
@@ -671,6 +681,56 @@ static NJXLInsRef output_op_compare(struct dmr_C *C, struct function *fn,
 			target = NJX_leq(fn->builder, lhs, rhs);
 		else if (NJX_is_i(lhs))
 			target = NJX_lei(fn->builder, lhs, rhs);
+		break;
+	case OP_SET_BE:
+		if (NJX_is_d(lhs))
+			target = NJX_led(fn->builder, lhs, rhs);
+		else if (NJX_is_f(lhs))
+			target = NJX_lef(fn->builder, lhs, rhs);
+		else if (NJX_is_q(lhs))
+			target = NJX_leuq(fn->builder, lhs, rhs);
+		else if (NJX_is_i(lhs))
+			target = NJX_leui(fn->builder, lhs, rhs);
+		break;
+	case OP_SET_GT:
+		if (NJX_is_d(lhs))
+			target = NJX_gtd(fn->builder, lhs, rhs);
+		else if (NJX_is_f(lhs))
+			target = NJX_gtf(fn->builder, lhs, rhs);
+		else if (NJX_is_q(lhs))
+			target = NJX_gtq(fn->builder, lhs, rhs);
+		else if (NJX_is_i(lhs))
+			target = NJX_gti(fn->builder, lhs, rhs);
+		break;
+	case OP_SET_A:
+		if (NJX_is_d(lhs))
+			target = NJX_gtd(fn->builder, lhs, rhs);
+		else if (NJX_is_f(lhs))
+			target = NJX_gtf(fn->builder, lhs, rhs);
+		else if (NJX_is_q(lhs))
+			target = NJX_gtuq(fn->builder, lhs, rhs);
+		else if (NJX_is_i(lhs))
+			target = NJX_gtui(fn->builder, lhs, rhs);
+		break;
+	case OP_SET_GE:
+		if (NJX_is_d(lhs))
+			target = NJX_ged(fn->builder, lhs, rhs);
+		else if (NJX_is_f(lhs))
+			target = NJX_gef(fn->builder, lhs, rhs);
+		else if (NJX_is_q(lhs))
+			target = NJX_geq(fn->builder, lhs, rhs);
+		else if (NJX_is_i(lhs))
+			target = NJX_gei(fn->builder, lhs, rhs);
+		break;
+	case OP_SET_AE:
+		if (NJX_is_d(lhs))
+			target = NJX_ged(fn->builder, lhs, rhs);
+		else if (NJX_is_f(lhs))
+			target = NJX_gef(fn->builder, lhs, rhs);
+		else if (NJX_is_q(lhs))
+			target = NJX_geuq(fn->builder, lhs, rhs);
+		else if (NJX_is_i(lhs))
+			target = NJX_geui(fn->builder, lhs, rhs);
 		break;
 	case OP_SET_EQ:
 		if (NJX_is_d(lhs))
@@ -803,7 +863,7 @@ static NJXLInsRef output_op_store(struct dmr_C *C, struct function *fn,
 				  struct instruction *insn)
 {
 	NJXLInsRef ptr, target_in;
-	//struct NanoType *desttype;
+	// struct NanoType *desttype;
 	int32_t off;
 
 	/* int type large enough to hold a pointer */
@@ -1153,23 +1213,17 @@ static int output_insn(struct dmr_C *C, struct function *fn,
 		return 0;
 
 	case OP_SET_LE:
-		NJX_comment(fn->builder, make_comment(C, insn));
-		v = output_op_compare(C, fn, insn);
-		break;
-
 	case OP_SET_GE:
-		return 0;
-
 	case OP_SET_LT:
-		NJX_comment(fn->builder, make_comment(C, insn));
-		v = output_op_compare(C, fn, insn);
-		break;
-
 	case OP_SET_GT:
 	case OP_SET_B:
 	case OP_SET_A:
 	case OP_SET_BE:
 	case OP_SET_AE:
+		NJX_comment(fn->builder, make_comment(C, insn));
+		v = output_op_compare(C, fn, insn);
+		break;
+
 	case OP_SEL:
 	case OP_SLICE:
 	case OP_NOT:

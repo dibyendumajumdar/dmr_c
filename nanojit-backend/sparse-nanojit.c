@@ -733,6 +733,7 @@ static NJXLInsRef output_op_compare(struct dmr_C *C, struct function *fn,
 			target = NJX_geui(fn->builder, lhs, rhs);
 		break;
 	case OP_SET_EQ:
+	case OP_SET_NE:
 		if (NJX_is_d(lhs))
 			target = NJX_eqd(fn->builder, lhs, rhs);
 		else if (NJX_is_f(lhs))
@@ -741,6 +742,10 @@ static NJXLInsRef output_op_compare(struct dmr_C *C, struct function *fn,
 			target = NJX_eqq(fn->builder, lhs, rhs);
 		else if (NJX_is_i(lhs))
 			target = NJX_eqi(fn->builder, lhs, rhs);
+		if (insn->opcode == OP_SET_NE && target) {
+			assert(NJX_is_i(target));
+			target = NJX_noti(fn->builder, target);
+		}
 		break;
 	default:
 		break;
@@ -850,6 +855,87 @@ static NJXLInsRef output_op_binary(struct dmr_C *C, struct function *fn,
 			break;
 		case 32:
 			target = NJX_divi(fn->builder, lhs, rhs);
+			break;
+		}
+		break;
+
+	case OP_MODS:
+	case OP_MODU:
+		assert(!dmrC_is_float_type(C->S, insn->type));
+		switch (insn->size) {
+		case 64:
+			target = NJX_modq(fn->builder, lhs, rhs);
+			break;
+		case 32:
+			target = NJX_modi(fn->builder, lhs, rhs);
+			break;
+		}
+		break;
+	case OP_SHL:
+		assert(!dmrC_is_float_type(C->S, insn->type));
+		switch (insn->size) {
+		case 64:
+			target = NJX_lshq(fn->builder, lhs, rhs);
+			break;
+		case 32:
+			target = NJX_lshi(fn->builder, lhs, rhs);
+			break;
+		}
+		break;
+	case OP_LSR:
+		assert(!dmrC_is_float_type(C->S, insn->type));
+		switch (insn->size) {
+		case 64:
+			target = NJX_rshuq(fn->builder, lhs, rhs);
+			break;
+		case 32:
+			target = NJX_rshui(fn->builder, lhs, rhs);
+			break;
+		}
+		break;
+	case OP_ASR:
+		assert(!dmrC_is_float_type(C->S, insn->type));
+		switch (insn->size) {
+		case 64:
+			target = NJX_rshq(fn->builder, lhs, rhs);
+			break;
+		case 32:
+			target = NJX_rshi(fn->builder, lhs, rhs);
+			break;
+		}
+		break;
+
+	/* Logical */
+	case OP_AND:
+		assert(!dmrC_is_float_type(C->S, insn->type));
+		switch (insn->size) {
+		case 64:
+			target = NJX_andq(fn->builder, lhs, rhs);
+			break;
+		case 32:
+			target = NJX_andi(fn->builder, lhs, rhs);
+			break;
+		}
+		break;
+	case OP_OR:
+		assert(!dmrC_is_float_type(C->S, insn->type));
+		switch (insn->size) {
+		case 64:
+			target = NJX_orq(fn->builder, lhs, rhs);
+			break;
+		case 32:
+			target = NJX_ori(fn->builder, lhs, rhs);
+			break;
+		}
+		break;
+	case OP_XOR:
+		assert(!dmrC_is_float_type(C->S, insn->type));
+		switch (insn->size) {
+		case 64:
+			target = NJX_xorq(fn->builder, lhs, rhs);
+			break;
+		case 32:
+			target = NJX_xori(fn->builder, lhs, rhs);
 			break;
 		}
 		break;
@@ -1188,10 +1274,6 @@ static int output_insn(struct dmr_C *C, struct function *fn,
 	case OP_MULS:
 	case OP_DIVU:
 	case OP_DIVS:
-		NJX_comment(fn->builder, make_comment(C, insn));
-		v = output_op_binary(C, fn, insn);
-		break;
-
 	case OP_MODU:
 	case OP_MODS:
 	case OP_SHL:
@@ -1200,18 +1282,16 @@ static int output_insn(struct dmr_C *C, struct function *fn,
 	case OP_AND:
 	case OP_OR:
 	case OP_XOR:
+		NJX_comment(fn->builder, make_comment(C, insn));
+		v = output_op_binary(C, fn, insn);
+		break;
+
 	case OP_AND_BOOL:
 	case OP_OR_BOOL:
 		return 0;
 
 	case OP_SET_EQ:
-		NJX_comment(fn->builder, make_comment(C, insn));
-		v = output_op_compare(C, fn, insn);
-		break;
-
 	case OP_SET_NE:
-		return 0;
-
 	case OP_SET_LE:
 	case OP_SET_GE:
 	case OP_SET_LT:

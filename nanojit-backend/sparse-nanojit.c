@@ -945,6 +945,63 @@ static NJXLInsRef output_op_binary(struct dmr_C *C, struct function *fn,
 	return target;
 }
 
+static NJXLInsRef output_op_not(struct dmr_C *C, struct function *fn,
+				struct instruction *insn)
+{
+	NJXLInsRef src, target;
+
+	src = pseudo_to_value(C, fn, insn->type, insn->src);
+	if (!src)
+		return NULL;
+
+	target = NULL;
+	switch (insn->size) {
+	case 64:
+		target = NJX_notq(fn->builder, src);
+		break;
+	case 32:
+		target = NJX_noti(fn->builder, src);
+		break;
+	}
+	insn->target->priv = target;
+
+	return target;
+}
+
+static NJXLInsRef output_op_neg(struct dmr_C *C, struct function *fn,
+				struct instruction *insn)
+{
+	NJXLInsRef src, target;
+
+	src = pseudo_to_value(C, fn, insn->type, insn->src);
+	if (!src)
+		return NULL;
+
+	target = NULL;
+	if (dmrC_is_float_type(C->S, insn->type)) {
+		switch (insn->size) {
+		case 64:
+			target = NJX_negd(fn->builder, src);
+			break;
+		case 32:
+			target = NJX_negf(fn->builder, src);
+			break;
+		}
+	} else {
+		switch (insn->size) {
+		case 64:
+			target = NJX_negq(fn->builder, src);
+			break;
+		case 32:
+			target = NJX_negi(fn->builder, src);
+			break;
+		}
+	}
+	insn->target->priv = target;
+
+	return target;
+}
+
 static NJXLInsRef output_op_store(struct dmr_C *C, struct function *fn,
 				  struct instruction *insn)
 {
@@ -1306,8 +1363,18 @@ static int output_insn(struct dmr_C *C, struct function *fn,
 
 	case OP_SEL:
 	case OP_SLICE:
+		return 0;
+
 	case OP_NOT:
+		NJX_comment(fn->builder, make_comment(C, insn));
+		v = output_op_not(C, fn, insn);
+		break;
+
 	case OP_NEG:
+		NJX_comment(fn->builder, make_comment(C, insn));
+		v = output_op_neg(C, fn, insn);
+		break;
+
 	case OP_CONTEXT:
 	case OP_RANGE:
 	case OP_NOP:

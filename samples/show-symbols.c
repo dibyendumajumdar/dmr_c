@@ -77,10 +77,6 @@ static void new_sym_node(struct dmr_C *C, struct symbol *sym, const char *name)
 
 	printf("<symbol id=\"%d\" type=\"%s\">", idcount, name);
 	
-	//newProp("type", name);
-
-	//newIdProp("id", idcount);
-
 	if (sym->ident && ident)
 		newProp("ident", ident);
 	newProp("file", dmrC_stream_name(C, sym->pos.stream));
@@ -110,49 +106,51 @@ static void examine_members(struct dmr_C *C, struct ptr_list *list)
 
 static void examine_modifiers(struct dmr_C *C, struct symbol *sym)
 {
-	const char *modifiers[] = {
-			"auto",
-			"register",
-			"static",
-			"extern",
-			"const",
-			"volatile",
-			"signed",
-			"unsigned",
-			"char",
-			"short",
-			"long",
-			"long-long",
-			"typedef",
-			NULL,
-			NULL,
-			NULL,
-			NULL,
-			NULL,
-			"inline",
-			"addressable",
-			"nocast",
-			"noderef",
-			"accessed",
-			"toplevel",
-			"label",
-			"assigned",
-			"type-type",
-			"safe",
-			"user-type",
-			"force",
-			"explicitly-signed",
-			"bitwise"};
+	struct mod_name {
+		unsigned long mod;
+		const char *name;
+	} * m;
 
-	int i;
+	static struct mod_name mod_names[] = {
+	    {MOD_AUTO, "auto"},
+	    {MOD_REGISTER, "register"},
+	    {MOD_STATIC, "static"},
+	    {MOD_EXTERN, "extern"},
+	    {MOD_CONST, "const"},
+	    {MOD_VOLATILE, "volatile"},
+	    {MOD_SIGNED, "signed"},
+	    {MOD_UNSIGNED, "unsigned"},
+	    {MOD_CHAR, "char"},
+	    {MOD_SHORT, "short"},
+	    {MOD_LONG, "long"},
+	    {MOD_LONGLONG, "long long"},
+	    {MOD_LONGLONGLONG, "long long long"},
+	    {MOD_TYPEDEF, "typedef"},
+	    {MOD_TLS, "tls"},
+	    {MOD_INLINE, "inline"},
+	    {MOD_ADDRESSABLE, "addressable"},
+	    {MOD_NOCAST, "nocast"},
+	    {MOD_NODEREF, "noderef"},
+	    {MOD_ACCESSED, "accessed"},
+	    {MOD_TOPLEVEL, "toplevel"},
+	    {MOD_ASSIGNED, "assigned"},
+	    {MOD_TYPE, "type"},
+	    {MOD_SAFE, "safe"},
+	    {MOD_USERTYPE, "usertype"},
+	    {MOD_NORETURN, "noreturn"},
+	    {MOD_EXPLICITLY_SIGNED, "explicitly-signed"},
+	    {MOD_BITWISE, "bitwise"},
+	    {MOD_PURE, "pure"},
+	};
 
 	if (sym->ns != NS_SYMBOL)
 		return;
 
-	/*iterate over the 32 bit bitfield*/
-	for (i=0; i < 32; i++) {
-		if ((sym->ctype.modifiers & 1<<i) && modifiers[i])
-			printf("<%s/>", modifiers[i]);
+	for (int i = 0; i < ARRAY_SIZE(mod_names); i++) {
+		m = mod_names + i;
+		if (sym->ctype.modifiers & m->mod) {
+			printf("<%s/>", m->name);
+		}
 	}
 }
 
@@ -191,7 +189,7 @@ static void examine_symbol(struct dmr_C *C, struct symbol *sym)
 			if (!sym->ctype.base_type->aux) {
 				examine_symbol(C, sym->ctype.base_type);
 			}
-			printf("<base-type>%d</base-type>", *((int *)sym->ctype.base_type->aux));
+			printf("<base-type href=\"%d\"/>", *((int *)sym->ctype.base_type->aux));
 		} else {
 			newProp("base-type-builtin", base);
 		}
@@ -220,7 +218,7 @@ static void examine_symbol(struct dmr_C *C, struct symbol *sym)
 	default:
 		break;
 	}
-	printf("</symbol>");
+	printf("</symbol>\n");
 	return;
 }
 
@@ -312,12 +310,15 @@ int main(int argc, char **argv)
 
 	symlist = dmrC_sparse_initialize(C, argc, argv, &filelist);
 
+    printf("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
+    printf("<parse>\n");
 	FOR_EACH_PTR(filelist, file) {
 		examine_symbol_list(C, file, symlist);
 		dmrC_sparse_keep_tokens(C, file);
 		examine_symbol_list(C, file, C->file_scope->symbols);
 		examine_symbol_list(C, file, C->global_scope->symbols);
 	} END_FOR_EACH_PTR(file);
+    printf("</parse>\n");
 
 	destroy_dmr_C(C);
 

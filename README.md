@@ -20,6 +20,7 @@ The code base is a fork of Sparse. The main changes are:
 * We are now able to build on Windows, Linux and Mac OSX. However there are platform specific limitations - see below for details.
 * Global state has been removed mostly
 * The LLVM backend has had many fixes and is able to compile real programs. See details below for what works and what doesn't.
+* NOTE: Due to some other commitments work on this project will resume mid June.
 
 ## Build instructions
 

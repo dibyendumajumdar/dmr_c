@@ -1264,7 +1264,7 @@ struct ptr_list *dmrC_sparse_initialize(struct dmr_C *C, int argc, char **argv, 
 	struct ptr_list *list;
 
 	args = argv;
-	for (;;) {
+	for (; args < argv + argc;) {
 		char *arg = *++args;
 		if (!arg)
 			break;
@@ -1281,7 +1281,7 @@ struct ptr_list *dmrC_sparse_initialize(struct dmr_C *C, int argc, char **argv, 
 	handle_arch_finalize(C);
 
 	list = NULL;
-	if (!ptr_list_empty(filelist)) {
+	//if (!ptr_list_empty(filelist)) {
 
 		dmrC_create_builtin_stream(C);
 		predefined_macros(C);
@@ -1295,7 +1295,7 @@ struct ptr_list *dmrC_sparse_initialize(struct dmr_C *C, int argc, char **argv, 
 		* they need to survive all the others
 		*/
 		protect_token_alloc(C);
-	}
+	//}
 	return list;
 }
 
@@ -1354,6 +1354,9 @@ struct ptr_list *dmrC_sparse_buffer(struct dmr_C *C, char *buffer)
 
 	/* Drop the tokens for this file after parsing */
 	clear_token_alloc(C);
+
+	/* Evaluate the complete symbol list */
+	dmrC_evaluate_symbol_list(C, res);
 
 	/* And return it */
 	return res;

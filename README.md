@@ -140,10 +140,13 @@ A very simple use is below:
 
 int main(int argc, char **argv)
 {
-	LLVMModuleRef module;
 	int rc = 1;
-	module = dmrC_llvmcompile(argc, argv, LLVMGetGlobalContext(), "sparse", NULL);	
+
+	LLVMContextRef context = LLVMGetGlobalContext();
+	LLVMModuleRef module =
+	    LLVMModuleCreateWithNameInContext("dmrC", context);
 	if (module) {
+		dmrC_llvmcompile(argc, argv, module, NULL);
 		LLVMDisposeModule(module);
 		rc = 0;
 	}

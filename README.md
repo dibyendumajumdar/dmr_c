@@ -146,9 +146,9 @@ int main(int argc, char **argv)
 	LLVMModuleRef module =
 	    LLVMModuleCreateWithNameInContext("dmrC", context);
 	if (module) {
-		dmrC_llvmcompile(argc, argv, module, NULL);
+        if (dmrC_llvmcompile(argc, argv, module, NULL))
+            rc = 0;
 		LLVMDisposeModule(module);
-		rc = 0;
 	}
 	return rc;
 }

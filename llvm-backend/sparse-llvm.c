@@ -1951,29 +1951,29 @@ static void add_intrinsics(LLVMModuleRef module)
 	LLVMValueRef fn = LLVMAddFunction(module, "llvm.memset.p0i8.i32", fn_type);
 }
 
-LLVMModuleRef dmrC_llvmcompile(int argc, char **argv, LLVMContextRef context, const char *modulename, const char *inputbuffer)
+bool dmrC_llvmcompile(int argc, char **argv, LLVMModuleRef module,
+		      const char *inputbuffer)
 {
 	struct ptr_list *filelist = NULL;
 	struct ptr_list *symlist;
-	LLVMModuleRef module;
 	char *file;
 
 	struct dmr_C *C = new_dmr_C();
-	C->codegen = 1;	/* disables macros related to vararg processing */
+	C->codegen = 1; /* disables macros related to vararg processing */
 
 	symlist = dmrC_sparse_initialize(C, argc, argv, &filelist);
-
-	module = LLVMModuleCreateWithNameInContext(modulename, context);
-	set_target(C, module);
+	// set_target(C, module);
 	add_intrinsics(module);
 
-	int rc = 0;
+	int rc = 0; /* 0 means OK, non-zero means error */
 	if (compile(C, module, symlist)) {
 		/* need ->phi_users */
-		/* This flag enables call to dmrC_track_pseudo_death() in linearize.c which sets
+		/* This flag enables call to dmrC_track_pseudo_death() in
+		linearize.c which sets
 		phi_users list on PHISOURCE instructions  */
 		C->dbg_dead = 1;
-		FOR_EACH_PTR(filelist, file) {
+		FOR_EACH_PTR(filelist, file)
+		{
 			symlist = dmrC_sparse(C, file);
 			if (C->die_if_error) {
 				rc = 1;
@@ -1983,16 +1983,32 @@ LLVMModuleRef dmrC_llvmcompile(int argc, char **argv, LLVMContextRef context, co
 				rc = 1;
 				break;
 			}
-		} END_FOR_EACH_PTR(file);
-	}
-	else
+		}
+		END_FOR_EACH_PTR(file);
+
+		if (inputbuffer && rc == 0) {
+			char *buffer = strdup(inputbuffer);
+			if (!buffer)
+				rc = 1;
+			else {
+				symlist = dmrC_sparse_buffer(C, buffer);
+				free(buffer);
+				if (C->die_if_error) {
+					rc = 1;
+				} else if (!compile(C, module, symlist)) {
+					rc = 1;
+				}
+			}
+		}
+	} else
 		rc = 1;
 	char *error_message = NULL;
 	int dump_module = 0;
 	if (rc == 1) {
 		fprintf(stderr, "Failed to compile given inputs\n");
 	}
-	if (rc == 0 && LLVMVerifyModule(module, LLVMPrintMessageAction, &error_message)) {
+	if (rc == 0 &&
+	    LLVMVerifyModule(module, LLVMPrintMessageAction, &error_message)) {
 		dump_module = 1;
 		rc = 1;
 	}
@@ -2006,14 +2022,12 @@ LLVMModuleRef dmrC_llvmcompile(int argc, char **argv, LLVMContextRef context, co
 		if (C->output_file_name[0])
 			filename = C->output_file_name;
 		LLVMWriteBitcodeToFile(module, filename);
-	}
-	else {
+	} else {
 		if (dump_module)
 			/* we only dump the LLVM module if verification fails */
 			LLVMDumpModule(module);
 	}
 	destroy_dmr_C(C);
 
-	return module;
+	return rc == 0;
 }
-

@@ -1,9 +1,10 @@
 /**
 * Sparse LLVM backend
 *
-* Original copyrights: Pekka Enberg and Jeff Garzik (https://lwn.net/Articles/456709/)
+* Original copyrights: Pekka Enberg and Jeff Garzik
+* (https://lwn.net/Articles/456709/)
 * Additional copyrights: Dibyendu Majumdar and Luc Van Oostenryck
-* 
+*
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
 * in the Software without restriction, including without limitation the rights
@@ -28,10 +29,13 @@
 
 int main(int argc, char **argv)
 {
-	LLVMModuleRef module;
 	int rc = 1;
-	module = dmrC_llvmcompile(argc, argv, LLVMGetGlobalContext(), "sparse", NULL);	
+
+	LLVMContextRef context = LLVMGetGlobalContext();
+	LLVMModuleRef module =
+	    LLVMModuleCreateWithNameInContext("dmrC", context);
 	if (module) {
+		dmrC_llvmcompile(argc, argv, module, NULL);
 		LLVMDisposeModule(module);
 		rc = 0;
 	}

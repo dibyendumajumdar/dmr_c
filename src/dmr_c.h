@@ -237,7 +237,7 @@ extern struct ptr_list * dmrC_sparse_initialize(struct dmr_C *C, int argc, char 
 extern struct ptr_list * dmrC_sparse_keep_tokens(struct dmr_C *C, char *filename);
 extern struct ptr_list * dmrC_sparse(struct dmr_C *C, char *filename);
 extern struct ptr_list * dmrC__sparse(struct dmr_C *C, char *filename);
-extern struct ptr_list * dmrC_sparse_buffer(struct dmr_C *C, char *buffer);
+extern struct ptr_list * dmrC_sparse_buffer(struct dmr_C *C, const char *name, char *buffer, int keep_tokens);
 
 struct token *dmrC_skip_to_token(struct token *, int);
 struct token *dmrC_expect_token(struct dmr_C *C, struct token *token, int op, const char *where);

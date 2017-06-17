@@ -504,6 +504,13 @@ static inline int dmrC_symbol_list_size(struct ptr_list *list)
 	return ptrlist_size(list);
 }
 
+static inline int dmrC_is_prototype(struct symbol *sym)
+{
+	if (sym->type == SYM_NODE)
+		sym = sym->ctype.base_type;
+	return sym && sym->type == SYM_FN && !sym->stmt;
+}
+
 #define dmrC_is_restricted_type(type) (dmrC_get_sym_type(type) == SYM_RESTRICT)
 #define dmrC_is_fouled_type(type) (dmrC_get_sym_type(type) == SYM_FOULED)
 #define dmrC_is_bitfield_type(type) (dmrC_get_sym_type(type) == SYM_BITFIELD)

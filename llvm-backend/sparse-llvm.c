@@ -1854,13 +1854,6 @@ static LLVMValueRef output_prototype(struct dmr_C *C, LLVMModuleRef module, stru
 	return result;
 }
 
-static int is_prototype(struct symbol *sym)
-{
-	if (sym->type == SYM_NODE)
-		sym = sym->ctype.base_type;
-	return sym && sym->type == SYM_FN && !sym->stmt;
-}
-
 /* returns 1 on success, 0 on failure */
 static int compile(struct dmr_C *C, LLVMModuleRef module, struct ptr_list *list)
 {
@@ -1870,7 +1863,7 @@ static int compile(struct dmr_C *C, LLVMModuleRef module, struct ptr_list *list)
 		struct entrypoint *ep;
 		dmrC_expand_symbol(C, sym);
 
-		if (is_prototype(sym)) {
+		if (dmrC_is_prototype(sym)) {
 			if (!output_prototype(C, module, sym))
 				return 0;
 			continue;
@@ -1991,7 +1984,7 @@ bool dmrC_llvmcompile(int argc, char **argv, LLVMModuleRef module,
 			if (!buffer)
 				rc = 1;
 			else {
-				symlist = dmrC_sparse_buffer(C, buffer);
+				symlist = dmrC_sparse_buffer(C, "buffer", buffer, 0);
 				free(buffer);
 				if (C->die_if_error) {
 					rc = 1;

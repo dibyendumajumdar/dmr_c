@@ -254,9 +254,17 @@ extern const char *dmrC_quote_token(struct dmr_C *C, const struct token *token);
 extern int *dmrC_hash_stream(const char *name);
 extern struct token *dmrC_tokenize(struct dmr_C *C, const char *name, int fd,
 	struct token *endtoken, const char **next_path);
+/* This function assumes that stream 0 is being used - so it is not suitable
+   for general use */
 extern struct token *dmrC_tokenize_buffer(struct dmr_C *C, unsigned char *buffer,
 	unsigned long size,
 	struct token **endtoken);
+/* This version allows a named stream to be created */
+extern struct token *dmrC_tokenize_buffer_stream(struct dmr_C *C,
+						 const char *name,
+						 unsigned char *buffer,
+						 unsigned long size,
+						 struct token **endtoken);
 extern void dmrC_show_identifier_stats(struct dmr_C *C);
 extern struct token *dmrC_preprocess(struct dmr_C *C, struct token *);
 extern void dmrC_init_preprocessor_state(struct dmr_C *C);

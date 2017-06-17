@@ -1337,7 +1337,7 @@ struct ptr_list * dmrC_sparse(struct dmr_C *C, char *filename)
 	return res;
 }
 
-struct ptr_list *dmrC_sparse_buffer(struct dmr_C *C, char *buffer)
+struct ptr_list *dmrC_sparse_buffer(struct dmr_C *C, const char *name, char *buffer, int keep_tokens)
 {
 	struct ptr_list *res;
 
@@ -1347,13 +1347,15 @@ struct ptr_list *dmrC_sparse_buffer(struct dmr_C *C, char *buffer)
 
 	struct token *start;
 	struct token *end;
-	start = dmrC_tokenize_buffer(C, (unsigned char *)buffer,
+	start = dmrC_tokenize_buffer_stream(C, name, (unsigned char *)buffer,
 				     (unsigned long)strlen(buffer), &end);
 
 	res = sparse_tokenstream(C, start);
 
-	/* Drop the tokens for this file after parsing */
-	clear_token_alloc(C);
+    if (!keep_tokens) {
+        /* Drop the tokens for this file after parsing */
+        clear_token_alloc(C);
+    }
 
 	/* Evaluate the complete symbol list */
 	dmrC_evaluate_symbol_list(C, res);

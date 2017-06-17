@@ -950,6 +950,24 @@ struct token *dmrC_tokenize_buffer(struct dmr_C *C, unsigned char *buffer,
 	return begin;
 }
 
+struct token *dmrC_tokenize_buffer_stream(struct dmr_C *C, const char *name,
+					  unsigned char *buffer,
+					  unsigned long size,
+					  struct token **endtoken)
+{
+	stream_t stream;
+	struct token *begin;
+	int idx;
+
+	idx = dmrC_init_stream(C, name, -1, C->includepath);
+	if (idx < 0) {
+		return NULL;
+	}
+	begin = setup_stream(C, &stream, idx, -1, buffer, size);
+	*endtoken = tokenize_stream(C, &stream);
+	return begin;
+}
+
 struct token *dmrC_tokenize(struct dmr_C *C, const char *name, int fd,
 		       struct token *endtoken, const char **next_path)
 {

@@ -1,0 +1,56 @@
+doif:
+.L0:
+	<entry-point>
+	setlt.32    %r3 <- %arg1, %arg2
+	br          %r3, .L1, .L2
+
+.L1:
+	add.32      %r5 <- %arg1, $5
+	phisrc.32   %phi1(return) <- %r5
+	br          .L3
+
+.L2:
+	setlt.32    %r9 <- %arg2, %arg1
+	br          %r9, .L5, .L6
+
+.L5:
+	add.32      %r11 <- %arg1, $-5
+	phisrc.32   %phi2(return) <- %r11
+	br          .L3
+
+.L6:
+	muls.32     %r14 <- %arg1, %arg2
+	setge.32    %r15 <- %r14, $10
+	br          %r15, .L8, .L9
+
+.L8:
+	phisrc.32   %phi3(return) <- $15
+	br          .L3
+
+.L9:
+	divs.32     %r18 <- %arg1, %arg2
+	mods.32     %r21 <- %arg1, %arg2
+	setle.32    %r23 <- %r18, $1
+	br          %r23, .L11, .L12
+
+.L11:
+	phisrc.32   %phi4(return) <- %r21
+	br          .L3
+
+.L12:
+	br          %r21, .L14, .L15
+
+.L14:
+	phisrc.32   %phi5(return) <- %r21
+	br          .L3
+
+.L15:
+	add.32      %r29 <- %r18, $1
+	phisrc.32   %phi6(return) <- %r29
+	br          .L3
+
+.L3:
+	phi.32      %r6 <- %phi1(return), %phi2(return), %phi3(return), %phi4(return), %phi5(return), %phi6(return)
+	ret.32      %r6
+
+

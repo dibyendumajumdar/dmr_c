@@ -289,6 +289,8 @@ static enum NJXValueKind check_supported_argtype(struct dmr_C *C,
 	if (dmrC_is_int_type(C->S, sym)) {
 		if (sym->bit_size == C->target->bits_in_pointer)
 			return NJXValueKind_Q;
+		else if (sym->bit_size == C->target->bits_in_int)
+			return NJXValueKind_I;
 	}
 	fprintf(stderr, "Unsupported type in function argument, only pointers "
 			"and 64-bit integers are supported\n");
@@ -1545,7 +1547,10 @@ static bool output_fn(struct dmr_C *C, NJXContextRef module,
 	if (resolve_jumps(&function))
 		success = true;
 
-	output_parameter_liveness(C, &function);
+	// Not needed anymore as Nanojit does it
+	// But if we convert from long lon =g to int then?
+	// TODO check
+	// output_parameter_liveness(C, &function);
 
 	if (success) {
 		void *p = NJX_finalize(function.builder);

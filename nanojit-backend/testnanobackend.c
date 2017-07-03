@@ -117,13 +117,59 @@ static int test3(int argc, char **argv)
 	return rc;
 }
 
+int test4(int argc, char **argv)
+{
+	const char *code = "int doif(int a, int b) "
+			   "{"
+			   "if (a < b) "
+			   "return a + 5;"
+			   "else if (b < a) "
+			   "return a - 5;"
+			   "else if (a * b >= 10) "
+			   "return 15; "
+			   "else {"
+			   "int c = a / b;"
+			   "int d = a%b;"
+			   "if (c <= 1)"
+			   "return d;"
+			   "else if (d != 0)"
+			   "return d;"
+			   "else "
+			   "return c + 1;"
+			   "}"
+			   "}\n";
+
+	NJXContextRef module = NJX_create_context(true);
+	int rc = 0;
+	if (!dmrC_nanocompile(argc, argv, module, code))
+		rc = 1;
+	int (*fp)(int, int) = NULL;
+	if (rc == 0) {
+		fp = NJX_get_function_by_name(module, "doif");
+		if (!fp)
+			rc = 1;
+	}
+	if (rc == 0 && fp) {
+        if (fp(1, 5) != 6) 
+            rc = 1;
+        if (rc == 0 && fp(5, 1) != 0) 
+            rc = 1;
+        if (rc == 0 && fp(5, 5) != 15)
+            rc = 1;
+        if (rc == 0 && fp(3, 3) != 0)
+            rc = 1;
+	}
+	NJX_destroy_context(module);
+	return rc;
+}
+
 int main(int argc, char **argv)
 {
 	int rc = 0;
 	rc += test1(argc, argv);
 	rc += test2(argc, argv);
 	rc += test3(argc, argv);
-
+    rc += test4(argc, argv);
 	if (rc == 0)
 		printf("Test OK\n");
 	else

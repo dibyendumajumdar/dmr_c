@@ -13,11 +13,6 @@
 #include <symbol.h>
 
 /*
-* Only upto 4 arguments are supported as Nanojit only supports
-* parameters passed via registers
-*/
-#define MAX_ARGS 4
-/*
 * The maximum number of jumps we can handle in a single
 * function. This is just a memory allocation issue.
 */
@@ -66,7 +61,7 @@ struct function {
 	NJXFunctionBuilderRef builder;
 	NJXContextRef context;
 	struct allocator type_allocator;
-	NJXLInsRef args[MAX_ARGS];
+	NJXLInsRef args[NJXMaxArgs];
 	struct NanoType *return_type;
 	struct jmp_target jumps[MAX_JMP_INSTRUCTIONS];
 };
@@ -286,7 +281,8 @@ static struct NanoType *insn_symbol_type(struct dmr_C *C, struct function *fn,
 	}
 }
 
-static enum NJXValueKind check_supported_argtype(struct dmr_C *C, struct symbol *sym)
+static enum NJXValueKind check_supported_argtype(struct dmr_C *C,
+						 struct symbol *sym)
 {
 	if (dmrC_is_ptr_type(sym))
 		return NJXValueKind_P;
@@ -1308,6 +1304,8 @@ static int output_insn(struct dmr_C *C, struct function *fn,
 
 	case OP_SNOP:
 	case OP_CALL:
+		return 0;
+
 	case OP_CAST:
 		NJX_comment(fn->builder, make_comment(C, insn));
 		v = output_op_cast(C, fn, insn, true);
@@ -1428,16 +1426,22 @@ static int output_bb(struct dmr_C *C, struct function *fn,
 	return 1;
 }
 
-static enum NJXValueKind map_nanotype(struct NanoType *type) {
-    switch (type->type) {
-    case RT_DOUBLE: return NJXValueKind_D;
-    case RT_FLOAT: return NJXValueKind_F;
-    case RT_INT32: return NJXValueKind_I;
-    case RT_INT64: return NJXValueKind_Q;
-    case RT_PTR: return NJXValueKind_P;
-    default:
-        return 0;
-    }
+static enum NJXValueKind map_nanotype(struct NanoType *type)
+{
+	switch (type->type) {
+	case RT_DOUBLE:
+		return NJXValueKind_D;
+	case RT_FLOAT:
+		return NJXValueKind_F;
+	case RT_INT32:
+		return NJXValueKind_I;
+	case RT_INT64:
+		return NJXValueKind_Q;
+	case RT_PTR:
+		return NJXValueKind_P;
+	default:
+		return 0;
+	}
 }
 
 static bool output_fn(struct dmr_C *C, NJXContextRef module,
@@ -1462,9 +1466,9 @@ static bool output_fn(struct dmr_C *C, NJXContextRef module,
 			    sizeof(struct NanoType),
 			    __alignof__(struct NanoType), CHUNK);
 
-    enum NJXValueKind argtypes[NJXMaxArgs];
+	enum NJXValueKind argtypes[NJXMaxArgs];
 
-    FOR_EACH_PTR(base_type->arguments, arg)
+	FOR_EACH_PTR(base_type->arguments, arg)
 	{
 		struct symbol *arg_base_type = arg->ctype.base_type;
 		if (nr_args >= NJXMaxArgs) {
@@ -1472,7 +1476,7 @@ static bool output_fn(struct dmr_C *C, NJXContextRef module,
 				NJXMaxArgs);
 			goto Ereturn;
 		}
-        argtypes[nr_args] = check_supported_argtype(C, arg_base_type);
+		argtypes[nr_args] = check_supported_argtype(C, arg_base_type);
 		if (!argtypes[nr_args])
 			goto Ereturn;
 		nr_args++;
@@ -1487,9 +1491,10 @@ static bool output_fn(struct dmr_C *C, NJXContextRef module,
 	if (function.return_type == &BadType)
 		goto Ereturn;
 
-    enum NJXValueKind freturn = map_nanotype(function.return_type);
+	enum NJXValueKind freturn = map_nanotype(function.return_type);
 
-	function.builder = NJX_create_function_builder(module, name, freturn, argtypes, nr_args, true);
+	function.builder = NJX_create_function_builder(module, name, freturn,
+						       argtypes, nr_args, true);
 	for (int i = 0; i < nr_args; i++) {
 		function.args[i] = NJX_get_parameter(function.builder, i);
 	}
@@ -1600,7 +1605,7 @@ bool dmrC_nanocompile(int argc, char **argv, NJXContextRef module,
 	char *file;
 
 	struct dmr_C *C = new_dmr_C();
-    C->optimize = 1;
+	C->optimize = 1;
 	C->codegen = 1; /* disables macros related to vararg processing */
 
 	symlist = dmrC_sparse_initialize(C, argc, argv, &filelist);
@@ -1624,22 +1629,22 @@ bool dmrC_nanocompile(int argc, char **argv, NJXContextRef module,
 				break;
 			}
 		}
-        END_FOR_EACH_PTR(file);
-        if (inputbuffer && rc == 0) {
-            char *buffer = strdup(inputbuffer);
-            if (!buffer)
-                rc = 1;
-            else {
-                symlist = dmrC_sparse_buffer(C, "buffer", buffer, 0);
-                free(buffer);
-                if (C->die_if_error) {
-                    rc = 1;
-                }
-                else if (!compile(C, module, symlist)) {
-                    rc = 1;
-                }
-            }
-        }
+		END_FOR_EACH_PTR(file);
+		if (inputbuffer && rc == 0) {
+			char *buffer = strdup(inputbuffer);
+			if (!buffer)
+				rc = 1;
+			else {
+				symlist =
+				    dmrC_sparse_buffer(C, "buffer", buffer, 0);
+				free(buffer);
+				if (C->die_if_error) {
+					rc = 1;
+				} else if (!compile(C, module, symlist)) {
+					rc = 1;
+				}
+			}
+		}
 	} else
 		rc = 1;
 

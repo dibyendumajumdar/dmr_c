@@ -21,7 +21,19 @@ This is very early days. We are able to generate code for following simple C pro
 * NanoJIT lacks instructions for 64-bit multiply and divide - this is a problem for dmrC as 64-bit multiply in particular is used for pointer arithmetic. (This is a blocker - I am investigating how to add these instructions to Nanojit). Update: I have [added support](https://github.com/dibyendumajumdar/nanojit/commit/54939aa859bfd84fae9e9fb876e807e6a76e89f0) for these operations in Nanojit.
 * NanoJIT lacks instruction for converting a double to 64-bit integer. Update: I have [added support](https://github.com/dibyendumajumdar/nanojit/commit/b2d63c3e77bcfc8272bdd0cbd971d8e2e3ed7f48) for this, although not tested yet.
 * NanoJIT only allows 4 integer/pointer parameters inside a JIT function.
-* 
+
+## Unimplemented features
+
+* Assignments to floating point variables
+* switch statement
+* computed gotos
+* selection operator (?:)
+
+## Other limitations
+
+* We cannot have static / global data in JIT code
+* We probably can't generate code for string initializers
+* Other limitations in the LLVM backend will also apply
   
 ## Building 
 

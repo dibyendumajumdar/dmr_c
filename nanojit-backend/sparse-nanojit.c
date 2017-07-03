@@ -286,17 +286,17 @@ static struct NanoType *insn_symbol_type(struct dmr_C *C, struct function *fn,
 	}
 }
 
-static bool check_supported_argtype(struct dmr_C *C, struct symbol *sym)
+static enum NJXValueKind check_supported_argtype(struct dmr_C *C, struct symbol *sym)
 {
 	if (dmrC_is_ptr_type(sym))
-		return true;
+		return NJXValueKind_P;
 	if (dmrC_is_int_type(C->S, sym)) {
 		if (sym->bit_size == C->target->bits_in_pointer)
-			return true;
+			return NJXValueKind_Q;
 	}
 	fprintf(stderr, "Unsupported type in function argument, only pointers "
 			"and 64-bit integers are supported\n");
-	return false;
+	return 0;
 }
 
 static struct NanoType *check_supported_returntype(struct dmr_C *C,
@@ -1428,6 +1428,18 @@ static int output_bb(struct dmr_C *C, struct function *fn,
 	return 1;
 }
 
+static enum NJXValueKind map_nanotype(struct NanoType *type) {
+    switch (type->type) {
+    case RT_DOUBLE: return NJXValueKind_D;
+    case RT_FLOAT: return NJXValueKind_F;
+    case RT_INT32: return NJXValueKind_I;
+    case RT_INT64: return NJXValueKind_Q;
+    case RT_PTR: return NJXValueKind_P;
+    default:
+        return 0;
+    }
+}
+
 static bool output_fn(struct dmr_C *C, NJXContextRef module,
 		      struct entrypoint *ep)
 {
@@ -1450,15 +1462,18 @@ static bool output_fn(struct dmr_C *C, NJXContextRef module,
 			    sizeof(struct NanoType),
 			    __alignof__(struct NanoType), CHUNK);
 
-	FOR_EACH_PTR(base_type->arguments, arg)
+    enum NJXValueKind argtypes[NJXMaxArgs];
+
+    FOR_EACH_PTR(base_type->arguments, arg)
 	{
 		struct symbol *arg_base_type = arg->ctype.base_type;
-		if (nr_args >= MAX_ARGS) {
+		if (nr_args >= NJXMaxArgs) {
 			fprintf(stderr, "Only upto %d arguments supported\n",
-				MAX_ARGS);
+				NJXMaxArgs);
 			goto Ereturn;
 		}
-		if (!check_supported_argtype(C, arg_base_type))
+        argtypes[nr_args] = check_supported_argtype(C, arg_base_type);
+		if (!argtypes[nr_args])
 			goto Ereturn;
 		nr_args++;
 	}
@@ -1472,20 +1487,11 @@ static bool output_fn(struct dmr_C *C, NJXContextRef module,
 	if (function.return_type == &BadType)
 		goto Ereturn;
 
-	function.builder = NJX_create_function_builder(module, name, true);
+    enum NJXValueKind freturn = map_nanotype(function.return_type);
+
+	function.builder = NJX_create_function_builder(module, name, freturn, argtypes, nr_args, true);
 	for (int i = 0; i < nr_args; i++) {
-#if 1
-		function.args[i] = NJX_insert_parameter(function.builder);
-#else
-		// It is unclear what the LIR_paramp instruction does.
-		// It seems that we need to copy the parameters as the
-		// code generator does not preserve the parameter values.
-		// For now we allocate stack space and copy the parameters.
-		NJXLInsRef p = NJX_insert_parameter(function.builder);
-		NJXLInsRef ptr = NJX_alloca(function.builder, sizeof(int64_t));
-		NJXLInsRef arg = NJX_store_q(function.builder, p, ptr, 0);
-		function.args[i] = ptr;
-#endif
+		function.args[i] = NJX_get_parameter(function.builder, i);
 	}
 
 	unsigned int bbnr = 0;
@@ -1496,7 +1502,6 @@ static bool output_fn(struct dmr_C *C, NJXContextRef module,
 		/* allocate alloca for each phi */
 		FOR_EACH_PTR(bb->insns, insn)
 		{
-
 			if (!insn->bb || insn->opcode != OP_PHI)
 				continue;
 			/* insert alloca into entry block */
@@ -1595,6 +1600,7 @@ bool dmrC_nanocompile(int argc, char **argv, NJXContextRef module,
 	char *file;
 
 	struct dmr_C *C = new_dmr_C();
+    C->optimize = 1;
 	C->codegen = 1; /* disables macros related to vararg processing */
 
 	symlist = dmrC_sparse_initialize(C, argc, argv, &filelist);
@@ -1618,7 +1624,22 @@ bool dmrC_nanocompile(int argc, char **argv, NJXContextRef module,
 				break;
 			}
 		}
-		END_FOR_EACH_PTR(file);
+        END_FOR_EACH_PTR(file);
+        if (inputbuffer && rc == 0) {
+            char *buffer = strdup(inputbuffer);
+            if (!buffer)
+                rc = 1;
+            else {
+                symlist = dmrC_sparse_buffer(C, "buffer", buffer, 0);
+                free(buffer);
+                if (C->die_if_error) {
+                    rc = 1;
+                }
+                else if (!compile(C, module, symlist)) {
+                    rc = 1;
+                }
+            }
+        }
 	} else
 		rc = 1;
 

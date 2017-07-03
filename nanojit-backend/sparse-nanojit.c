@@ -444,6 +444,217 @@ static NJXLInsRef val_to_value(struct dmr_C *C, struct function *fn,
 	return NULL;
 }
 
+/*
+* We do not support globals or aggregate locals with initializers
+*/
+static NJXLInsRef build_local(struct dmr_C *C, struct function *fn,
+			      struct symbol *sym)
+{
+	const char *name = dmrC_show_ident(C, sym->ident);
+	struct NanoType *type = get_symnode_type(C, fn, sym);
+	char localname[256] = {0};
+	snprintf(localname, sizeof localname, "%s_%p.", name, sym);
+	if (dmrC_is_static(sym) || dmrC_is_extern(sym) ||
+	    dmrC_is_toplevel(sym)) {
+		return NULL;
+	} else {
+		if (sym->initialized && is_aggregate_type(sym)) {
+			return NULL;
+		}
+		NJXLInsRef result = NJX_alloca(
+		    fn->builder, type->bit_size / C->target->bits_in_char);
+		sym->priv = result;
+		return result;
+	}
+}
+
+static NJXLInsRef constant_value(struct dmr_C *C, struct function *fn,
+				 unsigned long long val, struct NanoType *dtype)
+{
+	NJXLInsRef result = NULL;
+
+	if (dtype->type == RT_INT || dtype->type == RT_INT32) {
+		result = NJX_immi(fn->builder, (int)val);
+	} else if (dtype->type == RT_INT64 || dtype->type == RT_PTR) {
+		result = NJX_immq(fn->builder, val);
+	} else if (dtype->type == RT_DOUBLE) {
+		result = NJX_immd(fn->builder, (double)(long long)val);
+	} else if (dtype->type == RT_FLOAT) {
+		result = NJX_immf(fn->builder, (float)(long long)val);
+	} else {
+		fprintf(stderr, "unsupported pseudo value kind %d\n",
+			dtype->type);
+		return NULL;
+	}
+	return result;
+}
+
+static NJXLInsRef constant_fvalue(struct dmr_C *C, struct function *fn,
+				  double val, struct NanoType *dtype)
+{
+	NJXLInsRef result = NULL;
+
+	if (dtype->type == RT_DOUBLE) {
+		result = NJX_immd(fn->builder, val);
+	} else if (dtype->type == RT_FLOAT) {
+		result = NJX_immf(fn->builder, (float)val);
+	} else {
+		fprintf(stderr, "unsupported pseudo value kind %d\n",
+			dtype->type);
+		return NULL;
+	}
+	return result;
+}
+
+static NJXLInsRef build_store(struct dmr_C *C, struct function *fn,
+			      NJXLInsRef v, NJXLInsRef ptr,
+			      struct NanoType *type)
+{
+	switch (type->type) {
+	case RT_INT32:
+	case RT_INT:
+		return NJX_store_i(fn->builder, v, ptr, 0);
+	case RT_FLOAT:
+		return NJX_store_f(fn->builder, v, ptr, 0);
+	case RT_DOUBLE:
+		return NJX_store_d(fn->builder, v, ptr, 0);
+	case RT_INT64:
+	case RT_PTR:
+		return NJX_store_q(fn->builder, v, ptr, 0);
+	default:
+		return NULL;
+	}
+}
+
+static NJXLInsRef get_sym_value(struct dmr_C *C, struct function *fn,
+				pseudo_t pseudo)
+{
+	NJXLInsRef result = NULL;
+	struct symbol *sym = pseudo->sym;
+	struct expression *expr;
+
+	result = (NJXLInsRef)sym->priv;
+	if (result)
+		return result;
+
+	assert(sym->bb_target == NULL);
+
+	expr = sym->initializer;
+	if (expr &&
+	    (!sym->ident || (sym->ident && (expr->type == EXPR_VALUE ||
+					    expr->type == EXPR_FVALUE)))) {
+		switch (expr->type) {
+		case EXPR_STRING: {
+			dmrC_sparse_error(
+			    C, expr->pos,
+			    "unsupported string reference in initializer\n");
+			dmrC_show_expression(C, expr);
+			return NULL;
+			break;
+		}
+		case EXPR_SYMBOL: {
+			dmrC_sparse_error(
+			    C, expr->pos,
+			    "unresolved symbol reference in initializer\n");
+			dmrC_show_expression(C, expr);
+			return NULL;
+			break;
+		}
+		case EXPR_VALUE: {
+			if (dmrC_is_static(sym)) {
+				dmrC_sparse_error(
+				    C, expr->pos,
+				    "unsupported symbol reference\n");
+				dmrC_show_expression(C, expr);
+				return NULL;
+			}
+			struct NanoType *symtype = get_symnode_type(C, fn, sym);
+			if (symtype == NULL) {
+				dmrC_sparse_error(C, expr->pos,
+						  "invalid symbol type\n");
+				dmrC_show_expression(C, expr);
+				return NULL;
+			}
+			result = build_local(C, fn, sym);
+			if (!result)
+				return result;
+			NJXLInsRef value =
+			    constant_value(C, fn, expr->value, symtype);
+			build_store(C, fn, value, result, symtype);
+			sym->priv = result;
+			break;
+		}
+		case EXPR_FVALUE: {
+			if (dmrC_is_static(sym)) {
+				dmrC_sparse_error(
+				    C, expr->pos,
+				    "unsupported symbol reference\n");
+				dmrC_show_expression(C, expr);
+				return NULL;
+			}
+			struct NanoType *symtype = get_symnode_type(C, fn, sym);
+			if (symtype == NULL) {
+				dmrC_sparse_error(C, expr->pos,
+						  "invalid symbol type\n");
+				dmrC_show_expression(C, expr);
+				return NULL;
+			}
+			result = build_local(C, fn, sym);
+			if (!result)
+				return result;
+			NJXLInsRef value =
+			    constant_fvalue(C, fn, expr->fvalue, symtype);
+			build_store(C, fn, value, result, symtype);
+			sym->priv = result;
+			break;
+		}
+		default:
+			dmrC_sparse_error(
+			    C, expr->pos,
+			    "unsupported expr type in initializer: %d\n",
+			    expr->type);
+			dmrC_show_expression(C, expr);
+			return NULL;
+		}
+	} else {
+		const char *name = dmrC_show_ident(C, sym->ident);
+		struct NanoType *type = get_symnode_type(C, fn, sym);
+		if (type->type == RT_FUNCTION) {
+			dmrC_sparse_error(C, expr->pos,
+					  "unsupported expr type: %d\n",
+					  expr->type);
+			dmrC_show_expression(C, expr);
+			return NULL;
+		} else if (dmrC_is_extern(sym) || dmrC_is_toplevel(sym)) {
+			dmrC_sparse_error(C, expr->pos,
+					  "unsupported expr type: %d\n",
+					  expr->type);
+			dmrC_show_expression(C, expr);
+			return NULL;
+		} else {
+			if (dmrC_is_static(sym)) {
+				dmrC_sparse_error(C, expr->pos,
+						  "unsupported expr type: %d\n",
+						  expr->type);
+				dmrC_show_expression(C, expr);
+				return NULL;
+			}
+			if (dmrC_is_static(sym) && sym->initializer) {
+				dmrC_sparse_error(C, sym->initializer->pos,
+						  "unsupported initializer for "
+						  "local static variable\n");
+				dmrC_show_expression(C, sym->initializer);
+				return NULL;
+			}
+			result = build_local(C, fn, sym);
+			if (!result)
+				return result;
+			sym->priv = result;
+		}
+	}
+	return result;
+}
+
 static NJXLInsRef pseudo_to_value(struct dmr_C *C, struct function *fn,
 				  struct symbol *ctype, pseudo_t pseudo)
 {
@@ -454,19 +665,13 @@ static NJXLInsRef pseudo_to_value(struct dmr_C *C, struct function *fn,
 		result = pseudo->priv;
 		break;
 	case PSEUDO_SYM:
-		// result = get_sym_value(C, fn, pseudo);
-		fprintf(stderr, "pseudo from symbol not supported\n");
+		result = get_sym_value(C, fn, pseudo);
 		break;
 	case PSEUDO_VAL:
 		result = val_to_value(C, fn, pseudo->value, ctype);
 		break;
 	case PSEUDO_ARG:
 		result = fn->args[pseudo->nr - 1];
-#if 0
-		// See function definition for reasons for copying the
-		// parameters; so we need to load the parameter being accessed
-		result = NJX_load_q(fn->builder, result, 0);
-#endif
 		break;
 	case PSEUDO_PHI:
 		result = pseudo->priv;
@@ -943,6 +1148,27 @@ static NJXLInsRef output_op_binary(struct dmr_C *C, struct function *fn,
 	return target;
 }
 
+static NJXLInsRef output_op_symaddr(struct dmr_C *C, struct function *fn,
+				    struct instruction *insn)
+{
+	NJXLInsRef res, src;
+	struct NanoType *dtype;
+	char name[64];
+
+	src = pseudo_to_value(C, fn, insn->type, insn->symbol);
+	if (!src)
+		return NULL;
+
+	dtype = get_symnode_or_basetype(C, fn, insn->type);
+	if (!dtype)
+		return NULL;
+
+	res = build_cast(C, fn, src, dtype, 0);
+	insn->target->priv = res;
+
+	return res;
+}
+
 static NJXLInsRef output_op_not(struct dmr_C *C, struct function *fn,
 				struct instruction *insn)
 {
@@ -1291,8 +1517,11 @@ static int output_insn(struct dmr_C *C, struct function *fn,
 		NJX_comment(fn->builder, make_comment(C, insn));
 		v = output_op_load(C, fn, insn);
 		break;
-
 	case OP_SYMADDR:
+		NJX_comment(fn->builder, make_comment(C, insn));
+		v = output_op_symaddr(C, fn, insn);
+		break;
+
 	case OP_SETVAL:
 	case OP_SWITCH:
 	case OP_COMPUTEDGOTO:

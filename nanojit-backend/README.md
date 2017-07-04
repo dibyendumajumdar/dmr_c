@@ -14,6 +14,8 @@ This is very early days. We are able to generate code for following simple C pro
   [like this](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/store.lir).
 * [testif](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/testif.c). The generated LIR and assembly instructions look
   [like this](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/testif.lir).
+* [locals](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/locals.c). The generated LIR and assembly instructions look
+  [like this](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/locals.lir).  
   
   
 ## Issues
@@ -21,6 +23,7 @@ This is very early days. We are able to generate code for following simple C pro
 * NanoJIT lacks instructions for 64-bit multiply and divide - this is a problem for dmrC as 64-bit multiply in particular is used for pointer arithmetic. (This is a blocker - I am investigating how to add these instructions to Nanojit). Update: I have [added support](https://github.com/dibyendumajumdar/nanojit/commit/54939aa859bfd84fae9e9fb876e807e6a76e89f0) for these operations in Nanojit.
 * NanoJIT lacks instruction for converting a double to 64-bit integer. Update: I have [added support](https://github.com/dibyendumajumdar/nanojit/commit/b2d63c3e77bcfc8272bdd0cbd971d8e2e3ed7f48) for this, although not tested yet.
 * NanoJIT only allows 4 integer/pointer parameters inside a JIT function.
+* It is most likely not possible to call functions via function pointers that are loaded at runtime, as the NanoJIT call instruction requires the function pointer to be resolved at compile time.
 
 ## Unimplemented features
 

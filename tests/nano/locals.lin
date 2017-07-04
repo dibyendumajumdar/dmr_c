@@ -1,0 +1,43 @@
+initS:
+.L0:
+	<entry-point>
+	store.32    $99 -> 60[%arg1]
+	ret.32      $0
+
+
+getage:
+.L2:
+	<entry-point>
+	symaddr.64* %r3 <- s
+	push.64*    %r3
+	call.32     %r4 <- initS
+	load.32     %r5 <- 60[s]
+	ret.32      %r5
+
+
+foo:
+.L4:
+	<entry-point>
+	load.64     %r8 <- 0[%arg2]
+	scast.32    %r9 <- (64) %r8
+	store.32    %r9 -> 0[%arg1]
+	ret.32      $0
+
+
+simplelocals:
+.L6:
+	<entry-point>
+	store.32    $5 -> 0[a]
+	store.64    $42 -> 0[b]
+	symaddr.64* %r12 <- a
+	symaddr.64* %r13 <- b
+	push.64*    %r12
+	push.64*    %r13
+	call.32     %r14 <- foo
+	load.32     %r15 <- 0[a]
+	load.64     %r16 <- 0[b]
+	scast.32    %r17 <- (64) %r16
+	add.32      %r18 <- %r15, %r17
+	ret.32      %r18
+
+

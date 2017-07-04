@@ -620,9 +620,10 @@ static NJXLInsRef get_sym_value(struct dmr_C *C, struct function *fn,
 		const char *name = dmrC_show_ident(C, sym->ident);
 		struct NanoType *type = get_symnode_type(C, fn, sym);
 		if (type->type == RT_FUNCTION) {
-			dmrC_sparse_error(C, expr->pos,
-					  "unsupported expr type: %d\n",
-					  expr->type);
+			dmrC_sparse_error(
+			    C, expr->pos,
+			    "unsupported expr type: %d, symbol = %s\n",
+			    expr->type, name);
 			dmrC_show_expression(C, expr);
 			return NULL;
 		} else if (dmrC_is_extern(sym) || dmrC_is_toplevel(sym)) {
@@ -703,6 +704,91 @@ static NJXLInsRef pseudo_ins(struct dmr_C *C, struct function *fn,
 		break;
 	}
 	return result;
+}
+
+static struct symbol *get_function_basetype(struct symbol *type)
+{
+	if (type->type == SYM_PTR)
+		type = type->ctype.base_type;
+	assert(type->type == SYM_FN);
+	return type;
+}
+
+static NJXLInsRef output_op_call(struct dmr_C *C, struct function *fn,
+				 struct instruction *insn)
+{
+	NJXLInsRef target;
+	int n_arg = 0, i;
+	struct instruction *arg;
+	NJXLInsRef *args;
+
+	n_arg = ptrlist_size(insn->arguments);
+	args = alloca(n_arg * sizeof(NJXLInsRef));
+	struct symbol *ftype = get_function_basetype(insn->fntype);
+
+	i = 0;
+	FOR_EACH_PTR(insn->arguments, arg)
+	{
+		NJXLInsRef value;
+		struct symbol *atype;
+
+		atype = dmrC_get_nth_symbol(ftype->arguments, i);
+		value = pseudo_to_value(C, fn, arg->type, arg->src);
+		if (!value)
+			return NULL;
+		if (atype) {
+			struct NanoType *argtype =
+			    get_symnode_type(C, fn, atype);
+			if (!argtype)
+				return NULL;
+			value = build_cast(C, fn, value, argtype, 0);
+			if (!value)
+				return NULL;
+		}
+		args[i++] = value;
+	}
+	END_FOR_EACH_PTR(arg);
+
+	if (insn->func->type != PSEUDO_SYM) {
+		return NULL;
+	}
+
+	struct symbol *sym = insn->func->sym;
+	const char *name = dmrC_show_ident(C, sym->ident);
+	struct NanoType *type = get_symnode_type(C, fn, sym);
+	if (type->type != RT_FUNCTION) {
+		return NULL;
+	}
+	switch (type->return_type->type) {
+	case RT_INT:
+	case RT_INT32:
+		target =
+		    NJX_calli(fn->builder, name, NJX_CALLABI_CDECL, i, args);
+		break;
+	case RT_DOUBLE:
+		target =
+		    NJX_calld(fn->builder, name, NJX_CALLABI_CDECL, i, args);
+		break;
+	case RT_FLOAT:
+		target =
+		    NJX_callf(fn->builder, name, NJX_CALLABI_CDECL, i, args);
+		break;
+	case RT_INT64:
+	case RT_PTR:
+		target =
+		    NJX_callq(fn->builder, name, NJX_CALLABI_CDECL, i, args);
+		break;
+	case RT_VOID:
+		target =
+		    NJX_callv(fn->builder, name, NJX_CALLABI_CDECL, i, args);
+		break;
+	default:
+		return NULL;
+	}
+
+	insn->target->priv = target;
+
+	return target;
 }
 
 static NJXLInsRef output_op_phisrc(struct dmr_C *C, struct function *fn,
@@ -1153,7 +1239,6 @@ static NJXLInsRef output_op_symaddr(struct dmr_C *C, struct function *fn,
 {
 	NJXLInsRef res, src;
 	struct NanoType *dtype;
-	char name[64];
 
 	src = pseudo_to_value(C, fn, insn->type, insn->symbol);
 	if (!src)
@@ -1534,9 +1619,12 @@ static int output_insn(struct dmr_C *C, struct function *fn,
 		break;
 
 	case OP_SNOP:
-	case OP_CALL:
 		return 0;
 
+	case OP_CALL:
+		NJX_comment(fn->builder, make_comment(C, insn));
+		v = output_op_call(C, fn, insn);
+		break;
 	case OP_CAST:
 		NJX_comment(fn->builder, make_comment(C, insn));
 		v = output_op_cast(C, fn, insn, true);

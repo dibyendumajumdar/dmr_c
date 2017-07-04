@@ -107,6 +107,8 @@ struct dmr_C {
 	struct parse_state_t *P;
 	struct linearizer_state_t *L;
 
+    void *User_data;
+
 	// memory allocators
 	struct allocator ptrlist_allocator;
 	struct allocator token_allocator;

@@ -150,14 +150,74 @@ int test4(int argc, char **argv)
 			rc = 1;
 	}
 	if (rc == 0 && fp) {
-        if (fp(1, 5) != 6) 
-            rc = 1;
-        if (rc == 0 && fp(5, 1) != 0) 
-            rc = 1;
-        if (rc == 0 && fp(5, 5) != 15)
-            rc = 1;
-        if (rc == 0 && fp(3, 3) != 0)
-            rc = 1;
+		if (fp(1, 5) != 6)
+			rc = 1;
+		if (rc == 0 && fp(5, 1) != 0)
+			rc = 1;
+		if (rc == 0 && fp(5, 5) != 15)
+			rc = 1;
+		if (rc == 0 && fp(3, 3) != 0)
+			rc = 1;
+	}
+	NJX_destroy_context(module);
+	return rc;
+}
+
+int test5(int argc, char **argv)
+{
+	const char *code = "struct S { "
+			   "char name[30];"
+			   "char surname[30];"
+			   "int age_in_years;"
+			   "double weight;"
+			   "};\n"
+			   "int initS(struct S *s)"
+			   "{"
+			   "s->age_in_years = 99;"
+			   "return 0;"
+			   "}\n"
+
+			   "int getage(void)"
+			   "{"
+			   "struct S s; "
+			   "initS(&s); "
+			   "return s.age_in_years; "
+			   "}\n"
+			   "int foo(int*i, long long*l) "
+			   "{ "
+			   "*i = (int)*l; "
+			   "return 0; "
+			   "}\n"
+
+			   "int simplelocals(void) "
+			   "{ "
+			   "int a = 5; "
+			   "long long b = 42; "
+			   "foo(&a, &b); "
+			   "return a + (int)b; "
+			   "}\n";
+	NJXContextRef module = NJX_create_context(true);
+	int rc = 0;
+	if (!dmrC_nanocompile(argc, argv, module, code))
+		rc = 1;
+	int (*fp)(void) = NULL;
+	if (rc == 0) {
+		fp = NJX_get_function_by_name(module, "simplelocals");
+		if (!fp)
+			rc = 1;
+	}
+	if (rc == 0 && fp) {
+		if (fp() != 84)
+			rc = 1;
+	}
+	if (rc == 0) {
+		fp = NJX_get_function_by_name(module, "getage");
+		if (!fp)
+			rc = 1;
+	}
+	if (rc == 0 && fp) {
+		if (fp() != 99)
+			rc = 1;
 	}
 	NJX_destroy_context(module);
 	return rc;
@@ -169,7 +229,8 @@ int main(int argc, char **argv)
 	rc += test1(argc, argv);
 	rc += test2(argc, argv);
 	rc += test3(argc, argv);
-    rc += test4(argc, argv);
+	rc += test4(argc, argv);
+	rc += test5(argc, argv);
 	if (rc == 0)
 		printf("Test OK\n");
 	else

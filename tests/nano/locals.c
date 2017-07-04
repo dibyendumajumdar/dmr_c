@@ -1,4 +1,3 @@
-/*
 struct S {
 	char name[30];
 	char surname[30];
@@ -6,8 +5,11 @@ struct S {
 	double weight;
 };
 
-
-extern void initS(struct S *s);
+int initS(struct S *s)
+{
+	s->age_in_years = 99;
+	return 0;
+}
 
 int getage(void)
 {
@@ -15,12 +17,17 @@ int getage(void)
 	initS(&s);
 	return s.age_in_years;
 }
-*/
 
-int simplelocals(void (*fp)(int*, long long*)) 
+int foo(int*i, long long*l)
+{
+	*i = (int) *l;
+	return 0;
+}
+
+int simplelocals(void) 
 {
 	int a = 5;
 	long long b = 42;
-	fp(&a, &b);
+	foo(&a, &b);	// Just to fool the optimiser
 	return a+(int)b;
 } 

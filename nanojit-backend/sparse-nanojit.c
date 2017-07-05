@@ -302,7 +302,8 @@ static struct NanoType *check_supported_returntype(struct dmr_C *C,
 {
 
 	if (type->type == RT_AGGREGATE || type->type == RT_FUNCTION ||
-	    type->type == RT_INT || type->type == RT_UNSUPPORTED)
+	    type->type == RT_INT || type->type == RT_UNSUPPORTED ||
+	    type->type == RT_VOID)
 		return &BadType;
 	return type;
 }
@@ -1234,6 +1235,37 @@ static NJXLInsRef output_op_binary(struct dmr_C *C, struct function *fn,
 	return target;
 }
 
+static NJXLInsRef output_op_setval(struct dmr_C *C, struct function *fn,
+				   struct instruction *insn)
+{
+	struct expression *expr = insn->val;
+	struct NanoType *const_type;
+	NJXLInsRef target = NULL;
+
+	if (!expr)
+		return NULL;
+
+	const_type = insn_symbol_type(C, fn, insn);
+	if (!const_type)
+		return NULL;
+
+	switch (expr->type) {
+	case EXPR_FVALUE:
+		target = constant_fvalue(C, fn, expr->fvalue, const_type);
+		break;
+	default:
+		dmrC_sparse_error(C, insn->pos,
+				  "unsupported expression type %d in setval\n",
+				  expr->type);
+		dmrC_show_expression(C, expr);
+		return NULL;
+	}
+
+	insn->target->priv = target;
+
+	return target;
+}
+
 static NJXLInsRef output_op_symaddr(struct dmr_C *C, struct function *fn,
 				    struct instruction *insn)
 {
@@ -1606,8 +1638,11 @@ static int output_insn(struct dmr_C *C, struct function *fn,
 		NJX_comment(fn->builder, make_comment(C, insn));
 		v = output_op_symaddr(C, fn, insn);
 		break;
-
 	case OP_SETVAL:
+		NJX_comment(fn->builder, make_comment(C, insn));
+		v = output_op_setval(C, fn, insn);
+		break;
+
 	case OP_SWITCH:
 	case OP_COMPUTEDGOTO:
 	case OP_LNOP:
@@ -1807,8 +1842,11 @@ static bool output_fn(struct dmr_C *C, NJXContextRef module,
 	struct NanoType *function_type =
 	    type_to_nanotype(C, &function, ret_type, NULL);
 	function.return_type = check_supported_returntype(C, function_type);
-	if (function.return_type == &BadType)
+	if (function.return_type == &BadType) {
+		fprintf(stderr, "Function '%s' has unsupported return type\n",
+			name);
 		goto Ereturn;
+	}
 
 	enum NJXValueKind freturn = map_nanotype(function.return_type);
 
@@ -1865,7 +1903,7 @@ static bool output_fn(struct dmr_C *C, NJXContextRef module,
 		success = true;
 
 	// Not needed anymore as Nanojit does it
-	// But if we convert from long lon =g to int then?
+	// But if we convert from long long to int then?
 	// TODO check
 	// output_parameter_liveness(C, &function);
 

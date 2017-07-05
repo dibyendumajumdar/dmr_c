@@ -9,6 +9,8 @@ storeint:
 	store.8     $0 -> 21[%arg1]
 	store.32    $42 -> 8[%arg1]
 	store.32    $96 -> 12[%arg1]
+	set.f64     %r9 <- 300.420000
+	store.f64   %r9 -> 0[%arg1]
 	ret.32      $0
 
 

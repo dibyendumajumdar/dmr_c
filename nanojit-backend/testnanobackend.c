@@ -86,8 +86,8 @@ static int test3(int argc, char **argv)
 			   "p->array[5] = 0; "
 			   "p->a = 42; "
 			   "p->b = 96; "
-			   // p->d = 300.42;
-			   "return 0; "
+			   "p->d = 300.42; "
+			   "return (int)p->d; "
 			   "}\n";
 
 	struct mystruct {
@@ -109,8 +109,8 @@ static int test3(int argc, char **argv)
 	if (rc == 0 && fp) {
 		struct mystruct T;
 		int result = fp(&T);
-		if (result != 0 || strcmp(T.array, "hello") != 0 || T.a != 42 ||
-		    T.b != 96)
+		if (result != 300 || strcmp(T.array, "hello") != 0 ||
+		    T.a != 42 || T.b != 96 || T.d != 300.42)
 			rc = 1;
 	}
 	NJX_destroy_context(module);

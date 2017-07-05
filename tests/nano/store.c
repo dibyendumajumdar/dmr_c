@@ -14,7 +14,6 @@ int storeint(struct mystruct *p)
 	p->array[5] = 0;
 	p->a = 42;
 	p->b = 96;
-	//p->d = 300.42;
-
+	p->d = 300.42;
 	return 0;
 }

@@ -1,17 +1,33 @@
 test_null_comp:
 .L0:
 	<entry-point>
-	setne.32    %r2 <- %arg2, $0
-	and-bool.32 %r4 <- %r2, %arg1
+	store.32    %arg1 -> 0[height_changed]
+	store.64*   %arg2 -> 0[node]
+	load.64*    %r1 <- 0[node]
+	setne.32    %r2 <- %r1, $0
+	load.32     %r3 <- 0[height_changed]
+	and-bool.32 %r4 <- %r2, %r3
+	phisrc.32   %phi1(return) <- %r4
+	br          .L1
+
+.L1:
+	phi.32      %r5 <- %phi1(return)
 	ret.32      %r4
 
 
 main:
 .L2:
 	<entry-point>
+	store.32    %arg1 -> 0[argc]
+	store.64*   %arg2 -> 0[argv]
 	push.32     $1
 	push.64*    $0
 	call.32     %r6 <- test_null_comp
+	phisrc.32   %phi2(return) <- %r6
+	br          .L3
+
+.L3:
+	phi.32      %r7 <- %phi2(return)
 	ret.32      %r6
 
 

@@ -1,21 +1,44 @@
 incr:
 .L0:
 	<entry-point>
-	cast.64     %r3 <- (64) %arg1
+	store.64*   %arg1 -> 0[p]
+	load.64*    %r1 <- 0[p]
+	store.64*   %r1 -> 0[tmp]
+	load.64*    %r2 <- 0[tmp]
+	cast.64     %r3 <- (64) %r2
 	add.64      %r4 <- %r3, $4
 	ptrcast.64* %r5 <- (64) %r4
-	ret.64*     %r5
+	store.64*   %r5 -> 0[tmp]
+	load.64*    %r6 <- 0[tmp]
+	phisrc.64*  %phi1(return) <- %r6
+	br          .L1
+
+.L1:
+	phi.64*     %r7 <- %phi1(return)
+	ret.64*     %r6
 
 
 main:
 .L2:
 	<entry-point>
-	symaddr.64* %r8 <- <anon symbol:0000022157234508>
-	push.64*    %r8
+	store.32    %arg1 -> 0[argc]
+	store.64*   %arg2 -> 0[argv]
+	symaddr.64* %r8 <- <anon symbol:000002A5276F2248>
+	store.64*   %r8 -> 0[text]
+	load.64*    %r9 <- 0[text]
+	push.64*    %r9
 	call.64*    %r10 <- incr
-	load.8      %r12 <- 0[%r10]
+	store.64*   %r10 -> 0[p]
+	load.64*    %r11 <- 0[p]
+	load.8      %r12 <- 0[%r11]
 	scast.32    %r13 <- (8) %r12
-	setne.32    %r15 <- %r13, $101
+	seteq.32    %r14 <- %r13, $101
+	select.32   %r15 <- %r14, $0, $1
+	phisrc.32   %phi2(return) <- %r15
+	br          .L3
+
+.L3:
+	phi.32      %r16 <- %phi2(return)
 	ret.32      %r15
 
 

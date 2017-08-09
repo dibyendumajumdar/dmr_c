@@ -1,35 +1,58 @@
 myfunc:
 .L0:
 	<entry-point>
-	symaddr.64* %r1 <- <anon symbol:0000016D100586B8>
+	store.64*   %arg1 -> 0[name]
+	store.32    %arg2 -> 0[p]
+	symaddr.64* %r1 <- <anon symbol:000001918B203EB8>
+	load.64*    %r2 <- 0[name]
+	load.32     %r3 <- 0[p]
 	push.64*    %r1
-	push.64*    %arg1
-	push.32     %arg2
+	push.64*    %r2
+	push.32     %r3
 	call.32     %r4 <- printf
-	ret.32      %arg2
+	load.32     %r5 <- 0[p]
+	phisrc.32   %phi1(return) <- %r5
+	br          .L1
+
+.L1:
+	phi.32      %r6 <- %phi1(return)
+	ret.32      %r5
 
 
 calling:
 .L2:
 	<entry-point>
+	store.32    %arg1 -> 0[p]
 	load.64*    %r7 <- 0[base_funcs]
+	load.32     %r8 <- 0[p]
 	push.64*    %r7
-	push.32     %arg1
+	push.32     %r8
 	load.64*    %r9 <- 8[base_funcs]
 	call.32     %r10 <- %r9
+	phisrc.32   %phi2(return) <- %r10
+	br          .L3
+
+.L3:
+	phi.32      %r11 <- %phi2(return)
 	ret.32      %r10
 
 
 main:
 .L4:
 	<entry-point>
-	symaddr.64* %r12 <- <anon symbol:0000016D10059218>
+	symaddr.64* %r12 <- <anon symbol:000001918B204A18>
 	store.64*   %r12 -> 0[base_funcs]
 	symaddr.64* %r13 <- myfunc
 	store.64*   %r13 -> 8[base_funcs]
 	push.32     $42
 	call.32     %r14 <- calling
-	setne.32    %r16 <- %r14, $42
+	seteq.32    %r15 <- %r14, $42
+	select.32   %r16 <- %r15, $0, $1
+	phisrc.32   %phi3(return) <- %r16
+	br          .L5
+
+.L5:
+	phi.32      %r17 <- %phi3(return)
 	ret.32      %r16
 
 

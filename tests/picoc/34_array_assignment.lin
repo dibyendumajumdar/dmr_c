@@ -5,20 +5,41 @@ main:
 	store.32    $23 -> 4[a]
 	store.32    $34 -> 8[a]
 	store.32    $45 -> 12[a]
-	symaddr.64* %r1 <- <anon symbol:00000216BA6957D8>
+	symaddr.64* %r1 <- <anon symbol:000001A77C205868>
+	load.32     %r2 <- 0[a]
+	load.32     %r3 <- 4[a]
+	load.32     %r4 <- 8[a]
+	load.32     %r5 <- 12[a]
 	push.64*    %r1
-	push.32     $12
-	push.32     $23
-	push.32     $34
-	push.32     $45
+	push.32     %r2
+	push.32     %r3
+	push.32     %r4
+	push.32     %r5
 	call.32     %r6 <- printf
-	symaddr.64* %r9 <- <anon symbol:00000216BA696958>
+	symaddr.64* %r7 <- a
+	store.64*   %r7 -> 0[b]
+	symaddr.64* %r8 <- a
+	store.64*   %r8 -> 0[b]
+	symaddr.64* %r9 <- <anon symbol:000001A77C2069E8>
+	load.64*    %r10 <- 0[b]
+	load.32     %r11 <- 0[%r10]
+	load.64*    %r12 <- 0[b]
+	load.32     %r13 <- 4[%r12]
+	load.64*    %r14 <- 0[b]
+	load.32     %r15 <- 8[%r14]
+	load.64*    %r16 <- 0[b]
+	load.32     %r17 <- 12[%r16]
 	push.64*    %r9
-	push.32     $12
-	push.32     $23
-	push.32     $34
-	push.32     $45
+	push.32     %r11
+	push.32     %r13
+	push.32     %r15
+	push.32     %r17
 	call.32     %r18 <- printf
+	phisrc.32   %phi1(return) <- $0
+	br          .L1
+
+.L1:
+	phi.32      %r19 <- %phi1(return)
 	ret.32      $0
 
 

@@ -1,57 +1,92 @@
 main:
 .L0:
 	<entry-point>
-	symaddr.64* %r1(b) <- <anon symbol:0000020C68EF5898>
-	symaddr.64* %r2 <- <anon symbol:0000020C68EF5C18>
+	store.32    $97 -> 0[x]
+	store.8     $97 -> 0[y]
+	symaddr.64* %r1 <- <anon symbol:0000028C81B518D8>
+	store.64*   %r1 -> 0[a]
+	symaddr.64* %r2 <- <anon symbol:0000028C81B51C58>
+	load.64*    %r3 <- 0[a]
 	push.64*    %r2
-	push.64*    %r1(b)
+	push.64*    %r3
 	call.32     %r4 <- printf
-	phisrc.64*  %phi4(b) <- %r1(b)
+	load.64*    %r5 <- 0[a]
+	load.8      %r6 <- 0[%r5]
+	scast.32    %r7 <- (8) %r6
+	store.32    %r7 -> 0[c]
+	load.64*    %r8 <- 0[a]
+	store.64*   %r8 -> 0[b]
 	br          .L4
 
 .L4:
-	phi.64*     %r9(b) <- %phi4(b), %phi5(b)
-	load.8      %r10 <- 0[%r9(b)]
-	br          %r10, .L1, .L3
+	load.64*    %r9 <- 0[b]
+	load.8      %r10 <- 0[%r9]
+	scast.32    %r11 <- (8) %r10
+	setne.32    %r12 <- %r11, $0
+	br          %r12, .L1, .L3
 
 .L1:
-	symaddr.64* %r13 <- <anon symbol:0000020C68EF6158>
+	symaddr.64* %r13 <- <anon symbol:0000028C81B52198>
+	load.64*    %r14 <- 0[b]
+	load.8      %r15 <- 0[%r14]
+	scast.32    %r16 <- (8) %r15
+	load.64*    %r17 <- 0[b]
+	load.8      %r18 <- 0[%r17]
+	scast.32    %r19 <- (8) %r18
 	push.64*    %r13
-	scast.32    %r16 <- (8) %r10
 	push.32     %r16
-	scast.32    %r19 <- (8) %r10
 	push.32     %r19
 	call.32     %r20 <- printf
-	add.64*     %r22 <- %r9(b), $1
-	phisrc.64*  %phi5(b) <- %r22
+	br          .L2
+
+.L2:
+	load.64*    %r21 <- 0[b]
+	add.64*     %r22 <- %r21, $1
+	store.64*   %r22 -> 0[b]
 	br          .L4
 
 .L3:
 	symaddr.64* %r23 <- destarray
-	phisrc.64*  %phi8(dest) <- %r23
-	phisrc.64*  %phi11(src) <- %r1(b)
+	add.64*     %r24 <- %r23, $0
+	store.64*   %r24 -> 0[dest]
+	load.64*    %r25 <- 0[a]
+	store.64*   %r25 -> 0[src]
 	br          .L8
 
 .L8:
-	phi.64*     %r26(src) <- %phi11(src), %phi12(src)
-	load.8      %r27 <- 0[%r26(src)]
-	phi.64*     %r33 <- %phi8(dest), %phi9(dest)
-	br          %r27, .L5, .L7
+	load.64*    %r26 <- 0[src]
+	load.8      %r27 <- 0[%r26]
+	scast.32    %r28 <- (8) %r27
+	setne.32    %r29 <- %r28, $0
+	br          %r29, .L5, .L7
 
 .L5:
-	add.64*     %r31 <- %r26(src), $1
+	load.64*    %r30 <- 0[src]
+	add.64*     %r31 <- %r30, $1
+	store.64*   %r31 -> 0[src]
+	load.8      %r32 <- 0[%r30]
+	load.64*    %r33 <- 0[dest]
 	add.64*     %r34 <- %r33, $1
-	store.8     %r27 -> 0[%r33]
-	phisrc.64*  %phi9(dest) <- %r34
-	phisrc.64*  %phi12(src) <- %r31
+	store.64*   %r34 -> 0[dest]
+	store.8     %r32 -> 0[%r33]
+	br          .L6
+
+.L6:
 	br          .L8
 
 .L7:
-	store.8     $0 -> 0[%r33]
-	symaddr.64* %r36 <- <anon symbol:0000020C68EF6CB8>
+	load.64*    %r35 <- 0[dest]
+	store.8     $0 -> 0[%r35]
+	symaddr.64* %r36 <- <anon symbol:0000028C81B52CF8>
+	symaddr.64* %r37 <- destarray
 	push.64*    %r36
-	push.64*    %r23
+	push.64*    %r37
 	call.32     %r38 <- printf
+	phisrc.32   %phi1(return) <- $0
+	br          .L9
+
+.L9:
+	phi.32      %r39 <- %phi1(return)
 	ret.32      $0
 
 

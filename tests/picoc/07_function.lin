@@ -1,47 +1,68 @@
 myfunc:
 .L0:
 	<entry-point>
-	muls.32     %r3 <- %arg1, %arg1
+	store.32    %arg1 -> 0[x]
+	load.32     %r1 <- 0[x]
+	load.32     %r2 <- 0[x]
+	muls.32     %r3 <- %r1, %r2
+	phisrc.32   %phi1(return) <- %r3
+	br          .L1
+
+.L1:
+	phi.32      %r4 <- %phi1(return)
 	ret.32      %r3
 
 
 vfunc:
 .L2:
 	<entry-point>
-	symaddr.64* %r5 <- <anon symbol:000002499CFB44F8>
+	store.32    %arg1 -> 0[a]
+	symaddr.64* %r5 <- <anon symbol:00000268AE512148>
+	load.32     %r6 <- 0[a]
 	push.64*    %r5
-	push.32     %arg1
+	push.32     %r6
 	call.32     %r7 <- printf
+	br          .L3
+
+.L3:
 	ret
 
 
 qfunc:
 .L4:
 	<entry-point>
-	symaddr.64* %r8 <- <anon symbol:000002499CFB4878>
+	symaddr.64* %r8 <- <anon symbol:00000268AE5124C8>
 	push.64*    %r8
 	call.32     %r9 <- printf
+	br          .L5
+
+.L5:
 	ret
 
 
 main:
 .L6:
 	<entry-point>
-	symaddr.64* %r10 <- <anon symbol:000002499CFB4BF8>
-	push.64*    %r10
+	symaddr.64* %r10 <- <anon symbol:00000268AE512848>
 	push.32     $3
 	call.32     %r11 <- myfunc
+	push.64*    %r10
 	push.32     %r11
 	call.32     %r12 <- printf
-	symaddr.64* %r13 <- <anon symbol:000002499CFB4F78>
-	push.64*    %r13
+	symaddr.64* %r13 <- <anon symbol:00000268AE512BC8>
 	push.32     $4
 	call.32     %r14 <- myfunc
+	push.64*    %r13
 	push.32     %r14
 	call.32     %r15 <- printf
 	push.32     $0x4d2
 	call        vfunc
 	call        qfunc
+	phisrc.32   %phi2(return) <- $0
+	br          .L7
+
+.L7:
+	phi.32      %r16 <- %phi2(return)
 	ret.32      $0
 
 

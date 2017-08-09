@@ -1,6 +1,22 @@
 main:
 .L0:
 	<entry-point>
-	ret.32      $0
+	symaddr.64* %r1 <- buf
+	add.64*     %r2 <- %r1, $4
+	store.64*   %r2 -> 0[p]
+	load.64*    %r3 <- 0[p]
+	sub.64*     %r4 <- %r3, $1
+	store.64*   %r4 -> 0[p]
+	load.64*    %r5 <- 0[p]
+	symaddr.64* %r6 <- buf
+	add.64*     %r7 <- %r6, $3
+	setne.32    %r8 <- %r5, %r7
+	select.32   %r9 <- %r8, $1, $0
+	phisrc.32   %phi1(return) <- %r9
+	br          .L1
+
+.L1:
+	phi.32      %r10 <- %phi1(return)
+	ret.32      %r9
 
 

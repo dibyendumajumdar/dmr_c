@@ -1,10 +1,17 @@
 fred:
 .L0:
 	<entry-point>
-	symaddr.64* %r1 <- <anon symbol:000002A88DAB53E8>
+	store.32    %arg1 -> 0[p]
+	symaddr.64* %r1 <- <anon symbol:0000023B3A561ED8>
+	load.32     %r2 <- 0[p]
 	push.64*    %r1
-	push.32     %arg1
+	push.32     %r2
 	call.32     %r3 <- printf
+	phisrc.32   %phi1(return) <- $42
+	br          .L1
+
+.L1:
+	phi.32      %r4 <- %phi1(return)
 	ret.32      $42
 
 
@@ -13,12 +20,18 @@ main:
 	<entry-point>
 	symaddr.64* %r5 <- fred
 	store.64*   %r5 -> 0[f]
-	symaddr.64* %r6 <- <anon symbol:000002A88DAB5928>
-	push.64*    %r6
+	symaddr.64* %r6 <- <anon symbol:0000023B3A562418>
 	push.32     $24
-	call.32     %r8 <- %r5
+	load.64*    %r7 <- 0[f]
+	call.32     %r8 <- %r7
+	push.64*    %r6
 	push.32     %r8
 	call.32     %r9 <- printf
+	phisrc.32   %phi2(return) <- $0
+	br          .L3
+
+.L3:
+	phi.32      %r10 <- %phi2(return)
 	ret.32      $0
 
 

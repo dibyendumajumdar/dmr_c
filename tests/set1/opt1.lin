@@ -1,10 +1,15 @@
 main:
 .L0:
 	<entry-point>
-	symaddr.64* %r1 <- <anon symbol:0000010B26613868>
+	symaddr.64* %r1 <- <anon symbol:00000251CBE63A18>
 	push.64*    %r1
 	push.f64    $-1
 	call.32     %r2 <- printf
+	phisrc.32   %phi1(return) <- $0
+	br          .L1
+
+.L1:
+	phi.32      %r3 <- %phi1(return)
 	ret.32      $0
 
 

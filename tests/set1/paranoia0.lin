@@ -2,17 +2,28 @@ main:
 .L0:
 	<entry-point>
 	store.f64   $1 -> 0[One]
-	add.f64     %r3 <- $1, $1
+	load.f64    %r1 <- 0[One]
+	load.f64    %r2 <- 0[One]
+	add.f64     %r3 <- %r1, %r2
 	store.f64   %r3 -> 0[Two]
-	divu.f64    %r6 <- $1, %r3
+	load.f64    %r4 <- 0[One]
+	load.f64    %r5 <- 0[Two]
+	divu.f64    %r6 <- %r4, %r5
 	store.f64   %r6 -> 0[Half]
-	symaddr.64* %r7 <- <anon symbol:0000028D820C3E88>
+	symaddr.64* %r7 <- <anon symbol:0000025991803168>
+	load.f64    %r8 <- 0[Half]
 	push.64*    %r7
-	push.f64    %r6
+	push.f64    %r8
 	call.32     %r9 <- printf
 	load.f64    %r10 <- 0[Half]
 	set.f64     %r11 <- 0.500000
-	setne.32    %r13 <- %r10, %r11
+	seteq.32    %r12 <- %r10, %r11
+	select.32   %r13 <- %r12, $0, $1
+	phisrc.32   %phi1(return) <- %r13
+	br          .L1
+
+.L1:
+	phi.32      %r14 <- %phi1(return)
 	ret.32      %r13
 
 

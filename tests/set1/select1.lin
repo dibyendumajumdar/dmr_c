@@ -1,12 +1,23 @@
 select:
 .L0:
 	<entry-point>
-	add.64*     %r3 <- %arg1, $8
+	store.64*   %arg1 -> 0[closure]
+	store.32    %arg2 -> 0[op]
+	load.64*    %r1 <- 0[closure]
+	add.64*     %r2 <- %r1, $0
+	add.64*     %r3 <- %r2, $8
+	add.64*     %r4 <- %r3, $0
 	symaddr.64* %r5 <- luaO_nilobject_
 	ptrcast.64* %r6 <- (64) %r5
 	ptrcast.64* %r7 <- (64) %r6
-	seteq.32    %r9 <- %arg2, $1
-	select.64*  %r10 <- %r9, %r3, %r7
+	load.32     %r8 <- 0[op]
+	seteq.32    %r9 <- %r8, $1
+	select.64*  %r10 <- %r9, %r4, %r7
+	phisrc.64*  %phi1(return) <- %r10
+	br          .L1
+
+.L1:
+	phi.64*     %r11 <- %phi1(return)
 	ret.64*     %r10
 
 
@@ -22,10 +33,12 @@ main:
 	br          %r15, .L4, .L5
 
 .L4:
-	push.64*    %r12
+	symaddr.64* %r16 <- cl
+	push.64*    %r16
 	push.32     $1
 	call.64*    %r17 <- select
-	setne.32    %r19 <- %r17, %r14
+	symaddr.64* %r18 <- luaO_nilobject_
+	setne.32    %r19 <- %r17, %r18
 	phisrc.32   %phi2 <- %r19
 	br          .L6
 
@@ -35,7 +48,12 @@ main:
 
 .L6:
 	phi.32      %r20 <- %phi2, %phi3
-	seteq.32    %r21 <- %r20, $0
+	select.32   %r21 <- %r20, $0, $1
+	phisrc.32   %phi4(return) <- %r21
+	br          .L3
+
+.L3:
+	phi.32      %r22 <- %phi4(return)
 	ret.32      %r21
 
 

@@ -2,22 +2,36 @@ main:
 .L0:
 	<entry-point>
 	load.64*    %r1 <- 0[str]
+	set.f64     %r2 <- 1.500000
+	set.f64     %r3 <- 65.780000
 	push.64*    %r1
 	push.32     $55
-	set.f64     %r2 <- 1.500000
 	push.f64    %r2
-	set.f64     %r3 <- 65.780000
 	push.f64    %r3
 	call.32     %r4 <- printf
-	symaddr.64* %r5 <- <anon symbol:0000021E75129098>
-	add.64*     %r9 <- %r5, $1
-	push.64*    %r9
-	push.32     $6
+	store.32    $6 -> 0[x]
+	symaddr.64* %r5 <- <anon symbol:0000012838C75898>
+	store.64*   %r5 -> 0[txt]
+	set.f32     %r6 <- 4.200000
+	store.f32   %r6 -> 0[g]
+	set.f64     %r7 <- 42.340000
+	store.f64   %r7 -> 0[e]
+	load.64*    %r8 <- 0[txt]
+	add.64*     %r9 <- %r8, $1
+	store.64*   %r9 -> 0[fmt]
+	load.64*    %r10 <- 0[fmt]
 	set.f64     %r11 <- 4.200000
-	push.f64    %r11
 	set.f64     %r12 <- 42.340000
+	push.64*    %r10
+	push.32     $6
+	push.f64    %r11
 	push.f64    %r12
 	call.32     %r13 <- printf
+	phisrc.32   %phi1(return) <- $0
+	br          .L1
+
+.L1:
+	phi.32      %r14 <- %phi1(return)
 	ret.32      $0
 
 

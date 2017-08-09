@@ -1,27 +1,41 @@
 main:
 .L0:
 	<entry-point>
-	phisrc.32   %phi3(a) <- $1
-	phisrc.32   %phi5(p) <- $0
+	store.32    $1 -> 0[a]
+	store.32    $0 -> 0[p]
+	store.32    $0 -> 0[t]
 	br          .L4
 
 .L4:
-	phi.32      %r1(a) <- %phi3(a), %phi4(a)
-	setlt.32    %r2 <- %r1(a), $100
-	br          %r2, .L1, .L5
+	load.32     %r1 <- 0[a]
+	setlt.32    %r2 <- %r1, $100
+	br          %r2, .L1, .L3
 
 .L1:
-	symaddr.64* %r3 <- <anon symbol:00000157669B3ED8>
+	symaddr.64* %r3 <- <anon symbol:0000023E61262ED8>
+	load.32     %r4 <- 0[a]
 	push.64*    %r3
-	push.32     %r1(a)
+	push.32     %r4
 	call.32     %r5 <- printf
-	phi.32      %r8 <- %phi5(p), %phi6(p)
-	add.32      %r9 <- %r1(a), %r8
-	phisrc.32   %phi4(a) <- %r9
-	phisrc.32   %phi6(p) <- %r1(a)
+	load.32     %r6 <- 0[a]
+	store.32    %r6 -> 0[t]
+	load.32     %r7 <- 0[t]
+	load.32     %r8 <- 0[p]
+	add.32      %r9 <- %r7, %r8
+	store.32    %r9 -> 0[a]
+	load.32     %r10 <- 0[t]
+	store.32    %r10 -> 0[p]
+	br          .L2
+
+.L2:
 	br          .L4
 
+.L3:
+	phisrc.32   %phi1(return) <- $0
+	br          .L5
+
 .L5:
+	phi.32      %r11 <- %phi1(return)
 	ret.32      $0
 
 

@@ -1,20 +1,31 @@
 testfunc:
 .L0:
 	<entry-point>
-	add.32      %r2 <- %arg1, $-6
+	store.32    %arg1 -> 0[i]
+	load.32     %r1 <- 0[i]
+	sub.32      %r2 <- %r1, $6
+	phisrc.32   %phi1(return) <- %r2
+	br          .L1
+
+.L1:
+	phi.32      %r3 <- %phi1(return)
 	ret.32      %r2
 
 
 main:
 .L2:
 	<entry-point>
+	store.32    %arg1 -> 0[argc]
+	store.64*   %arg2 -> 0[argv]
 	symaddr.64* %r4 <- testfunc
 	store.64*   %r4 -> 0[f]
-	br          %r4, .L3, .L4
+	load.64*    %r5 <- 0[f]
+	br          %r5, .L3, .L4
 
 .L3:
 	push.32     $6
-	call.32     %r7 <- %r4
+	load.64*    %r6 <- 0[f]
+	call.32     %r7 <- %r6
 	phisrc.32   %phi2(return) <- %r7
 	br          .L5
 

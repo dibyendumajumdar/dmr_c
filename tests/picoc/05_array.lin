@@ -1,50 +1,67 @@
 main:
 .L0:
 	<entry-point>
-	phisrc.32   %phi8(Count) <- $1
+	store.32    $1 -> 0[Count]
 	br          .L4
 
 .L4:
-	phi.32      %r1(Count) <- %phi8(Count), %phi9(Count)
-	setle.32    %r2 <- %r1(Count), $10
+	load.32     %r1 <- 0[Count]
+	setle.32    %r2 <- %r1, $10
 	br          %r2, .L1, .L3
 
 .L1:
-	muls.32     %r5 <- %r1(Count), %r1(Count)
+	load.32     %r3 <- 0[Count]
+	load.32     %r4 <- 0[Count]
+	muls.32     %r5 <- %r3, %r4
 	symaddr.64* %r6 <- Array
-	add.32      %r8 <- %r1(Count), $-1
+	load.32     %r7 <- 0[Count]
+	sub.32      %r8 <- %r7, $1
 	scast.64    %r9 <- (32) %r8
 	muls.64     %r10 <- %r9, $4
 	add.64*     %r11 <- %r6, %r10
 	store.32    %r5 -> 0[%r11]
-	add.32      %r13 <- %r1(Count), $1
-	phisrc.32   %phi9(Count) <- %r13
+	br          .L2
+
+.L2:
+	load.32     %r12 <- 0[Count]
+	add.32      %r13 <- %r12, $1
+	store.32    %r13 -> 0[Count]
 	br          .L4
 
 .L3:
-	phisrc.32   %phi4(Count) <- $0
+	store.32    $0 -> 0[Count]
 	br          .L8
 
 .L8:
-	phi.32      %r14(Count) <- %phi4(Count), %phi5(Count)
-	setlt.32    %r15 <- %r14(Count), $10
-	br          %r15, .L5, .L9
+	load.32     %r14 <- 0[Count]
+	setlt.32    %r15 <- %r14, $10
+	br          %r15, .L5, .L7
 
 .L5:
-	symaddr.64* %r16 <- <anon symbol:0000025FDF367B08>
-	push.64*    %r16
+	symaddr.64* %r16 <- <anon symbol:00000267067220B8>
 	symaddr.64* %r17 <- Array
-	scast.64    %r19 <- (32) %r14(Count)
+	load.32     %r18 <- 0[Count]
+	scast.64    %r19 <- (32) %r18
 	muls.64     %r20 <- %r19, $4
 	add.64*     %r21 <- %r17, %r20
 	load.32     %r22 <- 0[%r21]
+	push.64*    %r16
 	push.32     %r22
 	call.32     %r23 <- printf
-	add.32      %r25 <- %r14(Count), $1
-	phisrc.32   %phi5(Count) <- %r25
+	br          .L6
+
+.L6:
+	load.32     %r24 <- 0[Count]
+	add.32      %r25 <- %r24, $1
+	store.32    %r25 -> 0[Count]
 	br          .L8
 
+.L7:
+	phisrc.32   %phi1(return) <- $0
+	br          .L9
+
 .L9:
+	phi.32      %r26 <- %phi1(return)
 	ret.32      $0
 
 

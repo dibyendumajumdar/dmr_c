@@ -1,14 +1,23 @@
 main:
 .L0:
 	<entry-point>
-	symaddr.64* %r1 <- <anon symbol:0000017717C87668>
+	store.32    $12 -> 0[bloggs]
+	store.32    $34 -> 4[bloggs]
+	symaddr.64* %r1 <- <anon symbol:000001A6CB622FD8>
+	load.32     %r2 <- 0[bloggs]
 	push.64*    %r1
-	push.32     $12
+	push.32     %r2
 	call.32     %r3 <- printf
-	symaddr.64* %r4 <- <anon symbol:0000017717C87AC8>
+	symaddr.64* %r4 <- <anon symbol:000001A6CB623438>
+	load.32     %r5 <- 4[bloggs]
 	push.64*    %r4
-	push.32     $34
+	push.32     %r5
 	call.32     %r6 <- printf
+	phisrc.32   %phi1(return) <- $0
+	br          .L1
+
+.L1:
+	phi.32      %r7 <- %phi1(return)
 	ret.32      $0
 
 

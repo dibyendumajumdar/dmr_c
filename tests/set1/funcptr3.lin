@@ -1,19 +1,31 @@
 execute:
 .L0:
 	<entry-point>
-	ptrcast.64* %r6 <- (64) %arg2
-	br          %arg1, .L2, .L1
+	store.32    %arg1 -> 0[type]
+	store.64*   %arg2 -> 0[fn]
+	store.32    %arg3 -> 0[arg1]
+	store.32    %arg4 -> 0[arg2]
+	load.32     %r1 <- 0[type]
+	seteq.32    %r2 <- %r1, $0
+	br          %r2, .L1, .L2
 
 .L1:
-	push.32     %arg3
-	push.32     %arg4
+	load.32     %r3 <- 0[arg1]
+	load.32     %r4 <- 0[arg2]
+	push.32     %r3
+	push.32     %r4
+	load.64*    %r5 <- 0[fn]
+	ptrcast.64* %r6 <- (64) %r5
 	call.32     %r7 <- %r6
 	phisrc.32   %phi1(return) <- %r7
 	br          .L3
 
 .L2:
-	push.32     %arg3
-	call.32     %r12 <- %r6
+	load.32     %r9 <- 0[arg1]
+	push.32     %r9
+	load.64*    %r10 <- 0[fn]
+	ptrcast.64* %r11 <- (64) %r10
+	call.32     %r12 <- %r11
 	phisrc.32   %phi2(return) <- %r12
 	br          .L3
 
@@ -25,21 +37,35 @@ execute:
 unary:
 .L4:
 	<entry-point>
-	add.32      %r14 <- %arg1, $3
-	ret.32      %r14
+	store.32    %arg1 -> 0[arg1]
+	load.32     %r13 <- 0[arg1]
+	add.32      %r14 <- %r13, $3
+	scast.32    %r15 <- (32) %r14
+	phisrc.32   %phi3(return) <- %r15
+	br          .L5
+
+.L5:
+	phi.32      %r16 <- %phi3(return)
+	ret.32      %r15
 
 
 main:
 .L6:
 	<entry-point>
-	push.32     $1
 	symaddr.64* %r17 <- unary
 	cast.64*    %r18 <- (64) %r17
+	push.32     $1
 	push.64*    %r18
 	push.32     $3
 	push.32     $10
 	call.32     %r19 <- execute
-	setne.32    %r21 <- %r19, $6
+	seteq.32    %r20 <- %r19, $6
+	select.32   %r21 <- %r20, $0, $1
+	phisrc.32   %phi4(return) <- %r21
+	br          .L7
+
+.L7:
+	phi.32      %r22 <- %phi4(return)
 	ret.32      %r21
 
 

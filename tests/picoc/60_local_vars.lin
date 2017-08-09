@@ -1,81 +1,121 @@
 foo:
 .L0:
 	<entry-point>
-	symaddr.64* %r1 <- <anon symbol:0000018695805678>
+	symaddr.64* %r1 <- <anon symbol:000001A9A28433C8>
 	push.64*    %r1
 	call.32     %r2 <- printf
-	phisrc.32   %phi3(i) <- $0
+	store.32    $0 -> 0[i]
 	br          .L4
 
 .L4:
-	phi.32      %r3(i) <- %phi3(i), %phi4(i)
-	setlt.32    %r4 <- %r3(i), $3
-	br          %r4, .L1, .L5
+	load.32     %r3 <- 0[i]
+	setlt.32    %r4 <- %r3, $3
+	br          %r4, .L1, .L3
 
 .L1:
-	symaddr.64* %r7 <- <anon symbol:00000186958059F8>
+	load.32     %r5 <- 0[i]
+	add.32      %r6 <- %r5, $1
+	store.32    %r6 -> 0[j]
+	symaddr.64* %r7 <- <anon symbol:000001A9A2843748>
+	load.32     %r8 <- 0[i]
 	push.64*    %r7
-	push.32     %r3(i)
+	push.32     %r8
 	call.32     %r9 <- printf
-	add.32      %r11 <- %r3(i), $1
-	phisrc.32   %phi4(i) <- %r11
+	br          .L2
+
+.L2:
+	load.32     %r10 <- 0[i]
+	add.32      %r11 <- %r10, $1
+	store.32    %r11 -> 0[i]
 	br          .L4
 
+.L3:
+	br          .L8
+
+.L8:
+	br          .L5
+
 .L5:
-	symaddr.64* %r12 <- <anon symbol:0000018695805D78>
+	store.32    $5 -> 0[i]
+	symaddr.64* %r12 <- <anon symbol:000001A9A2843AC8>
 	push.64*    %r12
 	push.32     $5
 	call.32     %r13 <- printf
-	symaddr.64* %r14 <- <anon symbol:00000186958060F8>
+	br          .L9
+
+.L9:
+	br          .L7
+
+.L7:
+	symaddr.64* %r14 <- <anon symbol:000001A9A2843E48>
 	push.64*    %r14
 	call.32     %r15 <- printf
-	phisrc.32   %phi7(i) <- $0
+	store.32    $0 -> 0[i]
 	br          .L14
 
 .L14:
-	phi.32      %r16(i) <- %phi7(i), %phi8(i)
-	setlt.32    %r17 <- %r16(i), $3
+	load.32     %r16 <- 0[i]
+	setlt.32    %r17 <- %r16, $3
 	br          %r17, .L11, .L13
 
 .L11:
-	symaddr.64* %r18 <- <anon symbol:0000018695806478>
+	symaddr.64* %r18 <- <anon symbol:000001A9A28441C8>
+	load.32     %r19 <- 0[i]
 	push.64*    %r18
-	push.32     %r16(i)
+	push.32     %r19
 	call.32     %r20 <- printf
-	add.32      %r22 <- %r16(i), $1
-	phisrc.32   %phi8(i) <- %r22
+	br          .L12
+
+.L12:
+	load.32     %r21 <- 0[i]
+	add.32      %r22 <- %r21, $1
+	store.32    %r22 -> 0[i]
 	br          .L14
 
 .L13:
-	phisrc.32   %phi11(i) <- $0
+	store.32    $0 -> 0[i]
 	br          .L18
 
 .L18:
-	phi.32      %r23(i) <- %phi11(i), %phi12(i)
-	setlt.32    %r24 <- %r23(i), $0x186a0
-	br          %r24, .L16, .L17
+	load.32     %r23 <- 0[i]
+	setlt.32    %r24 <- %r23, $0x186a0
+	br          %r24, .L15, .L17
+
+.L15:
+	load.32     %r25 <- 0[i]
+	add.32      %r26 <- %r25, $1
+	store.32    %r26 -> 0[j]
+	br          .L16
 
 .L16:
-	add.32      %r28 <- %r23(i), $1
-	phisrc.32   %phi12(i) <- %r28
+	load.32     %r27 <- 0[i]
+	add.32      %r28 <- %r27, $1
+	store.32    %r28 -> 0[i]
 	br          .L18
 
 .L17:
-	phisrc.32   %phi15(i) <- $0
+	store.32    $0 -> 0[i]
 	br          .L22
 
 .L22:
-	phi.32      %r29(i) <- %phi15(i), %phi16(i)
-	setlt.32    %r30 <- %r29(i), $3
+	load.32     %r29 <- 0[i]
+	setlt.32    %r30 <- %r29, $3
 	br          %r30, .L19, .L21
 
 .L19:
-	symaddr.64* %r32 <- <anon symbol:00000186958067F8>
+	load.32     %r31 <- 0[i]
+	store.32    %r31 -> 0[j]
+	symaddr.64* %r32 <- <anon symbol:000001A9A2844548>
+	load.32     %r33 <- 0[j]
 	push.64*    %r32
-	push.32     %r29(i)
+	push.32     %r33
 	call.32     %r34 <- printf
-	add.32      %r36 <- %r29(i), $1
-	phisrc.32   %phi16(i) <- %r36
+	br          .L20
+
+.L20:
+	load.32     %r35 <- 0[i]
+	add.32      %r36 <- %r35, $1
+	store.32    %r36 -> 0[i]
 	br          .L22
 
 .L21:
@@ -85,49 +125,67 @@ foo:
 main:
 .L23:
 	<entry-point>
-	symaddr.64* %r37 <- <anon symbol:0000018695806B78>
+	symaddr.64* %r37 <- <anon symbol:000001A9A28448C8>
 	push.64*    %r37
 	call.32     %r38 <- printf
-	phisrc.32   %phi20(i) <- $0
+	store.32    $0 -> 0[i]
 	br          .L27
 
 .L27:
-	phi.32      %r39(i) <- %phi20(i), %phi21(i)
-	setlt.32    %r40 <- %r39(i), $3
+	load.32     %r39 <- 0[i]
+	setlt.32    %r40 <- %r39, $3
 	br          %r40, .L24, .L26
 
 .L24:
-	symaddr.64* %r43 <- <anon symbol:0000018695806EF8>
+	load.32     %r41 <- 0[i]
+	add.32      %r42 <- %r41, $1
+	store.32    %r42 -> 0[j]
+	symaddr.64* %r43 <- <anon symbol:000001A9A2844C48>
+	load.32     %r44 <- 0[i]
 	push.64*    %r43
-	push.32     %r39(i)
+	push.32     %r44
 	call.32     %r45 <- printf
-	add.32      %r47 <- %r39(i), $1
-	phisrc.32   %phi21(i) <- %r47
+	br          .L25
+
+.L25:
+	load.32     %r46 <- 0[i]
+	add.32      %r47 <- %r46, $1
+	store.32    %r47 -> 0[i]
 	br          .L27
 
 .L26:
-	symaddr.64* %r48 <- <anon symbol:0000018695807278>
+	symaddr.64* %r48 <- <anon symbol:000001A9A2845048>
 	push.64*    %r48
 	call.32     %r49 <- printf
-	phisrc.32   %phi24(i) <- $0
+	store.32    $0 -> 0[i]
 	br          .L31
 
 .L31:
-	phi.32      %r50(i) <- %phi24(i), %phi25(i)
-	setlt.32    %r51 <- %r50(i), $3
+	load.32     %r50 <- 0[i]
+	setlt.32    %r51 <- %r50, $3
 	br          %r51, .L28, .L30
 
 .L28:
-	symaddr.64* %r52 <- <anon symbol:00000186958075F8>
+	symaddr.64* %r52 <- <anon symbol:000001A9A28453C8>
+	load.32     %r53 <- 0[i]
 	push.64*    %r52
-	push.32     %r50(i)
+	push.32     %r53
 	call.32     %r54 <- printf
-	add.32      %r56 <- %r50(i), $1
-	phisrc.32   %phi25(i) <- %r56
+	br          .L29
+
+.L29:
+	load.32     %r55 <- 0[i]
+	add.32      %r56 <- %r55, $1
+	store.32    %r56 -> 0[i]
 	br          .L31
 
 .L30:
 	call        foo
+	phisrc.32   %phi1(return) <- $0
+	br          .L32
+
+.L32:
+	phi.32      %r57 <- %phi1(return)
 	ret.32      $0
 
 

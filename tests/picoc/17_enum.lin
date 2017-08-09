@@ -1,7 +1,7 @@
 main:
 .L0:
 	<entry-point>
-	symaddr.64* %r1 <- <anon symbol:00000199EEE150D8>
+	symaddr.64* %r1 <- <anon symbol:0000020F9D263408>
 	push.64*    %r1
 	push.32     $0
 	push.32     $1
@@ -12,18 +12,25 @@ main:
 	push.32     $74
 	push.32     $75
 	call.32     %r2 <- printf
-	symaddr.64* %r3 <- <anon symbol:00000199EEE15458>
+	store.32    $12 -> 0[frod]
+	symaddr.64* %r3 <- <anon symbol:0000020F9D263788>
+	load.32     %r4 <- 0[frod]
+	scast.32    %r5 <- (32) %r4
 	push.64*    %r3
-	push.32     $0
+	push.32     %r5
 	call.32     %r6 <- printf
-	symaddr.64* %r7 <- <anon symbol:00000199EEE157D8>
+	store.32    $54 -> 0[frod]
+	symaddr.64* %r7 <- <anon symbol:0000020F9D263B08>
+	load.32     %r8 <- 0[frod]
+	scast.32    %r9 <- (32) %r8
 	push.64*    %r7
-	push.32     $12
+	push.32     %r9
 	call.32     %r10 <- printf
-	symaddr.64* %r11 <- <anon symbol:00000199EEE15B58>
-	push.64*    %r11
-	push.32     $54
-	call.32     %r14 <- printf
+	phisrc.32   %phi1(return) <- $0
+	br          .L1
+
+.L1:
+	phi.32      %r11 <- %phi1(return)
 	ret.32      $0
 
 

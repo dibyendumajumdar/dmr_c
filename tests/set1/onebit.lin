@@ -1,0 +1,34 @@
+main:
+.L0:
+	<entry-point>
+	load.32     %r1 <- 0[s3]
+	shl.32      %r2 <- $1, $6
+	and.32      %r3 <- %r1, $-65
+	or.32       %r4 <- %r3, %r2
+	store.32    %r4 -> 0[s3]
+	load.32     %r5 <- 0[s3]
+	lsr.32      %r6 <- %r5, $6
+	cast.32     %r7 <- (1) %r6
+	setne.32    %r8 <- %r7, $1
+	br          %r8, .L1, .L2
+
+.L1:
+	symaddr.64* %r9 <- <anon symbol:000002847EEF2278>
+	load.32     %r10 <- 0[s3]
+	lsr.32      %r11 <- %r10, $6
+	cast.32     %r12 <- (1) %r11
+	push.64*    %r9
+	push.32     %r12
+	call.32     %r13 <- printf
+	phisrc.32   %phi1(return) <- $1
+	br          .L3
+
+.L2:
+	phisrc.32   %phi2(return) <- $0
+	br          .L3
+
+.L3:
+	phi.32      %r14 <- %phi1(return), %phi2(return)
+	ret.32      %r14
+
+

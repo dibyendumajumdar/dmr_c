@@ -1,12 +1,31 @@
 main:
 .L0:
 	<entry-point>
-	symaddr.64* %r1 <- <anon symbol:000001FF1CEB4B58>
+	store.32    $1 -> 0[a]
+	br          .L1
+
+.L1:
+	symaddr.64* %r1 <- <anon symbol:000001DFE2472C28>
 	push.64*    %r1
 	call.32     %r2 <- printf
-	symaddr.64* %r7 <- <anon symbol:000001FF1CEB55D8>
+	br          .L3
+
+.L3:
+	store.32    $0 -> 0[b]
+	br          .L5
+
+.L5:
+	symaddr.64* %r7 <- <anon symbol:000001DFE24736A8>
 	push.64*    %r7
 	call.32     %r8 <- printf
+	br          .L6
+
+.L6:
+	phisrc.32   %phi1(return) <- $0
+	br          .L7
+
+.L7:
+	phi.32      %r9 <- %phi1(return)
 	ret.32      $0
 
 

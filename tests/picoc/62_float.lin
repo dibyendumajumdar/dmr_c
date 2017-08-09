@@ -1,17 +1,30 @@
 main:
 .L0:
 	<entry-point>
-	symaddr.64* %r5 <- <anon symbol:000002A46C7D74E8>
-	push.64*    %r5
+	set.f64     %r1 <- 3.140000
+	store.f64   %r1 -> 0[x]
+	set.f64     %r2 <- 0.001000
+	store.f64   %r2 -> 0[y]
+	set.f64     %r3 <- 0.000000
+	store.f64   %r3 -> 0[z]
+	set.f64     %r4 <- 1.333333
+	store.f64   %r4 -> 0[q]
+	symaddr.64* %r5 <- <anon symbol:0000025618071B78>
 	set.f64     %r6 <- 3.140000
-	push.f64    %r6
 	set.f64     %r7 <- 0.001000
-	push.f64    %r7
 	set.f64     %r8 <- 100.000000
-	push.f64    %r8
 	set.f64     %r9 <- 1.333333
+	push.64*    %r5
+	push.f64    %r6
+	push.f64    %r7
+	push.f64    %r8
 	push.f64    %r9
 	call.32     %r10 <- printf
+	phisrc.32   %phi1(return) <- $0
+	br          .L1
+
+.L1:
+	phi.32      %r11 <- %phi1(return)
 	ret.32      $0
 
 

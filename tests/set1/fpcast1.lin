@@ -3,6 +3,9 @@ f1:
 	<entry-point>
 	set.f64     %r1 <- -1.000000
 	phisrc.f64  %phi1(return) <- %r1
+	br          .L1
+
+.L1:
 	phi.f64     %r2 <- %phi1(return)
 	ret.f64     %r1
 
@@ -11,6 +14,9 @@ f2:
 .L2:
 	<entry-point>
 	phisrc.f64  %phi2(return) <- $-1
+	br          .L3
+
+.L3:
 	phi.f64     %r3 <- %phi2(return)
 	ret.f64     $-1
 
@@ -20,6 +26,9 @@ f3:
 	<entry-point>
 	set.f64     %r4 <- -1.000000
 	phisrc.f64  %phi3(return) <- %r4
+	br          .L5
+
+.L5:
 	phi.f64     %r5 <- %phi3(return)
 	ret.f64     %r4
 
@@ -27,10 +36,16 @@ f3:
 main:
 .L6:
 	<entry-point>
-	symaddr.64* %r6 <- <anon symbol:0000018CFB385458>
+	store.f32   $97 -> 0[a]
+	symaddr.64* %r6 <- <anon symbol:00000186FBF924D8>
 	push.64*    %r6
 	push.f64    $97
 	call.32     %r7 <- printf
+	phisrc.32   %phi4(return) <- $0
+	br          .L7
+
+.L7:
+	phi.32      %r8 <- %phi4(return)
 	ret.32      $0
 
 

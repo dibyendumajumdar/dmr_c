@@ -1,54 +1,74 @@
 main:
 .L0:
 	<entry-point>
-	phisrc.32   %phi5(x) <- $0
+	store.32    $0 -> 0[x]
 	br          .L4
 
 .L4:
-	phi.32      %r1(x) <- %phi5(x), %phi6(x)
-	setlt.32    %r2 <- %r1(x), $2
-	br          %r2, .L1, .L13
+	load.32     %r1 <- 0[x]
+	setlt.32    %r2 <- %r1, $2
+	br          %r2, .L1, .L3
 
 .L1:
-	phisrc.32   %phi10(y) <- $0
+	store.32    $0 -> 0[y]
 	br          .L8
 
 .L8:
-	phi.32      %r3(y) <- %phi10(y), %phi11(y)
-	setlt.32    %r4 <- %r3(y), $3
-	br          %r4, .L5, .L2
+	load.32     %r3 <- 0[y]
+	setlt.32    %r4 <- %r3, $3
+	br          %r4, .L5, .L7
 
 .L5:
-	phisrc.32   %phi14(z) <- $0
+	store.32    $0 -> 0[z]
 	br          .L12
 
 .L12:
-	phi.32      %r5(z) <- %phi14(z), %phi15(z)
-	setlt.32    %r6 <- %r5(z), $3
-	br          %r6, .L9, .L6
+	load.32     %r5 <- 0[z]
+	setlt.32    %r6 <- %r5, $3
+	br          %r6, .L9, .L11
 
 .L9:
-	symaddr.64* %r7 <- <anon symbol:0000014C1C364138>
+	symaddr.64* %r7 <- <anon symbol:000001E51B631F98>
+	load.32     %r8 <- 0[x]
+	load.32     %r9 <- 0[y]
+	load.32     %r10 <- 0[z]
 	push.64*    %r7
-	push.32     %r1(x)
-	push.32     %r3(y)
-	push.32     %r5(z)
+	push.32     %r8
+	push.32     %r9
+	push.32     %r10
 	call.32     %r11 <- printf
-	add.32      %r13 <- %r5(z), $1
-	phisrc.32   %phi15(z) <- %r13
+	br          .L10
+
+.L10:
+	load.32     %r12 <- 0[z]
+	add.32      %r13 <- %r12, $1
+	store.32    %r13 -> 0[z]
 	br          .L12
 
+.L11:
+	br          .L6
+
 .L6:
-	add.32      %r15 <- %r3(y), $1
-	phisrc.32   %phi11(y) <- %r15
+	load.32     %r14 <- 0[y]
+	add.32      %r15 <- %r14, $1
+	store.32    %r15 -> 0[y]
 	br          .L8
 
+.L7:
+	br          .L2
+
 .L2:
-	add.32      %r17 <- %r1(x), $1
-	phisrc.32   %phi6(x) <- %r17
+	load.32     %r16 <- 0[x]
+	add.32      %r17 <- %r16, $1
+	store.32    %r17 -> 0[x]
 	br          .L4
 
+.L3:
+	phisrc.32   %phi1(return) <- $0
+	br          .L13
+
 .L13:
+	phi.32      %r18 <- %phi1(return)
 	ret.32      $0
 
 

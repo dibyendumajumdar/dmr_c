@@ -1,10 +1,15 @@
 variadic:
 .L0:
 	<entry-point>
-	symaddr.64* %r1 <- <anon symbol:0000022F693D4FC8>
+	store.32    %arg1 -> 0[argc]
+	symaddr.64* %r1 <- <anon symbol:000001CA43E51DF8>
+	load.32     %r2 <- 0[argc]
 	push.64*    %r1
-	push.32     %arg1
+	push.32     %r2
 	call.32     %r3 <- printf
+	br          .L1
+
+.L1:
 	ret
 
 
@@ -15,6 +20,11 @@ main:
 	push.32     $2
 	push.32     $3
 	call        variadic
+	phisrc.32   %phi1(return) <- $0
+	br          .L3
+
+.L3:
+	phi.32      %r4 <- %phi1(return)
 	ret.32      $0
 
 

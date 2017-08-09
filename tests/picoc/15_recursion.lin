@@ -1,18 +1,23 @@
 factorial:
 .L0:
 	<entry-point>
-	setlt.32    %r2 <- %arg1, $2
+	store.32    %arg1 -> 0[i]
+	load.32     %r1 <- 0[i]
+	setlt.32    %r2 <- %r1, $2
 	br          %r2, .L1, .L2
 
 .L1:
-	phisrc.32   %phi1(return) <- %arg1
+	load.32     %r3 <- 0[i]
+	phisrc.32   %phi1(return) <- %r3
 	br          .L3
 
 .L2:
-	add.32      %r7 <- %arg1, $-1
+	load.32     %r5 <- 0[i]
+	load.32     %r6 <- 0[i]
+	sub.32      %r7 <- %r6, $1
 	push.32     %r7
 	call.32     %r8 <- factorial
-	muls.32     %r9 <- %arg1, %r8
+	muls.32     %r9 <- %r5, %r8
 	phisrc.32   %phi2(return) <- %r9
 	br          .L3
 
@@ -24,26 +29,36 @@ factorial:
 main:
 .L5:
 	<entry-point>
-	phisrc.32   %phi6(Count) <- $1
+	store.32    $1 -> 0[Count]
 	br          .L9
 
 .L9:
-	phi.32      %r10(Count) <- %phi6(Count), %phi7(Count)
-	setle.32    %r11 <- %r10(Count), $10
-	br          %r11, .L6, .L10
+	load.32     %r10 <- 0[Count]
+	setle.32    %r11 <- %r10, $10
+	br          %r11, .L6, .L8
 
 .L6:
-	symaddr.64* %r12 <- <anon symbol:000001A08DE078B8>
-	push.64*    %r12
-	push.32     %r10(Count)
+	symaddr.64* %r12 <- <anon symbol:0000014647BC1DD8>
+	load.32     %r13 <- 0[Count]
+	push.32     %r13
 	call.32     %r14 <- factorial
+	push.64*    %r12
 	push.32     %r14
 	call.32     %r15 <- printf
-	add.32      %r17 <- %r10(Count), $1
-	phisrc.32   %phi7(Count) <- %r17
+	br          .L7
+
+.L7:
+	load.32     %r16 <- 0[Count]
+	add.32      %r17 <- %r16, $1
+	store.32    %r17 -> 0[Count]
 	br          .L9
 
+.L8:
+	phisrc.32   %phi3(return) <- $0
+	br          .L10
+
 .L10:
+	phi.32      %r18 <- %phi3(return)
 	ret.32      $0
 
 

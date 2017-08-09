@@ -2,42 +2,57 @@ main:
 .L0:
 	<entry-point>
 	store.32    $42 -> 0[a]
-	symaddr.64* %r2 <- <anon symbol:000001D5E85345F8>
+	symaddr.64* %r1 <- a
+	store.64*   %r1 -> 0[b]
+	symaddr.64* %r2 <- <anon symbol:000002517E510698>
+	load.64*    %r3 <- 0[b]
+	load.32     %r4 <- 0[%r3]
 	push.64*    %r2
-	push.32     $42
+	push.32     %r4
 	call.32     %r5 <- printf
 	store.32    $12 -> 0[bolshevic]
 	store.32    $34 -> 4[bolshevic]
 	store.32    $56 -> 8[bolshevic]
-	symaddr.64* %r6 <- <anon symbol:000001D5E8534CF8>
+	symaddr.64* %r6 <- <anon symbol:000002517E510D98>
+	load.32     %r7 <- 0[bolshevic]
 	push.64*    %r6
-	push.32     $12
+	push.32     %r7
 	call.32     %r8 <- printf
-	symaddr.64* %r9 <- <anon symbol:000001D5E8535158>
-	push.64*    %r9
+	symaddr.64* %r9 <- <anon symbol:000002517E5111F8>
 	load.32     %r10 <- 4[bolshevic]
+	push.64*    %r9
 	push.32     %r10
 	call.32     %r11 <- printf
-	symaddr.64* %r12 <- <anon symbol:000001D5E85355B8>
-	push.64*    %r12
+	symaddr.64* %r12 <- <anon symbol:000002517E511658>
 	load.32     %r13 <- 8[bolshevic]
+	push.64*    %r12
 	push.32     %r13
 	call.32     %r14 <- printf
-	symaddr.64* %r16 <- <anon symbol:000001D5E8535BD8>
+	symaddr.64* %r15 <- bolshevic
+	store.64*   %r15 -> 0[tsar]
+	symaddr.64* %r16 <- <anon symbol:000002517E511C78>
+	load.64*    %r17 <- 0[tsar]
+	load.32     %r18 <- 0[%r17]
 	push.64*    %r16
-	load.32     %r18 <- 0[bolshevic]
 	push.32     %r18
 	call.32     %r19 <- printf
-	symaddr.64* %r20 <- <anon symbol:000001D5E8536038>
+	symaddr.64* %r20 <- <anon symbol:000002517E5120D8>
+	load.64*    %r21 <- 0[tsar]
+	load.32     %r22 <- 4[%r21]
 	push.64*    %r20
-	load.32     %r22 <- 4[bolshevic]
 	push.32     %r22
 	call.32     %r23 <- printf
-	symaddr.64* %r24 <- <anon symbol:000001D5E8536498>
+	symaddr.64* %r24 <- <anon symbol:000002517E512538>
+	load.64*    %r25 <- 0[tsar]
+	load.32     %r26 <- 8[%r25]
 	push.64*    %r24
-	load.32     %r26 <- 8[bolshevic]
 	push.32     %r26
 	call.32     %r27 <- printf
+	phisrc.32   %phi1(return) <- $0
+	br          .L1
+
+.L1:
+	phi.32      %r28 <- %phi1(return)
 	ret.32      $0
 
 

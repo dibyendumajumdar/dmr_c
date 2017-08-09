@@ -1,30 +1,49 @@
 main:
 .L0:
 	<entry-point>
-	load.64*    %r2 <- 0[%arg2]
-	load.8      %r4 <- 0[%r2]
-	switch      %r4, 115 -> .L2, default -> .L3
+	store.32    %arg1 -> 0[argc]
+	store.64*   %arg2 -> 0[argv]
+	load.64*    %r1 <- 0[argv]
+	load.64*    %r2 <- 0[%r1]
+	store.64*   %r2 -> 0[cp]
+	load.64*    %r3 <- 0[cp]
+	load.8      %r4 <- 0[%r3]
+	switch.8    %r4, 115 -> .L2, default -> .L3
 
 .L2:
-	symaddr.64* %r5 <- <anon symbol:0000027567725588>
+	symaddr.64* %r5 <- <anon symbol:000001C02D6E34D8>
+	load.64*    %r6 <- 0[cp]
+	load.8      %r7 <- 0[%r6]
+	scast.32    %r8 <- (8) %r7
 	push.64*    %r5
-	scast.32    %r8 <- (8) %r4
 	push.32     %r8
 	call.32     %r9 <- printf
-	br          .L6
+	br          .L1
 
 .L3:
-	br          %r4, .L4, .L6
+	load.64*    %r10 <- 0[cp]
+	load.8      %r11 <- 0[%r10]
+	br          %r11, .L4, .L5
 
 .L4:
-	symaddr.64* %r12 <- <anon symbol:0000027567725AC8>
+	symaddr.64* %r12 <- <anon symbol:000001C02D6E3A18>
+	load.64*    %r13 <- 0[cp]
+	load.8      %r14 <- 0[%r13]
+	scast.32    %r15 <- (8) %r14
 	push.64*    %r12
-	scast.32    %r15 <- (8) %r4
 	push.32     %r15
 	call.32     %r16 <- printf
+	br          .L5
+
+.L5:
+	br          .L1
+
+.L1:
+	phisrc.32   %phi1(return) <- $0
 	br          .L6
 
 .L6:
+	phi.32      %r17 <- %phi1(return)
 	ret.32      $0
 
 

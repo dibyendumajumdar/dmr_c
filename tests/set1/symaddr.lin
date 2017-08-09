@@ -1,12 +1,20 @@
 print:
 .L0:
 	<entry-point>
-	symaddr.64* %r1 <- <anon symbol:000001C21BDC4ED8>
+	store.64*   %arg1 -> 0[p]
+	symaddr.64* %r1 <- <anon symbol:000001C949D42FD8>
+	load.64*    %r2 <- 0[p]
+	load.32     %r3 <- 0[%r2]
 	push.64*    %r1
-	load.32     %r3 <- 0[%arg1]
 	push.32     %r3
 	call.32     %r4 <- printf
-	load.32     %r6 <- 0[%arg1]
+	load.64*    %r5 <- 0[p]
+	load.32     %r6 <- 0[%r5]
+	phisrc.32   %phi1(return) <- %r6
+	br          .L1
+
+.L1:
+	phi.32      %r7 <- %phi1(return)
 	ret.32      %r6
 
 
@@ -17,7 +25,13 @@ main:
 	symaddr.64* %r8 <- escapelist
 	push.64*    %r8
 	call.32     %r9 <- print
-	setne.32    %r11 <- %r9, $0xffffffff
+	seteq.32    %r10 <- %r9, $0xffffffff
+	select.32   %r11 <- %r10, $0, $1
+	phisrc.32   %phi2(return) <- %r11
+	br          .L3
+
+.L3:
+	phi.32      %r12 <- %phi2(return)
 	ret.32      %r11
 
 

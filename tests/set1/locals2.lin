@@ -1,26 +1,51 @@
 init:
 .L0:
 	<entry-point>
-	store.32    $5 -> 0[%arg1]
-	store.32    $5 -> 4[%arg1]
+	store.64*   %arg1 -> 0[v]
+	load.64*    %r1 <- 0[v]
+	store.32    $5 -> 0[%r1]
+	load.64*    %r2 <- 0[v]
+	store.32    $5 -> 4[%r2]
+	br          .L1
+
+.L1:
 	ret
 
 
 main:
 .L2:
 	<entry-point>
+	store.32    %arg1 -> 0[argc]
+	store.64*   %arg2 -> 0[argv]
+	store.32    $0 -> 0[n]
 	symaddr.64* %r3 <- x
 	ptrcast.64* %r4 <- (64) %r3
 	push.64*    %r4
 	call        init
 	load.32     %r5 <- 4[x]
+	load.32     %r6 <- 0[n]
+	scast.32    %r7 <- (32) %r6
+	add.32      %r8 <- %r7, %r5
+	scast.32    %r9 <- (32) %r8
+	store.32    %r9 -> 0[n]
 	symaddr.64* %r10 <- x
 	ptrcast.64* %r11 <- (64) %r10
 	push.64*    %r11
 	call        init
 	load.32     %r12 <- 0[x]
-	add.32      %r15 <- %r5, %r12
-	setne.32    %r19 <- %r15, $10
+	load.32     %r13 <- 0[n]
+	scast.32    %r14 <- (32) %r13
+	add.32      %r15 <- %r14, %r12
+	scast.32    %r16 <- (32) %r15
+	store.32    %r16 -> 0[n]
+	load.32     %r17 <- 0[n]
+	seteq.32    %r18 <- %r17, $10
+	select.32   %r19 <- %r18, $0, $1
+	phisrc.32   %phi1(return) <- %r19
+	br          .L3
+
+.L3:
+	phi.32      %r20 <- %phi1(return)
 	ret.32      %r19
 
 

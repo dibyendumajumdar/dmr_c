@@ -33,12 +33,12 @@ regc:
 	switch.32   %r12, 1 -> .L6, 2 -> .L7, default -> .L2
 
 .L6:
-	load.32     %r18 <- 0[%r17]
+	load.32     %r18(n2) <- 0[%r17]
 	br          .L2
 
 .L7:
 	load.32     %r24 <- 0[%r17]
-	seteq.32    %r26 <- %r24, %r18
+	seteq.32    %r26 <- %r24, %r18(n2)
 	br          %r26, .L2, .L9
 
 .L9:

@@ -1,0 +1,58 @@
+regc:
+.L0:
+	<entry-point>
+	store.8     $0 -> 0[r00]
+	store.8     $1 -> 0[r01]
+	store.8     $2 -> 0[r02]
+	symaddr.64* %r1 <- r01
+	symaddr.64* %r2 <- r00
+	sub.64      %r3 <- %r1, %r2
+	scast.32    %r4 <- (64) %r3
+	store.32    %r4 -> 0[d]
+	symaddr.64* %r5 <- r02
+	sub.64      %r7 <- %r5, %r1
+	scast.32    %r8 <- (64) %r7
+	store.32    %r8 -> 4[d]
+	phisrc.32   %phi2(s) <- $1
+	phisrc.32   %phi5(s) <- $1
+	phisrc.32   %phi12(j) <- $0
+	br          .L4
+
+.L4:
+	phi.32      %r10(j) <- %phi12(j), %phi13(j)
+	setlt.32    %r11 <- %r10(j), $2
+	br          %r11, .L1, .L3
+
+.L1:
+	phi.32      %r12 <- %phi5(s), %phi6(s)
+	phisrc.32   %phi3(s) <- %r12
+	symaddr.64* %r13 <- d
+	scast.64    %r15 <- (32) %r10(j)
+	muls.64     %r16 <- %r15, $4
+	add.64*     %r17 <- %r13, %r16
+	switch.32   %r12, 1 -> .L6, 2 -> .L7, default -> .L2
+
+.L6:
+	load.32     %r18 <- 0[%r17]
+	br          .L2
+
+.L7:
+	load.32     %r24 <- 0[%r17]
+	seteq.32    %r26 <- %r24, %r18
+	br          %r26, .L2, .L9
+
+.L9:
+	phisrc.32   %phi4(s) <- $4
+	phisrc.32   %phi6(s) <- $4
+	br          .L2
+
+.L2:
+	add.32      %r28 <- %r10(j), $1
+	phisrc.32   %phi13(j) <- %r28
+	br          .L4
+
+.L3:
+	phi.32      %r29 <- %phi2(s), %phi3(s), %phi4(s)
+	ret.32      %r29
+
+

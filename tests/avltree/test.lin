@@ -1,45 +1,62 @@
 memcpy:
 .L0:
 	<entry-point>
-	ptrcast.64* %r2(dst8) <- (64) %arg1
-	ptrcast.64* %r4(src8) <- (64) %arg2
-	phisrc.32   %phi2(count) <- %arg3
-	phisrc.64*  %phi4(dst8) <- %r2(dst8)
-	phisrc.64*  %phi6(src8) <- %r4(src8)
+	store.64*   %arg1 -> 0[dest]
+	store.64*   %arg2 -> 0[src]
+	store.32    %arg3 -> 0[count]
+	load.64*    %r1 <- 0[dest]
+	ptrcast.64* %r2 <- (64) %r1
+	store.64*   %r2 -> 0[dst8]
+	load.64*    %r3 <- 0[src]
+	ptrcast.64* %r4 <- (64) %r3
+	store.64*   %r4 -> 0[src8]
 	br          .L4
 
 .L4:
-	phi.32      %r5 <- %phi2(count), %phi3(count)
-	add.32      %r6 <- %r5, $-1
+	load.32     %r5 <- 0[count]
+	sub.32      %r6 <- %r5, $1
+	store.32    %r6 -> 0[count]
 	setgt.32    %r7 <- %r5, $0
-	phisrc.32   %phi3(count) <- %r6
-	br          %r7, .L1, .L5
+	br          %r7, .L1, .L3
 
 .L1:
-	phi.64*     %r8 <- %phi6(src8), %phi7(src8)
+	load.64*    %r8 <- 0[src8]
 	add.64*     %r9 <- %r8, $1
+	store.64*   %r9 -> 0[src8]
 	load.8      %r10 <- 0[%r8]
-	phi.64*     %r11 <- %phi4(dst8), %phi5(dst8)
+	load.64*    %r11 <- 0[dst8]
 	add.64*     %r12 <- %r11, $1
+	store.64*   %r12 -> 0[dst8]
 	store.8     %r10 -> 0[%r11]
-	phisrc.64*  %phi5(dst8) <- %r12
-	phisrc.64*  %phi7(src8) <- %r9
+	br          .L2
+
+.L2:
 	br          .L4
 
+.L3:
+	load.64*    %r13 <- 0[dest]
+	phisrc.64*  %phi1(return) <- %r13
+	br          .L5
+
 .L5:
-	ret.64*     %arg1
+	phi.64*     %r14 <- %phi1(return)
+	ret.64*     %r13
 
 
 new_allocator:
 .L6:
 	<entry-point>
-	muls.32     %r17 <- %arg1, %arg2
+	store.32    %arg1 -> 0[size]
+	store.32    %arg2 -> 0[n]
+	load.32     %r15 <- 0[size]
+	load.32     %r16 <- 0[n]
+	muls.32     %r17 <- %r15, %r16
 	scast.64    %r18 <- (32) %r17
 	seta.32     %r19 <- %r18, $0x10000
 	br          %r19, .L7, .L8
 
 .L7:
-	symaddr.64* %r20 <- <anon symbol:0000020CF18E4A88>
+	symaddr.64* %r20 <- <anon symbol:0000017F11750F28>
 	push.64*    %r20
 	call.32     %r21 <- printf
 	push.32     $1
@@ -48,23 +65,39 @@ new_allocator:
 
 .L8:
 	symaddr.64* %r22 <- A
-	store.64*   $0 -> 0[A]
-	store.64*   $0 -> 8[A]
-	store.64*   $0 -> 16[A]
-	store.64*   $0 -> 24[A]
-	store.32    %arg1 -> 32[A]
-	store.32    %arg2 -> 36[A]
-	ret.64*     %r22
+	store.64*   %r22 -> 0[a]
+	load.64*    %r23 <- 0[a]
+	store.64*   $0 -> 0[%r23]
+	load.64*    %r24 <- 0[a]
+	store.64*   $0 -> 8[%r24]
+	load.64*    %r25 <- 0[a]
+	store.64*   $0 -> 16[%r25]
+	load.64*    %r26 <- 0[a]
+	store.64*   $0 -> 24[%r26]
+	load.32     %r27 <- 0[size]
+	load.64*    %r28 <- 0[a]
+	store.32    %r27 -> 32[%r28]
+	load.32     %r29 <- 0[n]
+	load.64*    %r30 <- 0[a]
+	store.32    %r29 -> 36[%r30]
+	load.64*    %r31 <- 0[a]
+	phisrc.64*  %phi2(return) <- %r31
+	br          .L9
+
+.L9:
+	phi.64*     %r32 <- %phi2(return)
+	ret.64*     %r31
 
 
 grow_allocator:
 .L10:
 	<entry-point>
+	store.64*   %arg1 -> 0[a]
 	load.32     %r33 <- 0[once]
 	br          %r33, .L11, .L12
 
 .L11:
-	symaddr.64* %r34 <- <anon symbol:0000020CF18E5A48>
+	symaddr.64* %r34 <- <anon symbol:0000017F11751EE8>
 	push.64*    %r34
 	call.32     %r35 <- printf
 	push.32     $1
@@ -77,89 +110,144 @@ grow_allocator:
 
 .L13:
 	symaddr.64* %r36 <- Node
+	store.64*   %r36 -> 0[tmp]
 	symaddr.64* %r37 <- Memory
-	store.64*   %r37 -> 8[Node]
-	load.64*    %r40 <- 0[%arg1]
-	store.64*   %r40 -> 0[Node]
-	store.64*   %r36 -> 0[%arg1]
-	load.64*    %r46 <- 8[Node]
-	store.64*   %r46 -> 16[%arg1]
-	load.32     %r51 <- 32[%arg1]
-	load.32     %r53 <- 36[%arg1]
+	load.64*    %r38 <- 0[tmp]
+	store.64*   %r37 -> 8[%r38]
+	load.64*    %r39 <- 0[a]
+	load.64*    %r40 <- 0[%r39]
+	load.64*    %r41 <- 0[tmp]
+	store.64*   %r40 -> 0[%r41]
+	load.64*    %r42 <- 0[tmp]
+	load.64*    %r43 <- 0[a]
+	store.64*   %r42 -> 0[%r43]
+	load.64*    %r44 <- 0[a]
+	load.64*    %r45 <- 0[%r44]
+	load.64*    %r46 <- 8[%r45]
+	load.64*    %r47 <- 0[a]
+	store.64*   %r46 -> 16[%r47]
+	load.64*    %r48 <- 0[a]
+	load.64*    %r49 <- 16[%r48]
+	load.64*    %r50 <- 0[a]
+	load.32     %r51 <- 32[%r50]
+	load.64*    %r52 <- 0[a]
+	load.32     %r53 <- 36[%r52]
 	muls.32     %r54 <- %r51, %r53
 	scast.64    %r55 <- (32) %r54
-	add.64*     %r56 <- %r46, %r55
-	store.64*   %r56 -> 24[%arg1]
+	add.64*     %r56 <- %r49, %r55
+	load.64*    %r57 <- 0[a]
+	store.64*   %r56 -> 24[%r57]
+	br          .L14
+
+.L14:
 	ret
 
 
 alloc_node:
 .L15:
 	<entry-point>
-	load.64*    %r59 <- 8[%arg1]
-	br          %r59, .L16, .L17
+	store.64*   %arg1 -> 0[a]
+	load.64*    %r58 <- 0[a]
+	load.64*    %r59 <- 8[%r58]
+	store.64*   %r59 -> 0[tmp]
+	load.64*    %r60 <- 0[a]
+	load.64*    %r61 <- 8[%r60]
+	br          %r61, .L16, .L17
 
 .L16:
-	load.64*    %r64 <- 0[%r59]
+	load.64*    %r62 <- 0[a]
+	load.64*    %r63 <- 8[%r62]
+	load.64*    %r64 <- 0[%r63]
 	ptrcast.64* %r65 <- (64) %r64
-	store.64*   %r65 -> 8[%arg1]
-	cast.64*    %r68 <- (64) %r59
-	phisrc.64*  %phi9(return) <- %r68
+	load.64*    %r66 <- 0[a]
+	store.64*   %r65 -> 8[%r66]
+	load.64*    %r67 <- 0[tmp]
+	cast.64*    %r68 <- (64) %r67
+	phisrc.64*  %phi3(return) <- %r68
 	br          .L18
 
 .L17:
-	load.64*    %r71 <- 16[%arg1]
-	load.64*    %r73 <- 24[%arg1]
+	load.64*    %r70 <- 0[a]
+	load.64*    %r71 <- 16[%r70]
+	load.64*    %r72 <- 0[a]
+	load.64*    %r73 <- 24[%r72]
 	seteq.32    %r74 <- %r71, %r73
-	phisrc.64*  %phi11 <- %r71
 	br          %r74, .L20, .L21
 
 .L20:
-	push.64*    %arg1
+	load.64*    %r75 <- 0[a]
+	push.64*    %r75
 	call        grow_allocator
 	br          .L21
 
 .L21:
-	load.64*    %r77 <- 16[%arg1]
+	load.64*    %r76 <- 0[a]
+	load.64*    %r77 <- 16[%r76]
 	cast.64*    %r78 <- (64) %r77
-	load.32     %r80 <- 32[%arg1]
+	store.64*   %r78 -> 0[tmp]
+	load.64*    %r79 <- 0[a]
+	load.32     %r80 <- 32[%r79]
 	scast.64    %r81 <- (32) %r80
-	cast.64     %r84 <- (64) %r77
+	load.64*    %r82 <- 0[a]
+	load.64*    %r83 <- 16[%r82]
+	cast.64     %r84 <- (64) %r83
 	add.64      %r85 <- %r84, %r81
 	ptrcast.64* %r86 <- (64) %r85
-	store.64*   %r86 -> 16[%arg1]
-	phisrc.64*  %phi10(return) <- %r78
+	store.64*   %r86 -> 16[%r82]
+	load.64*    %r87 <- 0[tmp]
+	phisrc.64*  %phi4(return) <- %r87
 	br          .L18
 
 .L18:
-	phi.64*     %r69 <- %phi9(return), %phi10(return)
+	phi.64*     %r69 <- %phi3(return), %phi4(return)
 	ret.64*     %r69
 
 
 dealloc_node:
 .L22:
 	<entry-point>
-	load.64*    %r89 <- 8[%arg1]
-	ptrcast.64* %r91 <- (64) %arg2
+	store.64*   %arg1 -> 0[a]
+	store.64*   %arg2 -> 0[n]
+	load.64*    %r88 <- 0[a]
+	load.64*    %r89 <- 8[%r88]
+	load.64*    %r90 <- 0[n]
+	ptrcast.64* %r91 <- (64) %r90
 	store.64*   %r89 -> 0[%r91]
-	store.64*   %r91 -> 8[%arg1]
+	load.64*    %r92 <- 0[n]
+	ptrcast.64* %r93 <- (64) %r92
+	load.64*    %r94 <- 0[a]
+	store.64*   %r93 -> 8[%r94]
+	br          .L23
+
+.L23:
 	ret
 
 
 destroy_allocator:
 .L24:
 	<entry-point>
+	store.64*   %arg1 -> 0[a]
+	br          .L25
+
+.L25:
 	ret
 
 
 AVL_SetRight:
 .L26:
 	<entry-point>
-	store.64*   %arg2 -> 16[%arg1]
-	br          %arg2, .L27, .L28
+	store.64*   %arg1 -> 0[self]
+	store.64*   %arg2 -> 0[r]
+	load.64*    %r95 <- 0[r]
+	load.64*    %r96 <- 0[self]
+	store.64*   %r95 -> 16[%r96]
+	load.64*    %r97 <- 0[r]
+	br          %r97, .L27, .L28
 
 .L27:
-	store.64*   %arg1 -> 0[%arg2]
+	load.64*    %r98 <- 0[self]
+	load.64*    %r99 <- 0[r]
+	store.64*   %r98 -> 0[%r99]
 	br          .L28
 
 .L28:
@@ -169,11 +257,18 @@ AVL_SetRight:
 AVL_SetLeft:
 .L29:
 	<entry-point>
-	store.64*   %arg2 -> 8[%arg1]
-	br          %arg2, .L30, .L31
+	store.64*   %arg1 -> 0[self]
+	store.64*   %arg2 -> 0[l]
+	load.64*    %r100 <- 0[l]
+	load.64*    %r101 <- 0[self]
+	store.64*   %r100 -> 8[%r101]
+	load.64*    %r102 <- 0[l]
+	br          %r102, .L30, .L31
 
 .L30:
-	store.64*   %arg1 -> 0[%arg2]
+	load.64*    %r103 <- 0[self]
+	load.64*    %r104 <- 0[l]
+	store.64*   %r103 -> 0[%r104]
 	br          .L31
 
 .L31:
@@ -183,637 +278,955 @@ AVL_SetLeft:
 AVL_RotateLeft:
 .L32:
 	<entry-point>
-	load.64*    %r106 <- 16[%arg1]
-	load.64*    %r108 <- 0[%arg1]
-	br          %r108, .L33, .L34
+	store.64*   %arg1 -> 0[self]
+	load.64*    %r105 <- 0[self]
+	load.64*    %r106 <- 16[%r105]
+	store.64*   %r106 -> 0[newroot]
+	load.64*    %r107 <- 0[self]
+	load.64*    %r108 <- 0[%r107]
+	setne.32    %r109 <- %r108, $0
+	br          %r109, .L33, .L34
 
 .L33:
-	load.64*    %r113 <- 8[%r108]
-	seteq.32    %r114 <- %arg1, %r113
+	load.64*    %r110 <- 0[self]
+	load.64*    %r111 <- 0[self]
+	load.64*    %r112 <- 0[%r111]
+	load.64*    %r113 <- 8[%r112]
+	seteq.32    %r114 <- %r110, %r113
 	br          %r114, .L35, .L36
 
 .L35:
-	push.64*    %r108
-	push.64*    %r106
+	load.64*    %r115 <- 0[self]
+	load.64*    %r116 <- 0[%r115]
+	load.64*    %r117 <- 0[newroot]
+	push.64*    %r116
+	push.64*    %r117
 	call        AVL_SetLeft
-	br          .L38
+	br          .L37
 
 .L36:
-	push.64*    %r108
-	push.64*    %r106
+	load.64*    %r118 <- 0[self]
+	load.64*    %r119 <- 0[%r118]
+	load.64*    %r120 <- 0[newroot]
+	push.64*    %r119
+	push.64*    %r120
 	call        AVL_SetRight
+	br          .L37
+
+.L37:
 	br          .L38
 
 .L34:
-	store.64*   $0 -> 0[%r106]
+	load.64*    %r121 <- 0[newroot]
+	store.64*   $0 -> 0[%r121]
 	br          .L38
 
 .L38:
-	push.64*    %arg1
-	load.64*    %r124 <- 8[%r106]
+	load.64*    %r122 <- 0[self]
+	load.64*    %r123 <- 0[newroot]
+	load.64*    %r124 <- 8[%r123]
+	push.64*    %r122
 	push.64*    %r124
 	call        AVL_SetRight
-	push.64*    %r106
-	push.64*    %arg1
+	load.64*    %r125 <- 0[newroot]
+	load.64*    %r126 <- 0[self]
+	push.64*    %r125
+	push.64*    %r126
 	call        AVL_SetLeft
-	ret.64*     %r106
+	load.64*    %r127 <- 0[newroot]
+	phisrc.64*  %phi5(return) <- %r127
+	br          .L39
+
+.L39:
+	phi.64*     %r128 <- %phi5(return)
+	ret.64*     %r127
 
 
 AVL_RotateRight:
 .L40:
 	<entry-point>
-	load.64*    %r130 <- 8[%arg1]
-	load.64*    %r132 <- 0[%arg1]
-	br          %r132, .L41, .L42
+	store.64*   %arg1 -> 0[self]
+	load.64*    %r129 <- 0[self]
+	load.64*    %r130 <- 8[%r129]
+	store.64*   %r130 -> 0[newroot]
+	load.64*    %r131 <- 0[self]
+	load.64*    %r132 <- 0[%r131]
+	setne.32    %r133 <- %r132, $0
+	br          %r133, .L41, .L42
 
 .L41:
-	load.64*    %r137 <- 8[%r132]
-	seteq.32    %r138 <- %arg1, %r137
+	load.64*    %r134 <- 0[self]
+	load.64*    %r135 <- 0[self]
+	load.64*    %r136 <- 0[%r135]
+	load.64*    %r137 <- 8[%r136]
+	seteq.32    %r138 <- %r134, %r137
 	br          %r138, .L43, .L44
 
 .L43:
-	push.64*    %r132
-	push.64*    %r130
+	load.64*    %r139 <- 0[self]
+	load.64*    %r140 <- 0[%r139]
+	load.64*    %r141 <- 0[newroot]
+	push.64*    %r140
+	push.64*    %r141
 	call        AVL_SetLeft
-	br          .L46
+	br          .L45
 
 .L44:
-	push.64*    %r132
-	push.64*    %r130
+	load.64*    %r142 <- 0[self]
+	load.64*    %r143 <- 0[%r142]
+	load.64*    %r144 <- 0[newroot]
+	push.64*    %r143
+	push.64*    %r144
 	call        AVL_SetRight
+	br          .L45
+
+.L45:
 	br          .L46
 
 .L42:
-	store.64*   $0 -> 0[%r130]
+	load.64*    %r145 <- 0[newroot]
+	store.64*   $0 -> 0[%r145]
 	br          .L46
 
 .L46:
-	push.64*    %arg1
-	load.64*    %r148 <- 16[%r130]
+	load.64*    %r146 <- 0[self]
+	load.64*    %r147 <- 0[newroot]
+	load.64*    %r148 <- 16[%r147]
+	push.64*    %r146
 	push.64*    %r148
 	call        AVL_SetLeft
-	push.64*    %r130
-	push.64*    %arg1
+	load.64*    %r149 <- 0[newroot]
+	load.64*    %r150 <- 0[self]
+	push.64*    %r149
+	push.64*    %r150
 	call        AVL_SetRight
-	ret.64*     %r130
+	load.64*    %r151 <- 0[newroot]
+	phisrc.64*  %phi6(return) <- %r151
+	br          .L47
+
+.L47:
+	phi.64*     %r152 <- %phi6(return)
+	ret.64*     %r151
 
 
 AVL_DoubleRotateRight:
 .L48:
 	<entry-point>
-	load.64*    %r154 <- 8[%arg1]
-	load.64*    %r156 <- 16[%r154]
-	load.32     %r158 <- 24[%r156]
-	switch      %r158, 0 -> .L51, 1 -> .L52, 2 -> .L50, default -> .L49
+	store.64*   %arg1 -> 0[self]
+	load.64*    %r153 <- 0[self]
+	load.64*    %r154 <- 8[%r153]
+	store.64*   %r154 -> 0[lf]
+	load.64*    %r155 <- 0[lf]
+	load.64*    %r156 <- 16[%r155]
+	store.64*   %r156 -> 0[rt]
+	load.64*    %r157 <- 0[rt]
+	load.32     %r158 <- 24[%r157]
+	switch.32   %r158, 0 -> .L51, 1 -> .L52, 2 -> .L50, default -> .L49
 
 .L50:
-	store.32    $0 -> 24[%arg1]
-	store.32    $1 -> 24[%r154]
+	load.64*    %r159 <- 0[self]
+	store.32    $0 -> 24[%r159]
+	load.64*    %r160 <- 0[lf]
+	store.32    $1 -> 24[%r160]
 	br          .L49
 
 .L51:
-	store.32    $0 -> 24[%r154]
-	store.32    $0 -> 24[%arg1]
+	load.64*    %r161 <- 0[lf]
+	store.32    $0 -> 24[%r161]
+	load.64*    %r162 <- 0[self]
+	store.32    $0 -> 24[%r162]
 	br          .L49
 
 .L52:
-	store.32    $2 -> 24[%arg1]
-	store.32    $0 -> 24[%r154]
+	load.64*    %r163 <- 0[self]
+	store.32    $2 -> 24[%r163]
+	load.64*    %r164 <- 0[lf]
+	store.32    $0 -> 24[%r164]
 	br          .L49
 
 .L49:
-	store.32    $0 -> 24[%r156]
-	push.64*    %arg1
-	push.64*    %r154
+	load.64*    %r165 <- 0[rt]
+	store.32    $0 -> 24[%r165]
+	load.64*    %r166 <- 0[self]
+	load.64*    %r167 <- 0[lf]
+	push.64*    %r167
 	call.64*    %r168 <- AVL_RotateLeft
+	push.64*    %r166
 	push.64*    %r168
 	call        AVL_SetLeft
-	push.64*    %arg1
+	load.64*    %r169 <- 0[self]
+	push.64*    %r169
 	call.64*    %r170 <- AVL_RotateRight
-	ret.64*     %r170
+	store.64*   %r170 -> 0[root]
+	load.64*    %r171 <- 0[root]
+	phisrc.64*  %phi7(return) <- %r171
+	br          .L53
+
+.L53:
+	phi.64*     %r172 <- %phi7(return)
+	ret.64*     %r171
 
 
 AVL_DoubleRotateLeft:
 .L54:
 	<entry-point>
-	load.64*    %r174 <- 16[%arg1]
-	load.64*    %r176 <- 8[%r174]
-	load.32     %r178 <- 24[%r176]
-	switch      %r178, 0 -> .L57, 1 -> .L58, 2 -> .L56, default -> .L55
+	store.64*   %arg1 -> 0[self]
+	load.64*    %r173 <- 0[self]
+	load.64*    %r174 <- 16[%r173]
+	store.64*   %r174 -> 0[rt]
+	load.64*    %r175 <- 0[rt]
+	load.64*    %r176 <- 8[%r175]
+	store.64*   %r176 -> 0[lf]
+	load.64*    %r177 <- 0[lf]
+	load.32     %r178 <- 24[%r177]
+	switch.32   %r178, 0 -> .L57, 1 -> .L58, 2 -> .L56, default -> .L55
 
 .L56:
-	store.32    $1 -> 24[%arg1]
-	store.32    $0 -> 24[%r174]
+	load.64*    %r179 <- 0[self]
+	store.32    $1 -> 24[%r179]
+	load.64*    %r180 <- 0[rt]
+	store.32    $0 -> 24[%r180]
 	br          .L55
 
 .L57:
-	store.32    $0 -> 24[%r174]
-	store.32    $0 -> 24[%arg1]
+	load.64*    %r181 <- 0[rt]
+	store.32    $0 -> 24[%r181]
+	load.64*    %r182 <- 0[self]
+	store.32    $0 -> 24[%r182]
 	br          .L55
 
 .L58:
-	store.32    $0 -> 24[%arg1]
-	store.32    $2 -> 24[%r174]
+	load.64*    %r183 <- 0[self]
+	store.32    $0 -> 24[%r183]
+	load.64*    %r184 <- 0[rt]
+	store.32    $2 -> 24[%r184]
 	br          .L55
 
 .L55:
-	store.32    $0 -> 24[%r176]
-	push.64*    %arg1
-	push.64*    %r174
+	load.64*    %r185 <- 0[lf]
+	store.32    $0 -> 24[%r185]
+	load.64*    %r186 <- 0[self]
+	load.64*    %r187 <- 0[rt]
+	push.64*    %r187
 	call.64*    %r188 <- AVL_RotateRight
+	push.64*    %r186
 	push.64*    %r188
 	call        AVL_SetRight
-	push.64*    %arg1
+	load.64*    %r189 <- 0[self]
+	push.64*    %r189
 	call.64*    %r190 <- AVL_RotateLeft
-	ret.64*     %r190
+	store.64*   %r190 -> 0[root]
+	load.64*    %r191 <- 0[root]
+	phisrc.64*  %phi8(return) <- %r191
+	br          .L59
+
+.L59:
+	phi.64*     %r192 <- %phi8(return)
+	ret.64*     %r191
 
 
 AVL_RebalanceHeavierLeft:
 .L60:
 	<entry-point>
-	load.32     %r195 <- 24[%arg1]
-	phisrc.64*  %phi28(root) <- %arg1
-	switch      %r195, 0 -> .L63, 1 -> .L64, 2 -> .L62, default -> .L61
+	store.64*   %arg1 -> 0[self]
+	store.64*   %arg2 -> 0[height_changed]
+	load.64*    %r193 <- 0[self]
+	store.64*   %r193 -> 0[root]
+	load.64*    %r194 <- 0[root]
+	load.32     %r195 <- 24[%r194]
+	switch.32   %r195, 0 -> .L63, 1 -> .L64, 2 -> .L62, default -> .L61
 
 .L62:
-	store.32    $0 -> 24[%arg1]
-	store.32    $0 -> 0[%arg2]
-	phisrc.64*  %phi24(root) <- %arg1
+	load.64*    %r196 <- 0[root]
+	store.32    $0 -> 24[%r196]
+	load.64*    %r197 <- 0[height_changed]
+	store.32    $0 -> 0[%r197]
 	br          .L61
 
 .L63:
-	store.32    $1 -> 24[%arg1]
-	phisrc.64*  %phi25(root) <- %arg1
+	load.64*    %r198 <- 0[root]
+	store.32    $1 -> 24[%r198]
 	br          .L61
 
 .L64:
-	load.64*    %r200 <- 8[%arg1]
-	load.32     %r202 <- 24[%r200]
-	switch      %r202, 1 -> .L66, 2 -> .L67, default -> .L65
+	load.64*    %r199 <- 0[self]
+	load.64*    %r200 <- 8[%r199]
+	store.64*   %r200 -> 0[lf]
+	load.64*    %r201 <- 0[lf]
+	load.32     %r202 <- 24[%r201]
+	switch.32   %r202, 1 -> .L66, 2 -> .L67, default -> .L65
 
 .L66:
-	store.32    $0 -> 24[%arg1]
-	store.32    $0 -> 24[%r200]
-	push.64*    %arg1
+	load.64*    %r203 <- 0[self]
+	store.32    $0 -> 24[%r203]
+	load.64*    %r204 <- 0[lf]
+	store.32    $0 -> 24[%r204]
+	load.64*    %r205 <- 0[self]
+	push.64*    %r205
 	call.64*    %r206 <- AVL_RotateRight
-	phisrc.64*  %phi26(root) <- %r206
+	store.64*   %r206 -> 0[root]
 	br          .L65
 
 .L67:
-	push.64*    %arg1
+	load.64*    %r207 <- 0[self]
+	push.64*    %r207
 	call.64*    %r208 <- AVL_DoubleRotateRight
-	phisrc.64*  %phi27(root) <- %r208
+	store.64*   %r208 -> 0[root]
 	br          .L65
 
 .L65:
-	store.32    $0 -> 0[%arg2]
+	load.64*    %r209 <- 0[height_changed]
+	store.32    $0 -> 0[%r209]
 	br          .L61
 
 .L61:
-	phi.64*     %r210 <- %phi24(root), %phi25(root), %phi26(root), %phi27(root), %phi28(root)
+	load.64*    %r210 <- 0[root]
+	phisrc.64*  %phi9(return) <- %r210
+	br          .L68
+
+.L68:
+	phi.64*     %r211 <- %phi9(return)
 	ret.64*     %r210
 
 
 AVL_RebalanceHeavierRight:
 .L69:
 	<entry-point>
-	load.32     %r214 <- 24[%arg1]
-	phisrc.64*  %phi36(root) <- %arg1
-	switch      %r214, 0 -> .L72, 1 -> .L71, 2 -> .L73, default -> .L70
+	store.64*   %arg1 -> 0[self]
+	store.64*   %arg2 -> 0[height_changed]
+	load.64*    %r212 <- 0[self]
+	store.64*   %r212 -> 0[root]
+	load.64*    %r213 <- 0[root]
+	load.32     %r214 <- 24[%r213]
+	switch.32   %r214, 0 -> .L72, 1 -> .L71, 2 -> .L73, default -> .L70
 
 .L71:
-	store.32    $0 -> 24[%arg1]
-	store.32    $0 -> 0[%arg2]
-	phisrc.64*  %phi32(root) <- %arg1
+	load.64*    %r215 <- 0[root]
+	store.32    $0 -> 24[%r215]
+	load.64*    %r216 <- 0[height_changed]
+	store.32    $0 -> 0[%r216]
 	br          .L70
 
 .L72:
-	store.32    $2 -> 24[%arg1]
-	phisrc.64*  %phi33(root) <- %arg1
+	load.64*    %r217 <- 0[root]
+	store.32    $2 -> 24[%r217]
 	br          .L70
 
 .L73:
-	load.64*    %r219 <- 16[%arg1]
-	load.32     %r221 <- 24[%r219]
-	switch      %r221, 1 -> .L76, 2 -> .L75, default -> .L74
+	load.64*    %r218 <- 0[self]
+	load.64*    %r219 <- 16[%r218]
+	store.64*   %r219 -> 0[rt]
+	load.64*    %r220 <- 0[rt]
+	load.32     %r221 <- 24[%r220]
+	switch.32   %r221, 1 -> .L76, 2 -> .L75, default -> .L74
 
 .L75:
-	store.32    $0 -> 24[%arg1]
-	store.32    $0 -> 24[%r219]
-	push.64*    %arg1
+	load.64*    %r222 <- 0[self]
+	store.32    $0 -> 24[%r222]
+	load.64*    %r223 <- 0[rt]
+	store.32    $0 -> 24[%r223]
+	load.64*    %r224 <- 0[self]
+	push.64*    %r224
 	call.64*    %r225 <- AVL_RotateLeft
-	phisrc.64*  %phi34(root) <- %r225
+	store.64*   %r225 -> 0[root]
 	br          .L74
 
 .L76:
-	push.64*    %arg1
+	load.64*    %r226 <- 0[self]
+	push.64*    %r226
 	call.64*    %r227 <- AVL_DoubleRotateLeft
-	phisrc.64*  %phi35(root) <- %r227
+	store.64*   %r227 -> 0[root]
 	br          .L74
 
 .L74:
-	store.32    $0 -> 0[%arg2]
+	load.64*    %r228 <- 0[height_changed]
+	store.32    $0 -> 0[%r228]
 	br          .L70
 
 .L70:
-	phi.64*     %r229 <- %phi32(root), %phi33(root), %phi34(root), %phi35(root), %phi36(root)
+	load.64*    %r229 <- 0[root]
+	phisrc.64*  %phi10(return) <- %r229
+	br          .L77
+
+.L77:
+	phi.64*     %r230 <- %phi10(return)
 	ret.64*     %r229
 
 
 AVL_RebalanceShorterLeft:
 .L78:
 	<entry-point>
-	load.32     %r233 <- 24[%arg1]
-	phisrc.64*  %phi46(p) <- %arg1
-	switch      %r233, 0 -> .L80, 1 -> .L81, 2 -> .L82, default -> .L79
+	store.64*   %arg1 -> 0[self]
+	store.64*   %arg2 -> 0[height_changed]
+	load.64*    %r231 <- 0[self]
+	store.64*   %r231 -> 0[p]
+	load.64*    %r232 <- 0[p]
+	load.32     %r233 <- 24[%r232]
+	switch.32   %r233, 0 -> .L80, 1 -> .L81, 2 -> .L82, default -> .L79
 
 .L80:
-	store.32    $2 -> 24[%arg1]
-	store.32    $0 -> 0[%arg2]
-	phisrc.64*  %phi40(p) <- %arg1
+	load.64*    %r234 <- 0[p]
+	store.32    $2 -> 24[%r234]
+	load.64*    %r235 <- 0[height_changed]
+	store.32    $0 -> 0[%r235]
 	br          .L79
 
 .L81:
-	store.32    $0 -> 24[%arg1]
-	phisrc.64*  %phi41(p) <- %arg1
+	load.64*    %r236 <- 0[p]
+	store.32    $0 -> 24[%r236]
 	br          .L79
 
 .L82:
-	load.64*    %r238 <- 16[%arg1]
-	load.32     %r240 <- 24[%r238]
-	phisrc.64*  %phi45(p) <- %arg1
-	switch      %r240, 0 -> .L84, 1 -> .L86, 2 -> .L85, default -> .L79
+	load.64*    %r237 <- 0[p]
+	load.64*    %r238 <- 16[%r237]
+	store.64*   %r238 -> 0[q]
+	load.64*    %r239 <- 0[q]
+	load.32     %r240 <- 24[%r239]
+	switch.32   %r240, 0 -> .L84, 1 -> .L86, 2 -> .L85, default -> .L83
 
 .L84:
-	store.32    $0 -> 0[%arg2]
-	store.32    $1 -> 24[%r238]
-	push.64*    %arg1
+	load.64*    %r241 <- 0[height_changed]
+	store.32    $0 -> 0[%r241]
+	load.64*    %r242 <- 0[q]
+	store.32    $1 -> 24[%r242]
+	load.64*    %r243 <- 0[p]
+	push.64*    %r243
 	call.64*    %r244 <- AVL_RotateLeft
-	phisrc.64*  %phi42(p) <- %r244
-	br          .L79
+	store.64*   %r244 -> 0[p]
+	br          .L83
 
 .L85:
-	store.32    $0 -> 24[%r238]
-	store.32    $0 -> 24[%arg1]
-	push.64*    %arg1
+	load.64*    %r245 <- 0[q]
+	store.32    $0 -> 24[%r245]
+	load.64*    %r246 <- 0[p]
+	store.32    $0 -> 24[%r246]
+	load.64*    %r247 <- 0[p]
+	push.64*    %r247
 	call.64*    %r248 <- AVL_RotateLeft
-	phisrc.64*  %phi43(p) <- %r248
-	br          .L79
+	store.64*   %r248 -> 0[p]
+	br          .L83
 
 .L86:
-	push.64*    %arg1
+	load.64*    %r249 <- 0[p]
+	push.64*    %r249
 	call.64*    %r250 <- AVL_DoubleRotateLeft
-	phisrc.64*  %phi44(p) <- %r250
+	store.64*   %r250 -> 0[p]
+	br          .L83
+
+.L83:
 	br          .L79
 
 .L79:
-	phi.64*     %r251 <- %phi40(p), %phi41(p), %phi42(p), %phi43(p), %phi44(p), %phi45(p), %phi46(p)
+	load.64*    %r251 <- 0[p]
+	phisrc.64*  %phi11(return) <- %r251
+	br          .L87
+
+.L87:
+	phi.64*     %r252 <- %phi11(return)
 	ret.64*     %r251
 
 
 AVL_RebalanceShorterRight:
 .L88:
 	<entry-point>
-	load.32     %r255 <- 24[%arg1]
-	phisrc.64*  %phi60(p) <- %arg1
-	switch      %r255, 0 -> .L90, 1 -> .L92, 2 -> .L91, default -> .L89
+	store.64*   %arg1 -> 0[self]
+	store.64*   %arg2 -> 0[height_changed]
+	load.64*    %r253 <- 0[self]
+	store.64*   %r253 -> 0[p]
+	load.64*    %r254 <- 0[p]
+	load.32     %r255 <- 24[%r254]
+	switch.32   %r255, 0 -> .L90, 1 -> .L92, 2 -> .L91, default -> .L89
 
 .L90:
-	store.32    $1 -> 24[%arg1]
-	store.32    $0 -> 0[%arg2]
-	phisrc.64*  %phi54(p) <- %arg1
+	load.64*    %r256 <- 0[p]
+	store.32    $1 -> 24[%r256]
+	load.64*    %r257 <- 0[height_changed]
+	store.32    $0 -> 0[%r257]
 	br          .L89
 
 .L91:
-	store.32    $0 -> 24[%arg1]
-	phisrc.64*  %phi55(p) <- %arg1
+	load.64*    %r258 <- 0[p]
+	store.32    $0 -> 24[%r258]
 	br          .L89
 
 .L92:
-	load.64*    %r260 <- 8[%arg1]
-	load.32     %r262 <- 24[%r260]
-	phisrc.64*  %phi59(p) <- %arg1
-	switch      %r262, 0 -> .L94, 1 -> .L95, 2 -> .L96, default -> .L89
+	load.64*    %r259 <- 0[p]
+	load.64*    %r260 <- 8[%r259]
+	store.64*   %r260 -> 0[q]
+	load.64*    %r261 <- 0[q]
+	load.32     %r262 <- 24[%r261]
+	switch.32   %r262, 0 -> .L94, 1 -> .L95, 2 -> .L96, default -> .L93
 
 .L94:
-	store.32    $0 -> 0[%arg2]
-	store.32    $2 -> 24[%r260]
-	push.64*    %arg1
+	load.64*    %r263 <- 0[height_changed]
+	store.32    $0 -> 0[%r263]
+	load.64*    %r264 <- 0[q]
+	store.32    $2 -> 24[%r264]
+	load.64*    %r265 <- 0[p]
+	push.64*    %r265
 	call.64*    %r266 <- AVL_RotateRight
-	phisrc.64*  %phi56(p) <- %r266
-	br          .L89
+	store.64*   %r266 -> 0[p]
+	br          .L93
 
 .L95:
-	store.32    $0 -> 24[%r260]
-	store.32    $0 -> 24[%arg1]
-	push.64*    %arg1
+	load.64*    %r267 <- 0[q]
+	store.32    $0 -> 24[%r267]
+	load.64*    %r268 <- 0[p]
+	store.32    $0 -> 24[%r268]
+	load.64*    %r269 <- 0[p]
+	push.64*    %r269
 	call.64*    %r270 <- AVL_RotateRight
-	phisrc.64*  %phi57(p) <- %r270
-	br          .L89
+	store.64*   %r270 -> 0[p]
+	br          .L93
 
 .L96:
-	push.64*    %arg1
+	load.64*    %r271 <- 0[p]
+	push.64*    %r271
 	call.64*    %r272 <- AVL_DoubleRotateRight
-	phisrc.64*  %phi58(p) <- %r272
+	store.64*   %r272 -> 0[p]
+	br          .L93
+
+.L93:
 	br          .L89
 
 .L89:
-	phi.64*     %r273 <- %phi54(p), %phi55(p), %phi56(p), %phi57(p), %phi58(p), %phi59(p), %phi60(p)
+	load.64*    %r273 <- 0[p]
+	phisrc.64*  %phi12(return) <- %r273
+	br          .L97
+
+.L97:
+	phi.64*     %r274 <- %phi12(return)
 	ret.64*     %r273
 
 
 AVL_Height:
 .L98:
 	<entry-point>
-	phisrc.32   %phi74(lf_height) <- $0
-	phisrc.32   %phi77(rt_height) <- $0
-	br          %arg1, .L100, .L99
+	store.64*   %arg1 -> 0[self]
+	store.32    $0 -> 0[height]
+	store.32    $0 -> 0[lf_height]
+	store.32    $0 -> 0[rt_height]
+	load.64*    %r275 <- 0[self]
+	seteq.32    %r276 <- %r275, $0
+	br          %r276, .L99, .L100
 
 .L99:
-	phisrc.32   %phi67(return) <- $0
+	phisrc.32   %phi13(return) <- $0
 	br          .L101
 
 .L100:
-	load.64*    %r279 <- 8[%arg1]
+	load.64*    %r278 <- 0[self]
+	load.64*    %r279 <- 8[%r278]
 	br          %r279, .L102, .L103
 
 .L102:
-	push.64*    %r279
+	load.64*    %r280 <- 0[self]
+	load.64*    %r281 <- 8[%r280]
+	push.64*    %r281
 	call.32     %r282 <- AVL_Height
-	phisrc.32   %phi75(lf_height) <- %r282
+	store.32    %r282 -> 0[lf_height]
 	br          .L103
 
 .L103:
-	load.64*    %r284 <- 16[%arg1]
+	load.64*    %r283 <- 0[self]
+	load.64*    %r284 <- 16[%r283]
 	br          %r284, .L104, .L105
 
 .L104:
-	push.64*    %r284
+	load.64*    %r285 <- 0[self]
+	load.64*    %r286 <- 16[%r285]
+	push.64*    %r286
 	call.32     %r287 <- AVL_Height
-	phisrc.32   %phi78(rt_height) <- %r287
+	store.32    %r287 -> 0[rt_height]
 	br          .L105
 
 .L105:
-	phi.32      %r288(lf_height) <- %phi74(lf_height), %phi75(lf_height)
-	phi.32      %r289(rt_height) <- %phi77(rt_height), %phi78(rt_height)
-	setgt.32    %r290 <- %r288(lf_height), %r289(rt_height)
+	load.32     %r288 <- 0[lf_height]
+	load.32     %r289 <- 0[rt_height]
+	setgt.32    %r290 <- %r288, %r289
 	br          %r290, .L106, .L107
 
 .L106:
-	add.32      %r292 <- %r288(lf_height), $1
-	phisrc.32   %phi69(height) <- %r292
+	load.32     %r291 <- 0[lf_height]
+	add.32      %r292 <- %r291, $1
+	load.32     %r293 <- 0[height]
+	scast.32    %r294 <- (32) %r293
+	add.32      %r295 <- %r294, %r292
+	scast.32    %r296 <- (32) %r295
+	store.32    %r296 -> 0[height]
 	br          .L108
 
 .L107:
-	add.32      %r298 <- %r289(rt_height), $1
-	phisrc.32   %phi70(height) <- %r298
+	load.32     %r297 <- 0[rt_height]
+	add.32      %r298 <- %r297, $1
+	load.32     %r299 <- 0[height]
+	scast.32    %r300 <- (32) %r299
+	add.32      %r301 <- %r300, %r298
+	scast.32    %r302 <- (32) %r301
+	store.32    %r302 -> 0[height]
 	br          .L108
 
 .L108:
-	phi.32      %r303 <- %phi69(height), %phi70(height)
-	phisrc.32   %phi68(return) <- %r303
+	load.32     %r303 <- 0[height]
+	phisrc.32   %phi14(return) <- %r303
 	br          .L101
 
 .L101:
-	phi.32      %r277 <- %phi67(return), %phi68(return)
+	phi.32      %r277 <- %phi13(return), %phi14(return)
 	ret.32      %r277
 
 
 AVLTree_FindFirst:
 .L109:
 	<entry-point>
-	load.64*    %r305 <- 8[%arg1]
-	br          %r305, .L110, .L111
+	store.64*   %arg1 -> 0[tree]
+	load.64*    %r304 <- 0[tree]
+	load.64*    %r305 <- 8[%r304]
+	store.64*   %r305 -> 0[root]
+	load.64*    %r306 <- 0[root]
+	br          %r306, .L110, .L111
 
 .L110:
-	ptrcast.64* %r308(current) <- (64) %r305
-	phisrc.64*  %phi85(current) <- %r308(current)
+	load.64*    %r307 <- 0[root]
+	ptrcast.64* %r308 <- (64) %r307
+	store.64*   %r308 -> 0[current]
 	br          .L115
 
 .L115:
-	phi.64*     %r309(current) <- %phi85(current), %phi86(current)
-	load.64*    %r310 <- 8[%r309(current)]
-	br          %r310, .L112, .L114
+	load.64*    %r309 <- 0[current]
+	load.64*    %r310 <- 8[%r309]
+	setne.32    %r311 <- %r310, $0
+	br          %r311, .L112, .L114
 
 .L112:
-	phisrc.64*  %phi86(current) <- %r310
+	load.64*    %r312 <- 0[current]
+	load.64*    %r313 <- 8[%r312]
+	store.64*   %r313 -> 0[current]
+	br          .L113
+
+.L113:
 	br          .L115
 
 .L114:
-	add.64*     %r315 <- %r309(current), $32
+	load.64*    %r314 <- 0[current]
+	add.64*     %r315 <- %r314, $32
 	cast.64*    %r316 <- (64) %r315
-	phisrc.64*  %phi81(return) <- %r316
+	phisrc.64*  %phi15(return) <- %r316
 	br          .L116
 
 .L111:
-	phisrc.64*  %phi82(return) <- $0
+	phisrc.64*  %phi16(return) <- $0
 	br          .L116
 
 .L116:
-	phi.64*     %r317 <- %phi81(return), %phi82(return)
+	phi.64*     %r317 <- %phi15(return), %phi16(return)
 	ret.64*     %r317
 
 
 AVLTree_FindLast:
 .L117:
 	<entry-point>
-	load.64*    %r319 <- 8[%arg1]
-	br          %r319, .L118, .L119
+	store.64*   %arg1 -> 0[tree]
+	load.64*    %r318 <- 0[tree]
+	load.64*    %r319 <- 8[%r318]
+	store.64*   %r319 -> 0[root]
+	load.64*    %r320 <- 0[root]
+	br          %r320, .L118, .L119
 
 .L118:
-	ptrcast.64* %r322(current) <- (64) %r319
-	phisrc.64*  %phi92(current) <- %r322(current)
+	load.64*    %r321 <- 0[root]
+	ptrcast.64* %r322 <- (64) %r321
+	store.64*   %r322 -> 0[current]
 	br          .L123
 
 .L123:
-	phi.64*     %r323(current) <- %phi92(current), %phi93(current)
-	load.64*    %r324 <- 16[%r323(current)]
-	br          %r324, .L120, .L122
+	load.64*    %r323 <- 0[current]
+	load.64*    %r324 <- 16[%r323]
+	setne.32    %r325 <- %r324, $0
+	br          %r325, .L120, .L122
 
 .L120:
-	phisrc.64*  %phi93(current) <- %r324
+	load.64*    %r326 <- 0[current]
+	load.64*    %r327 <- 16[%r326]
+	store.64*   %r327 -> 0[current]
+	br          .L121
+
+.L121:
 	br          .L123
 
 .L122:
-	add.64*     %r329 <- %r323(current), $32
+	load.64*    %r328 <- 0[current]
+	add.64*     %r329 <- %r328, $32
 	cast.64*    %r330 <- (64) %r329
-	phisrc.64*  %phi88(return) <- %r330
+	phisrc.64*  %phi17(return) <- %r330
 	br          .L124
 
 .L119:
-	phisrc.64*  %phi89(return) <- $0
+	phisrc.64*  %phi18(return) <- $0
 	br          .L124
 
 .L124:
-	phi.64*     %r331 <- %phi88(return), %phi89(return)
+	phi.64*     %r331 <- %phi17(return), %phi18(return)
 	ret.64*     %r331
 
 
 AVLTree_FindNext:
 .L125:
 	<entry-point>
-	ptrcast.64* %r333 <- (64) %arg2
-	phisrc.64*  %phi98(current) <- %r333
-	br          %r333, .L126, .L127
+	store.64*   %arg1 -> 0[tree]
+	store.64*   %arg2 -> 0[currnode]
+	load.64*    %r332 <- 0[currnode]
+	ptrcast.64* %r333 <- (64) %r332
+	store.64*   %r333 -> 0[current]
+	load.64*    %r334 <- 0[current]
+	br          %r334, .L126, .L127
 
 .L126:
-	add.64*     %r336 <- %r333, $-32
-	load.64*    %r338 <- -16[%r333]
+	load.64*    %r335 <- 0[current]
+	sub.64*     %r336 <- %r335, $32
+	store.64*   %r336 -> 0[current]
+	load.64*    %r337 <- 0[current]
+	load.64*    %r338 <- 16[%r337]
 	br          %r338, .L128, .L129
 
 .L128:
-	phisrc.64*  %phi108(current) <- %r338
+	load.64*    %r339 <- 0[current]
+	load.64*    %r340 <- 16[%r339]
+	store.64*   %r340 -> 0[current]
 	br          .L133
 
 .L133:
-	phi.64*     %r341(current) <- %phi108(current), %phi109(current)
-	load.64*    %r342 <- 8[%r341(current)]
-	phisrc.64*  %phi99(current) <- %r341(current)
-	br          %r342, .L130, .L127
+	load.64*    %r341 <- 0[current]
+	load.64*    %r342 <- 8[%r341]
+	setne.32    %r343 <- %r342, $0
+	br          %r343, .L130, .L132
 
 .L130:
-	phisrc.64*  %phi109(current) <- %r342
+	load.64*    %r344 <- 0[current]
+	load.64*    %r345 <- 8[%r344]
+	store.64*   %r345 -> 0[current]
+	br          .L131
+
+.L131:
 	br          .L133
 
+.L132:
+	br          .L134
+
 .L129:
-	load.64*    %r348(current) <- -32[%r333]
-	phisrc.64*  %phi104(current) <- %r348(current)
-	phisrc.64*  %phi112(p) <- %r336
+	load.64*    %r346 <- 0[current]
+	store.64*   %r346 -> 0[p]
+	load.64*    %r347 <- 0[p]
+	load.64*    %r348 <- 0[%r347]
+	store.64*   %r348 -> 0[current]
 	br          .L138
 
 .L138:
-	phi.64*     %r349(current) <- %phi104(current), %phi105(current)
-	phisrc.64*  %phi100(current) <- %r349(current)
-	br          %r349(current), .L135, .L127
+	load.64*    %r349 <- 0[current]
+	br          %r349, .L135, .L137
 
 .L135:
-	load.64*    %r351 <- 16[%r349(current)]
-	phi.64*     %r352 <- %phi112(p), %phi113(p)
+	load.64*    %r350 <- 0[current]
+	load.64*    %r351 <- 16[%r350]
+	load.64*    %r352 <- 0[p]
 	seteq.32    %r353 <- %r351, %r352
-	phisrc.64*  %phi101(current) <- %r349(current)
-	br          %r353, .L139, .L127
+	br          %r353, .L139, .L140
 
 .L139:
-	load.64*    %r356 <- 0[%r349(current)]
-	phisrc.64*  %phi105(current) <- %r356
-	phisrc.64*  %phi113(p) <- %r349(current)
+	load.64*    %r354 <- 0[current]
+	store.64*   %r354 -> 0[p]
+	load.64*    %r355 <- 0[current]
+	load.64*    %r356 <- 0[%r355]
+	store.64*   %r356 -> 0[current]
+	br          .L141
+
+.L140:
+	br          .L137
+
+.L141:
+	br          .L136
+
+.L136:
 	br          .L138
 
+.L137:
+	br          .L134
+
+.L134:
+	br          .L127
+
 .L127:
-	phi.64*     %r357(current) <- %phi98(current), %phi99(current), %phi100(current), %phi101(current)
-	br          %r357(current), .L142, .L143
+	load.64*    %r357 <- 0[current]
+	br          %r357, .L142, .L143
 
 .L142:
-	add.64*     %r359 <- %r357(current), $32
+	load.64*    %r358 <- 0[current]
+	add.64*     %r359 <- %r358, $32
 	cast.64*    %r360 <- (64) %r359
-	phisrc.64*  %phi95(return) <- %r360
+	phisrc.64*  %phi19(return) <- %r360
 	br          .L144
 
 .L143:
-	phisrc.64*  %phi96(return) <- $0
+	phisrc.64*  %phi20(return) <- $0
 	br          .L144
 
 .L144:
-	phi.64*     %r361 <- %phi95(return), %phi96(return)
+	phi.64*     %r361 <- %phi19(return), %phi20(return)
 	ret.64*     %r361
 
 
 AVLTree_FindPrevious:
 .L146:
 	<entry-point>
-	ptrcast.64* %r363 <- (64) %arg2
-	phisrc.64*  %phi119(current) <- %r363
-	br          %r363, .L147, .L148
+	store.64*   %arg1 -> 0[tree]
+	store.64*   %arg2 -> 0[currnode]
+	load.64*    %r362 <- 0[currnode]
+	ptrcast.64* %r363 <- (64) %r362
+	store.64*   %r363 -> 0[current]
+	load.64*    %r364 <- 0[current]
+	br          %r364, .L147, .L148
 
 .L147:
-	add.64*     %r366 <- %r363, $-32
-	load.64*    %r368 <- -24[%r363]
+	load.64*    %r365 <- 0[current]
+	sub.64*     %r366 <- %r365, $32
+	store.64*   %r366 -> 0[current]
+	load.64*    %r367 <- 0[current]
+	load.64*    %r368 <- 8[%r367]
 	br          %r368, .L149, .L150
 
 .L149:
-	phisrc.64*  %phi129(current) <- %r368
+	load.64*    %r369 <- 0[current]
+	load.64*    %r370 <- 8[%r369]
+	store.64*   %r370 -> 0[current]
 	br          .L154
 
 .L154:
-	phi.64*     %r371(current) <- %phi129(current), %phi130(current)
-	load.64*    %r372 <- 16[%r371(current)]
-	phisrc.64*  %phi120(current) <- %r371(current)
-	br          %r372, .L151, .L148
+	load.64*    %r371 <- 0[current]
+	load.64*    %r372 <- 16[%r371]
+	setne.32    %r373 <- %r372, $0
+	br          %r373, .L151, .L153
 
 .L151:
-	phisrc.64*  %phi130(current) <- %r372
+	load.64*    %r374 <- 0[current]
+	load.64*    %r375 <- 16[%r374]
+	store.64*   %r375 -> 0[current]
+	br          .L152
+
+.L152:
 	br          .L154
 
+.L153:
+	br          .L155
+
 .L150:
-	load.64*    %r378(current) <- -32[%r363]
-	phisrc.64*  %phi125(current) <- %r378(current)
-	phisrc.64*  %phi133(p) <- %r366
+	load.64*    %r376 <- 0[current]
+	store.64*   %r376 -> 0[p]
+	load.64*    %r377 <- 0[p]
+	load.64*    %r378 <- 0[%r377]
+	store.64*   %r378 -> 0[current]
 	br          .L159
 
 .L159:
-	phi.64*     %r379(current) <- %phi125(current), %phi126(current)
-	phisrc.64*  %phi121(current) <- %r379(current)
-	br          %r379(current), .L156, .L148
+	load.64*    %r379 <- 0[current]
+	br          %r379, .L156, .L158
 
 .L156:
-	load.64*    %r381 <- 8[%r379(current)]
-	phi.64*     %r382 <- %phi133(p), %phi134(p)
+	load.64*    %r380 <- 0[current]
+	load.64*    %r381 <- 8[%r380]
+	load.64*    %r382 <- 0[p]
 	seteq.32    %r383 <- %r381, %r382
-	phisrc.64*  %phi122(current) <- %r379(current)
-	br          %r383, .L160, .L148
+	br          %r383, .L160, .L161
 
 .L160:
-	load.64*    %r386 <- 0[%r379(current)]
-	phisrc.64*  %phi126(current) <- %r386
-	phisrc.64*  %phi134(p) <- %r379(current)
+	load.64*    %r384 <- 0[current]
+	store.64*   %r384 -> 0[p]
+	load.64*    %r385 <- 0[current]
+	load.64*    %r386 <- 0[%r385]
+	store.64*   %r386 -> 0[current]
+	br          .L162
+
+.L161:
+	br          .L158
+
+.L162:
+	br          .L157
+
+.L157:
 	br          .L159
 
+.L158:
+	br          .L155
+
+.L155:
+	br          .L148
+
 .L148:
-	phi.64*     %r387(current) <- %phi119(current), %phi120(current), %phi121(current), %phi122(current)
-	br          %r387(current), .L163, .L164
+	load.64*    %r387 <- 0[current]
+	br          %r387, .L163, .L164
 
 .L163:
-	add.64*     %r389 <- %r387(current), $32
+	load.64*    %r388 <- 0[current]
+	add.64*     %r389 <- %r388, $32
 	cast.64*    %r390 <- (64) %r389
-	phisrc.64*  %phi116(return) <- %r390
+	phisrc.64*  %phi21(return) <- %r390
 	br          .L165
 
 .L164:
-	phisrc.64*  %phi117(return) <- $0
+	phisrc.64*  %phi22(return) <- $0
 	br          .L165
 
 .L165:
-	phi.64*     %r391 <- %phi116(return), %phi117(return)
+	phi.64*     %r391 <- %phi21(return), %phi22(return)
 	ret.64*     %r391
 
 
 AVLTree_Height:
 .L167:
 	<entry-point>
-	load.64*    %r393 <- 8[%arg1]
+	store.64*   %arg1 -> 0[tree]
+	load.64*    %r392 <- 0[tree]
+	load.64*    %r393 <- 8[%r392]
 	ptrcast.64* %r394 <- (64) %r393
 	push.64*    %r394
 	call.32     %r395 <- AVL_Height
+	phisrc.32   %phi23(return) <- %r395
+	br          .L168
+
+.L168:
+	phi.32      %r396 <- %phi23(return)
 	ret.32      %r395
 
 
 AVLTree_BackwardApply:
 .L169:
 	<entry-point>
-	br          %arg1, .L171, .L172
+	store.64*   %arg1 -> 0[root]
+	store.64*   %arg2 -> 0[funcptr]
+	load.64*    %r397 <- 0[root]
+	seteq.32    %r398 <- %r397, $0
+	br          %r398, .L170, .L171
+
+.L170:
+	br          .L172
 
 .L171:
-	load.64*    %r400 <- 16[%arg1]
+	load.64*    %r399 <- 0[root]
+	load.64*    %r400 <- 16[%r399]
+	load.64*    %r401 <- 0[funcptr]
 	push.64*    %r400
-	push.64*    %arg2
+	push.64*    %r401
 	call        AVLTree_BackwardApply
-	add.64*     %r403 <- %arg1, $32
+	load.64*    %r402 <- 0[root]
+	add.64*     %r403 <- %r402, $32
 	cast.64*    %r404 <- (64) %r403
 	push.64*    %r404
-	call        %arg2
-	load.64*    %r407 <- 8[%arg1]
+	load.64*    %r405 <- 0[funcptr]
+	call        %r405
+	load.64*    %r406 <- 0[root]
+	load.64*    %r407 <- 8[%r406]
+	load.64*    %r408 <- 0[funcptr]
 	push.64*    %r407
-	push.64*    %arg2
+	push.64*    %r408
 	call        AVLTree_BackwardApply
 	br          .L172
 
@@ -824,31 +1237,51 @@ AVLTree_BackwardApply:
 AVLTree_Backeach:
 .L173:
 	<entry-point>
-	load.64*    %r410 <- 8[%arg1]
+	store.64*   %arg1 -> 0[tree]
+	store.64*   %arg2 -> 0[funcptr]
+	load.64*    %r409 <- 0[tree]
+	load.64*    %r410 <- 8[%r409]
 	ptrcast.64* %r411 <- (64) %r410
+	load.64*    %r412 <- 0[funcptr]
 	push.64*    %r411
-	push.64*    %arg2
+	push.64*    %r412
 	call        AVLTree_BackwardApply
+	br          .L174
+
+.L174:
 	ret
 
 
 AVLTree_ForwardApply:
 .L175:
 	<entry-point>
-	br          %arg1, .L177, .L178
+	store.64*   %arg1 -> 0[root]
+	store.64*   %arg2 -> 0[funcptr]
+	load.64*    %r413 <- 0[root]
+	seteq.32    %r414 <- %r413, $0
+	br          %r414, .L176, .L177
+
+.L176:
+	br          .L178
 
 .L177:
-	load.64*    %r416 <- 8[%arg1]
+	load.64*    %r415 <- 0[root]
+	load.64*    %r416 <- 8[%r415]
+	load.64*    %r417 <- 0[funcptr]
 	push.64*    %r416
-	push.64*    %arg2
+	push.64*    %r417
 	call        AVLTree_ForwardApply
-	add.64*     %r419 <- %arg1, $32
+	load.64*    %r418 <- 0[root]
+	add.64*     %r419 <- %r418, $32
 	cast.64*    %r420 <- (64) %r419
 	push.64*    %r420
-	call        %arg2
-	load.64*    %r423 <- 16[%arg1]
+	load.64*    %r421 <- 0[funcptr]
+	call        %r421
+	load.64*    %r422 <- 0[root]
+	load.64*    %r423 <- 16[%r422]
+	load.64*    %r424 <- 0[funcptr]
 	push.64*    %r423
-	push.64*    %arg2
+	push.64*    %r424
 	call        AVLTree_ForwardApply
 	br          .L178
 
@@ -859,23 +1292,38 @@ AVLTree_ForwardApply:
 AVLTree_Foreach:
 .L179:
 	<entry-point>
-	load.64*    %r426 <- 8[%arg1]
+	store.64*   %arg1 -> 0[tree]
+	store.64*   %arg2 -> 0[funcptr]
+	load.64*    %r425 <- 0[tree]
+	load.64*    %r426 <- 8[%r425]
 	ptrcast.64* %r427 <- (64) %r426
+	load.64*    %r428 <- 0[funcptr]
 	push.64*    %r427
-	push.64*    %arg2
+	push.64*    %r428
 	call        AVLTree_ForwardApply
+	br          .L180
+
+.L180:
 	ret
 
 
 AVL_new:
 .L181:
 	<entry-point>
-	load.64*    %r430 <- 0[%arg1]
-	load.64*    %r432 <- 24[%arg1]
+	store.64*   %arg1 -> 0[tree]
+	store.64*   %arg2 -> 0[key]
+	load.64*    %r429 <- 0[tree]
+	load.64*    %r430 <- 0[%r429]
+	store.64*   %r430 -> 0[vtbl]
+	load.64*    %r431 <- 0[tree]
+	load.64*    %r432 <- 24[%r431]
 	push.64*    %r432
 	call.64*    %r433 <- alloc_node
 	ptrcast.64* %r434 <- (64) %r433
-	br          %r434, .L183, .L182
+	store.64*   %r434 -> 0[n]
+	load.64*    %r435 <- 0[n]
+	seteq.32    %r436 <- %r435, $0
+	br          %r436, .L182, .L183
 
 .L182:
 	push.32     $0xffffffff
@@ -883,612 +1331,905 @@ AVL_new:
 	br          .L183
 
 .L183:
-	store.64*   $0 -> 0[%r434]
-	store.64*   $0 -> 16[%r434]
-	store.64*   $0 -> 8[%r434]
-	store.32    $0 -> 24[%r434]
-	load.64*    %r442 <- 8[%r430]
-	br          %r442, .L184, .L187
+	load.64*    %r437 <- 0[n]
+	store.64*   $0 -> 0[%r437]
+	load.64*    %r438 <- 0[n]
+	store.64*   $0 -> 16[%r438]
+	load.64*    %r439 <- 0[n]
+	store.64*   $0 -> 8[%r439]
+	load.64*    %r440 <- 0[n]
+	store.32    $0 -> 24[%r440]
+	load.64*    %r441 <- 0[vtbl]
+	load.64*    %r442 <- 8[%r441]
+	setne.32    %r443 <- %r442, $0
+	br          %r443, .L184, .L185
 
 .L184:
-	add.64*     %r445 <- %r434, $32
+	load.64*    %r444 <- 0[n]
+	add.64*     %r445 <- %r444, $32
 	cast.64*    %r446 <- (64) %r445
+	load.64*    %r447 <- 0[key]
 	push.64*    %r446
-	push.64*    %arg2
-	call        %r442
+	push.64*    %r447
+	load.64*    %r448 <- 0[vtbl]
+	load.64*    %r449 <- 8[%r448]
+	call        %r449
+	br          .L186
+
+.L185:
+	br          .L186
+
+.L186:
+	load.64*    %r450 <- 0[n]
+	phisrc.64*  %phi24(return) <- %r450
 	br          .L187
 
 .L187:
-	ret.64*     %r434
+	phi.64*     %r451 <- %phi24(return)
+	ret.64*     %r450
 
 
 AVLTree_Insert:
 .L188:
 	<entry-point>
-	load.64*    %r453 <- 8[%arg1]
-	ptrcast.64* %r454(n) <- (64) %r453
-	load.64*    %r456 <- 0[%arg1]
-	br          %r454(n), .L190, .L189
+	store.64*   %arg1 -> 0[tree]
+	store.64*   %arg2 -> 0[k]
+	load.64*    %r452 <- 0[tree]
+	load.64*    %r453 <- 8[%r452]
+	ptrcast.64* %r454 <- (64) %r453
+	store.64*   %r454 -> 0[root]
+	store.64*   $0 -> 0[found]
+	load.64*    %r455 <- 0[tree]
+	load.64*    %r456 <- 0[%r455]
+	store.64*   %r456 -> 0[vtbl]
+	load.64*    %r457 <- 0[root]
+	seteq.32    %r458 <- %r457, $0
+	br          %r458, .L189, .L190
 
 .L189:
-	push.64*    %arg1
-	push.64*    %arg2
-	call.64*    %r461(root) <- AVL_new
-	phisrc.64*  %phi142(root) <- %r461(root)
-	phisrc.64*  %phi146(found) <- %r461(root)
+	load.64*    %r459 <- 0[tree]
+	load.64*    %r460 <- 0[k]
+	push.64*    %r459
+	push.64*    %r460
+	call.64*    %r461 <- AVL_new
+	store.64*   %r461 -> 0[root]
+	store.64*   %r461 -> 0[found]
 	br          .L191
 
 .L190:
 	store.32    $0 -> 0[height_changed]
-	phisrc.64*  %phi143(root) <- %r454(n)
-	phisrc.64*  %phi175(n) <- %r454(n)
+	store.64*   $0 -> 0[p]
+	store.64*   $0 -> 0[n]
+	load.64*    %r462 <- 0[root]
+	store.64*   %r462 -> 0[n]
 	br          .L192
 
 .L192:
-	phi.64*     %r463(p) <- %phi175(n), %phi176(n), %phi177(n)
-	push.64*    %arg2
-	add.64*     %r466 <- %r463(p), $32
+	store.32    $0 -> 0[compresult]
+	load.64*    %r463 <- 0[n]
+	store.64*   %r463 -> 0[p]
+	load.64*    %r464 <- 0[k]
+	load.64*    %r465 <- 0[n]
+	add.64*     %r466 <- %r465, $32
 	cast.64*    %r467 <- (64) %r466
+	push.64*    %r464
 	push.64*    %r467
-	load.64*    %r469 <- 0[%r456]
+	load.64*    %r468 <- 0[vtbl]
+	load.64*    %r469 <- 0[%r468]
 	call.32     %r470 <- %r469
-	setlt.32    %r472 <- %r470, $0
+	store.32    %r470 -> 0[compresult]
+	load.32     %r471 <- 0[compresult]
+	setlt.32    %r472 <- %r471, $0
 	br          %r472, .L195, .L196
 
 .L195:
-	load.64*    %r474(n) <- 8[%r463(p)]
-	phisrc.64*  %phi172(n) <- %r474(n)
-	phisrc.64*  %phi176(n) <- %r474(n)
-	br          .L193
+	load.64*    %r473 <- 0[p]
+	load.64*    %r474 <- 8[%r473]
+	store.64*   %r474 -> 0[n]
+	br          .L197
 
 .L196:
-	setgt.32    %r476 <- %r470, $0
+	load.32     %r475 <- 0[compresult]
+	setgt.32    %r476 <- %r475, $0
 	br          %r476, .L198, .L199
 
 .L198:
-	load.64*    %r478 <- 16[%r463(p)]
-	phisrc.64*  %phi173(n) <- %r478
-	phisrc.64*  %phi177(n) <- %r478
-	br          .L193
+	load.64*    %r477 <- 0[p]
+	load.64*    %r478 <- 16[%r477]
+	store.64*   %r478 -> 0[n]
+	br          .L200
 
 .L199:
-	phisrc.64*  %phi140(return) <- %r467
+	load.64*    %r479 <- 0[n]
+	add.64*     %r480 <- %r479, $32
+	cast.64*    %r481 <- (64) %r480
+	phisrc.64*  %phi25(return) <- %r481
 	br          .L201
 
+.L200:
+	br          .L197
+
+.L197:
+	br          .L193
+
 .L193:
-	phi.64*     %r483 <- %phi172(n), %phi173(n)
-	br          %r483, .L192, .L194
+	load.64*    %r483 <- 0[n]
+	setne.32    %r484 <- %r483, $0
+	br          %r484, .L192, .L194
 
 .L194:
-	push.64*    %arg1
-	push.64*    %arg2
-	call.64*    %r487(n) <- AVL_new
-	push.64*    %arg2
-	cast.64*    %r491 <- (64) %r466
+	load.64*    %r485 <- 0[tree]
+	load.64*    %r486 <- 0[k]
+	push.64*    %r485
+	push.64*    %r486
+	call.64*    %r487 <- AVL_new
+	store.64*   %r487 -> 0[n]
+	store.64*   %r487 -> 0[found]
+	load.64*    %r488 <- 0[k]
+	load.64*    %r489 <- 0[p]
+	add.64*     %r490 <- %r489, $32
+	cast.64*    %r491 <- (64) %r490
+	push.64*    %r488
 	push.64*    %r491
-	load.64*    %r493 <- 0[%r456]
+	load.64*    %r492 <- 0[vtbl]
+	load.64*    %r493 <- 0[%r492]
 	call.32     %r494 <- %r493
 	setlt.32    %r495 <- %r494, $0
-	phisrc.64*  %phi147(found) <- %r487(n)
 	br          %r495, .L202, .L203
 
 .L202:
-	push.64*    %r463(p)
-	push.64*    %r487(n)
+	load.64*    %r496 <- 0[p]
+	load.64*    %r497 <- 0[n]
+	push.64*    %r496
+	push.64*    %r497
 	call        AVL_SetLeft
-	phisrc.64*  %phi155(p) <- %r463(p)
-	phisrc.64*  %phi164(n) <- %r487(n)
-	phisrc.64*  %phi167(n) <- %r487(n)
 	br          .L204
 
 .L203:
-	push.64*    %r463(p)
-	push.64*    %r487(n)
+	load.64*    %r498 <- 0[p]
+	load.64*    %r499 <- 0[n]
+	push.64*    %r498
+	push.64*    %r499
 	call        AVL_SetRight
-	phisrc.64*  %phi156(p) <- %r463(p)
-	phisrc.64*  %phi165(n) <- %r487(n)
-	phisrc.64*  %phi168(n) <- %r487(n)
 	br          .L204
 
 .L204:
 	store.32    $1 -> 0[height_changed]
-	phisrc.32   %phi148(height_changed) <- $1
-	phisrc.32   %phi179 <- $1
-	phisrc.32   %phi180 <- $1
-	phisrc.32   %phi181 <- $1
 	br          .L208
 
 .L208:
-	phi.64*     %r500(p) <- %phi155(p), %phi156(p), %phi157(p)
-	setne.32    %r501 <- %r500(p), $0
+	load.64*    %r500 <- 0[p]
+	setne.32    %r501 <- %r500, $0
 	load.32     %r502 <- 0[height_changed]
 	and-bool.32 %r503 <- %r501, %r502
 	br          %r503, .L205, .L207
 
 .L205:
-	phi.64*     %r504 <- %phi167(n), %phi168(n), %phi169(n)
-	load.64*    %r506 <- 8[%r500(p)]
+	load.64*    %r504 <- 0[n]
+	load.64*    %r505 <- 0[p]
+	load.64*    %r506 <- 8[%r505]
 	seteq.32    %r507 <- %r504, %r506
-	symaddr.64* %r509 <- height_changed
 	br          %r507, .L209, .L210
 
 .L209:
-	push.64*    %r500(p)
+	load.64*    %r508 <- 0[p]
+	symaddr.64* %r509 <- height_changed
+	push.64*    %r508
 	push.64*    %r509
-	call.64*    %r510(p) <- AVL_RebalanceHeavierLeft
-	phisrc.64*  %phi150(p) <- %r510(p)
+	call.64*    %r510 <- AVL_RebalanceHeavierLeft
+	store.64*   %r510 -> 0[p]
 	br          .L211
 
 .L210:
-	push.64*    %r500(p)
-	push.64*    %r509
+	load.64*    %r511 <- 0[p]
+	symaddr.64* %r512 <- height_changed
+	push.64*    %r511
+	push.64*    %r512
 	call.64*    %r513 <- AVL_RebalanceHeavierRight
-	phisrc.64*  %phi151(p) <- %r513
+	store.64*   %r513 -> 0[p]
 	br          .L211
 
 .L211:
-	phi.64*     %r514 <- %phi150(p), %phi151(p)
-	load.64*    %r516 <- 0[%r514]
-	phisrc.64*  %phi157(p) <- %r516
-	phisrc.64*  %phi166(n) <- %r514
-	phisrc.64*  %phi169(n) <- %r514
+	load.64*    %r514 <- 0[p]
+	store.64*   %r514 -> 0[n]
+	load.64*    %r515 <- 0[p]
+	load.64*    %r516 <- 0[%r515]
+	store.64*   %r516 -> 0[p]
+	br          .L206
+
+.L206:
 	br          .L208
 
 .L207:
-	br          %r500(p), .L191, .L212
+	load.64*    %r517 <- 0[p]
+	seteq.32    %r518 <- %r517, $0
+	br          %r518, .L212, .L213
 
 .L212:
-	phi.64*     %r519 <- %phi164(n), %phi165(n), %phi166(n)
-	phisrc.64*  %phi144(root) <- %r519
+	load.64*    %r519 <- 0[n]
+	store.64*   %r519 -> 0[root]
+	br          .L213
+
+.L213:
 	br          .L191
 
 .L191:
-	phi.64*     %r520 <- %phi142(root), %phi143(root), %phi144(root)
+	load.64*    %r520 <- 0[root]
 	cast.64*    %r521 <- (64) %r520
-	store.64*   %r521 -> 8[%arg1]
-	phi.64*     %r523 <- %phi146(found), %phi147(found)
+	load.64*    %r522 <- 0[tree]
+	store.64*   %r521 -> 8[%r522]
+	load.64*    %r523 <- 0[found]
 	add.64*     %r524 <- %r523, $32
 	cast.64*    %r525 <- (64) %r524
-	phisrc.64*  %phi141(return) <- %r525
+	phisrc.64*  %phi26(return) <- %r525
 	br          .L201
 
 .L201:
-	phi.64*     %r482 <- %phi140(return), %phi141(return)
+	phi.64*     %r482 <- %phi25(return), %phi26(return)
 	ret.64*     %r482
 
 
 AVLTree_DeleteObject:
 .L214:
 	<entry-point>
-	ptrcast.64* %r530 <- (64) %arg2
+	store.64*   %arg1 -> 0[tree]
+	store.64*   %arg2 -> 0[obj]
+	load.64*    %r526 <- 0[tree]
+	load.64*    %r527 <- 8[%r526]
+	ptrcast.64* %r528 <- (64) %r527
+	store.64*   %r528 -> 0[root]
+	store.64*   $0 -> 0[discard]
+	store.64*   $0 -> 0[p]
+	load.64*    %r529 <- 0[obj]
+	ptrcast.64* %r530 <- (64) %r529
+	store.64*   %r530 -> 0[n]
 	store.32    $0 -> 0[height_changed]
-	load.64*    %r532 <- 0[%arg1]
-	phisrc.32   %phi245(flag) <- $0
-	br          %r530, .L216, .L215
+	load.64*    %r531 <- 0[tree]
+	load.64*    %r532 <- 0[%r531]
+	store.64*   %r532 -> 0[vtbl]
+	store.32    $0 -> 0[flag]
+	load.64*    %r533 <- 0[n]
+	seteq.32    %r534 <- %r533, $0
+	br          %r534, .L215, .L216
 
 .L215:
-	phisrc.32   %phi182(return) <- $0xffffffff
+	phisrc.32   %phi27(return) <- $0xffffffff
 	br          .L217
 
 .L216:
-	add.64*     %r537 <- %r530, $-32
-	load.64*    %r539 <- -24[%r530]
-	br          %r539, .L218, .L219
+	load.64*    %r536 <- 0[n]
+	sub.64*     %r537 <- %r536, $32
+	store.64*   %r537 -> 0[n]
+	load.64*    %r538 <- 0[n]
+	load.64*    %r539 <- 8[%r538]
+	setne.32    %r540 <- %r539, $0
+	br          %r540, .L218, .L219
 
 .L218:
-	phisrc.64*  %phi239(n) <- %r539
+	load.64*    %r541 <- 0[n]
+	store.64*   %r541 -> 0[p]
+	load.64*    %r542 <- 0[n]
+	load.64*    %r543 <- 8[%r542]
+	store.64*   %r543 -> 0[n]
 	br          .L223
 
 .L223:
-	phi.64*     %r544(n) <- %phi239(n), %phi240(n)
-	load.64*    %r545 <- 16[%r544(n)]
-	br          %r545, .L221, .L222
+	load.64*    %r544 <- 0[n]
+	load.64*    %r545 <- 16[%r544]
+	setne.32    %r546 <- %r545, $0
+	br          %r546, .L220, .L222
+
+.L220:
+	br          .L221
 
 .L221:
-	phisrc.64*  %phi240(n) <- %r545
+	load.64*    %r547 <- 0[n]
+	load.64*    %r548 <- 16[%r547]
+	store.64*   %r548 -> 0[n]
 	br          .L223
 
 .L222:
-	load.64*    %r550 <- 16[%r532]
-	br          %r550, .L224, .L225
+	load.64*    %r549 <- 0[vtbl]
+	load.64*    %r550 <- 16[%r549]
+	setne.32    %r551 <- %r550, $0
+	br          %r551, .L224, .L225
 
 .L224:
-	add.64*     %r553 <- %r537, $32
+	load.64*    %r552 <- 0[p]
+	add.64*     %r553 <- %r552, $32
 	cast.64*    %r554 <- (64) %r553
-	push.64*    %r554
-	add.64*     %r556 <- %r544(n), $32
+	load.64*    %r555 <- 0[n]
+	add.64*     %r556 <- %r555, $32
 	cast.64*    %r557 <- (64) %r556
+	push.64*    %r554
 	push.64*    %r557
-	call        %r550
+	load.64*    %r558 <- 0[vtbl]
+	load.64*    %r559 <- 16[%r558]
+	call        %r559
 	br          .L226
 
 .L225:
-	load.64*    %r561 <- 24[%r532]
-	br          %r561, .L227, .L229
+	load.64*    %r560 <- 0[vtbl]
+	load.64*    %r561 <- 24[%r560]
+	setne.32    %r562 <- %r561, $0
+	br          %r562, .L227, .L228
 
 .L227:
-	add.64*     %r564 <- %r537, $32
+	load.64*    %r563 <- 0[p]
+	add.64*     %r564 <- %r563, $32
 	cast.64*    %r565 <- (64) %r564
 	push.64*    %r565
-	call        %r561
+	load.64*    %r566 <- 0[vtbl]
+	load.64*    %r567 <- 24[%r566]
+	call        %r567
+	br          .L229
+
+.L228:
 	br          .L229
 
 .L229:
-	add.64*     %r569 <- %r537, $32
+	load.64*    %r568 <- 0[p]
+	add.64*     %r569 <- %r568, $32
 	cast.64*    %r570 <- (64) %r569
-	push.64*    %r570
-	add.64*     %r572 <- %r544(n), $32
+	load.64*    %r571 <- 0[n]
+	add.64*     %r572 <- %r571, $32
 	cast.64*    %r573 <- (64) %r572
+	load.64*    %r574 <- 0[tree]
+	load.32     %r575 <- 20[%r574]
+	push.64*    %r570
 	push.64*    %r573
-	load.32     %r575 <- 20[%arg1]
 	push.32     %r575
 	call.64*    %r576 <- memcpy
 	br          .L226
 
 .L226:
-	load.64*    %r578 <- 0[%r544(n)]
-	load.64*    %r581 <- 8[%r578]
-	seteq.32    %r582 <- %r544(n), %r581
+	load.64*    %r577 <- 0[n]
+	load.64*    %r578 <- 0[%r577]
+	store.64*   %r578 -> 0[p]
+	load.64*    %r579 <- 0[n]
+	load.64*    %r580 <- 0[p]
+	load.64*    %r581 <- 8[%r580]
+	seteq.32    %r582 <- %r579, %r581
 	br          %r582, .L230, .L231
 
 .L230:
-	push.64*    %r578
-	load.64*    %r585 <- 8[%r544(n)]
+	store.32    $1 -> 0[flag]
+	load.64*    %r583 <- 0[p]
+	load.64*    %r584 <- 0[n]
+	load.64*    %r585 <- 8[%r584]
+	push.64*    %r583
 	push.64*    %r585
 	call        AVL_SetLeft
-	phisrc.64*  %phi194(p) <- %r578
-	phisrc.32   %phi244(flag) <- $1
 	br          .L232
 
 .L231:
-	push.64*    %r578
-	load.64*    %r588 <- 8[%r544(n)]
+	load.64*    %r586 <- 0[p]
+	load.64*    %r587 <- 0[n]
+	load.64*    %r588 <- 8[%r587]
+	push.64*    %r586
 	push.64*    %r588
 	call        AVL_SetRight
-	phisrc.64*  %phi195(p) <- %r578
 	br          .L232
 
 .L232:
-	phisrc.64*  %phi185(discard) <- %r544(n)
-	phisrc.64*  %phi211(n) <- %r544(n)
-	phisrc.64*  %phi214(n) <- %r544(n)
+	load.64*    %r589 <- 0[n]
+	store.64*   %r589 -> 0[discard]
 	br          .L233
 
 .L219:
-	load.64*    %r591 <- -32[%r530]
-	br          %r591, .L234, .L235
+	load.64*    %r590 <- 0[n]
+	load.64*    %r591 <- 0[%r590]
+	store.64*   %r591 -> 0[p]
+	load.64*    %r592 <- 0[p]
+	setne.32    %r593 <- %r592, $0
+	br          %r593, .L234, .L235
 
 .L234:
-	load.64*    %r596 <- 8[%r591]
-	seteq.32    %r597 <- %r537, %r596
+	load.64*    %r594 <- 0[n]
+	load.64*    %r595 <- 0[p]
+	load.64*    %r596 <- 8[%r595]
+	seteq.32    %r597 <- %r594, %r596
 	br          %r597, .L236, .L237
 
 .L236:
-	push.64*    %r591
-	load.64*    %r600 <- -16[%r530]
+	load.64*    %r598 <- 0[p]
+	load.64*    %r599 <- 0[n]
+	load.64*    %r600 <- 16[%r599]
+	push.64*    %r598
 	push.64*    %r600
 	call        AVL_SetLeft
-	phisrc.64*  %phi196(p) <- %r591
-	phisrc.32   %phi246(flag) <- $1
+	store.32    $1 -> 0[flag]
 	br          .L238
 
 .L237:
-	push.64*    %r591
-	load.64*    %r603 <- -16[%r530]
+	load.64*    %r601 <- 0[p]
+	load.64*    %r602 <- 0[n]
+	load.64*    %r603 <- 16[%r602]
+	push.64*    %r601
 	push.64*    %r603
 	call        AVL_SetRight
-	phisrc.64*  %phi197(p) <- %r591
 	br          .L238
 
 .L238:
-	load.64*    %r605 <- 24[%r532]
-	br          %r605, .L239, .L241
+	load.64*    %r604 <- 0[vtbl]
+	load.64*    %r605 <- 24[%r604]
+	setne.32    %r606 <- %r605, $0
+	br          %r606, .L239, .L240
 
 .L239:
-	add.64*     %r608 <- %r537, $32
+	load.64*    %r607 <- 0[n]
+	add.64*     %r608 <- %r607, $32
 	cast.64*    %r609 <- (64) %r608
 	push.64*    %r609
-	call        %r605
+	load.64*    %r610 <- 0[vtbl]
+	load.64*    %r611 <- 24[%r610]
+	call        %r611
+	br          .L241
+
+.L240:
 	br          .L241
 
 .L241:
-	phisrc.64*  %phi186(discard) <- %r537
-	phisrc.64*  %phi212(n) <- %r537
-	phisrc.64*  %phi215(n) <- %r537
-	br          .L233
+	load.64*    %r612 <- 0[n]
+	store.64*   %r612 -> 0[discard]
+	br          .L242
 
 .L235:
-	load.64*    %r614 <- -16[%r530]
-	br          %r614, .L243, .L244
+	load.64*    %r613 <- 0[n]
+	load.64*    %r614 <- 16[%r613]
+	store.64*   %r614 -> 0[p]
+	load.64*    %r615 <- 0[p]
+	setne.32    %r616 <- %r615, $0
+	br          %r616, .L243, .L244
 
 .L243:
-	store.64*   $0 -> 0[%r614]
+	load.64*    %r617 <- 0[p]
+	store.64*   $0 -> 0[%r617]
 	br          .L244
 
 .L244:
-	load.64*    %r619 <- 24[%r532]
-	br          %r619, .L245, .L247
+	load.64*    %r618 <- 0[vtbl]
+	load.64*    %r619 <- 24[%r618]
+	setne.32    %r620 <- %r619, $0
+	br          %r620, .L245, .L246
 
 .L245:
-	add.64*     %r622 <- %r537, $32
+	load.64*    %r621 <- 0[n]
+	add.64*     %r622 <- %r621, $32
 	cast.64*    %r623 <- (64) %r622
 	push.64*    %r623
-	call        %r619
+	load.64*    %r624 <- 0[vtbl]
+	load.64*    %r625 <- 24[%r624]
+	call        %r625
+	br          .L247
+
+.L246:
 	br          .L247
 
 .L247:
-	load.64*    %r627 <- 24[%arg1]
+	load.64*    %r626 <- 0[tree]
+	load.64*    %r627 <- 24[%r626]
+	load.64*    %r628 <- 0[n]
+	cast.64*    %r629 <- (64) %r628
 	push.64*    %r627
-	cast.64*    %r629 <- (64) %r537
 	push.64*    %r629
 	call        dealloc_node
-	cast.64*    %r631 <- (64) %r614
-	store.64*   %r631 -> 8[%arg1]
-	phisrc.32   %phi183(return) <- $0
+	load.64*    %r630 <- 0[p]
+	cast.64*    %r631 <- (64) %r630
+	load.64*    %r632 <- 0[tree]
+	store.64*   %r631 -> 8[%r632]
+	phisrc.32   %phi28(return) <- $0
 	br          .L217
+
+.L242:
+	br          .L233
 
 .L233:
 	store.32    $1 -> 0[height_changed]
-	phisrc.32   %phi243(height_changed) <- $1
-	phisrc.32   %phi248(flag) <- $1
-	phisrc.32   %phi255(flag) <- $1
-	phisrc.32   %phi256(flag) <- $1
 	br          .L251
 
 .L251:
-	phi.64*     %r633(p) <- %phi194(p), %phi195(p), %phi196(p), %phi197(p), %phi198(p)
-	setne.32    %r634 <- %r633(p), $0
+	load.64*    %r633 <- 0[p]
+	setne.32    %r634 <- %r633, $0
 	load.32     %r635 <- 0[height_changed]
 	and-bool.32 %r636 <- %r634, %r635
 	br          %r636, .L248, .L250
 
 .L248:
-	phi.32      %r637 <- %phi244(flag), %phi245(flag), %phi246(flag), %phi247(flag)
+	load.32     %r637 <- 0[flag]
 	br          %r637, .L252, .L254
 
 .L254:
-	phi.64*     %r638 <- %phi214(n), %phi215(n), %phi216(n)
-	load.64*    %r640 <- 8[%r633(p)]
+	load.64*    %r638 <- 0[n]
+	load.64*    %r639 <- 0[p]
+	load.64*    %r640 <- 8[%r639]
 	seteq.32    %r641 <- %r638, %r640
 	br          %r641, .L252, .L253
 
 .L252:
-	push.64*    %r633(p)
+	store.32    $0 -> 0[flag]
+	load.64*    %r642 <- 0[p]
 	symaddr.64* %r643 <- height_changed
+	push.64*    %r642
 	push.64*    %r643
-	call.64*    %r644(p) <- AVL_RebalanceShorterLeft
-	phisrc.64*  %phi188(p) <- %r644(p)
-	phisrc.32   %phi247(flag) <- $0
+	call.64*    %r644 <- AVL_RebalanceShorterLeft
+	store.64*   %r644 -> 0[p]
 	br          .L255
 
 .L253:
-	push.64*    %r633(p)
+	load.64*    %r645 <- 0[p]
 	symaddr.64* %r646 <- height_changed
+	push.64*    %r645
 	push.64*    %r646
 	call.64*    %r647 <- AVL_RebalanceShorterRight
-	phisrc.64*  %phi189(p) <- %r647
+	store.64*   %r647 -> 0[p]
 	br          .L255
 
 .L255:
-	phi.64*     %r648 <- %phi188(p), %phi189(p)
-	load.64*    %r650 <- 0[%r648]
-	phisrc.64*  %phi198(p) <- %r650
-	phisrc.64*  %phi213(n) <- %r648
-	phisrc.64*  %phi216(n) <- %r648
+	load.64*    %r648 <- 0[p]
+	store.64*   %r648 -> 0[n]
+	load.64*    %r649 <- 0[p]
+	load.64*    %r650 <- 0[%r649]
+	store.64*   %r650 -> 0[p]
+	br          .L249
+
+.L249:
 	br          .L251
 
 .L250:
-	br          %r633(p), .L257, .L256
+	load.64*    %r651 <- 0[p]
+	seteq.32    %r652 <- %r651, $0
+	br          %r652, .L256, .L257
 
 .L256:
-	phi.64*     %r653 <- %phi211(n), %phi212(n), %phi213(n)
+	load.64*    %r653 <- 0[n]
 	cast.64*    %r654 <- (64) %r653
-	store.64*   %r654 -> 8[%arg1]
+	load.64*    %r655 <- 0[tree]
+	store.64*   %r654 -> 8[%r655]
 	br          .L257
 
 .L257:
-	load.64*    %r657 <- 24[%arg1]
-	push.64*    %r657
-	phi.64*     %r658 <- %phi185(discard), %phi186(discard)
+	load.64*    %r656 <- 0[tree]
+	load.64*    %r657 <- 24[%r656]
+	load.64*    %r658 <- 0[discard]
 	cast.64*    %r659 <- (64) %r658
+	push.64*    %r657
 	push.64*    %r659
 	call        dealloc_node
-	phisrc.32   %phi184(return) <- $0
+	phisrc.32   %phi29(return) <- $0
 	br          .L217
 
 .L217:
-	phi.32      %r535 <- %phi182(return), %phi183(return), %phi184(return)
+	phi.32      %r535 <- %phi27(return), %phi28(return), %phi29(return)
 	ret.32      %r535
 
 
 AVLTree_Delete:
 .L258:
 	<entry-point>
-	load.64*    %r661 <- 8[%arg1]
-	ptrcast.64* %r662(n) <- (64) %r661
-	load.64*    %r664 <- 0[%arg1]
-	br          %r662(n), .L260, .L259
+	store.64*   %arg1 -> 0[tree]
+	store.64*   %arg2 -> 0[k]
+	load.64*    %r660 <- 0[tree]
+	load.64*    %r661 <- 8[%r660]
+	ptrcast.64* %r662 <- (64) %r661
+	store.64*   %r662 -> 0[root]
+	store.64*   $0 -> 0[n]
+	load.64*    %r663 <- 0[tree]
+	load.64*    %r664 <- 0[%r663]
+	store.64*   %r664 -> 0[vtbl]
+	load.64*    %r665 <- 0[root]
+	seteq.32    %r666 <- %r665, $0
+	br          %r666, .L259, .L260
 
 .L259:
-	phisrc.32   %phi257(return) <- $0xffffffff
+	phisrc.32   %phi30(return) <- $0xffffffff
 	br          .L261
 
 .L260:
-	phisrc.64*  %phi266(n) <- %r662(n)
+	load.64*    %r668 <- 0[root]
+	store.64*   %r668 -> 0[n]
 	br          .L265
 
 .L265:
-	phi.64*     %r669(n) <- %phi266(n), %phi267(n), %phi268(n)
-	br          %r669(n), .L262, .L272
+	load.64*    %r669 <- 0[n]
+	setne.32    %r670 <- %r669, $0
+	br          %r670, .L262, .L264
 
 .L262:
-	push.64*    %arg2
-	add.64*     %r673 <- %r669(n), $32
+	load.64*    %r671 <- 0[k]
+	load.64*    %r672 <- 0[n]
+	add.64*     %r673 <- %r672, $32
 	cast.64*    %r674 <- (64) %r673
+	push.64*    %r671
 	push.64*    %r674
-	load.64*    %r676 <- 0[%r664]
+	load.64*    %r675 <- 0[vtbl]
+	load.64*    %r676 <- 0[%r675]
 	call.32     %r677 <- %r676
-	setlt.32    %r679 <- %r677, $0
+	store.32    %r677 -> 0[compresult]
+	load.32     %r678 <- 0[compresult]
+	setlt.32    %r679 <- %r678, $0
 	br          %r679, .L266, .L267
 
 .L266:
-	load.64*    %r681 <- 8[%r669(n)]
-	phisrc.64*  %phi267(n) <- %r681
-	br          .L265
+	load.64*    %r680 <- 0[n]
+	load.64*    %r681 <- 8[%r680]
+	store.64*   %r681 -> 0[n]
+	br          .L268
 
 .L267:
-	setgt.32    %r683 <- %r677, $0
-	br          %r683, .L269, .L264
+	load.32     %r682 <- 0[compresult]
+	setgt.32    %r683 <- %r682, $0
+	br          %r683, .L269, .L270
 
 .L269:
-	load.64*    %r685 <- 16[%r669(n)]
-	phisrc.64*  %phi268(n) <- %r685
+	load.64*    %r684 <- 0[n]
+	load.64*    %r685 <- 16[%r684]
+	store.64*   %r685 -> 0[n]
+	br          .L271
+
+.L270:
+	br          .L264
+
+.L271:
+	br          .L268
+
+.L268:
+	br          .L263
+
+.L263:
 	br          .L265
 
 .L264:
-	br          %r669(n), .L273, .L272
+	load.64*    %r686 <- 0[n]
+	seteq.32    %r687 <- %r686, $0
+	br          %r687, .L272, .L273
 
 .L272:
-	phisrc.32   %phi258(return) <- $0xffffffff
+	phisrc.32   %phi31(return) <- $0xffffffff
 	br          .L261
 
 .L273:
-	push.64*    %arg1
-	push.64*    %r674
+	load.64*    %r688 <- 0[tree]
+	load.64*    %r689 <- 0[n]
+	add.64*     %r690 <- %r689, $32
+	cast.64*    %r691 <- (64) %r690
+	push.64*    %r688
+	push.64*    %r691
 	call.32     %r692 <- AVLTree_DeleteObject
-	phisrc.32   %phi259(return) <- $0
+	phisrc.32   %phi32(return) <- $0
 	br          .L261
 
 .L261:
-	phi.32      %r667 <- %phi257(return), %phi258(return), %phi259(return)
+	phi.32      %r667 <- %phi30(return), %phi31(return), %phi32(return)
 	ret.32      %r667
 
 
 AVLTree_Search:
 .L274:
 	<entry-point>
-	load.64*    %r694 <- 8[%arg1]
-	ptrcast.64* %r695(current) <- (64) %r694
-	load.64*    %r697 <- 0[%arg1]
-	br          %r695(current), .L275, .L276
+	store.64*   %arg1 -> 0[tree]
+	store.64*   %arg2 -> 0[k]
+	load.64*    %r693 <- 0[tree]
+	load.64*    %r694 <- 8[%r693]
+	ptrcast.64* %r695 <- (64) %r694
+	store.64*   %r695 -> 0[root]
+	load.64*    %r696 <- 0[tree]
+	load.64*    %r697 <- 0[%r696]
+	store.64*   %r697 -> 0[vtbl]
+	load.64*    %r698 <- 0[root]
+	br          %r698, .L275, .L276
 
 .L275:
-	phisrc.64*  %phi275(current) <- %r695(current)
+	load.64*    %r699 <- 0[root]
+	store.64*   %r699 -> 0[current]
 	br          .L280
 
 .L280:
-	phi.64*     %r700(current) <- %phi275(current), %phi276(current), %phi277(current)
-	br          %r700(current), .L277, .L276
+	load.64*    %r700 <- 0[current]
+	br          %r700, .L277, .L279
 
 .L277:
-	push.64*    %arg2
-	add.64*     %r703 <- %r700(current), $32
+	load.64*    %r701 <- 0[k]
+	load.64*    %r702 <- 0[current]
+	add.64*     %r703 <- %r702, $32
 	cast.64*    %r704 <- (64) %r703
+	push.64*    %r701
 	push.64*    %r704
-	load.64*    %r706 <- 0[%r697]
+	load.64*    %r705 <- 0[vtbl]
+	load.64*    %r706 <- 0[%r705]
 	call.32     %r707 <- %r706
-	br          %r707, .L282, .L281
+	store.32    %r707 -> 0[compresult]
+	load.32     %r708 <- 0[compresult]
+	seteq.32    %r709 <- %r708, $0
+	br          %r709, .L281, .L282
 
 .L281:
-	phisrc.64*  %phi269(return) <- %r704
+	load.64*    %r710 <- 0[current]
+	add.64*     %r711 <- %r710, $32
+	cast.64*    %r712 <- (64) %r711
+	phisrc.64*  %phi33(return) <- %r712
 	br          .L283
 
 .L282:
-	setlt.32    %r715 <- %r707, $0
+	load.32     %r714 <- 0[compresult]
+	setlt.32    %r715 <- %r714, $0
 	br          %r715, .L285, .L286
 
 .L285:
-	load.64*    %r717 <- 8[%r700(current)]
-	phisrc.64*  %phi276(current) <- %r717
-	br          .L280
+	load.64*    %r716 <- 0[current]
+	load.64*    %r717 <- 8[%r716]
+	store.64*   %r717 -> 0[current]
+	br          .L287
 
 .L286:
-	load.64*    %r719 <- 16[%r700(current)]
-	phisrc.64*  %phi277(current) <- %r719
+	load.64*    %r718 <- 0[current]
+	load.64*    %r719 <- 16[%r718]
+	store.64*   %r719 -> 0[current]
+	br          .L287
+
+.L287:
+	br          .L284
+
+.L284:
+	br          .L278
+
+.L278:
 	br          .L280
 
+.L279:
+	br          .L276
+
 .L276:
-	phisrc.64*  %phi270(return) <- $0
+	phisrc.64*  %phi34(return) <- $0
 	br          .L283
 
 .L283:
-	phi.64*     %r713 <- %phi269(return), %phi270(return)
+	phi.64*     %r713 <- %phi33(return), %phi34(return)
 	ret.64*     %r713
 
 
 AVLTree_New:
 .L288:
 	<entry-point>
-	store.64*   $0 -> 8[%arg1]
-	store.64*   %arg2 -> 0[%arg1]
-	store.32    %arg3 -> 20[%arg1]
-	store.32    $0 -> 16[%arg1]
-	scast.64    %r727 <- (32) %arg3
+	store.64*   %arg1 -> 0[tree]
+	store.64*   %arg2 -> 0[vtbl]
+	store.32    %arg3 -> 0[objsize]
+	store.32    %arg4 -> 0[growby]
+	load.64*    %r720 <- 0[tree]
+	store.64*   $0 -> 8[%r720]
+	load.64*    %r721 <- 0[vtbl]
+	load.64*    %r722 <- 0[tree]
+	store.64*   %r721 -> 0[%r722]
+	load.32     %r723 <- 0[objsize]
+	load.64*    %r724 <- 0[tree]
+	store.32    %r723 -> 20[%r724]
+	load.64*    %r725 <- 0[tree]
+	store.32    $0 -> 16[%r725]
+	load.32     %r726 <- 0[objsize]
+	scast.64    %r727 <- (32) %r726
 	add.64      %r728 <- %r727, $32
 	cast.32     %r729 <- (64) %r728
+	load.32     %r730 <- 0[growby]
 	push.32     %r729
-	push.32     %arg4
+	push.32     %r730
 	call.64*    %r731 <- new_allocator
-	store.64*   %r731 -> 24[%arg1]
-	ret.64*     %arg1
+	load.64*    %r732 <- 0[tree]
+	store.64*   %r731 -> 24[%r732]
+	load.64*    %r733 <- 0[tree]
+	phisrc.64*  %phi35(return) <- %r733
+	br          .L289
+
+.L289:
+	phi.64*     %r734 <- %phi35(return)
+	ret.64*     %r733
 
 
 AVLTree_Destroy:
 .L290:
 	<entry-point>
-	load.64*    %r736 <- 0[%arg1]
+	store.64*   %arg1 -> 0[tree]
+	load.64*    %r735 <- 0[tree]
+	load.64*    %r736 <- 0[%r735]
 	load.64*    %r737 <- 24[%r736]
-	br          %r737, .L291, .L292
+	setne.32    %r738 <- %r737, $0
+	br          %r738, .L291, .L292
 
 .L291:
-	load.64*    %r740 <- 8[%arg1]
+	load.64*    %r739 <- 0[tree]
+	load.64*    %r740 <- 8[%r739]
 	ptrcast.64* %r741 <- (64) %r740
+	load.64*    %r742 <- 0[tree]
+	load.64*    %r743 <- 0[%r742]
+	load.64*    %r744 <- 24[%r743]
 	push.64*    %r741
-	push.64*    %r737
+	push.64*    %r744
 	call        AVLTree_ForwardApply
 	br          .L292
 
 .L292:
-	load.64*    %r746 <- 24[%arg1]
+	load.64*    %r745 <- 0[tree]
+	load.64*    %r746 <- 24[%r745]
 	push.64*    %r746
 	call        destroy_allocator
+	br          .L293
+
+.L293:
 	ret
 
 
 comparekeys:
 .L294:
 	<entry-point>
-	ptrcast.64* %r748 <- (64) %arg1
-	ptrcast.64* %r750 <- (64) %arg2
-	load.32     %r752 <- 0[%r748]
-	load.32     %r754 <- 0[%r750]
+	store.64*   %arg1 -> 0[key]
+	store.64*   %arg2 -> 0[object]
+	load.64*    %r747 <- 0[key]
+	ptrcast.64* %r748 <- (64) %r747
+	store.64*   %r748 -> 0[ikey]
+	load.64*    %r749 <- 0[object]
+	ptrcast.64* %r750 <- (64) %r749
+	store.64*   %r750 -> 0[rec]
+	load.64*    %r751 <- 0[ikey]
+	load.32     %r752 <- 0[%r751]
+	load.64*    %r753 <- 0[rec]
+	load.32     %r754 <- 0[%r753]
 	sub.32      %r755 <- %r752, %r754
+	phisrc.32   %phi36(return) <- %r755
+	br          .L295
+
+.L295:
+	phi.32      %r756 <- %phi36(return)
 	ret.32      %r755
 
 
 createobject:
 .L296:
 	<entry-point>
-	ptrcast.64* %r758 <- (64) %arg2
-	ptrcast.64* %r760 <- (64) %arg1
-	load.32     %r762 <- 0[%r758]
-	store.32    %r762 -> 0[%r760]
+	store.64*   %arg1 -> 0[object]
+	store.64*   %arg2 -> 0[key]
+	load.64*    %r757 <- 0[key]
+	ptrcast.64* %r758 <- (64) %r757
+	store.64*   %r758 -> 0[ikey]
+	load.64*    %r759 <- 0[object]
+	ptrcast.64* %r760 <- (64) %r759
+	store.64*   %r760 -> 0[rec]
+	load.64*    %r761 <- 0[ikey]
+	load.32     %r762 <- 0[%r761]
+	load.64*    %r763 <- 0[rec]
+	store.32    %r762 -> 0[%r763]
+	br          .L297
+
+.L297:
 	ret
 
 
 destroyobject:
 .L298:
 	<entry-point>
+	store.64*   %arg1 -> 0[object]
+	br          .L299
+
+.L299:
 	ret
 
 
 assignobject:
 .L300:
 	<entry-point>
-	ptrcast.64* %r765 <- (64) %arg1
-	ptrcast.64* %r767 <- (64) %arg2
-	load.32     %r769 <- 0[%r767]
-	store.32    %r769 -> 0[%r765]
+	store.64*   %arg1 -> 0[dstobj]
+	store.64*   %arg2 -> 0[srcobj]
+	load.64*    %r764 <- 0[dstobj]
+	ptrcast.64* %r765 <- (64) %r764
+	store.64*   %r765 -> 0[rec1]
+	load.64*    %r766 <- 0[srcobj]
+	ptrcast.64* %r767 <- (64) %r766
+	store.64*   %r767 -> 0[rec2]
+	load.64*    %r768 <- 0[rec2]
+	load.32     %r769 <- 0[%r768]
+	load.64*    %r770 <- 0[rec1]
+	store.32    %r769 -> 0[%r770]
+	br          .L301
+
+.L301:
 	ret
 
 
@@ -1525,64 +2266,84 @@ main:
 	symaddr.64* %r774 <- assignobject
 	store.64*   %r774 -> 16[vtable]
 	symaddr.64* %r775 <- tree
-	push.64*    %r775
 	symaddr.64* %r776 <- vtable
+	push.64*    %r775
 	push.64*    %r776
 	push.32     $4
 	push.32     $1000
 	call.64*    %r777 <- AVLTree_New
-	phisrc.32   %phi285(i) <- $0
+	store.32    $0 -> 0[i]
 	br          .L306
 
 .L306:
-	phi.32      %r778(i) <- %phi285(i), %phi286(i)
-	setlt.32    %r779 <- %r778(i), $20
+	load.32     %r778 <- 0[i]
+	setlt.32    %r779 <- %r778, $20
 	br          %r779, .L303, .L305
 
 .L303:
 	symaddr.64* %r780 <- testdata
-	scast.64    %r782 <- (32) %r778(i)
+	load.32     %r781 <- 0[i]
+	scast.64    %r782 <- (32) %r781
 	muls.64     %r783 <- %r782, $4
 	add.64*     %r784 <- %r780, %r783
 	load.32     %r785 <- 0[%r784]
 	store.32    %r785 -> 0[key]
-	push.64*    %r775
+	symaddr.64* %r786 <- tree
 	symaddr.64* %r787 <- key
 	cast.64*    %r788 <- (64) %r787
+	push.64*    %r786
 	push.64*    %r788
 	call.64*    %r789 <- AVLTree_Insert
-	add.32      %r791 <- %r778(i), $1
-	phisrc.32   %phi286(i) <- %r791
+	br          .L304
+
+.L304:
+	load.32     %r790 <- 0[i]
+	add.32      %r791 <- %r790, $1
+	store.32    %r791 -> 0[i]
 	br          .L306
 
 .L305:
-	push.64*    %r775
+	symaddr.64* %r792 <- tree
+	push.64*    %r792
 	call.64*    %r793 <- AVLTree_FindFirst
-	ptrcast.64* %r794(rec) <- (64) %r793
-	phisrc.64*  %phi288(rec) <- %r794(rec)
+	ptrcast.64* %r794 <- (64) %r793
+	store.64*   %r794 -> 0[rec]
 	br          .L310
 
 .L310:
-	phi.64*     %r795(rec) <- %phi288(rec), %phi289(rec)
-	br          %r795(rec), .L307, .L309
+	load.64*    %r795 <- 0[rec]
+	setne.32    %r796 <- %r795, $0
+	br          %r796, .L307, .L309
 
 .L307:
-	symaddr.64* %r797 <- <anon symbol:0000020CF18FE128>
+	symaddr.64* %r797 <- <anon symbol:0000017F1175A548>
+	load.64*    %r798 <- 0[rec]
+	load.32     %r799 <- 0[%r798]
 	push.64*    %r797
-	load.32     %r799 <- 0[%r795(rec)]
 	push.32     %r799
 	call.32     %r800 <- printf
-	push.64*    %r775
-	cast.64*    %r803 <- (64) %r795(rec)
+	symaddr.64* %r801 <- tree
+	load.64*    %r802 <- 0[rec]
+	cast.64*    %r803 <- (64) %r802
+	push.64*    %r801
 	push.64*    %r803
 	call.64*    %r804 <- AVLTree_FindNext
 	ptrcast.64* %r805 <- (64) %r804
-	phisrc.64*  %phi289(rec) <- %r805
+	store.64*   %r805 -> 0[rec]
+	br          .L308
+
+.L308:
 	br          .L310
 
 .L309:
-	push.64*    %r775
+	symaddr.64* %r806 <- tree
+	push.64*    %r806
 	call        AVLTree_Destroy
+	phisrc.32   %phi37(return) <- $0
+	br          .L311
+
+.L311:
+	phi.32      %r807 <- %phi37(return)
 	ret.32      $0
 
 

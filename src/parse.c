@@ -2940,7 +2940,7 @@ struct token *dmrC_external_declaration(struct dmr_C *C, struct token *token, st
 
 int dmrC_test_parse() {
 	struct dmr_C *C = new_dmr_C();
-	char test1[100] = "int main() { if (1 == 2) printf(\"hello world!\\n\"); return 0; }";
+    char test1[100] = "extern int printf(const char *, ...); int main() { printf(\"hello world!\\n\"); return 0; }";
 	struct token *start;
 	struct token *end;
 	start = dmrC_tokenize_buffer(C, (unsigned char *)test1,

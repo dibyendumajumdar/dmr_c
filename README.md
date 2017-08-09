@@ -67,8 +67,8 @@ The following command line tools are built:
 #### Limitations
 
 * Initializers on static and globals do not work yet except for simple strings and scalar variables. The front-end does handle these - the limitation is in the sparse-llvm backend.
-* Aggregate assignments are not yet supported by the sparse-llvm backend.
-* The va_arg mechanism is not supported.
+* Aggregate assignments are not yet supported by the sparse-llvm backend, i.e. you cannot assign a struct by value.
+* The `va_arg` mechanism is not supported.
 * There is no support for computed gotos yet in the sparse-llvm backend.
 * The front-end parser and pre-processor knows about many Linux constructs hence it can process C header files on Linux. However, it doesn't know about Windows or Mac OSX features. As typically the vendor supplied header files have many platform specific extensions, unfortunately this means that you cannot process vendor supplied header files on these platforms.
 
@@ -125,11 +125,11 @@ Details of each of these is given below.
 There is a single API call:
 
 ```C
-LLVMModuleRef dmrC_llvmcompile(int argc, char **argv, 
-	LLVMContextRef context, const char *modulename, const char *inputbuffer);
+extern bool dmrC_llvmcompile(int argc, char **argv, LLVMModuleRef module,
+			     const char *inputbuffer);
 ```
 
-The call accepts the arguments passed to a main() function, an LLVMContext, a module name, and an optional buffer to be compiled. It will preprocess files if needed, and compile each of the source files given in the argument list. Although not yet implemented the intention is that it will also compile the supplied input buffer. The results of the compilation are returned as an LLVM Module for the calling program to use as it wishes. 
+The call accepts the arguments passed to a main() function, an LLVMModuleRef, and an optional buffer to be compiled. It will preprocess files if needed, and compile each of the source files given in the argument list. It will finally compile the supplied input buffer. The results of the compilation will be in the supplied LLVMModuleRef for the calling program to use as it wishes. 
 
 A very simple use is below:
 
@@ -178,12 +178,12 @@ Here is a simple program that uses the tokenizer. The tokenizer converts the inp
 	destroy_dmr_C(C);
 ```
 
-The state of the parser is maintained in a structure called dmr_C. All state is maintained here except for ptr_list nodes which are
-managed globally due to the way the ptr_list is implemented (see issue #1).
+The state of the parser is maintained in a structure called `dmr_C`. All state is maintained here except for `ptr_list` nodes which are
+managed globally due to the way the `ptr_list` is implemented (see issue #1).
 
 The example above tokenizes a buffer, but it is also possible to tokenize a file.
 
-The destroy_dmr_C() call cleans up the parser state except for the globally maintained ptr_list nodes.
+The `destroy_dmr_C()` call cleans up the parser state except for the globally maintained `ptr_list` nodes.
 
 ## Preprocessor
 
@@ -195,8 +195,6 @@ The above example can be extended to use the preprocessor by just adding one lin
 
 	start = dmrC_preprocess(C, start);
 ```
-
-There is no driver as yet to pass various arguments but the underlying pre-processor can handle normal preprocessing of C programs.
 
 ## Parsing 
 

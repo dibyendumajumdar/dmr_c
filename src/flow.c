@@ -601,13 +601,23 @@ void dmrC_check_access(struct dmr_C *C, struct instruction *insn)
 	}
 }
 
+#define SINGLE_STORE_SHORTCUT 0
+
 static void simplify_one_symbol(struct dmr_C *C, struct entrypoint *ep, struct symbol *sym)
 {
+#if SINGLE_STORE_SHORTCUT
 	pseudo_t pseudo, src;
+#else
+    pseudo_t pseudo;
+#endif
 	struct pseudo_user *pu;
 	struct instruction *def;
 	unsigned long mod;
+#if SINGLE_STORE_SHORTCUT
 	int all, stores, complex;
+#else
+    int all;
+#endif
 
 	/* Never used as a symbol? */
 	pseudo = sym->pseudo;
@@ -623,17 +633,21 @@ static void simplify_one_symbol(struct dmr_C *C, struct entrypoint *ep, struct s
 	if (mod)
 		goto external_visibility;
 
+#if SINGLE_STORE_SHORTCUT
 	def = NULL;
 	stores = 0;
 	complex = 0;
+#endif
 	FOR_EACH_PTR(pseudo->users, pu) {
 		/* We know that the symbol-pseudo use is the "src" in the instruction */
 		struct instruction *insn = pu->insn;
 
 		switch (insn->opcode) {
 		case OP_STORE:
+#if SINGLE_STORE_SHORTCUT
 			stores++;
 			def = insn;
+#endif
 			break;
 		case OP_LOAD:
 			break;
@@ -650,9 +664,12 @@ static void simplify_one_symbol(struct dmr_C *C, struct entrypoint *ep, struct s
 		default:
 			dmrC_warning(C, sym->pos, "symbol '%s' pseudo used in unexpected way", dmrC_show_ident(C, sym->ident));
 		}
+#if SINGLE_STORE_SHORTCUT
 		complex |= insn->offset;
+#endif
 	} END_FOR_EACH_PTR(pu);
 
+#if SINGLE_STORE_SHORTCUT
 	if (complex)
 		goto complex_def;
 	if (stores > 1)
@@ -688,6 +705,8 @@ static void simplify_one_symbol(struct dmr_C *C, struct entrypoint *ep, struct s
 
 multi_def:
 complex_def:
+#endif
+
 external_visibility:
 	all = 1;
 	FOR_EACH_PTR_REVERSE(pseudo->users, pu) {

@@ -1,0 +1,224 @@
+f:
+.L0:
+	<entry-point>
+	phisrc.32   %phi1(return) <- $1
+	br          .L1
+
+.L1:
+	phi.32      %r1 <- %phi1(return)
+	ret.32      $1
+
+
+foo:
+.L2:
+	<entry-point>
+	store.64*   %arg1 -> 0[x]
+	load.64*    %r2 <- 0[x]
+	ptrcast.64* %r3 <- (64) %r2
+	store.64*   %r3 -> 0[p]
+	load.64*    %r4 <- 0[p]
+	load.32     %r5 <- 0[%r4]
+	scast.32    %r6 <- (32) %r5
+	phisrc.32   %phi2(return) <- %r6
+	br          .L3
+
+.L3:
+	phi.32      %r7 <- %phi2(return)
+	ret.32      %r6
+
+
+main:
+.L4:
+	<entry-point>
+	store.32    $1 -> 0[xs0]
+	symaddr.64* %r8 <- <anon symbol:0000023C58716378>
+	store.64*   %r8 -> 8[xs0]
+	set.f64     %r9 <- 45.000000
+	store.f64   %r9 -> 16[xs0]
+	store.32    $22 -> 0[xs1]
+	set.f64     %r10 <- 5.500000
+	store.f64   %r10 -> 8[xs1]
+	symaddr.64* %r11 <- <anon symbol:0000023C587166F8>
+	store.64*   %r11 -> 24[xs1]
+	symaddr.64* %r12 <- i1
+	store.64*   %r12 -> 0[arg]
+	symaddr.64* %r13 <- f
+	store.64*   %r13 -> 8[arg]
+	symaddr.64* %r14 <- i2
+	store.64*   %r14 -> 16[arg]
+	symaddr.64* %r15 <- f
+	store.64*   %r15 -> 24[arg]
+	symaddr.64* %r16 <- i3
+	store.64*   %r16 -> 32[arg]
+	symaddr.64* %r17 <- f
+	store.64*   %r17 -> 40[arg]
+	store.32    $5 -> 0[k]
+	br          .L6
+
+.L6:
+	load.64*    %r21 <- 0[arg]
+	load.32     %r22 <- 0[%r21]
+	load.32     %r23 <- 0[i1]
+	seteq.32    %r24 <- %r22, %r23
+	br          %r24, .L10, .L7
+
+.L10:
+	load.64*    %r25 <- 16[arg]
+	load.32     %r26 <- 0[%r25]
+	load.32     %r27 <- 0[i2]
+	seteq.32    %r28 <- %r26, %r27
+	br          %r28, .L9, .L7
+
+.L9:
+	load.64*    %r29 <- 32[arg]
+	load.32     %r30 <- 0[%r29]
+	load.32     %r31 <- 0[i3]
+	seteq.32    %r32 <- %r30, %r31
+	br          %r32, .L8, .L7
+
+.L7:
+	symaddr.64* %r33 <- <anon symbol:0000023C587186F8>
+	symaddr.64* %r34 <- <anon symbol:0000023C58718A78>
+	push.64*    %r33
+	push.64*    %r34
+	push.32     $41
+	call.32     %r35 <- printf
+	push.32     $1
+	call        exit
+	br          .L8
+
+.L8:
+	load.64*    %r36 <- 8[arg]
+	symaddr.64* %r37 <- f
+	seteq.32    %r38 <- %r36, %r37
+	br          %r38, .L14, .L11
+
+.L14:
+	load.64*    %r39 <- 24[arg]
+	symaddr.64* %r40 <- f
+	seteq.32    %r41 <- %r39, %r40
+	br          %r41, .L13, .L11
+
+.L13:
+	load.64*    %r42 <- 40[arg]
+	symaddr.64* %r43 <- f
+	seteq.32    %r44 <- %r42, %r43
+	br          %r44, .L12, .L11
+
+.L11:
+	symaddr.64* %r45 <- <anon symbol:0000023C58719B18>
+	symaddr.64* %r46 <- <anon symbol:0000023C58719E98>
+	push.64*    %r45
+	push.64*    %r46
+	push.32     $42
+	call.32     %r47 <- printf
+	push.32     $1
+	call        exit
+	br          .L12
+
+.L12:
+	br          .L17
+
+.L17:
+	load.64*    %r48 <- 8[xs0]
+	load.8      %r49 <- 2[%r48]
+	scast.32    %r50 <- (8) %r49
+	seteq.32    %r51 <- %r50, $99
+	phisrc.32   %phi3 <- %r51
+	br          .L19
+
+.L19:
+	phi.32      %r52 <- %phi3, VOID
+	and-bool.32 %r53 <- %r52, $1
+	br          %r53, .L16, .L15
+
+.L15:
+	symaddr.64* %r54 <- <anon symbol:0000023C5871A2F8>
+	symaddr.64* %r55 <- <anon symbol:0000023C5871A678>
+	push.64*    %r54
+	push.64*    %r55
+	push.32     $43
+	call.32     %r56 <- printf
+	push.32     $1
+	call        exit
+	br          .L16
+
+.L16:
+	br          .L23
+
+.L23:
+	load.f64    %r57 <- 8[xs1]
+	set.f64     %r58 <- 5.500000
+	seteq.32    %r59 <- %r57, %r58
+	br          %r59, .L22, .L20
+
+.L22:
+	load.64*    %r60 <- 24[xs1]
+	load.8      %r61 <- 2[%r60]
+	scast.32    %r62 <- (8) %r61
+	seteq.32    %r63 <- %r62, $0
+	br          %r63, .L21, .L20
+
+.L20:
+	symaddr.64* %r64 <- <anon symbol:0000023C5871AAD8>
+	symaddr.64* %r65 <- <anon symbol:0000023C5871AE58>
+	push.64*    %r64
+	push.64*    %r65
+	push.32     $44
+	call.32     %r66 <- printf
+	push.32     $1
+	call        exit
+	br          .L21
+
+.L21:
+	load.8      %r67 <- 16[xs1]
+	scast.32    %r68 <- (8) %r67
+	seteq.32    %r69 <- %r68, $0
+	br          %r69, .L26, .L24
+
+.L26:
+	load.64*    %r70 <- 24[xs1]
+	load.8      %r71 <- 1[%r70]
+	scast.32    %r72 <- (8) %r71
+	seteq.32    %r73 <- %r72, $98
+	br          %r73, .L25, .L24
+
+.L24:
+	symaddr.64* %r74 <- <anon symbol:0000023C5871B2B8>
+	symaddr.64* %r75 <- <anon symbol:0000023C5871B638>
+	push.64*    %r74
+	push.64*    %r75
+	push.32     $45
+	call.32     %r76 <- printf
+	push.32     $1
+	call        exit
+	br          .L25
+
+.L25:
+	symaddr.64* %r77 <- k
+	push.64*    %r77
+	call.32     %r78 <- foo
+	load.32     %r79 <- 0[k]
+	seteq.32    %r80 <- %r78, %r79
+	br          %r80, .L28, .L27
+
+.L27:
+	symaddr.64* %r81 <- <anon symbol:0000023C5871BB78>
+	symaddr.64* %r82 <- <anon symbol:0000023C5871BEF8>
+	push.64*    %r81
+	push.64*    %r82
+	push.32     $46
+	call.32     %r83 <- printf
+	push.32     $1
+	call        exit
+	br          .L28
+
+.L28:
+	phisrc.32   %phi5(return) <- $0
+	br          .L29
+
+.L29:
+	phi.32      %r84 <- %phi5(return)
+	ret.32      $0
+
+

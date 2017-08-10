@@ -1894,9 +1894,9 @@ static struct symbol *evaluate_preop(struct dmr_C *C, struct expression *expr)
 	return ctype;
 }
 
-static struct symbol *find_identifier(struct dmr_C *C, struct ident *ident, struct ptr_list *_list, int *offset)
+static struct symbol *find_identifier(struct dmr_C *C, struct ident *ident, struct symbol_list *_list, int *offset)
 {
-	struct ptr_list *head = _list;
+	struct ptr_list *head = (struct ptr_list *)_list;
 	struct ptr_list *list = head;
 
 	if (!head)
@@ -2188,7 +2188,7 @@ static struct symbol *evaluate_alignof(struct dmr_C *C, struct expression *expr)
 static int evaluate_arguments(struct dmr_C *C, struct symbol *fn, struct ptr_list *head)
 {
 	struct expression *expr;
-	struct ptr_list *argument_types = fn->arguments;
+	struct symbol_list *argument_types = fn->arguments;
 	struct symbol *argtype;
 	int i = 1;
 
@@ -3210,7 +3210,7 @@ static struct symbol *evaluate_symbol(struct dmr_C *C, struct symbol *sym)
 	return base_type;
 }
 
-void dmrC_evaluate_symbol_list(struct dmr_C *C, struct ptr_list *list)
+void dmrC_evaluate_symbol_list(struct dmr_C *C, struct symbol_list *list)
 {
 	struct symbol *sym;
 

@@ -65,9 +65,9 @@ static struct symbol *copy_symbol(struct dmr_C *C, struct position pos, struct s
 	return sym->replace;
 }
 
-static struct ptr_list *copy_symbol_list(struct dmr_C *C, struct ptr_list *src)
+static struct symbol_list *copy_symbol_list(struct dmr_C *C, struct symbol_list *src)
 {
-	struct ptr_list *dst = NULL;
+	struct symbol_list *dst = NULL;
 	struct symbol *sym;
 
 	FOR_EACH_PTR(src, sym) {
@@ -321,7 +321,7 @@ static void unset_replace(struct dmr_C *C, struct symbol *sym)
 	sym->replace = NULL;
 }
 
-static void unset_replace_list(struct dmr_C *C, struct ptr_list *list)
+static void unset_replace_list(struct dmr_C *C, struct symbol_list *list)
 {
 	struct symbol *sym;
 	FOR_EACH_PTR(list, sym) {
@@ -499,9 +499,9 @@ static struct symbol *create_copy_symbol(struct dmr_C *C, struct symbol *orig)
 	return orig;
 }
 
-static struct ptr_list *create_symbol_list(struct dmr_C *C, struct ptr_list *src)
+static struct symbol_list *create_symbol_list(struct dmr_C *C, struct symbol_list *src)
 {
-	struct ptr_list *dst = NULL;
+	struct symbol_list *dst = NULL;
 	struct symbol *sym;
 
 	FOR_EACH_PTR(src, sym) {
@@ -513,11 +513,11 @@ static struct ptr_list *create_symbol_list(struct dmr_C *C, struct ptr_list *src
 
 int dmrC_inline_function(struct dmr_C *C, struct expression *expr, struct symbol *sym)
 {
-	struct ptr_list * fn_symbol_list;
+	struct symbol_list * fn_symbol_list;
 	struct symbol *fn = sym->ctype.base_type;
 	struct ptr_list *arg_list = expr->args;
 	struct statement *stmt = dmrC_alloc_statement(C, expr->pos, STMT_COMPOUND);
-	struct ptr_list *name_list, *arg_decl;
+	struct symbol_list *name_list, *arg_decl;
 	struct symbol *name;
 	struct expression *arg;
 
@@ -576,7 +576,7 @@ int dmrC_inline_function(struct dmr_C *C, struct expression *expr, struct symbol
 void dmrC_uninline(struct dmr_C *C, struct symbol *sym)
 {
 	struct symbol *fn = sym->ctype.base_type;
-	struct ptr_list *arg_list = fn->arguments;
+	struct symbol_list *arg_list = fn->arguments;
 	struct symbol *p;
 
 	sym->symbol_list = create_symbol_list(C, sym->inline_symbol_list);

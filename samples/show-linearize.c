@@ -38,7 +38,7 @@
 #include <expression.h>
 #include <linearize.h>
 
-static void clean_up_symbols(struct dmr_C *C, struct ptr_list *list)
+static void clean_up_symbols(struct dmr_C *C, struct symbol_list *list)
 {
 	struct symbol *sym;
 

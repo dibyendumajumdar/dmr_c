@@ -200,7 +200,7 @@ struct token *dmrC_parens_expression(struct dmr_C *C, struct token *token, struc
 struct token *dmrC_assignment_expression(struct dmr_C *C, struct token *token,
 				    struct expression **tree);
 
-extern void dmrC_evaluate_symbol_list(struct dmr_C *C, struct ptr_list *list);
+extern void dmrC_evaluate_symbol_list(struct dmr_C *C, struct symbol_list *list);
 extern struct symbol *dmrC_evaluate_statement(struct dmr_C *C, struct statement *stmt);
 
 extern int dmrC_expand_symbol(struct dmr_C *C, struct symbol *);

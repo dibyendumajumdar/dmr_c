@@ -59,7 +59,7 @@ struct statement {
 	struct position pos;
 	union {
 		struct /* declaration */ {
-			struct ptr_list *declaration;
+			struct symbol_list *declaration;
 		};
 		struct {
 			struct expression *expression;
@@ -98,7 +98,7 @@ struct statement {
 		struct /* iterator_struct */ {
 			struct symbol *iterator_break;
 			struct symbol *iterator_continue;
-			struct ptr_list *iterator_syms;
+			struct symbol_list *iterator_syms;
 			struct statement *iterator_pre_statement;
 			struct expression *iterator_pre_condition;
 
@@ -112,14 +112,14 @@ struct statement {
 
 			/* computed gotos have these: */
 			struct expression *goto_expression;
-			struct ptr_list *target_list;
+			struct symbol_list *target_list;
 		};
 		struct /* asm */ {
 			struct expression *asm_string;
 			struct ptr_list *asm_outputs;
 			struct ptr_list *asm_inputs;
 			struct ptr_list *asm_clobbers;
-			struct ptr_list *asm_labels;
+			struct symbol_list *asm_labels;
 		};
 		struct /* range */ {
 			struct expression *range_expression;
@@ -130,8 +130,8 @@ struct statement {
 };
 
 struct parse_state_t {
-	struct ptr_list **function_symbol_list;
-	struct ptr_list *function_computed_target_list;
+	struct symbol_list **function_symbol_list;
+	struct symbol_list *function_computed_target_list;
 	struct ptr_list *function_computed_goto_list;
 	struct symbol * int_types[4];
 	struct symbol * signed_types[5];
@@ -150,7 +150,7 @@ extern struct symbol *dmrC_label_symbol(struct dmr_C *C, struct token *token);
 extern int dmrC_show_statement(struct dmr_C *C, struct statement *);
 extern int dmrC_show_expression(struct dmr_C *C, struct expression *);
 
-extern struct token *dmrC_external_declaration(struct dmr_C *C, struct token *token, struct ptr_list **symbol_list);
+extern struct token *dmrC_external_declaration(struct dmr_C *C, struct token *token, struct symbol_list **symbol_list);
 
 extern struct symbol *dmrC_ctype_integer(struct dmr_C *C, int size, int want_unsigned);
 

@@ -74,7 +74,7 @@ static struct token *parse_goto_statement(struct dmr_C *C, struct token *token, 
 static struct token *parse_context_statement(struct dmr_C *C, struct token *token, struct statement *stmt);
 static struct token *parse_range_statement(struct dmr_C *C, struct token *token, struct statement *stmt);
 static struct token *parse_asm_statement(struct dmr_C *C, struct token *token, struct statement *stmt);
-static struct token *toplevel_asm_declaration(struct dmr_C *C, struct token *token, struct ptr_list **list);
+static struct token *toplevel_asm_declaration(struct dmr_C *C, struct token *token, struct symbol_list **list);
 
 static struct token *parameter_type_list(struct dmr_C *C, struct token *, struct symbol *);
 static struct token *identifier_list(struct dmr_C *C, struct token *, struct symbol *);
@@ -738,7 +738,7 @@ struct statement *dmrC_alloc_statement(struct dmr_C *C, struct position pos, int
 	return stmt;
 }
 
-static struct token *struct_declaration_list(struct dmr_C *C, struct token *token, struct ptr_list **list);
+static struct token *struct_declaration_list(struct dmr_C *C, struct token *token, struct symbol_list **list);
 
 static void apply_modifiers(struct dmr_C *C, struct position pos, struct decl_state *ctx)
 {
@@ -928,7 +928,7 @@ static struct symbol *bigger_enum_type(struct dmr_C *C, struct symbol *s1, struc
 	return s1;
 }
 
-static void cast_enum_list(struct dmr_C *C, struct ptr_list *list, struct symbol *base_type)
+static void cast_enum_list(struct dmr_C *C, struct symbol_list *list, struct symbol *base_type)
 {
 	struct symbol *sym;
 
@@ -983,7 +983,7 @@ static struct token *parse_enum_declaration(struct dmr_C *C, struct token *token
 		sym->initializer = expr;
 		sym->enum_member = 1;
 		sym->ctype.base_type = parent;
-		ptrlist_add(&parent->symbol_list, sym, &C->ptrlist_allocator);
+        dmrC_add_symbol(C, &parent->symbol_list, sym);
 
 		if (base_type != &C->S->bad_ctype) {
 			if (ctype->type == SYM_NODE)
@@ -1918,7 +1918,7 @@ static struct token *handle_bitfield(struct dmr_C *C, struct token *token, struc
 	return token;
 }
 
-static struct token *declaration_list(struct dmr_C *C, struct token *token, struct ptr_list **list)
+static struct token *declaration_list(struct dmr_C *C, struct token *token, struct symbol_list **list)
 {
 	struct decl_state ctx = {.prefer_abstract = 0};
 	struct ctype saved;
@@ -1950,7 +1950,7 @@ static struct token *declaration_list(struct dmr_C *C, struct token *token, stru
 	return token;
 }
 
-static struct token *struct_declaration_list(struct dmr_C *C, struct token *token, struct ptr_list **list)
+static struct token *struct_declaration_list(struct dmr_C *C, struct token *token, struct symbol_list **list)
 {
 	while (!dmrC_match_op(token, '}')) {
 		if (!dmrC_match_op(token, ';'))
@@ -2050,7 +2050,7 @@ static struct token *parse_asm_clobbers(struct dmr_C *C, struct token *token, st
 }
 
 static struct token *parse_asm_labels(struct dmr_C *C, struct token *token, struct statement *stmt,
-		        struct ptr_list **labels)
+		        struct symbol_list **labels)
 {
 	struct symbol *label;
 
@@ -2239,7 +2239,7 @@ static struct token *parse_return_statement(struct dmr_C *C, struct token *token
 
 static struct token *parse_for_statement(struct dmr_C *C, struct token *token, struct statement *stmt)
 {
-	struct ptr_list *syms;
+	struct symbol_list *syms;
 	struct expression *e1, *e2, *e3;
 	struct statement *iterator;
 
@@ -2489,7 +2489,7 @@ static struct token * statement_list(struct dmr_C *C, struct token *token, struc
 
 static struct token *identifier_list(struct dmr_C *C, struct token *token, struct symbol *fn)
 {
-	struct ptr_list **list = &fn->arguments;
+	struct symbol_list **list = &fn->arguments;
 	for (;;) {
 		struct symbol *sym = dmrC_alloc_symbol(C->S, token->pos, SYM_NODE);
 		sym->ident = token->ident;
@@ -2508,7 +2508,7 @@ static struct token *identifier_list(struct dmr_C *C, struct token *token, struc
 
 static struct token *parameter_type_list(struct dmr_C *C, struct token *token, struct symbol *fn)
 {
-	struct ptr_list **list = &fn->arguments;
+	struct symbol_list **list = &fn->arguments;
 
 	for (;;) {
 		struct symbol *sym;
@@ -2662,9 +2662,9 @@ static void declare_argument(struct dmr_C *C, struct symbol *sym, struct symbol 
 }
 
 static struct token *parse_function_body(struct dmr_C *C, struct token *token, struct symbol *decl,
-	struct ptr_list **list)
+	struct symbol_list **list)
 {
-	struct ptr_list **old_symbol_list;
+	struct symbol_list **old_symbol_list;
 	struct symbol *base_type = decl->ctype.base_type;
 	struct statement *stmt, **p;
 	struct symbol *prev;
@@ -2735,9 +2735,9 @@ static void promote_k_r_types(struct dmr_C *C, struct symbol *arg)
 	}
 }
 
-static void apply_k_r_types(struct dmr_C *C, struct ptr_list *argtypes, struct symbol *fn)
+static void apply_k_r_types(struct dmr_C *C, struct symbol_list *argtypes, struct symbol *fn)
 {
-	struct ptr_list *real_args = fn->ctype.base_type->arguments;
+	struct symbol_list *real_args = fn->ctype.base_type->arguments;
 	struct symbol *arg;
 
 	FOR_EACH_PTR(real_args, arg) {
@@ -2765,9 +2765,9 @@ match:
 }
 
 static struct token *parse_k_r_arguments(struct dmr_C *C, struct token *token, struct symbol *decl,
-	struct ptr_list **list)
+	struct symbol_list **list)
 {
-	struct ptr_list *args = NULL;
+	struct symbol_list *args = NULL;
 
 	dmrC_warning(C, token->pos, "non-ANSI definition of function '%s'", dmrC_show_ident(C, decl->ident));
 	do {
@@ -2788,7 +2788,7 @@ static struct token *parse_k_r_arguments(struct dmr_C *C, struct token *token, s
 	return parse_function_body(C, token, decl, list);
 }
 
-static struct token *toplevel_asm_declaration(struct dmr_C *C, struct token *token, struct ptr_list **list)
+static struct token *toplevel_asm_declaration(struct dmr_C *C, struct token *token, struct symbol_list **list)
 {
 	struct symbol *anon = dmrC_alloc_symbol(C->S, token->pos, SYM_NODE);
 	struct symbol *fn = dmrC_alloc_symbol(C->S, token->pos, SYM_FN);
@@ -2804,7 +2804,7 @@ static struct token *toplevel_asm_declaration(struct dmr_C *C, struct token *tok
 	return token;
 }
 
-struct token *dmrC_external_declaration(struct dmr_C *C, struct token *token, struct ptr_list **list)
+struct token *dmrC_external_declaration(struct dmr_C *C, struct token *token, struct symbol_list **list)
 {
 	struct ident *ident = NULL;
 	struct symbol *decl;
@@ -2952,7 +2952,7 @@ int dmrC_test_parse() {
 	for (struct token *p = start; !dmrC_eof_token(p); p = p->next) {
 		printf("%s\n", dmrC_show_token(C, p));
 	}
-	struct ptr_list *symbols = NULL;
+	struct symbol_list *symbols = NULL;
 	while (!dmrC_eof_token(start))
 		start = dmrC_external_declaration(C, start, &C->S->translation_unit_used_list);
 	dmrC_show_symbol_list(C, C->S->translation_unit_used_list, "\n\n");

@@ -67,7 +67,7 @@ void dmrC_rebind_scope(struct dmr_C *C, struct symbol *sym, struct scope *news)
 		return;
 
 	if (old)
-		ptrlist_remove(&old->symbols, sym, 1);
+		ptrlist_remove((struct ptr_list **) &old->symbols, sym, 1);
 
 	dmrC_bind_scope(C, sym, news);
 }
@@ -116,7 +116,7 @@ static void remove_symbol_scope(struct dmr_C *C, struct symbol *sym)
 static void end_scope(struct dmr_C *C, struct scope **s)
 {
 	struct scope *scope = *s;
-	struct ptr_list *symbols = scope->symbols;
+	struct symbol_list *symbols = scope->symbols;
 	struct symbol *sym;
 
 	*s = scope->next;

@@ -101,7 +101,7 @@ static inline void **ptrlist_iter_this_address(struct ptr_list_iter *self) {
 #define END_FOR_EACH_PTR(var) }
 
 #define FOR_EACH_PTR_REVERSE(list, var) \
-	{ struct ptr_list_iter var##iter__ = ptrlist_reverse_iterator(list); \
+	{ struct ptr_list_iter var##iter__ = ptrlist_reverse_iterator((struct ptr_list *)list); \
 	for (var = ptrlist_iter_prev(&var##iter__); var != NULL; var = ptrlist_iter_prev(&var##iter__))
 #define END_FOR_EACH_PTR_REVERSE(var) }
 
@@ -110,7 +110,7 @@ static inline void **ptrlist_iter_this_address(struct ptr_list_iter *self) {
 	for (var = ptrlist_iter_prev(&var##iter__); var != NULL; var = ptrlist_iter_prev(&var##iter__))
 
 #define PREPARE_PTR_LIST(list, var)	\
-	struct ptr_list_iter var##iter__ = ptrlist_forward_iterator(list); \
+	struct ptr_list_iter var##iter__ = ptrlist_forward_iterator((struct ptr_list *)list); \
 	var = ptrlist_iter_next(&var##iter__)
 
 #define NEXT_PTR_LIST(var) \

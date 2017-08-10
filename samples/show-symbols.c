@@ -95,7 +95,7 @@ static void new_sym_node(struct dmr_C *C, struct symbol *sym, const char *name)
 	idcount++;
 }
 
-static void examine_members(struct dmr_C *C, struct ptr_list *list)
+static void examine_members(struct dmr_C *C, struct symbol_list *list)
 {
 	struct symbol *sym;
 
@@ -287,7 +287,7 @@ static int get_stream_id (struct dmr_C *C, const char *name)
 	return -1;
 }
 
-static void examine_symbol_list(struct dmr_C *C, const char *file, struct ptr_list *list)
+static void examine_symbol_list(struct dmr_C *C, const char *file, struct symbol_list *list)
 {
 	struct symbol *sym;
 	int stream_id = get_stream_id (C, file);
@@ -302,7 +302,7 @@ static void examine_symbol_list(struct dmr_C *C, const char *file, struct ptr_li
 
 int main(int argc, char **argv)
 {
-	struct ptr_list *symlist;
+	struct symbol_list *symlist;
 	struct ptr_list *filelist = NULL;
 	char *file;
 

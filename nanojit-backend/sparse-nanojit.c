@@ -1930,7 +1930,7 @@ static int is_prototype(struct symbol *sym)
 }
 
 /* returns 1 on success, 0 on failure */
-static int compile(struct dmr_C *C, NJXContextRef module, struct ptr_list *list)
+static int compile(struct dmr_C *C, NJXContextRef module, struct symbol_list *list)
 {
 	struct symbol *sym;
 
@@ -1961,7 +1961,7 @@ bool dmrC_nanocompile(int argc, char **argv, NJXContextRef module,
 		      const char *inputbuffer)
 {
 	struct ptr_list *filelist = NULL;
-	struct ptr_list *symlist;
+	struct symbol_list *symlist;
 	char *file;
 
 	struct dmr_C *C = new_dmr_C();

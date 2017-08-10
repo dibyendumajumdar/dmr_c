@@ -39,7 +39,7 @@
 #include <symbol.h>
 #include <token.h>
 
-static void clean_up_symbols(struct dmr_C *C, struct ptr_list *list)
+static void clean_up_symbols(struct dmr_C *C, struct symbol_list *list)
 {
 	struct symbol *sym;
 
@@ -49,7 +49,7 @@ static void clean_up_symbols(struct dmr_C *C, struct ptr_list *list)
 
 int main(int argc, char **argv)
 {
-	struct ptr_list *list;
+	struct symbol_list *list;
 	struct ptr_list *filelist = NULL;
 	char *file;
 

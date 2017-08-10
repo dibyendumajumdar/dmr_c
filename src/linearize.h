@@ -426,7 +426,7 @@ static inline void dmrC_replace_bb_in_list(struct ptr_list **list,
 
 struct entrypoint {
 	struct symbol *name;
-	struct ptr_list *syms; /* symbol list */
+	struct symbol_list *syms; /* symbol list */
 	struct ptr_list *accesses; /* pseudo list */
 	struct ptr_list *bbs; /* basic_block list */
 	struct basic_block *active;

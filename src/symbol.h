@@ -120,6 +120,9 @@ struct decl_state {
 	unsigned char prefer_abstract, is_inline, storage_class, is_tls;
 };
 
+struct symbol;
+DECLARE_PTR_LIST(symbol_list, struct symbol);
+
 struct symbol_op {
 	enum keyword type;
 	int (*evaluate)(struct dmr_C *, struct expression *);
@@ -130,7 +133,7 @@ struct symbol_op {
 	struct token *(*declarator)(struct dmr_C *, struct token *token,
 				    struct decl_state *ctx);
 	struct token *(*statement)(struct dmr_C *, struct token *token, struct statement *stmt);
-	struct token *(*toplevel)(struct dmr_C *, struct token *token, struct ptr_list **list);
+	struct token *(*toplevel)(struct dmr_C *, struct token *token, struct symbol_list **list);
 	struct token *(*attribute)(struct dmr_C *, struct token *token, struct symbol *attr,
 				   struct decl_state *ctx);
 	struct symbol *(*to_mode)(struct dmr_C *, struct symbol *);
@@ -185,11 +188,11 @@ struct symbol {
 					transparent_union:1;
 			struct expression *array_size;
 			struct ctype ctype;
-			struct ptr_list *arguments;
+			struct symbol_list *arguments;
 			struct statement *stmt;
-			struct ptr_list *symbol_list;
+			struct symbol_list *symbol_list;
 			struct statement *inline_stmt;
-			struct ptr_list *inline_symbol_list;
+			struct symbol_list *inline_symbol_list;
 			struct expression *initializer;
 			struct entrypoint *ep;
 			long long value;		/* Initial value */
@@ -291,13 +294,13 @@ struct global_symbols_t {
 	* Secondary symbol list for stuff that needs to be output because it
 	* was used.
 	*/
-	struct ptr_list *translation_unit_used_list;
+	struct symbol_list *translation_unit_used_list;
 
 	struct allocator context_allocator;
 	struct allocator symbol_allocator;
 	struct allocator global_ident_allocator;
 
-	struct ptr_list *restr, *fouled;
+	struct symbol_list *restr, *fouled;
 
 	struct ctype_name typenames[30];
 
@@ -326,7 +329,7 @@ extern void dmrC_show_type(struct dmr_C *C, struct symbol *);
 extern const char *dmrC_modifier_string(struct dmr_C *C, unsigned long mod);
 extern void dmrC_show_symbol(struct dmr_C *C, struct symbol *);
 extern int dmrC_show_symbol_expr_init(struct dmr_C *C, struct symbol *sym);
-extern void dmrC_show_symbol_list(struct dmr_C *C, struct ptr_list *, const char *);
+extern void dmrC_show_symbol_list(struct dmr_C *C, struct symbol_list *, const char *);
 extern void dmrC_bind_symbol(struct global_symbols_t *S, struct symbol *sym,
 			struct ident *ident, enum namespace_type ns);
 
@@ -478,9 +481,9 @@ static inline int dmrC_get_sym_type(struct symbol *type)
 	return type->type;
 }
 
-static inline struct symbol *dmrC_get_nth_symbol(struct ptr_list *list, unsigned int idx)
+static inline struct symbol *dmrC_get_nth_symbol(struct symbol_list *list, unsigned int idx)
 {
-	return (struct symbol *)ptrlist_nth_entry(list, idx);
+	return (struct symbol *)ptrlist_nth_entry((struct ptr_list *)list, idx);
 }
 
 static inline struct symbol *dmrC_lookup_keyword(struct ident *ident,
@@ -491,14 +494,19 @@ static inline struct symbol *dmrC_lookup_keyword(struct ident *ident,
 	return dmrC_lookup_symbol(ident, ns);
 }
 
-static inline void dmrC_concat_symbol_list(struct ptr_list *from, struct ptr_list **to)
+static inline void dmrC_concat_symbol_list(struct symbol_list *from, struct symbol_list **to)
 {
-	ptrlist_concat(from, to);
+	ptrlist_concat((struct ptr_list *)from, (struct ptr_list **) to);
 }
 
-static inline void dmrC_add_symbol(struct dmr_C *C, struct ptr_list **list, struct symbol *sym)
+static inline void dmrC_add_symbol(struct dmr_C *C, struct symbol_list **list, struct symbol *sym)
 {
-	ptrlist_add(list, sym, &C->ptrlist_allocator);
+	ptrlist_add((struct ptr_list**)list, sym, &C->ptrlist_allocator);
+}
+
+static inline int dmrC_symbol_list_size(struct symbol_list *list)
+{
+	return ptrlist_size((struct ptr_list *)list);
 }
 
 static inline void dmrC_concat_context_list(struct context_list *from,
@@ -511,11 +519,6 @@ static inline void dmrC_add_context(struct dmr_C *C, struct context_list **list,
 				    struct context *ctx)
 {
 	ptrlist_add((struct ptr_list **)list, ctx, &C->ptrlist_allocator);
-}
-
-static inline int dmrC_symbol_list_size(struct ptr_list *list)
-{
-	return ptrlist_size(list);
 }
 
 static inline int dmrC_is_prototype(struct symbol *sym)

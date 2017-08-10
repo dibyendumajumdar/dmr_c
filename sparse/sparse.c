@@ -271,7 +271,7 @@ static void check_context(struct dmr_C *C, struct entrypoint *ep)
 	check_bb_context(C, ep, ep->entry->bb, in_context, out_context);
 }
 
-static void check_symbols(struct dmr_C *C, struct ptr_list *list)
+static void check_symbols(struct dmr_C *C, struct symbol_list *list)
 {
 	struct symbol *sym;
 

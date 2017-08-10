@@ -1175,7 +1175,7 @@ void dmrC_create_builtin_stream(struct dmr_C *C)
 	dmrC_add_pre_buffer(C, "#weak_define __CHAR_BIT__ " STRINGIFY(__CHAR_BIT__) "\n");
 }
 
-static struct ptr_list *sparse_tokenstream(struct dmr_C *C, struct token *token)
+static struct symbol_list *sparse_tokenstream(struct dmr_C *C, struct token *token)
 {
 	// Preprocess the stream
 	token = dmrC_preprocess(C, token);
@@ -1207,7 +1207,7 @@ static struct ptr_list *sparse_tokenstream(struct dmr_C *C, struct token *token)
 	return C->S->translation_unit_used_list;
 }
 
-static struct ptr_list *sparse_file(struct dmr_C *C, const char *filename)
+static struct symbol_list *sparse_file(struct dmr_C *C, const char *filename)
 {
 	int fd;
 	struct token *token;
@@ -1236,7 +1236,7 @@ static struct ptr_list *sparse_file(struct dmr_C *C, const char *filename)
 * affect all subsequent files too, i.e. we can have non-local
 * behaviour between files!
 */
-static struct ptr_list *sparse_initial(struct dmr_C *C)
+static struct symbol_list *sparse_initial(struct dmr_C *C)
 {
 	int i;
 
@@ -1258,10 +1258,10 @@ static void clear_token_alloc(struct dmr_C *C) {
 	dmrC_allocator_drop_all_allocations(&C->token_allocator);
 }
 
-struct ptr_list *dmrC_sparse_initialize(struct dmr_C *C, int argc, char **argv, struct ptr_list **filelist)
+struct symbol_list *dmrC_sparse_initialize(struct dmr_C *C, int argc, char **argv, struct ptr_list **filelist)
 {
 	char **args;
-	struct ptr_list *list;
+	struct symbol_list *list;
 
 	args = argv;
 	for (; args < argv + argc;) {
@@ -1299,9 +1299,9 @@ struct ptr_list *dmrC_sparse_initialize(struct dmr_C *C, int argc, char **argv, 
 	return list;
 }
 
-struct ptr_list * dmrC_sparse_keep_tokens(struct dmr_C *C, char *filename)
+struct symbol_list * dmrC_sparse_keep_tokens(struct dmr_C *C, char *filename)
 {
-	struct ptr_list *res;
+	struct symbol_list *res;
 
 	/* Clear previous symbol list */
 	C->S->translation_unit_used_list = NULL;
@@ -1314,9 +1314,9 @@ struct ptr_list * dmrC_sparse_keep_tokens(struct dmr_C *C, char *filename)
 }
 
 
-struct ptr_list * dmrC__sparse(struct dmr_C *C, char *filename)
+struct symbol_list * dmrC__sparse(struct dmr_C *C, char *filename)
 {
-	struct ptr_list *res;
+	struct symbol_list *res;
 
 	res = dmrC_sparse_keep_tokens(C, filename);
 
@@ -1327,9 +1327,9 @@ struct ptr_list * dmrC__sparse(struct dmr_C *C, char *filename)
 	return res;
 }
 
-struct ptr_list * dmrC_sparse(struct dmr_C *C, char *filename)
+struct symbol_list * dmrC_sparse(struct dmr_C *C, char *filename)
 {
-	struct ptr_list *res = dmrC__sparse(C, filename);
+	struct symbol_list *res = dmrC__sparse(C, filename);
 
 	/* Evaluate the complete symbol list */
 	dmrC_evaluate_symbol_list(C, res);
@@ -1337,9 +1337,9 @@ struct ptr_list * dmrC_sparse(struct dmr_C *C, char *filename)
 	return res;
 }
 
-struct ptr_list *dmrC_sparse_buffer(struct dmr_C *C, const char *name, char *buffer, int keep_tokens)
+struct symbol_list *dmrC_sparse_buffer(struct dmr_C *C, const char *name, char *buffer, int keep_tokens)
 {
-	struct ptr_list *res;
+	struct symbol_list *res;
 
 	/* Clear previous symbol list */
 	C->S->translation_unit_used_list = NULL;

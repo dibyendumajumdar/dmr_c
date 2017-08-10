@@ -176,7 +176,7 @@ static void show_struct_member(struct dmr_C *C, struct symbol *sym)
 	printf("\n");
 }
 
-void dmrC_show_symbol_list(struct dmr_C *C, struct ptr_list *list, const char *sep)
+void dmrC_show_symbol_list(struct dmr_C *C, struct symbol_list *list, const char *sep)
 {
 	struct symbol *sym;
 	const char *prepend = "";
@@ -508,7 +508,7 @@ static void show_switch_statement(struct dmr_C *C, struct statement *stmt)
 		printf(".L%p:\n", stmt->switch_break);
 }
 
-static void show_symbol_decl(struct dmr_C *C, struct ptr_list *syms)
+static void show_symbol_decl(struct dmr_C *C, struct symbol_list *syms)
 {
 	struct symbol *sym;
 	FOR_EACH_PTR(syms, sym) {

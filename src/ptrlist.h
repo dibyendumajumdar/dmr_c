@@ -33,14 +33,17 @@ extern "C" {
 #define LIST_NODE_NR (29)
 #endif
 
+#define DECLARE_PTR_LIST(listname, type)                                       \
+	struct listname {                                                      \
+		int nr_;                                                       \
+		struct listname *prev_;                                        \
+		struct listname *next_;                                        \
+		struct allocator *allocator_;                                  \
+		type *list_[LIST_NODE_NR];                                     \
+	}
+
 /* Each node in the list */
-struct ptr_list {
-	int nr_;
-	struct ptr_list *prev_;
-	struct ptr_list *next_;
-	struct allocator *allocator_;
-	void *list_[LIST_NODE_NR];
-};
+DECLARE_PTR_LIST(ptr_list, void);
 
 struct ptr_list_iter {
 	struct ptr_list *__head;
@@ -87,14 +90,14 @@ static inline void **ptrlist_iter_this_address(struct ptr_list_iter *self) {
 #if 1
 
 #define FOR_EACH_PTR(list, var) \
-	{ struct ptr_list_iter var##iter__ = ptrlist_forward_iterator(list); \
+	{ struct ptr_list_iter var##iter__ = ptrlist_forward_iterator((struct ptr_list *)list); \
 	for (var = ptrlist_iter_next(&var##iter__); var != NULL; var = ptrlist_iter_next(&var##iter__))
-#define FOR_EACH_PTR_TYPED(list, type, var) \
-	{ struct ptr_list_iter var##iter__ = ptrlist_forward_iterator(list); \
-	for (var = (type) ptrlist_iter_next(&var##iter__); var != NULL; var = (type) ptrlist_iter_next(&var##iter__))
-#define FOR_EACH_PTR_TYPE(list, var, ptr_type) \
-	{ struct ptr_list_iter var##iter__ = ptrlist_forward_iterator(list); \
-	for (var = (ptr_type) ptrlist_iter_next(&var##iter__); var != NULL; var = (ptr_type) ptrlist_iter_next(&var##iter__))
+//#define FOR_EACH_PTR_TYPED(list, type, var) \
+//	{ struct ptr_list_iter var##iter__ = ptrlist_forward_iterator(list); \
+//	for (var = (type) ptrlist_iter_next(&var##iter__); var != NULL; var = (type) ptrlist_iter_next(&var##iter__))
+//#define FOR_EACH_PTR_TYPE(list, var, ptr_type) \
+//	{ struct ptr_list_iter var##iter__ = ptrlist_forward_iterator(list); \
+//	for (var = (ptr_type) ptrlist_iter_next(&var##iter__); var != NULL; var = (ptr_type) ptrlist_iter_next(&var##iter__))
 #define END_FOR_EACH_PTR(var) }
 
 #define FOR_EACH_PTR_REVERSE(list, var) \

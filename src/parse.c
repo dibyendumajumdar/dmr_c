@@ -1269,7 +1269,7 @@ static struct token *attribute_context(struct dmr_C *C, struct token *token, str
 	}
 
 	if (argc)
-		ptrlist_add(&ctx->ctype.contexts, context, &C->ptrlist_allocator);
+		dmrC_add_context(C, &ctx->ctype.contexts, context);
 
 	token = dmrC_expect_token(C, token, ')', "after context attribute");
 	return token;
@@ -1497,8 +1497,7 @@ static void apply_ctype(struct dmr_C *C, struct position pos, struct ctype *this
 		apply_qualifier(C, &pos, ctype, mod);
 
 	/* Context */
-	ptrlist_concat(thistype->contexts,
-	                &ctype->contexts);
+	dmrC_concat_context_list(thistype->contexts, &ctype->contexts);
 
 	/* Alignment */
 	if (thistype->alignment > ctype->alignment)

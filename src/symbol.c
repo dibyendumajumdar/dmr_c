@@ -216,7 +216,8 @@ static struct symbol *examine_base_type(struct global_symbols_t *S, struct symbo
 		return base_type;
 	sym->ctype.as |= base_type->ctype.as;
 	sym->ctype.modifiers |= base_type->ctype.modifiers & MOD_PTRINHERIT;
-	ptrlist_concat(base_type->ctype.contexts, &sym->ctype.contexts);
+	dmrC_concat_context_list(base_type->ctype.contexts,
+				 &sym->ctype.contexts);
 	if (base_type->type == SYM_NODE) {
 		base_type = base_type->ctype.base_type;
 		sym->ctype.base_type = base_type;
@@ -279,7 +280,8 @@ void dmrC_merge_type(struct symbol *sym, struct symbol *base_type)
 {
 	sym->ctype.as |= base_type->ctype.as;
 	sym->ctype.modifiers |= (base_type->ctype.modifiers & ~MOD_STORAGE);
-	ptrlist_concat(base_type->ctype.contexts, &sym->ctype.contexts);
+	dmrC_concat_context_list(base_type->ctype.contexts,
+				 &sym->ctype.contexts);
 	sym->ctype.base_type = base_type->ctype.base_type;
 	if (sym->ctype.base_type->type == SYM_NODE)
 		dmrC_merge_type(sym, sym->ctype.base_type);

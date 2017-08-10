@@ -103,10 +103,12 @@ struct context {
 	unsigned int in, out;
 };
 
+DECLARE_PTR_LIST(context_list, struct context);
+
 struct ctype {
 	unsigned long modifiers;
 	unsigned long alignment;
-	struct ptr_list *contexts;
+	struct context_list *contexts;
 	unsigned int as;
 	struct symbol *base_type;
 };
@@ -497,6 +499,18 @@ static inline void dmrC_concat_symbol_list(struct ptr_list *from, struct ptr_lis
 static inline void dmrC_add_symbol(struct dmr_C *C, struct ptr_list **list, struct symbol *sym)
 {
 	ptrlist_add(list, sym, &C->ptrlist_allocator);
+}
+
+static inline void dmrC_concat_context_list(struct context_list *from,
+					    struct context_list **to)
+{
+	ptrlist_concat((struct ptr_list *)from, (struct ptr_list **)to);
+}
+
+static inline void dmrC_add_context(struct dmr_C *C, struct context_list **list,
+				    struct context *ctx)
+{
+	ptrlist_add((struct ptr_list **)list, ctx, &C->ptrlist_allocator);
 }
 
 static inline int dmrC_symbol_list_size(struct ptr_list *list)

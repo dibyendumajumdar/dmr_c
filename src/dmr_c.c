@@ -1258,7 +1258,7 @@ static void clear_token_alloc(struct dmr_C *C) {
 	dmrC_allocator_drop_all_allocations(&C->token_allocator);
 }
 
-struct symbol_list *dmrC_sparse_initialize(struct dmr_C *C, int argc, char **argv, struct ptr_list **filelist)
+struct symbol_list *dmrC_sparse_initialize(struct dmr_C *C, int argc, char **argv, struct string_list **filelist)
 {
 	char **args;
 	struct symbol_list *list;
@@ -1273,7 +1273,7 @@ struct symbol_list *dmrC_sparse_initialize(struct dmr_C *C, int argc, char **arg
 			args = handle_switch(C, arg + 1, args);
 			continue;
 		}
-		ptrlist_add(filelist, arg, &C->ptrlist_allocator);
+		ptrlist_add((struct ptr_list **)filelist, arg, &C->ptrlist_allocator);
 	}
 	handle_switch_W_finalize(C);
 	handle_switch_v_finalize(C);

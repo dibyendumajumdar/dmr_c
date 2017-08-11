@@ -1197,7 +1197,7 @@ static LLVMValueRef output_op_call(struct dmr_C *C, struct function *fn, struct 
 	LLVMValueRef *args;
 	char name[64];
 
-	n_arg = ptrlist_size(insn->arguments);
+	n_arg = ptrlist_size((struct ptr_list *)insn->arguments);
 	args = alloca(n_arg * sizeof(LLVMValueRef));
 	struct symbol *ftype = get_function_basetype(insn->fntype);
 
@@ -1947,7 +1947,7 @@ static void add_intrinsics(LLVMModuleRef module)
 bool dmrC_llvmcompile(int argc, char **argv, LLVMModuleRef module,
 		      const char *inputbuffer)
 {
-	struct ptr_list *filelist = NULL;
+	struct string_list *filelist = NULL;
 	struct symbol_list *symlist;
 	char *file;
 

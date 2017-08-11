@@ -132,7 +132,7 @@ static void clean_up_insns(struct dmr_C *C, struct entrypoint *ep)
 }
 
 /* Compare two (sorted) phi-lists */
-static int phi_list_compare(struct dmr_C *C, struct ptr_list *l1, struct ptr_list *l2)
+static int phi_list_compare(struct dmr_C *C, struct pseudo_list *l1, struct pseudo_list *l2)
 {
 	pseudo_t phi1, phi2;
 
@@ -239,9 +239,9 @@ static int insn_compare(void *ud, const void *_i1, const void *_i2)
 	return 0;
 }
 
-static void sort_instruction_list(struct dmr_C *C, struct ptr_list **list)
+static void sort_instruction_list(struct dmr_C *C, struct instruction_list **list)
 {
-	ptrlist_sort(list, C, insn_compare);
+	ptrlist_sort((struct ptr_list **)list, C, insn_compare);
 }
 
 static struct instruction * cse_one_instruction(struct dmr_C *C, struct instruction *insn, struct instruction *def)
@@ -289,9 +289,9 @@ static struct basic_block *trivial_common_parent(struct basic_block *bb1, struct
 	return parent;
 }
 
-static inline void remove_instruction(struct ptr_list **list, struct instruction *insn, int count)
+static inline void remove_instruction(struct instruction_list **list, struct instruction *insn, int count)
 {
-	ptrlist_remove(list, insn, count);
+	ptrlist_remove((struct ptr_list **)list, insn, count);
 }
 
 static void add_instruction_to_end(struct dmr_C *C, struct instruction *insn, struct basic_block *bb)
@@ -354,7 +354,7 @@ repeat:
 	C->L->repeat_phase = 0;
 	clean_up_insns(C, ep);
 	for (i = 0; i < INSN_HASH_SIZE; i++) {
-		struct ptr_list **list = C->L->insn_hash_table + i;
+		struct instruction_list **list = C->L->insn_hash_table + i;
 		if (*list) {
 			if (dmrC_instruction_list_size(*list) > 1) {
 				struct instruction *insn, *last;
@@ -372,7 +372,7 @@ repeat:
 					last = insn;
 				} END_FOR_EACH_PTR(insn);
 			}
-			ptrlist_remove_all(list);
+			ptrlist_remove_all((struct ptr_list **)list);
 		}
 	}
 

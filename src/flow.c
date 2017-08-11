@@ -230,9 +230,9 @@ int dmrC_simplify_flow(struct dmr_C *C, struct entrypoint *ep)
 	return simplify_branch_nodes(C, ep);
 }
 
-static inline void concat_user_list(struct ptr_list *src, struct ptr_list **dst)
+static inline void concat_user_list(struct pseudo_user_list *src, struct pseudo_user_list **dst)
 {
-	ptrlist_concat(src, dst);
+	ptrlist_concat((struct ptr_list *)src, (struct ptr_list **)dst);
 }
 
 void dmrC_convert_instruction_target(struct dmr_C *C, struct instruction *insn, pseudo_t src)
@@ -316,7 +316,7 @@ int dmrC_dominates(struct dmr_C *C, pseudo_t pseudo, struct instruction *insn, s
 	return 1;
 }
 
-static int phisrc_in_bb(struct ptr_list *list, struct basic_block *bb)
+static int phisrc_in_bb(struct pseudo_list *list, struct basic_block *bb)
 {
 	pseudo_t p;
 	FOR_EACH_PTR(list, p) {
@@ -327,7 +327,7 @@ static int phisrc_in_bb(struct ptr_list *list, struct basic_block *bb)
 	return 0;
 }
 static int find_dominating_parents(struct dmr_C *C, pseudo_t pseudo, struct instruction *insn,
-	struct basic_block *bb, unsigned long generation, struct ptr_list **dominators,
+	struct basic_block *bb, unsigned long generation, struct pseudo_list **dominators,
 	int local)
 {
 	struct basic_block *parent;
@@ -379,7 +379,7 @@ found_dominator:
  * We should probably sort the phi list just to make it easier to compare
  * later for equality. 
  */
-void dmrC_rewrite_load_instruction(struct dmr_C *C, struct instruction *insn, struct ptr_list *dominators)
+void dmrC_rewrite_load_instruction(struct dmr_C *C, struct instruction *insn, struct pseudo_list *dominators)
 {
 	pseudo_t new, phi;
 
@@ -418,7 +418,7 @@ static int find_dominating_stores(struct dmr_C *C, pseudo_t pseudo, struct instr
 {
 	struct basic_block *bb = insn->bb;
 	struct instruction *one, *dom = NULL;
-	struct ptr_list *dominators;
+	struct pseudo_list *dominators;
 	int partial;
 
 	/* Unreachable load? Undo it */
@@ -829,7 +829,7 @@ void dmrC_kill_unreachable_bbs(struct dmr_C *C, struct entrypoint *ep)
 		bb->ep = NULL;
 		DELETE_CURRENT_PTR(bb);
 	} END_FOR_EACH_PTR(bb);
-	ptrlist_pack(&ep->bbs);
+	ptrlist_pack((struct ptr_list **) &ep->bbs);
 }
 
 static int rewrite_parent_branch(struct dmr_C *C, struct basic_block *bb, struct basic_block *old, struct basic_block *new)
@@ -887,7 +887,7 @@ static struct basic_block * rewrite_branch_bb(struct dmr_C *C, struct basic_bloc
 	return target;
 }
 
-static void vrfy_bb_in_list(struct basic_block *bb, struct ptr_list *list)
+static void vrfy_bb_in_list(struct basic_block *bb, struct basic_block_list *list)
 {
 	if (bb) {
 		struct basic_block *tmp;

@@ -46,7 +46,7 @@ extern void dmrC_kill_unreachable_bbs(struct dmr_C *C, struct entrypoint *ep);
 
 void dmrC_check_access(struct dmr_C *C, struct instruction *insn);
 void dmrC_convert_load_instruction(struct dmr_C *C, struct instruction *, pseudo_t);
-void dmrC_rewrite_load_instruction(struct dmr_C *C, struct instruction *, struct ptr_list *);
+void dmrC_rewrite_load_instruction(struct dmr_C *C, struct instruction *, struct pseudo_list *);
 int dmrC_dominates(struct dmr_C *C, pseudo_t pseudo, struct instruction *insn, struct instruction *dom, int local);
 
 extern void dmrC_clear_liveness(struct entrypoint *ep);
@@ -55,7 +55,7 @@ extern void dmrC_track_pseudo_death(struct dmr_C *C, struct entrypoint *ep);
 extern void dmrC_track_phi_uses(struct dmr_C *C, struct instruction *insn);
 
 extern void dmrC_vrfy_flow(struct entrypoint *ep);
-extern int dmrC_pseudo_in_list(struct ptr_list *list, pseudo_t pseudo);
+extern int dmrC_pseudo_in_list(struct pseudo_list *list, pseudo_t pseudo);
 
 #ifdef __cplusplus
 }

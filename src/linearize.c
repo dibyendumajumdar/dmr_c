@@ -1,10 +1,6 @@
 /*
- * Linearize - walk the statement tree (but _not_ the expressions)
- * to generate a linear version of it and the basic blocks. 
- *
- * NOTE! We're not interested in the actual sub-expressions yet,
- * even though they can generate conditional branches and
- * subroutine calls. That's all "local" behaviour.
+ * Linearize - walk the parse tree and generate a linear version 
+ * of it and the basic blocks. 
  *
  * Copyright (C) 2004 Linus Torvalds
  * Copyright (C) 2004 Christopher Li
@@ -242,7 +238,7 @@ static const char *opcodes[] = {
 	[OP_COPY] = "copy",
 };
 
-static char *show_asm_constraints(struct dmr_C *C, char *buf, const char *sep, struct ptr_list *list)
+static char *show_asm_constraints(struct dmr_C *C, char *buf, const char *sep, struct asm_constraint_list *list)
 {
 	struct asm_constraint *entry;
 
@@ -696,7 +692,7 @@ void dmrC_insert_branch(struct dmr_C *C, struct basic_block *bb, struct instruct
 		DELETE_CURRENT_PTR(child);
 		remove_parent(C, child, bb);
 	} END_FOR_EACH_PTR(child);
-	ptrlist_pack(&bb->children);
+	ptrlist_pack((struct ptr_list **)&bb->children);
 }
 	
 
@@ -810,7 +806,7 @@ static pseudo_t symbol_pseudo(struct dmr_C *C, struct entrypoint *ep, struct sym
 pseudo_t dmrC_value_pseudo(struct dmr_C *C, long long val)
 {
 	int hash = val & (MAX_VAL_HASH-1);
-	struct ptr_list **list = C->L->prev + hash;
+	struct pseudo_list **list = C->L->prev + hash;
 	pseudo_t pseudo;
 
 	FOR_EACH_PTR(*list, pseudo) {
@@ -1775,7 +1771,7 @@ static void add_asm_input(struct dmr_C *C, struct entrypoint *ep, struct instruc
 	rule->ident = ident;
 	rule->constraint = constraint;
 	dmrC_use_pseudo(C, insn, pseudo, &rule->pseudo);
-	ptrlist_add(&insn->asm_rules->inputs, rule, &C->ptrlist_allocator);
+	ptrlist_add((struct ptr_list **)&insn->asm_rules->inputs, rule, &C->ptrlist_allocator);
 }
 
 static void add_asm_output(struct dmr_C *C, struct entrypoint *ep, struct instruction *insn, struct expression *expr,
@@ -1793,7 +1789,7 @@ static void add_asm_output(struct dmr_C *C, struct entrypoint *ep, struct instru
 	rule->ident = ident;
 	rule->constraint = constraint;
 	dmrC_use_pseudo(C, insn, pseudo, &rule->pseudo);
-	ptrlist_add(&insn->asm_rules->outputs, rule, &C->ptrlist_allocator);
+	ptrlist_add((struct ptr_list **)&insn->asm_rules->outputs, rule, &C->ptrlist_allocator);
 }
 
 static pseudo_t linearize_asm_statement(struct dmr_C *C, struct entrypoint *ep, struct statement *stmt)
@@ -1888,7 +1884,7 @@ static int multijmp_cmp(void *ud, const void *_a, const void *_b)
 
 static void sort_switch_cases(struct dmr_C *C, struct instruction *insn)
 {
-	ptrlist_sort(&insn->multijmp_list, C, multijmp_cmp);
+	ptrlist_sort((struct ptr_list **)&insn->multijmp_list, C, multijmp_cmp);
 }
 
 static pseudo_t linearize_declaration(struct dmr_C *C, struct entrypoint *ep, struct statement *stmt)

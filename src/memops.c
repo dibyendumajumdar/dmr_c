@@ -18,7 +18,7 @@
 #include <flow.h>
 
 static int find_dominating_parents(struct dmr_C *C, pseudo_t pseudo, struct instruction *insn,
-	struct basic_block *bb, unsigned long generation, struct ptr_list **dominators,
+	struct basic_block *bb, unsigned long generation, struct pseudo_list **dominators,
 	int local)
 {
 	struct basic_block *parent;
@@ -90,7 +90,7 @@ static void simplify_loads(struct dmr_C *C, struct basic_block *bb)
 			struct instruction *dom;
 			pseudo_t pseudo = insn->src;
 			int local = local_pseudo(pseudo);
-			struct ptr_list *dominators;
+			struct pseudo_list *dominators;
 			unsigned long generation;
 
 			/* Check for illegal offsets.. */

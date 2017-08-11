@@ -1960,7 +1960,7 @@ static int compile(struct dmr_C *C, NJXContextRef module, struct symbol_list *li
 bool dmrC_nanocompile(int argc, char **argv, NJXContextRef module,
 		      const char *inputbuffer)
 {
-	struct ptr_list *filelist = NULL;
+	struct string_list *filelist = NULL;
 	struct symbol_list *symlist;
 	char *file;
 

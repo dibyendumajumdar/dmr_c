@@ -303,7 +303,7 @@ static void examine_symbol_list(struct dmr_C *C, const char *file, struct symbol
 int main(int argc, char **argv)
 {
 	struct symbol_list *symlist;
-	struct ptr_list *filelist = NULL;
+	struct string_list *filelist = NULL;
 	char *file;
 
 	struct dmr_C *C = new_dmr_C();

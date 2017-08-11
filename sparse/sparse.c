@@ -293,7 +293,7 @@ static void check_symbols(struct dmr_C *C, struct symbol_list *list)
 
 int main(int argc, char **argv)
 {
-	struct ptr_list *filelist = NULL;
+	struct string_list *filelist = NULL;
 	char *file;
 
 	struct dmr_C *C = new_dmr_C();

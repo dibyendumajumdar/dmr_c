@@ -103,6 +103,12 @@ enum {
 struct symbol_list;
 struct statement_list;
 struct expression_list;
+struct basic_block_list;
+struct instruction_list;
+struct multijmp_list;
+struct pseudo_list;
+
+DECLARE_PTR_LIST(string_list, char);
 
 struct dmr_C {
 	struct target_t *target;
@@ -239,7 +245,7 @@ extern void dmrC_declare_builtin_functions(struct dmr_C *C);
 
 
 extern void dmrC_create_builtin_stream(struct dmr_C *C);
-extern struct symbol_list * dmrC_sparse_initialize(struct dmr_C *C, int argc, char **argv, struct ptr_list **filelist);
+extern struct symbol_list * dmrC_sparse_initialize(struct dmr_C *C, int argc, char **argv, struct string_list **filelist);
 extern struct symbol_list * dmrC_sparse_keep_tokens(struct dmr_C *C, char *filename);
 extern struct symbol_list * dmrC_sparse(struct dmr_C *C, char *filename);
 extern struct symbol_list * dmrC__sparse(struct dmr_C *C, char *filename);

@@ -22,48 +22,52 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include <stdarg.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 #include <ctype.h>
 #include <fcntl.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include <port.h>
-#include <dmr_c.h>
 #include <allocate.h>
-#include <token.h>
-#include <parse.h>
-#include <symbol.h>
+#include <dmr_c.h>
 #include <expression.h>
 #include <linearize.h>
+#include <parse.h>
+#include <port.h>
+#include <symbol.h>
+#include <token.h>
 
 static void clean_up_symbols(struct dmr_C *C, struct symbol_list *list)
 {
 	struct symbol *sym;
 
-	FOR_EACH_PTR(list, sym) {
+	FOR_EACH_PTR(list, sym)
+	{
 		struct entrypoint *ep;
 
 		dmrC_expand_symbol(C, sym);
 		ep = dmrC_linearize_symbol(C, sym);
 		if (ep)
 			dmrC_show_entry(C, ep);
-	} END_FOR_EACH_PTR(sym);
+	}
+	END_FOR_EACH_PTR(sym);
 }
 
 int main(int argc, char **argv)
 {
-	struct ptr_list *filelist = NULL;
+	struct string_list *filelist = NULL;
 	char *file;
 
-  struct dmr_C *C = new_dmr_C();
+	struct dmr_C *C = new_dmr_C();
 	clean_up_symbols(C, dmrC_sparse_initialize(C, argc, argv, &filelist));
-	FOR_EACH_PTR(filelist, file) {
+	FOR_EACH_PTR(filelist, file)
+	{
 		clean_up_symbols(C, dmrC_sparse(C, file));
-	} END_FOR_EACH_PTR(file);
-  
-  destroy_dmr_C(C);
-  
+	}
+	END_FOR_EACH_PTR(file);
+
+	destroy_dmr_C(C);
+
 	return 0;
 }

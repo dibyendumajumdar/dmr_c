@@ -36,9 +36,9 @@ static int if_convert_phi(struct dmr_C *C, struct instruction *insn)
 	pseudo_t p1, p2;
 
 	bb = insn->bb;
-	if (ptrlist_linearize(insn->phi_list, (void **)array, 3) != 2)
+	if (ptrlist_linearize((struct ptr_list *)insn->phi_list, (void **)array, 3) != 2)
 		return 0;
-	if (ptrlist_linearize(bb->parents, (void **)parents, 3) != 2)
+	if (ptrlist_linearize((struct ptr_list *)bb->parents, (void **)parents, 3) != 2)
 		return 0;
 	p1 = array[0]->def->src1;
 	bb1 = array[0]->def->bb;
@@ -138,7 +138,7 @@ static int clean_up_phi(struct dmr_C *C, struct instruction *insn)
 	return if_convert_phi(C, insn);
 }
 
-static int delete_pseudo_user_list_entry(struct dmr_C *C, struct ptr_list **list, pseudo_t *entry, int count)
+static int delete_pseudo_user_list_entry(struct dmr_C *C, struct pseudo_user_list **list, pseudo_t *entry, int count)
 {
 	struct pseudo_user *pu;
 
@@ -151,7 +151,7 @@ static int delete_pseudo_user_list_entry(struct dmr_C *C, struct ptr_list **list
 	} END_FOR_EACH_PTR(pu);
 	assert(count <= 0);
 out:
-	ptrlist_pack(list);
+	ptrlist_pack((struct ptr_list **)list);
 	return count;
 }
 
@@ -173,7 +173,7 @@ void dmrC_kill_use(struct dmr_C *C, pseudo_t *usep)
 	}
 }
 
-static void kill_use_list(struct dmr_C *C, struct ptr_list *list)
+static void kill_use_list(struct dmr_C *C, struct pseudo_list *list)
 {
 	pseudo_t p;
 	FOR_EACH_PTR(list, p) {
@@ -183,12 +183,12 @@ static void kill_use_list(struct dmr_C *C, struct ptr_list *list)
 	} END_FOR_EACH_PTR(p);
 }
 
-static void kill_insn_list(struct dmr_C *C, struct ptr_list *list)
+static void kill_insn_list(struct dmr_C *C, struct instruction_list *list)
 {
-	struct instruction *insn;
-	FOR_EACH_PTR(list, insn) {
-		dmrC_kill_insn(C, insn, 0);
-	} END_FOR_EACH_PTR(insn);
+    struct instruction *insn;
+    FOR_EACH_PTR(list, insn) {
+        dmrC_kill_insn(C, insn, 0);
+    } END_FOR_EACH_PTR(insn);
 }
 
 /*
@@ -282,7 +282,7 @@ void dmrC_kill_insn(struct dmr_C *C, struct instruction *insn, int force)
 			if (!(insn->func->sym->ctype.modifiers & MOD_PURE))
 				return;
 		}
-		kill_insn_list(C, insn->arguments);
+        kill_insn_list(C, insn->arguments);
 		if (insn->func->type == PSEUDO_REG)
 			dmrC_kill_use(C, &insn->func);
 		break;
@@ -843,7 +843,7 @@ static int simplify_associative_binop(struct dmr_C *C, struct instruction *insn)
 		return 0;
 	if (!simple_pseudo(def->src2))
 		return 0;
-	if (ptrlist_size(def->target->users) != 1)
+	if (ptrlist_size((struct ptr_list *)def->target->users) != 1)
 		return 0;
 	switch_pseudo(C, def, &def->src1, insn, &insn->src2);
 	return REPEAT_CSE;

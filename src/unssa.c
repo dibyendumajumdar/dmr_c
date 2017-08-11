@@ -37,7 +37,7 @@
 
 static inline int nbr_pseudo_users(pseudo_t p)
 {
-	return ptrlist_size(p->users);
+	return ptrlist_size((struct ptr_list *)p->users);
 }
 
 static int simplify_phi_node(struct dmr_C *C, struct instruction *phi, pseudo_t tmp)

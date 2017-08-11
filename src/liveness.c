@@ -181,7 +181,7 @@ static void track_instruction_usage(struct dmr_C *C, struct basic_block *bb, str
 	}
 }
 
-int dmrC_pseudo_in_list(struct ptr_list *list, pseudo_t pseudo)
+int dmrC_pseudo_in_list(struct pseudo_list *list, pseudo_t pseudo)
 {
 	pseudo_t old;
 	FOR_EACH_PTR(list,old) {
@@ -191,7 +191,7 @@ int dmrC_pseudo_in_list(struct ptr_list *list, pseudo_t pseudo)
 	return 0;
 }
 
-static void add_pseudo_exclusive(struct dmr_C *C, struct ptr_list **list, pseudo_t pseudo)
+static void add_pseudo_exclusive(struct dmr_C *C, struct pseudo_list **list, pseudo_t pseudo)
 {
 	if (!dmrC_pseudo_in_list(*list, pseudo)) {
 		C->L->liveness_changed = 1;
@@ -242,8 +242,8 @@ void dmrC_clear_liveness(struct entrypoint *ep)
 	struct basic_block *bb;
 
 	FOR_EACH_PTR(ep->bbs, bb) {
-		ptrlist_remove_all(&bb->needs);
-		ptrlist_remove_all(&bb->defines);
+		ptrlist_remove_all((struct ptr_list **)&bb->needs);
+		ptrlist_remove_all((struct ptr_list **)&bb->defines);
 	} END_FOR_EACH_PTR(bb);
 }
 
@@ -287,11 +287,11 @@ void dmrC_track_pseudo_liveness(struct dmr_C *C, struct entrypoint *ep)
 is_used:
 		;
 		} END_FOR_EACH_PTR(def);
-		ptrlist_pack(&bb->defines);
+		ptrlist_pack((struct ptr_list **)&bb->defines);
 	} END_FOR_EACH_PTR(bb);
 }
 
-static void merge_pseudo_list(struct dmr_C *C, struct ptr_list *src, struct ptr_list **dest)
+static void merge_pseudo_list(struct dmr_C *C, struct pseudo_list *src, struct pseudo_list **dest)
 {
 	pseudo_t pseudo;
 	FOR_EACH_PTR(src, pseudo) {
@@ -308,7 +308,7 @@ void dmrC_track_phi_uses(struct dmr_C *C, struct instruction *insn)
 			continue;
 		def = phi->def;
 		assert(def->opcode == OP_PHISOURCE);
-		ptrlist_add(&def->phi_users, insn, &C->ptrlist_allocator);
+        dmrC_add_instruction(C, &def->phi_users, insn);
 	} END_FOR_EACH_PTR(phi);
 }
 
@@ -335,7 +335,7 @@ static void death_use(struct dmr_C *C, struct basic_block *bb, pseudo_t pseudo)
 
 static void track_pseudo_death_bb(struct dmr_C *C, struct basic_block *bb)
 {
-	struct ptr_list *live = NULL;
+	struct pseudo_list *live = NULL;
 	struct basic_block *child;
 	struct instruction *insn;
 
@@ -359,10 +359,10 @@ static void track_pseudo_death_bb(struct dmr_C *C, struct basic_block *bb)
 				deathnote->target = dead;
 				INSERT_CURRENT(deathnote, insn);
 			} END_FOR_EACH_PTR(dead);
-			ptrlist_remove_all(&C->L->dead_list);
+			ptrlist_remove_all((struct ptr_list **)&C->L->dead_list);
 		}
 	} END_FOR_EACH_PTR_REVERSE(insn);
-	ptrlist_remove_all(&live);
+	ptrlist_remove_all((struct ptr_list **)&live);
 }
 
 void dmrC_track_pseudo_death(struct dmr_C *C, struct entrypoint *ep)

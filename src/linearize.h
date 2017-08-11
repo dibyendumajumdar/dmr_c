@@ -2,12 +2,8 @@
 #define DMR_C_LINEARIZE_H
 
 /*
-* Linearize - walk the statement tree (but _not_ the expressions)
-* to generate a linear version of it and the basic blocks.
-*
-* NOTE! We're not interested in the actual sub-expressions yet,
-* even though they can generate conditional branches and
-* subroutine calls. That's all "local" behaviour.
+* Linearize - walk the parse tree and generate a linear version
+* of it and the basic blocks.
 *
 * Copyright (C) 2004 Linus Torvalds
 * Copyright (C) 2004 Christopher Li
@@ -25,10 +21,18 @@ extern "C" {
 
 struct instruction;
 
+DECLARE_PTR_LIST(basic_block_list, struct basic_block);
+DECLARE_PTR_LIST(instruction_list, struct instruction);
+DECLARE_PTR_LIST(multijmp_list, struct multijmp);
+DECLARE_PTR_LIST(pseudo_list, struct pseudo);
+//DECLARE_PTR_LIST(pseudo_ptr_list, pseudo_t);
+
 struct pseudo_user {
 	struct instruction *insn;
 	pseudo_t *userp;
 };
+
+DECLARE_PTR_LIST(pseudo_user_list, struct pseudo_user);
 
 enum pseudo_type {
 	PSEUDO_VOID,
@@ -42,7 +46,7 @@ enum pseudo_type {
 struct pseudo {
 	int nr;
 	enum pseudo_type type;
-	struct ptr_list *users; /* pseudo_user list */
+	struct pseudo_user_list *users; /* pseudo_user list */
 	struct ident *ident;
 	union {
 		struct symbol *sym;	     // PSEUDO_SYM, VAL & ARG
@@ -70,19 +74,18 @@ struct linearizer_state_t {
 	unsigned long bb_generation;
 	int liveness_changed;
 
-	struct ptr_list **live_list;
-	struct ptr_list *dead_list;
-
+	struct pseudo_list **live_list;
+	struct pseudo_list *dead_list;
 
 #define MAX_VAL_HASH 64
-	struct ptr_list *prev[MAX_VAL_HASH];
+	struct pseudo_list *prev[MAX_VAL_HASH]; /* from pseudo_t value_pseudo(long long val) in linearize.c */
 	int nr;	/* pseudo number */
 	int bb_nr; /* basic block number */
 	char buffer[4096*4];
 	int n;
 	char pseudo_buffer[4][64];
 #define INSN_HASH_SIZE 256
-	struct ptr_list *insn_hash_table[INSN_HASH_SIZE];
+	struct instruction_list *insn_hash_table[INSN_HASH_SIZE];
 };
 
 #define VOID_PSEUDO(C) (&C->L->void_pseudo)
@@ -98,10 +101,12 @@ struct asm_constraint {
 	const struct ident *ident;
 };
 
+DECLARE_PTR_LIST(asm_constraint_list, struct asm_constraint);
+
 struct asm_rules {
-	struct ptr_list *inputs; /* list of asm_constraint */
-	struct ptr_list *outputs; /* list of asm_constraint */
-	struct ptr_list *clobbers; /* list of asm_constraint */
+	struct asm_constraint_list *inputs; /* list of asm_constraint */
+	struct asm_constraint_list *outputs; /* list of asm_constraint */
+	struct asm_constraint_list *clobbers; /* list of asm_constraint */
 };
 
 struct instruction {
@@ -116,20 +121,20 @@ struct instruction {
 	};
 	union {
 		struct /* entrypoint */ {
-			struct ptr_list *arg_list; /* pseudo list */
+			struct pseudo_list *arg_list; /* pseudo list */
 		};
 		struct /* branch */ {
 			struct basic_block *bb_true, *bb_false;
 		};
 		struct /* switch */ {
-			struct ptr_list *multijmp_list;
+			struct multijmp_list *multijmp_list;
 		};
 		struct /* phi_node */ {
-			struct ptr_list *phi_list; /* pseudo list */
+			struct pseudo_list *phi_list; /* pseudo list */
 		};
 		struct /* phi source */ {
 			pseudo_t phi_src;
-			struct ptr_list *phi_users; /* instruction list */
+			struct instruction_list *phi_users; /* instruction list */
 		};
 		struct /* unops */ {
 			pseudo_t src;
@@ -150,8 +155,8 @@ struct instruction {
 		struct /* call */ {
 			pseudo_t func;
 			union {
-				struct ptr_list *arguments; /* instruction list */
-				struct ptr_list *inlined_args; /* pseudo list */
+				struct instruction_list *arguments; /* instruction list */
+				struct pseudo_list *inlined_args; /* pseudo list */
 			};
 			struct symbol *fntype;
 		};
@@ -268,74 +273,79 @@ struct basic_block {
 	unsigned long generation;
 	int context;
 	struct entrypoint *ep;
-	struct ptr_list *parents; /* basic_block sources */
-	struct ptr_list *children; /* basic_block destinations */
-	struct ptr_list *insns;	/* Linear list of instructions */
-	struct ptr_list *needs, *defines; /* pseudo lists */
+	struct basic_block_list *parents; /* basic_block sources */
+	struct basic_block_list *children; /* basic_block destinations */
+	struct instruction_list *insns;	/* Linear list of instructions */
+	struct pseudo_list *needs, *defines; /* pseudo lists */
+    /* TODO Following fields are used by the codegen backends.
+       In Sparse this is a union but we need the nr field 
+       for NanoJIT backend's liveness analysis in addition to 
+       creating unique labels.
+    */
 	//union {
 		unsigned int nr;	/* unique id for label's names */
 		DMRC_BACKEND_TYPE priv;
 	//};
 };
 
-static inline int dmrC_instruction_list_size(struct ptr_list *list)
+static inline int dmrC_instruction_list_size(struct instruction_list *list)
 {
-	return ptrlist_size(list);
+	return ptrlist_size((struct ptr_list *)list);
 }
 
-static inline int dmrC_pseudo_list_size(struct ptr_list *list)
+static inline int dmrC_pseudo_list_size(struct pseudo_list *list)
 {
-	return ptrlist_size(list);
+	return ptrlist_size((struct ptr_list *)list);
 }
 
-static inline int dmrC_bb_list_size(struct ptr_list *list)
+static inline int dmrC_bb_list_size(struct basic_block_list *list)
 {
-	return ptrlist_size(list);
+	return ptrlist_size((struct ptr_list *)list);
 }
 
-static inline void dmrC_free_instruction_list(struct ptr_list **head)
+static inline void dmrC_free_instruction_list(struct pseudo_list **head)
 {
-	ptrlist_remove_all(head);
+	ptrlist_remove_all((struct ptr_list **)head);
 }
 
-static inline struct instruction * dmrC_delete_last_instruction(struct ptr_list **head)
+static inline struct instruction * dmrC_delete_last_instruction(struct instruction_list **head)
 {
-	return (struct instruction *) ptrlist_undo_last(head);
+	return (struct instruction *) ptrlist_undo_last((struct ptr_list **)head);
 }
 
-static inline struct basic_block * dmrC_delete_last_basic_block(struct ptr_list **head)
+static inline struct basic_block * dmrC_delete_last_basic_block(struct basic_block_list **head)
 {
-	return (struct basic_block *) ptrlist_delete_last(head);
+	return (struct basic_block *) ptrlist_delete_last((struct ptr_list **)head);
 }
 
-static inline struct basic_block *dmrC_first_basic_block(struct ptr_list *head)
+static inline struct basic_block *dmrC_first_basic_block(struct basic_block_list *head)
 {
-	return (struct basic_block *) ptrlist_first(head);
+	return (struct basic_block *) ptrlist_first((struct ptr_list *)head);
 }
 
-static inline struct instruction *dmrC_last_instruction(struct ptr_list *head)
+static inline struct instruction *dmrC_last_instruction(struct instruction_list *head)
 {
-	return (struct instruction *) ptrlist_last(head);
+	return (struct instruction *) ptrlist_last((struct ptr_list *)head);
 }
 
-static inline struct instruction *dmrC_first_instruction(struct ptr_list *head)
+static inline struct instruction *dmrC_first_instruction(struct instruction_list *head)
 {
-	return (struct instruction *) ptrlist_first(head);
+	return (struct instruction *) ptrlist_first((struct ptr_list *)head);
 }
 
-static inline pseudo_t dmrC_first_pseudo(struct ptr_list *head)
+static inline pseudo_t dmrC_first_pseudo(struct pseudo_list *head)
 {
-	return (pseudo_t) ptrlist_first(head);
+	return (pseudo_t) ptrlist_first((struct ptr_list *)head);
 }
 
-static inline void dmrC_concat_basic_block_list(struct ptr_list *from, struct ptr_list **to)
+static inline void dmrC_concat_basic_block_list(struct basic_block_list *from, struct basic_block_list **to)
 {
-	ptrlist_concat(from, to);
+	ptrlist_concat((struct ptr_list *)from, (struct ptr_list **)to);
 }
 
-static inline void dmrC_concat_instruction_list(struct ptr_list *from, struct ptr_list **to)
+static inline void dmrC_concat_instruction_list(struct instruction_list *from, struct instruction_list **to)
 {
-	ptrlist_concat(from, to);
+	ptrlist_concat((struct ptr_list *)from, (struct ptr_list **)to);
 }
 
 static inline int dmrC_is_branch_goto(struct instruction *br)
@@ -343,29 +353,29 @@ static inline int dmrC_is_branch_goto(struct instruction *br)
 	return br && br->opcode==OP_BR && (!br->bb_true || !br->bb_false);
 }
 
-static inline void dmrC_add_bb(struct dmr_C *C, struct ptr_list **list, struct basic_block *bb)
+static inline void dmrC_add_bb(struct dmr_C *C, struct basic_block_list **list, struct basic_block *bb)
 {
-	ptrlist_add(list, bb, &C->ptrlist_allocator);
+	ptrlist_add((struct ptr_list **)list, bb, &C->ptrlist_allocator);
 }
 
-static inline void dmrC_add_instruction(struct dmr_C *C, struct ptr_list **list, struct instruction *insn)
+static inline void dmrC_add_instruction(struct dmr_C *C, struct instruction_list **list, struct instruction *insn)
 {
-	ptrlist_add(list, insn, &C->ptrlist_allocator);
+	ptrlist_add((struct ptr_list **)list, insn, &C->ptrlist_allocator);
 }
 
-static inline void dmrC_add_multijmp(struct dmr_C *C, struct ptr_list **list, struct multijmp *multijmp)
+static inline void dmrC_add_multijmp(struct dmr_C *C, struct multijmp_list **list, struct multijmp *multijmp)
 {
-	ptrlist_add(list, multijmp, &C->ptrlist_allocator);
+	ptrlist_add((struct ptr_list **)list, multijmp, &C->ptrlist_allocator);
 }
 
-static inline pseudo_t *dmrC_add_pseudo(struct dmr_C *C, struct ptr_list **list, pseudo_t pseudo)
+static inline pseudo_t *dmrC_add_pseudo(struct dmr_C *C, struct pseudo_list **list, pseudo_t pseudo)
 {
-	return (pseudo_t *) ptrlist_add(list, pseudo, &C->ptrlist_allocator);
+	return (pseudo_t *) ptrlist_add((struct ptr_list **)list, pseudo, &C->ptrlist_allocator);
 }
 
-static inline int dmrC_remove_pseudo(struct ptr_list **list, pseudo_t pseudo)
+static inline int dmrC_remove_pseudo(struct pseudo_list **list, pseudo_t pseudo)
 {
-	return ptrlist_remove(list, pseudo, 0) != 0;
+	return ptrlist_remove((struct ptr_list **)list, pseudo, 0) != 0;
 }
 
 static inline int dmrC_bb_terminated(struct basic_block *bb)
@@ -383,14 +393,14 @@ static inline int dmrC_bb_reachable(struct basic_block *bb)
 	return bb != NULL;
 }
 
-static inline void dmrC_add_pseudo_ptr(struct dmr_C *C, pseudo_t *ptr, struct ptr_list **list)
-{
-	ptrlist_add(list, ptr, &C->ptrlist_allocator);
-}
+//static inline void dmrC_add_pseudo_ptr(struct dmr_C *C, pseudo_t *ptr, struct pseudo_ptr_list **list)
+//{
+//	ptrlist_add((struct ptr_list **)list, ptr, &C->ptrlist_allocator);
+//}
 
-static inline void dmrC_add_pseudo_user_ptr(struct dmr_C *C, struct pseudo_user *user, struct ptr_list **list)
+static inline void dmrC_add_pseudo_user_ptr(struct dmr_C *C, struct pseudo_user *user, struct pseudo_user_list **list)
 {
-	ptrlist_add(list, user, &C->ptrlist_allocator);
+	ptrlist_add((struct ptr_list **)list, user, &C->ptrlist_allocator);
 }
 
 static inline int dmrC_has_use_list(pseudo_t p)
@@ -413,22 +423,22 @@ static inline void dmrC_use_pseudo(struct dmr_C *C, struct instruction *insn, ps
 		dmrC_add_pseudo_user_ptr(C, dmrC_alloc_pseudo_user(C, insn, pp), &p->users);
 }
 
-static inline void dmrC_remove_bb_from_list(struct ptr_list **list, struct basic_block *entry, int count)
+static inline void dmrC_remove_bb_from_list(struct basic_block_list **list, struct basic_block *entry, int count)
 {
-	ptrlist_remove(list, entry, count);
+	ptrlist_remove((struct ptr_list **)list, entry, count);
 }
 
-static inline void dmrC_replace_bb_in_list(struct ptr_list **list,
+static inline void dmrC_replace_bb_in_list(struct basic_block_list **list,
 	struct basic_block *old, struct basic_block *newbb, int count)
 {
-	ptrlist_replace(list, old, newbb, count);
+	ptrlist_replace((struct ptr_list **)list, old, newbb, count);
 }
 
 struct entrypoint {
 	struct symbol *name;
 	struct symbol_list *syms; /* symbol list */
-	struct ptr_list *accesses; /* pseudo list */
-	struct ptr_list *bbs; /* basic_block list */
+	struct pseudo_list *accesses; /* pseudo list */
+	struct basic_block_list *bbs; /* basic_block list */
 	struct basic_block *active;
 	struct instruction *entry;
 };

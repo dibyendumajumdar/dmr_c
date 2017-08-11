@@ -512,7 +512,7 @@ static void handle_arch_m64_finalize(struct dmr_C *C)
 		goto case_64bit_common;
 	case ARCH_LLP64:
 		C->target->bits_in_long = 32;
-		C->target->max_int_alignment = 8;
+		C->target->max_int_alignment = 4;
 		C->target->size_t_ctype = &C->S->ullong_ctype;
 		C->target->ssize_t_ctype = &C->S->llong_ctype;
 		dmrC_add_pre_buffer(C, "#weak_define __LLP64__ 1\n");

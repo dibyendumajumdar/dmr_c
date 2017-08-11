@@ -75,7 +75,7 @@ static struct token *parse_context_statement(struct dmr_C *C, struct token *toke
 static struct token *parse_range_statement(struct dmr_C *C, struct token *token, struct statement *stmt);
 static struct token *parse_asm_statement(struct dmr_C *C, struct token *token, struct statement *stmt);
 static struct token *toplevel_asm_declaration(struct dmr_C *C, struct token *token, struct symbol_list **list);
-
+static struct token *parse_static_assert(struct dmr_C *C, struct token *token, struct symbol_list **unused);
 static struct token *parameter_type_list(struct dmr_C *C, struct token *, struct symbol *);
 static struct token *identifier_list(struct dmr_C *C, struct token *, struct symbol *);
 static struct token *declarator(struct dmr_C *C, struct token *token, struct decl_state *ctx);
@@ -85,6 +85,7 @@ typedef struct token *attr_t(struct dmr_C *C, struct token *, struct symbol *,
 
 static attr_t
 	attribute_packed, attribute_aligned, attribute_modifier,
+	attribute_bitwise,
 	attribute_address_space, attribute_context,
 	attribute_designated_init,
 	attribute_transparent_union, ignore_attribute,
@@ -333,6 +334,10 @@ static struct symbol_op asm_op = {
 	.toplevel = toplevel_asm_declaration,
 };
 
+static struct symbol_op static_assert_op = {
+	.toplevel = parse_static_assert,
+};
+
 static struct symbol_op packed_op = {
 	.attribute = attribute_packed,
 };
@@ -343,6 +348,10 @@ static struct symbol_op aligned_op = {
 
 static struct symbol_op attr_mod_op = {
 	.attribute = attribute_modifier,
+};
+
+static struct symbol_op attr_bitwise_op = {
+	.attribute = attribute_bitwise,
 };
 
 static struct symbol_op attr_force_op = {
@@ -583,6 +592,8 @@ void dmrC_init_parser(struct dmr_C *C, int stream)
 		{ "__restrict",	NS_TYPEDEF,.op = &restrict_op },
 		{ "__restrict__",	NS_TYPEDEF,.op = &restrict_op },
 
+		/* Static assertion */
+		{ "_Static_assert", NS_KEYWORD, .op = &static_assert_op },
 		/* Storage class */
 		{ "auto",	NS_TYPEDEF,.op = &auto_op },
 		{ "register",	NS_TYPEDEF,.op = &register_op },
@@ -618,8 +629,8 @@ void dmrC_init_parser(struct dmr_C *C, int stream)
 		{ "noderef",	NS_KEYWORD,	MOD_NODEREF,.op = &attr_mod_op },
 		{ "safe",	NS_KEYWORD,	MOD_SAFE,.op = &attr_mod_op },
 		{ "force",	NS_KEYWORD,.op = &attr_force_op },
-		{ "bitwise",	NS_KEYWORD,	MOD_BITWISE,.op = &attr_mod_op },
-		{ "__bitwise__",NS_KEYWORD,	MOD_BITWISE,.op = &attr_mod_op },
+		{ "bitwise",	NS_KEYWORD,	MOD_BITWISE,	.op = &attr_bitwise_op },
+		{ "__bitwise__",NS_KEYWORD,	MOD_BITWISE,	.op = &attr_bitwise_op },
 		{ "address_space",NS_KEYWORD,.op = &address_space_op },
 		{ "mode",	NS_KEYWORD,.op = &mode_op },
 		{ "context",	NS_KEYWORD,.op = &context_op },
@@ -983,7 +994,7 @@ static struct token *parse_enum_declaration(struct dmr_C *C, struct token *token
 		sym->initializer = expr;
 		sym->enum_member = 1;
 		sym->ctype.base_type = parent;
-        dmrC_add_symbol(C, &parent->symbol_list, sym);
+		dmrC_add_symbol(C, &parent->symbol_list, sym);
 
 		if (base_type != &C->S->bad_ctype) {
 			if (ctype->type == SYM_NODE)
@@ -1147,6 +1158,13 @@ static void apply_qualifier(struct dmr_C *C, struct position *pos, struct ctype 
 static struct token *attribute_modifier(struct dmr_C *C, struct token *token, struct symbol *attr, struct decl_state *ctx)
 {
 	apply_qualifier(C, &token->pos, &ctx->ctype, attr->ctype.modifiers);
+	return token;
+}
+
+static struct token *attribute_bitwise(struct dmr_C *C, struct token *token, struct symbol *attr, struct decl_state *ctx)
+{
+	if (C->Wbitwise)
+		attribute_modifier(C, token, attr, ctx);
 	return token;
 }
 
@@ -1953,6 +1971,10 @@ static struct token *declaration_list(struct dmr_C *C, struct token *token, stru
 static struct token *struct_declaration_list(struct dmr_C *C, struct token *token, struct symbol_list **list)
 {
 	while (!dmrC_match_op(token, '}')) {
+		if (dmrC_match_ident(token, C->S->_Static_assert_ident)) {
+			token = parse_static_assert(C, token, NULL);
+			continue;
+		}
 		if (!dmrC_match_op(token, ';'))
 			token = declaration_list(C, token, list);
 		if (!dmrC_match_op(token, ';')) {
@@ -2098,6 +2120,33 @@ static struct token *parse_asm_declarator(struct dmr_C *C, struct token *token, 
 	token = dmrC_expect_token(C, token, '(', "after asm");
 	token = dmrC_parse_expression(C, token->next, &expr);
 	token = dmrC_expect_token(C, token, ')', "after asm");
+	return token;
+}
+
+static struct token *parse_static_assert(struct dmr_C *C, struct token *token, struct symbol_list **unused)
+{
+	struct expression *cond = NULL, *message = NULL;
+
+	token = dmrC_expect_token(C, token->next, '(', "after _Static_assert");
+	token = dmrC_constant_expression(C, token, &cond);
+	if (!cond)
+		dmrC_sparse_error(C, token->pos, "Expected constant expression");
+	token = dmrC_expect_token(C, token, ',', "after conditional expression in _Static_assert");
+	token = dmrC_parse_expression(C, token, &message);
+	if (!message || message->type != EXPR_STRING) {
+		struct position pos;
+
+		pos = message ? message->pos : token->pos;
+		dmrC_sparse_error(C, pos, "bad or missing string literal");
+		cond = NULL;
+	}
+	token = dmrC_expect_token(C, token, ')', "after diagnostic message in _Static_assert");
+
+	token = dmrC_expect_token(C, token, ';', "after _Static_assert()");
+
+	if (cond && !dmrC_const_expression_value(C, cond) && cond->type == EXPR_VALUE)
+		dmrC_sparse_error(C, cond->pos, "static assertion failed: %s",
+			     dmrC_show_string(C, message->string));
 	return token;
 }
 
@@ -2471,6 +2520,10 @@ static struct token * statement_list(struct dmr_C *C, struct token *token, struc
 			break;
 		if (dmrC_match_op(token, '}'))
 			break;
+		if (dmrC_match_ident(token, C->S->_Static_assert_ident)) {
+			token = parse_static_assert(C, token, NULL);
+			continue;
+		}
 		if (dmrC_lookup_type(token)) {
 			if (seen_statement) {
 				dmrC_warning(C, token->pos, "mixing declarations and code");
@@ -2814,7 +2867,7 @@ struct token *dmrC_external_declaration(struct dmr_C *C, struct token *token, st
 	unsigned long mod;
 	int is_typedef;
 
-	/* Top-level inline asm? */
+	/* Top-level inline asm? or static assertion? */
 	if (dmrC_token_type(token) == TOKEN_IDENT) {
 		struct symbol *s = dmrC_lookup_keyword(token->ident, NS_KEYWORD);
 		if (s && s->op->toplevel)
@@ -2939,7 +2992,7 @@ struct token *dmrC_external_declaration(struct dmr_C *C, struct token *token, st
 
 int dmrC_test_parse() {
 	struct dmr_C *C = new_dmr_C();
-    char test1[100] = "extern int printf(const char *, ...); int main() { printf(\"hello world!\\n\"); return 0; }";
+	char test1[100] = "extern int printf(const char *, ...); int main() { printf(\"hello world!\\n\"); return 0; }";
 	struct token *start;
 	struct token *end;
 	start = dmrC_tokenize_buffer(C, (unsigned char *)test1,

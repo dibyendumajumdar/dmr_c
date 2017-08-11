@@ -25,13 +25,30 @@ IDENT(__attribute); IDENT(__attribute__);
 IDENT(volatile); IDENT(__volatile); IDENT(__volatile__);
 IDENT(double);
 
+/* C storage classes. They get marked as reserved when initialized */
+IDENT(static);
+
+/* C99 keywords */
+IDENT(restrict); IDENT(__restrict); IDENT(__restrict__);
+IDENT(_Bool);
+IDENT_RESERVED(_Complex);
+IDENT_RESERVED(_Imaginary);
+
+/* C11 keywords */
+IDENT(_Alignas);
+IDENT_RESERVED(_Alignof);
+IDENT_RESERVED(_Atomic);
+IDENT_RESERVED(_Generic);
+IDENT(_Noreturn);
+IDENT_RESERVED(_Static_assert);
+IDENT(_Thread_local);
+
 /* Special case for L'\t' */
 IDENT(L);
 
 /* Extended gcc identifiers */
 IDENT(asm); IDENT_RESERVED(__asm); IDENT_RESERVED(__asm__);
 IDENT(alignof); IDENT_RESERVED(__alignof); IDENT_RESERVED(__alignof__); 
-IDENT_RESERVED(_Alignof);
 IDENT_RESERVED(__sizeof_ptr__);
 IDENT_RESERVED(__builtin_types_compatible_p);
 IDENT_RESERVED(__builtin_offsetof);
@@ -87,12 +104,10 @@ IDENT(stdcall); IDENT(__stdcall__);
 IDENT(fastcall); IDENT(__fastcall__);
 IDENT(dllimport); IDENT(__dllimport__);
 IDENT(dllexport); IDENT(__dllexport__);
-IDENT(restrict); IDENT(__restrict); IDENT(__restrict__);
 IDENT(artificial); IDENT(__artificial__);
 IDENT(leaf); IDENT(__leaf__);
 IDENT(vector_size); IDENT(__vector_size__);
 IDENT(error); IDENT(__error__);
-IDENT(static);
 
 
 /* Preprocessor idents.  Direct use of __IDENT avoids mentioning the keyword

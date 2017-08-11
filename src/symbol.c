@@ -640,10 +640,19 @@ void dmrC_bind_symbol(struct global_symbols_t *S, struct symbol *sym, struct ide
 
 struct symbol *dmrC_create_symbol(struct global_symbols_t *S, int stream, const char *name, int type, int ns)
 {
-	struct token *token = dmrC_built_in_token(S->C, stream, name);
-	struct symbol *sym = dmrC_alloc_symbol(S, token->pos, type);
+	struct ident *ident = dmrC_built_in_ident(S->C, name);
+	struct symbol *sym = dmrC_lookup_symbol(ident, ns);
 
-	dmrC_bind_symbol(S, sym, token->ident, ns);
+	if (sym && sym->type != type)
+		dmrC_die(S->C, "symbol %s created with different types: %d old %d", name,
+				type, sym->type);
+
+	if (!sym) {
+		struct token *token = dmrC_built_in_token(S->C, stream, ident);
+
+		sym = dmrC_alloc_symbol(S, token->pos, type);
+		dmrC_bind_symbol(S, sym, token->ident, ns);
+	}
 	return sym;
 }
 

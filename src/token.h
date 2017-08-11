@@ -245,7 +245,7 @@ extern int dmrC_init_stream(struct dmr_C *C, const char *name, int fd,
 extern const char *dmrC_stream_name(struct dmr_C *C, int stream);
 extern struct ident *dmrC_hash_ident(struct dmr_C *C, struct ident *ident);
 extern struct ident *dmrC_built_in_ident(struct dmr_C *C, const char *name);
-extern struct token *dmrC_built_in_token(struct dmr_C *C, int stream, const char *name);
+extern struct token *dmrC_built_in_token(struct dmr_C *C, int stream, struct ident *ident);
 extern const char *dmrC_show_special(struct dmr_C *C, int val);
 extern const char *dmrC_show_ident(struct dmr_C *C, const struct ident *ident);
 extern const char *dmrC_show_string(struct dmr_C *C, const struct string *string);

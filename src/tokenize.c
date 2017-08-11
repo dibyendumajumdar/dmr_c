@@ -834,14 +834,14 @@ struct ident *dmrC_built_in_ident(struct dmr_C *C, const char *name)
 	return create_hashed_ident(C, name, len, hash_name(name, (int)len));
 }
 
-struct token *dmrC_built_in_token(struct dmr_C *C, int stream, const char *name)
+struct token *dmrC_built_in_token(struct dmr_C *C, int stream, struct ident *ident)
 {
 	struct token *token;
 
 	token = (struct token *)dmrC_allocator_allocate(&C->token_allocator, 0);
 	token->pos.stream = stream;
 	dmrC_token_type(token) = TOKEN_IDENT;
-	token->ident = dmrC_built_in_ident(C, name);
+	token->ident = ident;
 	return token;
 }
 

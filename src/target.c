@@ -54,6 +54,7 @@ void dmrC_init_target(struct dmr_C *C) {
   t->bits_in_longlong = 64;
   t->bits_in_longlonglong = 128;
 
+  t->bits_in_wchar = 32;
   t->max_int_alignment = __alignof__(long long); 
 
   /*

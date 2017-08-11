@@ -33,6 +33,7 @@ struct target_t {
   int bits_in_longlong;
   int bits_in_longlonglong;
 
+  int bits_in_wchar;
   int max_int_alignment;
 
   /*

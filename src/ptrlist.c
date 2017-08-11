@@ -176,7 +176,7 @@ int ptrlist_size(const struct ptr_list *head) {
 	if (head) {
 		const struct ptr_list *list = head;
 		do {
-			nr += list->nr_;
+			nr += list->nr_ - list->rm_;
 		} while ((list = list->next_) != head);
 	}
 	return nr;

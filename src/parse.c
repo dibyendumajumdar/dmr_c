@@ -526,6 +526,7 @@ const char *ignored_attributes[] = {
 
 void dmrC_init_parser(struct dmr_C *C, int stream)
 {
+	/* Using NS_TYPEDEF will also make the keyword a reserved one */
 	struct init_keyword {
 		const char *name;
 		enum namespace_type ns;
@@ -2299,7 +2300,7 @@ static struct token *parse_for_statement(struct dmr_C *C, struct token *token, s
 	e1 = NULL;
 	/* C99 variable declaration? */
 	if (dmrC_lookup_type(token)) {
-		token = dmrC_external_declaration(C, token, &syms);
+		token = dmrC_external_declaration(C, token, &syms, NULL);
 	} else {
 		token = dmrC_parse_expression(C, token, &e1);
 		token = dmrC_expect_token(C, token, ';', "in 'for'");
@@ -2530,7 +2531,7 @@ static struct token * statement_list(struct dmr_C *C, struct token *token, struc
 				seen_statement = 0;
 			}
 			stmt = dmrC_alloc_statement(C, token->pos, STMT_DECLARATION);
-			token = dmrC_external_declaration(C, token, &stmt->declaration);
+			token = dmrC_external_declaration(C, token, &stmt->declaration, NULL);
 		} else {
 			seen_statement = C->Wdeclarationafterstatement;
 			token = statement(C, token, &stmt);
@@ -2857,7 +2858,7 @@ static struct token *toplevel_asm_declaration(struct dmr_C *C, struct token *tok
 	return token;
 }
 
-struct token *dmrC_external_declaration(struct dmr_C *C, struct token *token, struct symbol_list **list)
+struct token *dmrC_external_declaration(struct dmr_C *C, struct token *token, struct symbol_list **list, validate_decl_t validate_decl)
 {
 	struct ident *ident = NULL;
 	struct symbol *decl;
@@ -2924,6 +2925,11 @@ struct token *dmrC_external_declaration(struct dmr_C *C, struct token *token, st
 			}
 		}
 	} else if (base_type && base_type->type == SYM_FN) {
+		if (base_type->ctype.base_type == &C->S->incomplete_ctype) {
+			dmrC_warning(C, decl->pos, "'%s()' has implicit return type",
+				dmrC_show_ident(C, decl->ident));
+			base_type->ctype.base_type = &C->S->int_ctype;
+		}
 		/* K&R argument declaration? */
 		if (dmrC_lookup_type(token))
 			return parse_k_r_arguments(C, token, decl, list);
@@ -2935,16 +2941,22 @@ struct token *dmrC_external_declaration(struct dmr_C *C, struct token *token, st
 	} else if (base_type == &C->S->void_ctype && !(decl->ctype.modifiers & MOD_EXTERN)) {
 		dmrC_sparse_error(C, token->pos, "void declaration");
 	}
+	if (base_type == &C->S->incomplete_ctype) {
+		dmrC_warning(C, decl->pos, "'%s' has implicit type", dmrC_show_ident(C, decl->ident));
+		decl->ctype.base_type = &C->S->int_ctype;
+	}
 
 	for (;;) {
 		if (!is_typedef && dmrC_match_op(token, '=')) {
-			if (decl->ctype.modifiers & MOD_EXTERN) {
-				dmrC_warning(C, decl->pos, "symbol with external linkage has initializer");
-				decl->ctype.modifiers &= ~MOD_EXTERN;
-			}
 			token = dmrC_initializer(C, &decl->initializer, token->next);
 		}
 		if (!is_typedef) {
+			if (validate_decl)
+				validate_decl(C, decl);
+			if (decl->initializer && decl->ctype.modifiers & MOD_EXTERN) {
+				dmrC_warning(C, decl->pos, "symbol with external linkage has initializer");
+				decl->ctype.modifiers &= ~MOD_EXTERN;
+			}
 			if (!(decl->ctype.modifiers & (MOD_EXTERN | MOD_INLINE))) {
 				dmrC_add_symbol(C, list, decl);
 				fn_local_symbol(C, decl);
@@ -3007,7 +3019,7 @@ int dmrC_test_parse() {
 	}
 	struct symbol_list *symbols = NULL;
 	while (!dmrC_eof_token(start))
-		start = dmrC_external_declaration(C, start, &C->S->translation_unit_used_list);
+		start = dmrC_external_declaration(C, start, &C->S->translation_unit_used_list, NULL);
 	dmrC_show_symbol_list(C, C->S->translation_unit_used_list, "\n\n");
 	destroy_dmr_C(C);
 	return 0;

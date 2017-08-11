@@ -151,8 +151,8 @@ extern struct symbol *dmrC_label_symbol(struct dmr_C *C, struct token *token);
 
 extern int dmrC_show_statement(struct dmr_C *C, struct statement *);
 extern int dmrC_show_expression(struct dmr_C *C, struct expression *);
-
-extern struct token *dmrC_external_declaration(struct dmr_C *C, struct token *token, struct symbol_list **symbol_list);
+typedef void(*validate_decl_t)(struct dmr_C *C, struct symbol *decl);
+extern struct token *dmrC_external_declaration(struct dmr_C *C, struct token *token, struct symbol_list **symbol_list, validate_decl_t);
 
 extern struct symbol *dmrC_ctype_integer(struct dmr_C *C, int size, int want_unsigned);
 

@@ -1203,7 +1203,7 @@ static struct symbol_list *sparse_tokenstream(struct dmr_C *C, struct token *tok
 
 	// Parse the resulting C code
 	while (!dmrC_eof_token(token))
-		token = dmrC_external_declaration(C, token, &C->S->translation_unit_used_list);
+		token = dmrC_external_declaration(C, token, &C->S->translation_unit_used_list, NULL);
 	return C->S->translation_unit_used_list;
 }
 

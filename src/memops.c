@@ -30,6 +30,8 @@ static int find_dominating_parents(struct dmr_C *C, pseudo_t pseudo, struct inst
 
 		FOR_EACH_PTR_REVERSE(parent->insns, one) {
 			int dominance;
+			if (!one->bb)
+				continue;
 			if (one == insn)
 				goto no_dominance;
 			dominance = dmrC_dominates(C, pseudo, insn, one, local);

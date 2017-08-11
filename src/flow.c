@@ -29,7 +29,7 @@ static int rewrite_branch(struct dmr_C *C, struct basic_block *bb,
 	struct basic_block *old,
 	struct basic_block *new)
 {
-	if (*ptr != old || new == old)
+	if (*ptr != old || new == old || !bb->ep)
 		return 0;
 
 	/* We might find new if-conversions or non-dominating CSEs */

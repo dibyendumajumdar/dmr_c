@@ -327,6 +327,7 @@ const char *dmrC_show_instruction(struct dmr_C *C, struct instruction *insn)
 		
 	case OP_SETVAL: {
 		struct expression *expr = insn->val;
+		struct symbol *sym;
 		buf += sprintf(buf, "%s <- ", dmrC_show_pseudo(C, insn->target));
 
 		if (!expr) {
@@ -348,7 +349,9 @@ const char *dmrC_show_instruction(struct dmr_C *C, struct instruction *insn)
 			buf += sprintf(buf, "%s", dmrC_show_ident(C, expr->symbol->ident));
 			break;
 		case EXPR_LABEL:
-			buf += sprintf(buf, ".L%u", expr->symbol->bb_target->nr);
+			sym = expr->symbol;
+			if (sym->bb_target)
+				buf += sprintf(buf, ".L%u", sym->bb_target->nr);
 			break;
 		default:
 			buf += sprintf(buf, "SETVAL EXPR TYPE %d", expr->type);
@@ -839,10 +842,15 @@ static pseudo_t argument_pseudo(struct dmr_C *C, struct entrypoint *ep, int nr, 
 
 pseudo_t dmrC_alloc_phi(struct dmr_C *C, struct basic_block *source, pseudo_t pseudo, struct symbol *type)
 {
-	struct instruction *insn = alloc_typed_instruction(C, OP_PHISOURCE, type);
-	pseudo_t phi = (pseudo_t ) dmrC_allocator_allocate(&C->L->pseudo_allocator, 0);
+	struct instruction *insn;
+	pseudo_t phi;
 	static int nr = 0;
 
+	if (!source)
+		return VOID_PSEUDO(C);
+
+	insn = alloc_typed_instruction(C, OP_PHISOURCE, type);
+	phi = (pseudo_t)dmrC_allocator_allocate(&C->L->pseudo_allocator, 0);
 	phi->type = PSEUDO_PHI;
 	phi->nr = ++nr;
 	phi->def = insn;

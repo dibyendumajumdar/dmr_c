@@ -101,6 +101,8 @@ enum {
 };
 
 struct symbol_list;
+struct statement_list;
+struct expression_list;
 
 struct dmr_C {
 	struct target_t *target;

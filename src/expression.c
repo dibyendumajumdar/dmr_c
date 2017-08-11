@@ -483,7 +483,7 @@ struct token *dmrC_primary_expression(struct dmr_C *C, struct token *token, stru
 	return token;
 }
 
-static struct token *expression_list(struct dmr_C *C, struct token *token, struct ptr_list **list)
+static struct token *expression_list(struct dmr_C *C, struct token *token, struct expression_list **list)
 {
 	while (!dmrC_match_op(token, ')')) {
 		struct expression *expr = NULL;

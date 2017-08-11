@@ -54,6 +54,8 @@ enum statement_type {
 	STMT_RANGE,
 };
 
+DECLARE_PTR_LIST(statement_list, struct statement);
+
 struct statement {
 	enum statement_type type;
 	struct position pos;
@@ -75,7 +77,7 @@ struct statement {
 			struct statement *if_false;
 		};
 		struct /* compound_struct */ {
-			struct ptr_list *stmts;
+			struct statement_list *stmts;
 			struct symbol *ret;
 			struct symbol *inline_fn;
 			struct statement *args;
@@ -116,9 +118,9 @@ struct statement {
 		};
 		struct /* asm */ {
 			struct expression *asm_string;
-			struct ptr_list *asm_outputs;
-			struct ptr_list *asm_inputs;
-			struct ptr_list *asm_clobbers;
+			struct expression_list *asm_outputs;
+			struct expression_list *asm_inputs;
+			struct expression_list *asm_clobbers;
 			struct symbol_list *asm_labels;
 		};
 		struct /* range */ {
@@ -132,7 +134,7 @@ struct statement {
 struct parse_state_t {
 	struct symbol_list **function_symbol_list;
 	struct symbol_list *function_computed_target_list;
-	struct ptr_list *function_computed_goto_list;
+	struct statement_list *function_computed_goto_list;
 	struct symbol * int_types[4];
 	struct symbol * signed_types[5];
 	struct symbol * unsigned_types[5];
@@ -158,19 +160,19 @@ extern void dmrC_copy_statement(struct dmr_C *C, struct statement *src, struct s
 extern int dmrC_inline_function(struct dmr_C *C, struct expression *expr, struct symbol *sym);
 extern void dmrC_uninline(struct dmr_C *C, struct symbol *sym);
 
-static inline void dmrC_add_statement(struct dmr_C *C, struct ptr_list **list, struct statement *stmt)
+static inline void dmrC_add_statement(struct dmr_C *C, struct statement_list **list, struct statement *stmt)
 {
-	ptrlist_add(list, stmt, &C->ptrlist_allocator);
+	ptrlist_add((struct ptr_list **)list, stmt, &C->ptrlist_allocator);
 }
 
-static inline void dmrC_add_expression(struct dmr_C *C, struct ptr_list **list, struct expression *expr)
+static inline void dmrC_add_expression(struct dmr_C *C, struct expression_list **list, struct expression *expr)
 {
-	ptrlist_add(list, expr, &C->ptrlist_allocator);
+	ptrlist_add((struct ptr_list **)list, expr, &C->ptrlist_allocator);
 }
 
-static inline int dmrC_expression_list_size(struct ptr_list *list)
+static inline int dmrC_expression_list_size(struct expression_list *list)
 {
-	return ptrlist_size(list);
+	return ptrlist_size((struct ptr_list *)list);
 }
 
 extern int dmrC_test_parse();

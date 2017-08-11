@@ -2012,7 +2012,7 @@ static struct token *expression_statement(struct dmr_C *C, struct token *token, 
 }
 
 static struct token *parse_asm_operands(struct dmr_C *C, struct token *token, struct statement *stmt,
-	struct ptr_list **inout)
+	struct expression_list **inout)
 {
 	struct expression *expr;
 
@@ -2037,7 +2037,7 @@ static struct token *parse_asm_operands(struct dmr_C *C, struct token *token, st
 }
 
 static struct token *parse_asm_clobbers(struct dmr_C *C, struct token *token, struct statement *stmt,
-	struct ptr_list **clobbers)
+	struct expression_list **clobbers)
 {
 	struct expression *expr;
 
@@ -2459,7 +2459,7 @@ static struct token *label_statement(struct dmr_C *C, struct token *token)
 	return dmrC_expect_token(C, token, ';', "at end of label declaration");
 }
 
-static struct token * statement_list(struct dmr_C *C, struct token *token, struct ptr_list **list)
+static struct token * statement_list(struct dmr_C *C, struct token *token, struct statement_list **list)
 {
 	int seen_statement = 0;
 	while (dmrC_token_type(token) == TOKEN_IDENT &&
@@ -2625,7 +2625,7 @@ static struct token *single_initializer(struct dmr_C *C, struct expression **ep,
 	return token;
 }
 
-static struct token *initializer_list(struct dmr_C *C, struct ptr_list **list, struct token *token)
+static struct token *initializer_list(struct dmr_C *C, struct expression_list **list, struct token *token)
 {
 	struct expression *expr;
 

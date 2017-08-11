@@ -758,7 +758,7 @@ static int expand_preop(struct dmr_C *C, struct expression *expr)
 	return cost + 1;
 }
 
-static int expand_arguments(struct dmr_C *C, struct ptr_list *head)
+static int expand_arguments(struct dmr_C *C, struct expression_list *head)
 {
 	int cost = 0;
 	struct expression *expr;
@@ -823,7 +823,7 @@ static int expand_call(struct dmr_C *C, struct expression *expr)
 	return SIDE_EFFECTS;
 }
 
-static int expand_expression_list(struct dmr_C *C, struct ptr_list *list)
+static int expand_expression_list(struct dmr_C *C, struct expression_list *list)
 {
 	int cost = 0;
 	struct expression *expr;
@@ -911,12 +911,12 @@ static int compare_expressions(void *userdata, const void *_a, const void *_b)
 	return (a_pos < b_pos) ? -1 : (a_pos == b_pos) ? 0 : 1;
 }
 
-static void sort_expression_list(struct dmr_C *C, struct ptr_list **list)
+static void sort_expression_list(struct dmr_C *C, struct expression_list **list)
 {
-	ptrlist_sort(list, C, compare_expressions);
+	ptrlist_sort((struct ptr_list **)list, C, compare_expressions);
 }
 
-static void verify_nonoverlapping(struct dmr_C *C, struct ptr_list **list)
+static void verify_nonoverlapping(struct dmr_C *C, struct expression_list **list)
 {
 	struct expression *a = NULL;
 	struct expression *b;

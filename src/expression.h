@@ -82,6 +82,8 @@ enum {
 	Taint_comma = 1,
 }; /* for expr->taint */
 
+DECLARE_PTR_LIST(expression_list, struct expression);
+
 struct expression {
 	enum expression_type type:8;
 	unsigned flags:8;
@@ -146,14 +148,14 @@ struct expression {
 		// EXPR_CALL
 		struct /* call_expr */ {
 			struct expression *fn;
-			struct ptr_list *args;
+			struct expression_list *args;
 		};
 		// EXPR_LABEL
 		struct /* label_expr */ {
 			struct symbol *label_symbol;
 		};
 		// EXPR_INITIALIZER
-		struct ptr_list *expr_list;
+		struct expression_list *expr_list;
 		// EXPR_IDENTIFIER
 		struct /* ident_expr */ {
 			int offset;
@@ -250,9 +252,9 @@ struct token *dmrC_compound_statement(struct dmr_C *C, struct token *, struct st
 void dmrC_cast_value(struct dmr_C *C, struct expression *expr, struct symbol *newtype,
 		struct expression *old, struct symbol *oldtype);
 
-static inline struct expression *dmrC_first_expression(struct ptr_list *head)
+static inline struct expression *dmrC_first_expression(struct expression_list *head)
 {
-	return (struct expression *) ptrlist_first(head);
+	return (struct expression *) ptrlist_first((struct ptr_list *)head);
 }
 
 #ifdef __cplusplus

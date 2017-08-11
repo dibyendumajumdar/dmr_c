@@ -206,7 +206,7 @@ static struct expression * copy_expression(struct dmr_C *C, struct expression *e
 	/* Call expression */
 	case EXPR_CALL: {
 		struct expression *fn = copy_expression(C, expr->fn);
-		struct ptr_list *list = expr->args;
+		struct expression_list *list = expr->args;
 		struct expression *arg;
 
 		expr = dup_expression(C, expr);
@@ -220,7 +220,7 @@ static struct expression * copy_expression(struct dmr_C *C, struct expression *e
 
 	/* Initializer list statement */
 	case EXPR_INITIALIZER: {
-		struct ptr_list *list = expr->expr_list;
+		struct expression_list *list = expr->expr_list;
 		struct expression *entry;
 		expr = dup_expression(C, expr);
 		expr->expr_list = NULL;
@@ -282,9 +282,9 @@ static struct expression * copy_expression(struct dmr_C *C, struct expression *e
 	return expr;
 }
 
-static struct ptr_list *copy_asm_constraints(struct dmr_C *C, struct ptr_list *in)
+static struct expression_list *copy_asm_constraints(struct dmr_C *C, struct expression_list *in)
 {
-	struct ptr_list *out = NULL;
+	struct expression_list *out = NULL;
 	struct expression *expr;
 	int state = 0;
 
@@ -515,7 +515,7 @@ int dmrC_inline_function(struct dmr_C *C, struct expression *expr, struct symbol
 {
 	struct symbol_list * fn_symbol_list;
 	struct symbol *fn = sym->ctype.base_type;
-	struct ptr_list *arg_list = expr->args;
+	struct expression_list *arg_list = expr->args;
 	struct statement *stmt = dmrC_alloc_statement(C, expr->pos, STMT_COMPOUND);
 	struct symbol_list *name_list, *arg_decl;
 	struct symbol *name;

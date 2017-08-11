@@ -2185,7 +2185,7 @@ static struct symbol *evaluate_alignof(struct dmr_C *C, struct expression *expr)
 	return C->target->size_t_ctype;
 }
 
-static int evaluate_arguments(struct dmr_C *C, struct symbol *fn, struct ptr_list *head)
+static int evaluate_arguments(struct dmr_C *C, struct symbol *fn, struct expression_list *head)
 {
 	struct expression *expr;
 	struct symbol_list *argument_types = fn->arguments;
@@ -2897,7 +2897,7 @@ static struct symbol *evaluate_call(struct dmr_C *C, struct expression *expr)
 	int args, fnargs;
 	struct symbol *ctype, *sym;
 	struct expression *fn = expr->fn;
-	struct ptr_list *arglist = expr->args;
+	struct expression_list *arglist = expr->args;
 
 	if (!dmrC_evaluate_expression(C, fn))
 		return NULL;

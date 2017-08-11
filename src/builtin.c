@@ -44,7 +44,7 @@ static int evaluate_expect(struct dmr_C *C, struct expression *expr)
 
 static int arguments_choose(struct dmr_C *C, struct expression *expr)
 {
-	struct ptr_list *arglist = expr->args;
+	struct expression_list *arglist = expr->args;
 	struct expression *arg;
 	int i = 0;
 
@@ -67,7 +67,7 @@ static int arguments_choose(struct dmr_C *C, struct expression *expr)
 
 static int evaluate_choose(struct dmr_C *C, struct expression *expr)
 {
-	struct ptr_list *list = expr->args;
+	struct expression_list *list = expr->args;
 	struct expression *arg, *args[3];
 	int n = 0;
 
@@ -83,7 +83,7 @@ static int evaluate_choose(struct dmr_C *C, struct expression *expr)
 
 static int expand_expect(struct dmr_C *C, struct expression *expr, int cost)
 {
-	struct expression *arg = ptrlist_first(expr->args);
+	struct expression *arg = dmrC_first_expression(expr->args);
 
 	if (arg)
 		*expr = *arg;
@@ -97,7 +97,7 @@ static int expand_expect(struct dmr_C *C, struct expression *expr, int cost)
 static int expand_warning(struct dmr_C *C, struct expression *expr, int cost)
 {
 	struct expression *arg;
-	struct ptr_list *arglist = expr->args;
+	struct expression_list *arglist = expr->args;
 
 	FOR_EACH_PTR (arglist, arg) {
 		/*

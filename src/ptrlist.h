@@ -35,7 +35,8 @@ extern "C" {
 
 #define DECLARE_PTR_LIST(listname, type)                                       \
 	struct listname {                                                      \
-		int nr_;                                                       \
+		int nr_ : 8;                                                   \
+		int rm_ : 8;                                                   \
 		struct listname *prev_;                                        \
 		struct listname *next_;                                        \
 		struct allocator *allocator_;                                  \
@@ -79,6 +80,7 @@ extern void ptrlist_iter_split_current(struct ptr_list_iter *self);
 extern void ptrlist_iter_insert(struct ptr_list_iter *self, void *newitem);
 extern void ptrlist_iter_remove(struct ptr_list_iter *self);
 extern void ptrlist_iter_set(struct ptr_list_iter *self, void *ptr);
+extern void ptrlist_iter_mark_deleted(struct ptr_list_iter *self);
 
 static inline void **ptrlist_iter_this_address(struct ptr_list_iter *self) {
 	return &self->__list->list_[self->__nr];
@@ -128,6 +130,9 @@ static inline void **ptrlist_iter_this_address(struct ptr_list_iter *self) {
 
 #define INSERT_CURRENT(newval, var) \
 	ptrlist_iter_insert(&var##iter__, newval)	
+
+#define MARK_CURRENT_DELETED(PTR_TYPE, var) \
+	ptrlist_iter_mark_deleted(&var##iter__)
 
 #else
 
@@ -186,6 +191,8 @@ static inline void **ptrlist_iter_this_address(struct ptr_list_iter *self) {
 			for (__nr = 0; __nr < __list->nr_; __nr++) {			\
 				do {							\
 					ptr = PTR_ENTRY(__list,__nr);			\
+					if (__list->rm_ && !ptr)				\
+						continue;				\
 					do {
 
 #define DO_END_FOR_EACH(ptr, __head, __list, __nr)					\
@@ -206,6 +213,8 @@ static inline void **ptrlist_iter_this_address(struct ptr_list_iter *self) {
 			while (--__nr >= 0) {						\
 				do {							\
 					ptr = PTR_ENTRY(__list,__nr);			\
+					if (__list->rm_ && !ptr)				\
+						continue;				\
 					do {
 
 
@@ -310,6 +319,14 @@ static inline void **ptrlist_iter_this_address(struct ptr_list_iter *self) {
 #define REPLACE_CURRENT_PTR(PTR_TYPE, ptr, new_ptr)						\
 	do { *THIS_ADDRESS(PTR_TYPE, ptr) = (new_ptr); } while (0)
 
+#define DO_MARK_CURRENT_DELETED(PTR_TYPE, ptr, __list) do {	\
+		REPLACE_CURRENT_PTR(PTR_TYPE, ptr, NULL);		\
+		__list->rm++;				\
+	} while (0)
+
+#define MARK_CURRENT_DELETED(PTR_TYPE, ptr) \
+	DO_MARK_CURRENT_DELETED(PTR_TYPE, ptr, __list##ptr)
+	
 #endif
 
 extern int test_ptrlist();

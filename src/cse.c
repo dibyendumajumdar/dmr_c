@@ -39,6 +39,8 @@ static void clean_up_one_instruction(struct dmr_C *C, struct basic_block *bb, st
 		return;
 	assert(insn->bb == bb);
 	C->L->repeat_phase |= dmrC_simplify_instruction(C, insn);
+	if (!insn->bb)
+		return;
 	hash = (insn->opcode << 3) + (insn->size >> 3);
 	switch (insn->opcode) {
 	case OP_SEL:

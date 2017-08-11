@@ -144,14 +144,17 @@ static int delete_pseudo_user_list_entry(struct dmr_C *C, struct pseudo_user_lis
 
 	FOR_EACH_PTR(*list, pu) {
 		if (pu->userp == entry) {
-			DELETE_CURRENT_PTR(pu);
+			//DELETE_CURRENT_PTR(pu);
+			MARK_CURRENT_DELETED(struct pseudo_user *, pu);
 			if (!--count)
 				goto out;
 		}
 	} END_FOR_EACH_PTR(pu);
 	assert(count <= 0);
 out:
-	ptrlist_pack((struct ptr_list **)list);
+	//ptrlist_pack((struct ptr_list **)list);
+	if (ptrlist_size((struct ptr_list *)*list) == 0)
+		*list = NULL;
 	return count;
 }
 

@@ -27,7 +27,8 @@ void ptrlist_split_node(struct ptr_list *head)
 	int old = head->nr_, nr = old / 2;
 	struct allocator *alloc = head->allocator_;
 	assert(alloc);
-	struct ptr_list *newlist = (struct ptr_list *)dmrC_allocator_allocate(alloc, 0);
+	struct ptr_list *newlist =
+	    (struct ptr_list *)dmrC_allocator_allocate(alloc, 0);
 	struct ptr_list *next = head->next_;
 	newlist->allocator_ = alloc;
 
@@ -42,7 +43,8 @@ void ptrlist_split_node(struct ptr_list *head)
 	memset(head->list_ + old, 0xf0, nr * sizeof(void *));
 }
 
-struct ptr_list_iter ptrlist_forward_iterator(struct ptr_list *head) {
+struct ptr_list_iter ptrlist_forward_iterator(struct ptr_list *head)
+{
 	struct ptr_list_iter iter;
 	iter.__head = iter.__list = head;
 	iter.__nr = -1;
@@ -51,27 +53,33 @@ struct ptr_list_iter ptrlist_forward_iterator(struct ptr_list *head) {
 
 // Reverse iterator has to start from previous node not previous entry
 // in the given head
-struct ptr_list_iter ptrlist_reverse_iterator(struct ptr_list *head) {
+struct ptr_list_iter ptrlist_reverse_iterator(struct ptr_list *head)
+{
 	struct ptr_list_iter iter;
 	iter.__head = iter.__list = head ? head->prev_ : NULL;
 	iter.__nr = iter.__head ? iter.__head->nr_ : 0;
 	return iter;
 }
 
-
-void *ptrlist_iter_next(struct ptr_list_iter *self) {
-  if (self->__head == NULL)
-    return NULL;
-  self->__nr++;
+void *ptrlist_iter_next(struct ptr_list_iter *self)
+{
+	if (self->__head == NULL)
+		return NULL;
+	self->__nr++;
 Lretry:
-  if (self->__nr < self->__list->nr_) {
-    return self->__list->list_[self->__nr];
-  } else if (self->__list->next_ != self->__head) {
-    self->__list = self->__list->next_;
-    self->__nr = 0;
-    goto Lretry;
-  }
-  return NULL;
+	if (self->__nr < self->__list->nr_) {
+		void *ptr = self->__list->list_[self->__nr];
+		if (self->__list->rm_ && !ptr) {
+			self->__nr++;
+			goto Lretry;
+		}
+		return ptr;
+	} else if (self->__list->next_ != self->__head) {
+		self->__list = self->__list->next_;
+		self->__nr = 0;
+		goto Lretry;
+	}
+	return NULL;
 }
 
 void *ptrlist_nth_entry(struct ptr_list *list, unsigned int idx)
@@ -89,62 +97,78 @@ void *ptrlist_nth_entry(struct ptr_list *list, unsigned int idx)
 	return NULL;
 }
 
-void *ptrlist_iter_prev(struct ptr_list_iter *self) {
+void *ptrlist_iter_prev(struct ptr_list_iter *self)
+{
 	if (self->__head == NULL)
 		return NULL;
 	self->__nr--;
 Lretry:
 	if (self->__nr >= 0 && self->__nr < self->__list->nr_) {
-		return self->__list->list_[self->__nr];
-	}
-	else if (self->__list->prev_ != self->__head) {
+		void *ptr = self->__list->list_[self->__nr];
+		if (self->__list->rm_ && !ptr) {
+			self->__nr--;
+			goto Lretry;
+		}
+		return ptr;
+	} else if (self->__list->prev_ != self->__head) {
 		self->__list = self->__list->prev_;
-		self->__nr = self->__list->nr_-1;
+		self->__nr = self->__list->nr_ - 1;
 		goto Lretry;
 	}
 	return NULL;
 }
 
-void ptrlist_iter_split_current(struct ptr_list_iter *self) {
-  if (self->__list->nr_ == N_) {
-    /* full so split */
-    ptrlist_split_node(self->__list);
-    if (self->__nr >= self->__list->nr_) {
-      self->__nr -= self->__list->nr_;
-      self->__list = self->__list->next_;
-    }
-  }
+void ptrlist_iter_split_current(struct ptr_list_iter *self)
+{
+	if (self->__list->nr_ == N_) {
+		/* full so split */
+		ptrlist_split_node(self->__list);
+		if (self->__nr >= self->__list->nr_) {
+			self->__nr -= self->__list->nr_;
+			self->__list = self->__list->next_;
+		}
+	}
 }
 
-void ptrlist_iter_insert(struct ptr_list_iter *self, void *newitem) {
-  assert(self->__nr >= 0);
-  ptrlist_iter_split_current(self);
-  void **__this = self->__list->list_ + self->__nr;
-  void **__last = self->__list->list_ + self->__list->nr_ - 1;
-  while (__last >= __this) {
-    __last[1] = __last[0];
-    __last--;
-  }
-  *__this = newitem;
-  self->__list->nr_++;
+void ptrlist_iter_insert(struct ptr_list_iter *self, void *newitem)
+{
+	assert(self->__nr >= 0);
+	ptrlist_iter_split_current(self);
+	void **__this = self->__list->list_ + self->__nr;
+	void **__last = self->__list->list_ + self->__list->nr_ - 1;
+	while (__last >= __this) {
+		__last[1] = __last[0];
+		__last--;
+	}
+	*__this = newitem;
+	self->__list->nr_++;
 }
 
-void ptrlist_iter_remove(struct ptr_list_iter *self) {
-  assert(self->__nr >= 0);
-  void **__this = self->__list->list_ + self->__nr;
-  void **__last = self->__list->list_ + self->__list->nr_ - 1;
-  while (__this < __last) {
-    __this[0] = __this[1];
-    __this++;
-  }
-  *__this = (void *)((uintptr_t)0xf0f0f0f0);
-  self->__list->nr_--;
-  self->__nr--;
+void ptrlist_iter_remove(struct ptr_list_iter *self)
+{
+	assert(self->__nr >= 0);
+	void **__this = self->__list->list_ + self->__nr;
+	void **__last = self->__list->list_ + self->__list->nr_ - 1;
+	while (__this < __last) {
+		__this[0] = __this[1];
+		__this++;
+	}
+	*__this = (void *)((uintptr_t)0xf0f0f0f0);
+	self->__list->nr_--;
+	self->__nr--;
 }
 
-void ptrlist_iter_set(struct ptr_list_iter *self, void *ptr) {
-  assert(self->__list && self->__nr >= 0 && self->__nr < self->__list->nr_);
-  self->__list->list_[self->__nr] = ptr;
+void ptrlist_iter_set(struct ptr_list_iter *self, void *ptr)
+{
+	assert(self->__list && self->__nr >= 0 &&
+	       self->__nr < self->__list->nr_);
+	self->__list->list_[self->__nr] = ptr;
+}
+
+void ptrlist_iter_mark_deleted(struct ptr_list_iter *self)
+{
+	ptrlist_iter_set(self, NULL);
+	self->__list->rm_++;
 }
 
 int ptrlist_size(const struct ptr_list *head) {
@@ -158,46 +182,50 @@ int ptrlist_size(const struct ptr_list *head) {
 	return nr;
 }
 
-void **ptrlist_add(struct ptr_list **listp, void *ptr, struct allocator *alloc) {
-  struct ptr_list *list = *listp;
-  struct ptr_list *last = NULL;
-  void **ret;
-  int nr;
+void **ptrlist_add(struct ptr_list **listp, void *ptr, struct allocator *alloc)
+{
+	struct ptr_list *list = *listp;
+	struct ptr_list *last = NULL;
+	void **ret;
+	int nr;
 
-  if (!list || (nr = (last = list->prev_)->nr_) >= N_) {
-    struct ptr_list *newlist = (struct ptr_list *)dmrC_allocator_allocate(alloc, 0);
-	newlist->allocator_ = alloc;
-    if (!list) {
-      newlist->next_ = newlist;
-      newlist->prev_ = newlist;
-      *listp = newlist;
-    } else {
-      newlist->prev_ = last;
-      newlist->next_ = list;
-      list->prev_ = newlist;
-      last->next_ = newlist;
-    }
-    last = newlist;
-    nr = 0;
-  }
-  ret = last->list_ + nr;
-  *ret = ptr;
-  nr++;
-  last->nr_ = nr;
-  return ret;
+	if (!list || (nr = (last = list->prev_)->nr_) >= N_) {
+		struct ptr_list *newlist =
+		    (struct ptr_list *)dmrC_allocator_allocate(alloc, 0);
+		newlist->allocator_ = alloc;
+		if (!list) {
+			newlist->next_ = newlist;
+			newlist->prev_ = newlist;
+			*listp = newlist;
+		} else {
+			newlist->prev_ = last;
+			newlist->next_ = list;
+			list->prev_ = newlist;
+			last->next_ = newlist;
+		}
+		last = newlist;
+		nr = 0;
+	}
+	ret = last->list_ + nr;
+	*ret = ptr;
+	nr++;
+	last->nr_ = nr;
+	return ret;
 }
 
-void *ptrlist_first(struct ptr_list *list) {
-  if (!list)
-    return NULL;
-  return list->list_[0];
+void *ptrlist_first(struct ptr_list *list)
+{
+	if (!list)
+		return NULL;
+	return list->list_[0];
 }
 
-void *ptrlist_last(struct ptr_list *list) {
-  if (!list)
-    return NULL;
-  list = list->prev_;
-  return list->list_[list->nr_ - 1];
+void *ptrlist_last(struct ptr_list *list)
+{
+	if (!list)
+		return NULL;
+	list = list->prev_;
+	return list->list_[list->nr_ - 1];
 }
 
 /*

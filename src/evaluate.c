@@ -876,6 +876,10 @@ static struct symbol *evaluate_conditional(struct dmr_C *C, struct expression *e
 			if (C->Waddress)
 				dmrC_warning(C, expr->pos, "the address of %s will always evaluate as true", "a function");
 		}
+		else if (dmrC_is_array_type(ctype)) {
+			if (C->Waddress)
+				dmrC_warning(C, expr->pos, "the address of %s will always evaluate as true", "an array");
+		}
 		else if (!dmrC_is_scalar_type(C->S, ctype)) {
 			dmrC_sparse_error(C, expr->pos, "incorrect type in conditional");
 			dmrC_info(C, expr->pos, "   got %s", dmrC_show_typename(C, ctype));

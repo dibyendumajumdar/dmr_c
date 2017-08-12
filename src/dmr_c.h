@@ -147,6 +147,7 @@ struct dmr_C {
 	struct token *pre_buffer_begin;
 	struct token *pre_buffer_end;
 
+	int Waddress; // TODO
 	int Waddress_space;
 	int Wbitwise;
 	int Wcast_to_as;

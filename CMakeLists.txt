@@ -58,7 +58,7 @@ endif ()
 
 if (UNIX AND NOT APPLE)
     # -fsanitize=bounds -fsanitize=alignment -fsanitize=object-size
-    set(SANITIZER_FLAGS "-fsanitize=address")
+    # set(SANITIZER_FLAGS "-fsanitize=address")
     set(CMAKE_C_FLAGS "${SANITIZER_FLAGS} -fno-omit-frame-pointer -std=c99 -O0 -g3 -Wall -Wno-comment ${CXX_OPTIONS}")
     set(CMAKE_C_FLAGS_DEBUG "${SANITIZER_FLAGS} -fno-omit-frame-pointer -std=c99 -O0 -g3 -Wall -Wno-comment ${CXX_OPTIONS}")
     set(CMAKE_C_FLAGS_RELEASE "-std=c99 -O3 -Wall -Wno-comment ${CXX_OPTIONS}")

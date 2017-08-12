@@ -886,6 +886,7 @@ static struct symbol *evaluate_conditional(struct dmr_C *C, struct expression *e
 			ctype = NULL;
 		}
 	}
+	ctype = degenerate(C, expr);
 
 	return ctype;
 }

@@ -158,12 +158,16 @@ struct dmr_C {
 	int Wdefault_bitfield_sign;
 	int Wdesignated_init;
 	int Wdo_while;
-	int Winit_cstring;
 	int Wenum_mismatch;
 	int Wsparse_error;
+	int Winit_cstring;
+	int Wmemcpy_max_count; // TODO
 	int Wnon_pointer_null;
 	int Wold_initializer;
 	int Wone_bit_signed_bitfield;
+	int Woverride_init; //TODO
+	int Woverride_init_all; //TODO
+	int Woverride_init_whole_range; //TODO
 	int Wparen_string;
 	int Wptr_subtraction_blows;
 	int Wreturn_void;
@@ -183,12 +187,17 @@ struct dmr_C {
 	int cmdline_include_nr;
 	char *cmdline_include[CMDLINE_INCLUDE];
 
+	int dump_macro_defs; // TODO
+
 	int dbg_entry;
 	int dbg_dead;
+	int fmem_report;	// TODO
+	int fdump_linearize;	// TODO
+	unsigned long long fmemcpy_max_count;
 
 	int arch_m64;
 	int arch_msize_long;
-
+	int arch_big_endian;	// TODO
 	/* TODO is this the right place? */
 	struct scope *block_scope, *function_scope, *file_scope, *global_scope;
 	struct scope *builtin_scope;

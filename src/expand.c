@@ -921,6 +921,9 @@ static void verify_nonoverlapping(struct dmr_C *C, struct expression_list **list
 	struct expression *a = NULL;
 	struct expression *b;
 
+	if (!C->Woverride_init)
+		return;
+
 	FOR_EACH_PTR(*list, b) {
 		if (!b->ctype || !b->ctype->bit_size)
 			continue;

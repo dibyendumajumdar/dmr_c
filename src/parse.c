@@ -413,114 +413,21 @@ static struct symbol_op mode_word_op = {
 };
 
 
-const char *ignored_attributes[] = {
-	"alias",
-	"__alias__",
-	"alloc_align",
-	"__alloc_align__",
-	"alloc_size",
-	"__alloc_size__",
-	"always_inline",
-	"__always_inline__",
-	"artificial",
-	"__artificial__",
-	"assume_aligned",
-	"__assume_aligned__",
+static const char *ignored_attributes[] = {
+
+#define GCC_ATTR(x)		\
+	STRINGIFY(x), 		\
+	STRINGIFY(__##x##__),
+
+#include "gcc-attr-list.h"
+
+#undef GCC_ATTR
+
 	"bounded",
 	"__bounded__",
-	"cdecl",
-	"__cdecl__",
-	"cold",
-	"__cold__",
-	"constructor",
-	"__constructor__",
-	"deprecated",
-	"__deprecated__",
-	"destructor",
-	"__destructor__",
-	"dllexport",
-	"__dllexport__",
-	"dllimport",
-	"__dllimport__",
-	"error",
-	"__error__",
-	"externally_visible",
-	"__externally_visible__",
-	"fastcall",
-	"__fastcall__",
-	"format",
-	"__format__",
-	"format_arg",
-	"__format_arg__",
-	"gnu_inline",
-	"__gnu_inline__",
-	"hot",
-	"__hot__",
-	"hotpatch",
-	"__hotpatch__",
-        "leaf",
-        "__leaf__",
-	"l1_text",
-	"__l1_text__",
-	"l1_data",
-	"__l1_data__",
-	"l2",
-	"__l2__",
-	"malloc",
-	"__malloc__",
-	"may_alias",
-	"__may_alias__",
-	"model",
-	"__model__",
-	"ms_abi",
-	"__ms_abi__",
-	"ms_hook_prologue",
-	"__ms_hook_prologue__",
-	"naked",
-	"__naked__",
-	"no_instrument_function",
-	"__no_instrument_function__",
-	"noclone",
 	"__noclone",
-	"__noclone__",
-	"noinline",
-	"__noinline__",
-	"nonnull",
 	"__nonnull",
-	"__nonnull__",
-	"nothrow",
 	"__nothrow",
-	"__nothrow__",
-	"regparm",
-	"__regparm__",
-	"section",
-	"__section__",
-	"sentinel",
-	"__sentinel__",
-	"signal",
-	"__signal__",
-	"stdcall",
-	"__stdcall__",
-	"syscall_linkage",
-	"__syscall_linkage__",
-	"sysv_abi",
-	"__sysv_abi__",
-	"unused",
-	"__unused__",
-	"used",
-	"__used__",
-	"vector_size",
-	"__vector_size__",
-	"visibility",
-	"__visibility__",
-	"warn_unused_result",
-	"__warn_unused_result__",
-	"warning",
-	"__warning__",
-	"weak",
-	"__weak__",
-	"no_sanitize_address",
-	"__no_sanitize_address__",
 };
 
 
@@ -678,8 +585,10 @@ void dmrC_init_parser(struct dmr_C *C, int stream)
 		const char * name = ignored_attributes[i];
 		struct symbol *sym = dmrC_create_symbol(C->S, stream, name, SYM_KEYWORD,
 						   NS_KEYWORD);
-		sym->ident->keyword = 1;
-		sym->op = &ignore_attr_op;
+		if (!sym->op) {
+			sym->ident->keyword = 1;
+			sym->op = &ignore_attr_op;
+		}
 	}
 
 	C->P->int_types[0] = &C->S->short_ctype;

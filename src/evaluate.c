@@ -2860,7 +2860,7 @@ static struct symbol *evaluate_cast(struct dmr_C *C, struct expression *expr)
 				expr->type = EXPR_VALUE;
 				expr->ctype = &C->S->null_ctype;
 				expr->value = 0;
-				return ctype;
+				return expr->ctype;
 			}
 		}
 	}

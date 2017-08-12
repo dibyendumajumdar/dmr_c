@@ -2806,7 +2806,7 @@ static struct symbol *evaluate_cast(struct dmr_C *C, struct expression *expr)
 		t2 = unfoul(C, t2);
 
 	if (t1 != t2) {
-		if (class1 & TYPE_RESTRICT)
+		if ((class1 & TYPE_RESTRICT) && restricted_value(C, target, t1))
 			dmrC_warning(C, expr->pos, "cast to %s",
 				dmrC_show_typename(C, t1));
 		if (class2 & TYPE_RESTRICT)

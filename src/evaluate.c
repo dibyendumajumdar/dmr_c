@@ -1350,6 +1350,12 @@ static int check_assignment_types(struct dmr_C *C, struct symbol *target, struct
 				return 1;
 		} else if (!(sclass & TYPE_RESTRICT))
 			goto Cast;
+		if (t == &C->S->bool_ctype) {
+			if (dmrC_is_fouled_type(s))
+				dmrC_warning(C, (*rp)->pos, "%s degrades to integer",
+					dmrC_show_typename(C, s->ctype.base_type));
+			goto Cast;
+		}
 		*typediff = "different base types";
 		return 0;
 	}

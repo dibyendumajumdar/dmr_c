@@ -92,8 +92,8 @@ void dmrC_cast_value(struct dmr_C *C, struct expression *expr, struct symbol *ne
 	long long value, mask, signmask;
 	long long oldmask, oldsignmask, dropped;
 
-	if (newtype->ctype.base_type == &C->S->fp_type ||
-	    oldtype->ctype.base_type == &C->S->fp_type)
+	if (dmrC_is_float_type(C->S, newtype) ||
+	    dmrC_is_float_type(C->S, oldtype))
 		goto Float;
 
 	// For pointers and integers, we can just move the value around

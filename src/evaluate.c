@@ -2824,9 +2824,17 @@ static struct symbol *evaluate_cast(struct dmr_C *C, struct expression *expr)
 		if ((class1 & TYPE_RESTRICT) && restricted_value(C, target, t1))
 			dmrC_warning(C, expr->pos, "cast to %s",
 				dmrC_show_typename(C, t1));
-		if (class2 & TYPE_RESTRICT)
-			dmrC_warning(C, expr->pos, "cast from %s",
-				dmrC_show_typename(C, t2));
+		if (class2 & TYPE_RESTRICT) {
+			if (t1 == &C->S->bool_ctype) {
+				if (class2 & TYPE_FOULED)
+					dmrC_warning(C, expr->pos, "%s degrades to integer",
+						dmrC_show_typename(C, t2));
+			}
+			else {
+				dmrC_warning(C, expr->pos, "cast from %s",
+					dmrC_show_typename(C, t2));
+			}
+		}
 	}
 
 	if (t1 == &C->S->ulong_ctype)

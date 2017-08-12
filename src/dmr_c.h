@@ -56,9 +56,13 @@ extern "C" {
 extern unsigned int dmrC_hexval(unsigned int c);
 
 struct position {
-	unsigned int type : 6, stream : 14, newline : 1, whitespace : 1,
-	    pos : 10;
-	unsigned int line : 31, noexpand : 1;
+	unsigned int type : 6, 
+		stream : 14, 
+		newline : 1, 
+		whitespace : 1,
+		pos : 10;
+	unsigned int line : 31, 
+		noexpand : 1;
 };
 
 struct ident;
@@ -180,8 +184,9 @@ struct dmr_C {
 	int Wuninitialized;
 	int Wunknown_attribute;
 	int Wvla;
-	struct warning warnings[28];
+	struct warning warnings[32];
 	struct warning debugs[2];
+	struct warning dumps[1];
 
 #define CMDLINE_INCLUDE 20
 	int cmdline_include_nr;
@@ -208,6 +213,7 @@ struct dmr_C {
 	char modifier_string_buffer[100];
 	char typename_array[200];
 
+	struct ident_list *macros;	// only needed for -dD
 	int false_nesting;
 	int counter_macro;		// __COUNTER__ expansion
 
@@ -252,9 +258,8 @@ extern void dmrC_add_pre_buffer(struct dmr_C *, const char *fmt, ...) FORMAT_ATT
 * pre buffer.
 */
 extern void dmrC_declare_builtin_functions(struct dmr_C *C);
-
-
 extern void dmrC_create_builtin_stream(struct dmr_C *C);
+extern void dmrC_dump_macro_definitions(struct dmr_C *C);
 extern struct symbol_list * dmrC_sparse_initialize(struct dmr_C *C, int argc, char **argv, struct string_list **filelist);
 extern struct symbol_list * dmrC_sparse_keep_tokens(struct dmr_C *C, char *filename);
 extern struct symbol_list * dmrC_sparse(struct dmr_C *C, char *filename);

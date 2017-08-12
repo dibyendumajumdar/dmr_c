@@ -1349,6 +1349,7 @@ static int do_handle_define(struct dmr_C *C, struct stream *stream, struct token
 	if (!sym || sym->scope != C->file_scope) {
 		sym = dmrC_alloc_symbol(C->S, left->pos, SYM_NODE);
 		dmrC_bind_symbol(C->S, sym, name, NS_MACRO);
+		dmrC_add_ident(C, &C->macros, name);
 		ret = 0;
 	}
 
@@ -2009,7 +2010,6 @@ struct token * dmrC_preprocess(struct dmr_C *C, struct token *token)
 	return token;
 }
 
-
 void dmrC_init_preprocessor_state(struct dmr_C *C) {
 	assert(C->includepath[0] == NULL);
 	C->includepath[0] = "";
@@ -2022,4 +2022,58 @@ void dmrC_init_preprocessor_state(struct dmr_C *C) {
 	C->isys_includepath = C->includepath + 1;
 	C->sys_includepath = C->includepath + 1;
 	C->dirafter_includepath = C->includepath + 3;
+}
+
+static void dump_macro(struct dmr_C *C, struct symbol *sym)
+{
+	int nargs = sym->arglist ? sym->arglist->count.normal : 0;
+	struct token **args;
+	struct token *token;
+
+	args = alloca(sizeof(struct token *) * nargs);
+	printf("#define %s", dmrC_show_ident(C, sym->ident));
+	token = sym->arglist;
+	if (token) {
+		const char *sep = "";
+		int narg = 0;
+		putchar('(');
+		for (; !dmrC_eof_token(token); token = token->next) {
+			if (dmrC_token_type(token) == TOKEN_ARG_COUNT)
+				continue;
+			printf("%s%s", sep, dmrC_show_token(C, token));
+			args[narg++] = token;
+			sep = ", ";
+		}
+		putchar(')');
+	}
+	putchar(' ');
+
+	token = sym->expansion;
+	while (!dmrC_eof_token(token)) {
+		struct token *next = token->next;
+		switch (dmrC_token_type(token)) {
+		case TOKEN_UNTAINT:
+			break;
+		case TOKEN_MACRO_ARGUMENT:
+			token = args[token->argnum];
+			/* fall-through */
+		default:
+			printf("%s", dmrC_show_token(C, token));
+			if (next->pos.whitespace)
+				putchar(' ');
+		}
+		token = next;
+	}
+	putchar('\n');
+}
+
+void dmrC_dump_macro_definitions(struct dmr_C *C)
+{
+	struct ident *name;
+
+	FOR_EACH_PTR(C->macros, name) {
+		struct symbol *sym = lookup_macro(C, name);
+		if (sym)
+			dump_macro(C, sym);
+	} END_FOR_EACH_PTR(name);
 }

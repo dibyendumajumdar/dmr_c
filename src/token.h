@@ -78,6 +78,7 @@ struct ident {
 		      keyword:1;
 	char name[];		/* Actual identifier */
 };
+DECLARE_PTR_LIST(ident_list, struct ident);
 
 enum e_token_type {
 	TOKEN_EOF,
@@ -276,6 +277,11 @@ static inline int dmrC_match_op(struct token *token, unsigned int op)
 static inline int dmrC_match_ident(struct token *token, struct ident *id)
 {
 	return token->pos.type == TOKEN_IDENT && token->ident == id;
+}
+
+static inline void dmrC_add_ident(struct dmr_C *C, struct ident_list **list, struct ident *ident)
+{
+	ptrlist_add((struct ptr_list **)list, ident, &C->ptrlist_allocator);
 }
 
 extern int dmrC_test_tokenizer();

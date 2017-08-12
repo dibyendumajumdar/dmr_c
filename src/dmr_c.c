@@ -283,6 +283,7 @@ struct dmr_C *new_dmr_C()
 	C->Wuninitialized = 1;
 	C->Wunknown_attribute = 1;
 	C->Wvla = 1;
+	C->Woverride_init = 1;
 
 	C->max_warnings = 100;
 	C->show_info = 1;
@@ -332,9 +333,15 @@ struct dmr_C *new_dmr_C()
 	C->warnings[25].name = "uninitialized";		C->warnings[25].flag = &C->Wuninitialized;
 	C->warnings[26].name = "unknown-attribute"; C->warnings[26].flag = &C->Wunknown_attribute;
 	C->warnings[27].name = "vla";				C->warnings[27].flag = &C->Wvla;
+	C->warnings[28].name = "address";			C->warnings[28].flag = &C->Waddress;
+	C->warnings[29].name = "memcpy-max-count";		C->warnings[29].flag = &C->Wmemcpy_max_count;
+	C->warnings[30].name = "override-init";			C->warnings[30].flag = &C->Woverride_init;
+	C->warnings[31].name = "override-init-all";		C->warnings[31].flag = &C->Woverride_init_all;
 
 	C->debugs[0].name = "entry"; C->debugs[0].flag = &C->dbg_entry;
 	C->debugs[1].name = "dead";  C->debugs[1].flag = &C->dbg_dead;
+
+	C->dumps[0].name = "D"; C->dumps[0].flag = &C->dump_macro_defs;
 
 	dmrC_init_target(C);
 	dmrC_init_tokenizer(C);
@@ -388,7 +395,7 @@ static char **handle_switch_D(struct dmr_C *C, char *arg, char **next)
 	const char *name = arg + 1;
 	const char *value = "1";
 
-	if (!*name || isspace(*name))
+	if (!*name || isspace((unsigned char)*name))
 		dmrC_die(C, "argument to `-D' is missing");
 
 	for (;;) {
@@ -488,8 +495,13 @@ static char **handle_switch_m(struct dmr_C *C, char *arg, char **next)
 		C->arch_m64 = ARCH_LLP64;
 	} else if (!strcmp(arg, "msize-long")) {
 		C->arch_msize_long = 1;
-	} else if (!strcmp(arg, "multiarch-dir"))
+	} else if (!strcmp(arg, "multiarch-dir")) {
 		return handle_multiarch_dir(C, arg, next);
+	} else if (!strcmp(arg, "mbig-endian")) {
+		C->arch_big_endian = 1;
+	} else if (!strcmp(arg, "mlittle-endian")) {
+		C->arch_big_endian = 0;
+	}
 	return next;
 }
 
@@ -542,6 +554,25 @@ static void handle_arch_finalize(struct dmr_C *C)
 }
 
 
+static int handle_simple_switch(const char *arg, const char *name, int *flag)
+{
+	int val = 1;
+
+	// Prefixe "no-" mean to turn flag off.
+	if (strncmp(arg, "no-", 3) == 0) {
+		arg += 3;
+		val = 0;
+	}
+
+	if (strcmp(arg, name) == 0) {
+		*flag = val;
+		return 1;
+	}
+
+	// not handled
+	return 0;
+}
+
 static char **handle_switch_o(struct dmr_C *C, char *arg, char **next)
 {
 	if (!strcmp(arg, "o")) {       // "-o foo"
@@ -587,7 +618,7 @@ static char **handle_onoff_switch(struct dmr_C *C, char *arg, char **next, const
 
 static char **handle_switch_W(struct dmr_C *C, char *arg, char **next)
 {
-	char ** ret = handle_onoff_switch(C, arg, next, C->warnings, 26);
+	char ** ret = handle_onoff_switch(C, arg, next, C->warnings, 32);
 	if (ret)
 		return ret;
 
@@ -608,6 +639,15 @@ static char **handle_switch_v(struct dmr_C *C, char *arg, char **next)
 	return next;
 }
 
+static char **handle_switch_d(struct dmr_C *C, char *arg, char **next)
+{
+	char ** ret = handle_onoff_switch(C, arg, next, C->dumps, 1);
+	if (ret)
+		return ret;
+
+	return next;
+}
+
 
 static void handle_onoff_switch_finalize(const struct warning warnings[], int n)
 {
@@ -621,7 +661,7 @@ static void handle_onoff_switch_finalize(const struct warning warnings[], int n)
 
 static void handle_switch_W_finalize(struct dmr_C *C)
 {
-	handle_onoff_switch_finalize(C->warnings, 26);
+	handle_onoff_switch_finalize(C->warnings, 32);
 
 	/* default Wdeclarationafterstatement based on the C dialect */
 	if (-1 == C->Wdeclarationafterstatement)
@@ -670,6 +710,21 @@ static char **handle_switch_O(struct dmr_C *C, char *arg, char **next)
 	return next;
 }
 
+static char **handle_switch_fmemcpy_max_count(struct dmr_C *C, char *arg, char **next)
+{
+	unsigned long long val;
+	char *end;
+
+	val = strtoull(arg, &end, 0);
+	if (*end != '\0' || end == arg)
+		dmrC_die(C, "error: missing argument to \"-fmemcpy-max-count=\"");
+
+	if (val == 0)
+		val = ~0ULL;
+	C->fmemcpy_max_count = val;
+	return next;
+}
+
 static char **handle_switch_ftabstop(struct dmr_C *C, char *arg, char **next)
 {
 	char *end;
@@ -686,19 +741,35 @@ static char **handle_switch_ftabstop(struct dmr_C *C, char *arg, char **next)
 	return next;
 }
 
+static char **handle_switch_fdump(struct dmr_C *C, char *arg, char **next)
+{
+	if (!strncmp(arg, "linearize", 9)) {
+		arg += 9;
+		if (*arg == '\0')
+			C->fdump_linearize = 1;
+		else if (!strcmp(arg, "=only"))
+			C->fdump_linearize = 2;
+	}
+
+	/* ignore others flags */
+	return next;
+}
+
 static char **handle_switch_f(struct dmr_C *C, char *arg, char **next)
 {
 	arg++;
 
 	if (!strncmp(arg, "tabstop=", 8))
 		return handle_switch_ftabstop(C, arg + 8, next);
+	if (!strncmp(arg, "dump-", 5))
+		return handle_switch_fdump(C, arg + 5, next);
+	if (!strncmp(arg, "memcpy-max-count=", 17))
+		return handle_switch_fmemcpy_max_count(C, arg + 17, next);
 
 	/* handle switches w/ arguments above, boolean and only boolean below */
+	if (handle_simple_switch(arg, "mem-report", &C->fmem_report))
+		return next;
 
-	if (!strncmp(arg, "no-", 3)) {
-		arg += 3;
-	}
-	/* handle switch here.. */
 	return next;
 }
 
@@ -838,6 +909,7 @@ static char **handle_switch(struct dmr_C *C, char *arg, char **next)
 	switch (*arg) {
 	case 'a': return handle_switch_a(C, arg, next);
 	case 'D': return handle_switch_D(C, arg, next);
+	case 'd': return handle_switch_d(C, arg, next);
 	case 'E': return handle_switch_E(C, arg, next);
 	case 'f': return handle_switch_f(C, arg, next);
 	case 'g': return handle_switch_g(C, arg, next);
@@ -871,11 +943,17 @@ static void predefined_sizeof(struct dmr_C *C, const char *name, unsigned bits)
 	dmrC_add_pre_buffer(C, "#weak_define __SIZEOF_%s__ %d\n", name, bits/8);
 }
 
-static void predefined_type_size(struct dmr_C *C, const char *name, const char *suffix, unsigned bits)
+static void predefined_max(struct dmr_C *C, const char *name, const char *suffix, unsigned bits)
 {
-	unsigned long long max = (1ULL << (bits - 1 )) - 1;
+	unsigned long long max = (1ULL << (bits - 1)) - 1;
 
 	dmrC_add_pre_buffer(C, "#weak_define __%s_MAX__ %#llx%s\n", name, max, suffix);
+}
+
+static void predefined_type_size(struct dmr_C *C, const char *name, const char *suffix, unsigned bits)
+{
+	predefined_max(C, name, suffix, bits);
+
 	predefined_sizeof(C, name, bits);
 }
 
@@ -884,6 +962,10 @@ static void predefined_macros(struct dmr_C *C)
 	dmrC_add_pre_buffer(C, "#define __CHECKER__ 1\n");
 
 	predefined_sizeof(C, "SHORT", C->target->bits_in_short);
+	predefined_max(C, "SHRT", "", C->target->bits_in_short);
+	predefined_max(C, "SCHAR", "", C->target->bits_in_char);
+	predefined_max(C, "WCHAR", "", C->target->bits_in_wchar);
+	dmrC_add_pre_buffer(C, "#weak_define __CHAR_BIT__ %d\n", C->target->bits_in_char);
 
 	predefined_type_size(C, "INT", "", C->target->bits_in_int);
 	predefined_type_size(C, "LONG", "L", C->target->bits_in_long);
@@ -1164,22 +1246,18 @@ void dmrC_create_builtin_stream(struct dmr_C *C)
 	if (C->optimize_size)
 		dmrC_add_pre_buffer(C, "#define __OPTIMIZE_SIZE__ 1\n");
 
-	/* GCC defines these for limits.h */
-	dmrC_add_pre_buffer(C, "#weak_define __SHRT_MAX__ " STRINGIFY(__SHRT_MAX__) "\n");
-	dmrC_add_pre_buffer(C, "#weak_define __SCHAR_MAX__ " STRINGIFY(__SCHAR_MAX__) "\n");
-	dmrC_add_pre_buffer(C, "#weak_define __INT_MAX__ " STRINGIFY(__INT_MAX__) "\n");
-	dmrC_add_pre_buffer(C, "#weak_define __LONG_MAX__ " STRINGIFY(__LONG_MAX__) "\n");
-	dmrC_add_pre_buffer(C, "#weak_define __LONG_LONG_MAX__ " STRINGIFY(__LONG_LONG_MAX__) "\n");
-	dmrC_add_pre_buffer(C, "#weak_define __WCHAR_MAX__ " STRINGIFY(__WCHAR_MAX__) "\n");
-	dmrC_add_pre_buffer(C, "#weak_define __SIZEOF_POINTER__ " STRINGIFY(__SIZEOF_POINTER__) "\n");
-	dmrC_add_pre_buffer(C, "#weak_define __CHAR_BIT__ " STRINGIFY(__CHAR_BIT__) "\n");
 }
 
 static struct symbol_list *sparse_tokenstream(struct dmr_C *C, struct token *token)
 {
+	int builtin = token && !token->pos.stream;
+
 	// Preprocess the stream
 	token = dmrC_preprocess(C, token);
 
+	if (C->dump_macro_defs && !builtin)
+		dmrC_dump_macro_definitions(C);
+	
 	if (C->preprocess_only) {
 		while (!dmrC_eof_token(token)) {
 			int prec = 1;
@@ -1352,10 +1430,10 @@ struct symbol_list *dmrC_sparse_buffer(struct dmr_C *C, const char *name, char *
 
 	res = sparse_tokenstream(C, start);
 
-    if (!keep_tokens) {
-        /* Drop the tokens for this file after parsing */
-        clear_token_alloc(C);
-    }
+	if (!keep_tokens) {
+		/* Drop the tokens for this file after parsing */
+		clear_token_alloc(C);
+	}
 
 	/* Evaluate the complete symbol list */
 	dmrC_evaluate_symbol_list(C, res);

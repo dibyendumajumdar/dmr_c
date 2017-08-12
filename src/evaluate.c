@@ -1741,6 +1741,8 @@ static struct symbol *evaluate_dereference(struct dmr_C *C, struct expression *e
 		return expr->ctype;
 	}
 
+	dmrC_examine_symbol_type(C->S, ctype);
+
 	/* Dereferencing a node drops all the node information. */
 	if (ctype->type == SYM_NODE)
 		ctype = ctype->ctype.base_type;

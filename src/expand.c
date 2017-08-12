@@ -1253,6 +1253,36 @@ long long dmrC_get_expression_value_silent(struct dmr_C *C, struct expression *e
 	return __get_expression_value(C, expr, 2);
 }
 
+int dmrC_expr_truth_value(struct dmr_C *C, struct expression *expr)
+{
+	const int saved = conservative;
+	struct symbol *ctype;
+
+	if (!expr)
+		return 0;
+
+	ctype = dmrC_evaluate_expression(C, expr);
+	if (!ctype)
+		return -1;
+
+	conservative = 1;
+	expand_expression(C, expr);
+	conservative = saved;
+
+redo:
+	switch (expr->type) {
+	case EXPR_COMMA:
+		expr = expr->right;
+		goto redo;
+	case EXPR_VALUE:
+		return expr->value != 0;
+	case EXPR_FVALUE:
+		return expr->fvalue != 0;
+	default:
+		return -1;
+	}
+}
+
 int dmrC_is_zero_constant(struct dmr_C *C, struct expression *expr)
 {
 	const int saved = conservative;

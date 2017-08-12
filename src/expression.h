@@ -191,6 +191,7 @@ long long dmrC_get_expression_value(struct dmr_C *C, struct expression *);
 
 /* Constant expression values */
 int dmrC_is_zero_constant(struct dmr_C *C, struct expression *);
+int dmrC_expr_truth_value(struct dmr_C *C, struct expression *expr);
 long long dmrC_const_expression_value(struct dmr_C *C, struct expression *);
 
 /* Expression parsing */

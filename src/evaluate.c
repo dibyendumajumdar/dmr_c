@@ -1225,6 +1225,18 @@ static struct symbol *evaluate_conditional_expression(struct dmr_C *C, struct ex
 
 Err:
 	dmrC_expression_error(C, expr, "incompatible types in conditional expression (%s)", typediff);
+	/*
+	 * if the condition is constant, the type is in fact known
+	 * so use it, as gcc & clang do.
+	 */
+	switch (dmrC_expr_truth_value(C, expr->conditional)) {
+	case 1:	expr->ctype = ltype;
+		break;
+	case 0: expr->ctype = rtype;
+		break;
+	default:
+		break;
+	}
 	return NULL;
 
 out:

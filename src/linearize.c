@@ -29,6 +29,7 @@ static pseudo_t linearize_one_symbol(struct dmr_C *C, struct entrypoint *ep, str
 struct access_data;
 static pseudo_t add_load(struct dmr_C *C, struct entrypoint *ep, struct access_data *);
 static pseudo_t linearize_initializer(struct dmr_C *C, struct entrypoint *ep, struct expression *initializer, struct access_data *);
+static pseudo_t cast_pseudo(struct dmr_C *C, struct entrypoint *ep, pseudo_t src, struct symbol *from, struct symbol *to);
 
 
 static struct instruction *alloc_instruction(struct dmr_C *C, int opcode, int size)
@@ -871,9 +872,7 @@ struct access_data {
 	struct symbol *result_type;	// result ctype
 	struct symbol *source_type;	// source ctype
 	pseudo_t address;		// pseudo containing address ..
-	pseudo_t origval;		// pseudo for original value ..
-	unsigned int offset, alignment;	// byte offset
-	unsigned int bit_size, bit_offset; // which bits
+	unsigned int offset;	// byte offset
 	struct position pos;
 };
 
@@ -926,9 +925,6 @@ static int linearize_address_gen(struct dmr_C *C, struct entrypoint *ep,
 	ad->pos = expr->pos;
 	ad->result_type = ctype;
 	ad->source_type = base_type(C, ctype);
-	ad->bit_size = ctype->bit_size;
-	ad->alignment = ctype->ctype.alignment;
-	ad->bit_offset = ctype->bit_offset;
 	if (expr->type == EXPR_PREOP && expr->op == '*')
 		return linearize_simple_address(C, ep, expr->unop, ad);
 
@@ -941,13 +937,8 @@ static pseudo_t add_load(struct dmr_C *C, struct entrypoint *ep, struct access_d
 	struct instruction *insn;
 	pseudo_t new;
 
-	new = ad->origval;
-	if (0 && new)
-		return new;
-
 	insn = alloc_typed_instruction(C, OP_LOAD, ad->source_type);
 	new = dmrC_alloc_pseudo(C, insn);
-	ad->origval = new;
 
 	insn->target = new;
 	insn->offset = ad->offset;
@@ -976,9 +967,11 @@ static pseudo_t linearize_store_gen(struct dmr_C *C, struct entrypoint *ep,
 	pseudo_t store = value;
 
 	if (type_size(ad->source_type) != type_size(ad->result_type)) {
+		struct symbol *ctype = ad->result_type;
+		unsigned int shift = ctype->bit_offset;
+		unsigned int size = ctype->bit_size;
 		pseudo_t orig = add_load(C, ep, ad);
-		int shift = ad->bit_offset;
-		unsigned long long mask = (1ULL << ad->bit_size)-1;
+		unsigned long long mask = (1ULL << size) - 1;
 
 		if (shift) {
 			store = add_binary_op(C, ep, ad->source_type, OP_SHL, value, dmrC_value_pseudo(C, shift));
@@ -1026,14 +1019,17 @@ static pseudo_t add_symbol_address(struct dmr_C *C, struct entrypoint *ep, struc
 
 static pseudo_t linearize_load_gen(struct dmr_C *C, struct entrypoint *ep, struct access_data *ad)
 {
+	struct symbol *ctype = ad->result_type;
 	pseudo_t new = add_load(C, ep, ad);
 
-	if (ad->bit_offset) {
-		pseudo_t shift = dmrC_value_pseudo(C, ad->bit_offset);
+	if (ctype->bit_offset) {
+		pseudo_t shift = dmrC_value_pseudo(C, ctype->bit_offset);
 		pseudo_t newval = add_binary_op(C, ep, ad->source_type, OP_LSR, new, shift);
 		new = newval;
 	}
 		
+	if (ctype->bit_size != type_size(ad->source_type))
+		new = cast_pseudo(C, ep, new, ad->source_type, ad->result_type);
 	return new;
 }
 

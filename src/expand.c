@@ -900,6 +900,20 @@ static unsigned long bit_offset(struct dmr_C *C, const struct expression *expr)
 	return offset;
 }
 
+static unsigned long bit_range(const struct expression *expr)
+{
+	unsigned long range = 0;
+	unsigned long size = 0;
+	while (expr->type == EXPR_POS) {
+		unsigned long nr = expr->init_nr;
+		size = expr->ctype->bit_size;
+		range += (nr - 1) * size;
+		expr = expr->init_expr;
+	}
+	range += size;
+	return range;
+}
+
 static int compare_expressions(void *userdata, const void *_a, const void *_b)
 {
 	struct dmr_C *C = (struct dmr_C *) userdata;
@@ -916,23 +930,40 @@ static void sort_expression_list(struct dmr_C *C, struct expression_list **list)
 	ptrlist_sort((struct ptr_list **)list, C, compare_expressions);
 }
 
-static void verify_nonoverlapping(struct dmr_C *C, struct expression_list **list)
+static void verify_nonoverlapping(struct dmr_C *C, struct expression_list **list, struct expression *expr)
 {
 	struct expression *a = NULL;
+	unsigned long max = 0;
+	unsigned long whole = expr->ctype->bit_size;
 	struct expression *b;
 
 	if (!C->Woverride_init)
 		return;
 
 	FOR_EACH_PTR(*list, b) {
+		unsigned long off, end;
 		if (!b->ctype || !b->ctype->bit_size)
 			continue;
-		if (a && bit_offset(C, a) == bit_offset(C, b)) {
+		off = bit_offset(C, b);
+		if (a && off < max) {
 			dmrC_warning(C, a->pos, "Initializer entry defined twice");
 			dmrC_info(C, b->pos, "  also defined here");
-			return;
+			if (!C->Woverride_init_all)
+				return;
 		}
-		a = b;
+		end = off + bit_range(b);
+		if (!a && !C->Woverride_init_whole_range) {
+			// If first entry is the whole range, do not let
+			// any warning about it (this allow to initialize
+			// an array with some default value and then override
+			// some specific entries).
+			if (off == 0 && end == whole)
+				continue;
+		}
+		if (end > max) {
+			max = end;
+			a = b;
+		}
 	} END_FOR_EACH_PTR(b);
 }
 
@@ -1002,7 +1033,7 @@ static int expand_expression(struct dmr_C *C, struct expression *expr)
 
 	case EXPR_INITIALIZER:
 		sort_expression_list(C, &expr->expr_list);
-		verify_nonoverlapping(C, &expr->expr_list);
+		verify_nonoverlapping(C, &expr->expr_list, expr);
 		return expand_expression_list(C, expr->expr_list);
 
 	case EXPR_IDENTIFIER:

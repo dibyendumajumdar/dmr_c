@@ -291,9 +291,12 @@ struct dmr_C *new_dmr_C()
 	C->Wunknown_attribute = 1;
 	C->Wvla = 1;
 	C->Woverride_init = 1;
+	C->Wbitwise = 1;
+	C->Wmemcpy_max_count = 1;
 
 	C->max_warnings = 100;
 	C->show_info = 1;
+	C->fmemcpy_max_count = 100000;
 
 	dmrC_allocator_init(&C->ptrlist_allocator, "ptrlist_nodes", sizeof(struct ptr_list),
 		__alignof__(struct ptr_list), CHUNK);

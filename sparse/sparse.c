@@ -297,6 +297,7 @@ int main(int argc, char **argv)
 	char *file;
 
 	struct dmr_C *C = new_dmr_C();
+	C->optimize = 1;
 	// Expand, linearize and show it.
 	check_symbols(C, dmrC_sparse_initialize(C, argc, argv, &filelist));
 	FOR_EACH_PTR(filelist, file) {

@@ -1429,70 +1429,68 @@ static void output_liveness(struct dmr_C *C, struct function *fn,
 	END_FOR_EACH_PTR(need);
 }
 
+static NJXLInsRef output_op_cbr(struct dmr_C *C, struct function *fn,
+				struct instruction *br)
+{
+	NJXLInsRef value = pseudo_to_value(C, fn, br->type, br->cond);
+	if (!value)
+		return NULL;
+	NJXLInsRef cond = NULL;
+	if (NJX_is_i(value)) {
+		cond = NJX_eqi(fn->builder, value, NJX_immi(fn->builder, 0));
+	} else if (NJX_is_q(value)) {
+		cond = NJX_eqq(fn->builder, value, NJX_immq(fn->builder, 0));
+	} else if (NJX_is_d(value)) {
+		cond = NJX_eqd(fn->builder, value, NJX_immd(fn->builder, 0));
+	} else if (NJX_is_f(value)) {
+		cond = NJX_eqf(fn->builder, value, NJX_immf(fn->builder, 0));
+	}
+	if (cond == NULL)
+		return NULL;
+	// Mark registers needed by destination BB as live
+	// we should only output if bb_false precedes current bb
+	if (br->bb->nr > br->bb_false->nr)
+		output_liveness(C, fn, br->bb_false);
+	NJXLInsRef br1 =
+	    NJX_cbr_true(fn->builder, cond, NULL); // br->bb_false->priv
+	if (!add_jump_instruction(fn, br->bb_false, br1))
+		return NULL;
+	// Mark registers needed by destination BB as live
+	// we should only output if bb_false precedes current bb
+	if (br->bb->nr > br->bb_true->nr)
+		output_liveness(C, fn, br->bb_true);
+	NJXLInsRef br2 =
+	    NJX_cbr_false(fn->builder, cond, NULL); // br->bb_true->priv
+	if (!add_jump_instruction(fn, br->bb_true, br2))
+		return NULL;
+	return br1;
+}
+
 static NJXLInsRef output_op_br(struct dmr_C *C, struct function *fn,
 			       struct instruction *br)
 {
-	if (br->cond) {
-		NJXLInsRef value = pseudo_to_value(C, fn, br->type, br->cond);
-		if (!value)
-			return NULL;
-		NJXLInsRef cond = NULL;
-		if (NJX_is_i(value)) {
-			cond = NJX_eqi(fn->builder, value,
-				       NJX_immi(fn->builder, 0));
-		} else if (NJX_is_q(value)) {
-			cond = NJX_eqq(fn->builder, value,
-				       NJX_immq(fn->builder, 0));
-		} else if (NJX_is_d(value)) {
-			cond = NJX_eqd(fn->builder, value,
-				       NJX_immd(fn->builder, 0));
-		} else if (NJX_is_f(value)) {
-			cond = NJX_eqf(fn->builder, value,
-				       NJX_immf(fn->builder, 0));
-		}
-		if (cond == NULL)
-			return NULL;
+	if (br->bb_true) {
 		// Mark registers needed by destination BB as live
-		// we should only output if bb_false precedes current bb
-		if (br->bb->nr > br->bb_false->nr)
-			output_liveness(C, fn, br->bb_false);
-		NJXLInsRef br1 =
-		    NJX_cbr_true(fn->builder, cond, NULL); // br->bb_false->priv
-		if (!add_jump_instruction(fn, br->bb_false, br1))
-			return NULL;
-		// Mark registers needed by destination BB as live
-		// we should only output if bb_false precedes current bb
+		// we should only output if bb_true precedes
+		// current bb
 		if (br->bb->nr > br->bb_true->nr)
 			output_liveness(C, fn, br->bb_true);
-		NJXLInsRef br2 =
-		    NJX_cbr_false(fn->builder, cond, NULL); // br->bb_true->priv
-		if (!add_jump_instruction(fn, br->bb_true, br2))
-			return NULL;
-		return br1;
-	} else {
-		if (br->bb_true) {
-			// Mark registers needed by destination BB as live
-			// we should only output if bb_true precedes
-			// current bb
-			if (br->bb->nr > br->bb_true->nr)
-				output_liveness(C, fn, br->bb_true);
-		} else if (br->bb_false) {
-			// Mark registers needed by destination BB as live
-			// we should only output if bb_false precedes
-			// current bb
-			if (br->bb->nr > br->bb_false->nr)
-				output_liveness(C, fn, br->bb_false);
-		}
-		NJXLInsRef br1 = NJX_br(fn->builder, NULL);
-		if (br->bb_true) {
-			if (!add_jump_instruction(fn, br->bb_true, br1))
-				return NULL;
-		} else {
-			if (!add_jump_instruction(fn, br->bb_false, br1))
-				return NULL;
-		}
-		return br1;
+	} else if (br->bb_false) {
+		// Mark registers needed by destination BB as live
+		// we should only output if bb_false precedes
+		// current bb
+		if (br->bb->nr > br->bb_false->nr)
+			output_liveness(C, fn, br->bb_false);
 	}
+	NJXLInsRef br1 = NJX_br(fn->builder, NULL);
+	if (br->bb_true) {
+		if (!add_jump_instruction(fn, br->bb_true, br1))
+			return NULL;
+	} else {
+		if (!add_jump_instruction(fn, br->bb_false, br1))
+			return NULL;
+	}
+	return br1;
 }
 
 static NJXLInsRef output_op_ret(struct dmr_C *C, struct function *fn,
@@ -1621,6 +1619,10 @@ static int output_insn(struct dmr_C *C, struct function *fn,
 	case OP_BR:
 		NJX_comment(fn->builder, make_comment(C, insn));
 		v = output_op_br(C, fn, insn);
+		break;
+	case OP_CBR:
+		NJX_comment(fn->builder, make_comment(C, insn));
+		v = output_op_cbr(C, fn, insn);
 		break;
 	case OP_PHISOURCE:
 		NJX_comment(fn->builder, make_comment(C, insn));

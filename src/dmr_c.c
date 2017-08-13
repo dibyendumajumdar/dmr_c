@@ -153,6 +153,7 @@ static void do_error(struct dmr_C *C, struct position pos, const char *fmt,
 	C->die_if_error = 1;
 	C->show_info = 1;
 	/* Shut up warnings after an error */
+	C->has_error |= ERROR_CURR_PHASE;
 	C->max_warnings = 0;
 	if (C->errors > 100) {
 		C->show_info = 0;
@@ -177,7 +178,7 @@ void dmrC_warning(struct dmr_C *C, struct position pos, const char *fmt, ...)
 		va_end(args);
 		return;
 	}
-	if (!C->max_warnings) {
+	if (!C->max_warnings || C->has_error) {
 		C->show_info = 0;
 		return;
 	}
@@ -1408,6 +1409,9 @@ struct symbol_list * dmrC__sparse(struct dmr_C *C, char *filename)
 struct symbol_list * dmrC_sparse(struct dmr_C *C, char *filename)
 {
 	struct symbol_list *res = dmrC__sparse(C, filename);
+
+	if (C->has_error & ERROR_CURR_PHASE)
+		C->has_error = ERROR_PREV_PHASE;
 
 	/* Evaluate the complete symbol list */
 	dmrC_evaluate_symbol_list(C, res);

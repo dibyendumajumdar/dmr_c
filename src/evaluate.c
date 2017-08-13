@@ -3252,6 +3252,7 @@ void dmrC_evaluate_symbol_list(struct dmr_C *C, struct symbol_list *list)
 	struct symbol *sym;
 
 	FOR_EACH_PTR(list, sym) {
+		C->has_error &= ~ERROR_CURR_PHASE;
 		evaluate_symbol(C, sym);
 		check_duplicates(C, sym);
 	} END_FOR_EACH_PTR(sym); 

@@ -71,8 +71,8 @@ static const char *parse_escape(struct dmr_C *C, const char *p, unsigned *val, c
 		}
 		break;
 	}
-  case '0':case '1': case '2': case '3': case '4': case '5':
-  case '6': case '7': {
+	case '0':case '1': case '2': case '3': case '4': case '5':
+	case '6': case '7': {
 		if (p + 2 < end)
 			end = p + 2;
 		c -= '0';
@@ -109,17 +109,17 @@ void dmrC_get_char_constant(struct dmr_C *C, struct token *token, unsigned long 
 		p = token->string->data;
 		end = p + token->string->length - 1;
 		break;
-  case TOKEN_CHAR_EMBEDDED_0:
-  case TOKEN_CHAR_EMBEDDED_1:
-  case TOKEN_CHAR_EMBEDDED_2:
-  case TOKEN_CHAR_EMBEDDED_3:
+	case TOKEN_CHAR_EMBEDDED_0:
+	case TOKEN_CHAR_EMBEDDED_1:
+	case TOKEN_CHAR_EMBEDDED_2:
+	case TOKEN_CHAR_EMBEDDED_3:
 		end = p + type - TOKEN_CHAR;
 		break;
 	default:
 		end = p + type - TOKEN_WIDE_CHAR;
 	}
 	p = parse_escape(C, p, &v, end,
-			type < TOKEN_WIDE_CHAR ? C->target->bits_in_char : 32, token->pos);
+			type < TOKEN_WIDE_CHAR ? C->target->bits_in_char : C->target->bits_in_wchar, token->pos);
 	if (p != end)
 		dmrC_warning(C, token->pos,
 			"multi-character character constant");
@@ -148,7 +148,7 @@ struct token *dmrC_get_string_constant(struct dmr_C *C, struct token *token, str
 			done = next;
 		}
 	}
-	bits = is_wide ? 32 : C->target->bits_in_char;
+	bits = is_wide ? C->target->bits_in_wchar : C->target->bits_in_char;
 	while (token != done) {
 		unsigned v;
 		const char *p = token->string->data;

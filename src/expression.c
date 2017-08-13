@@ -378,16 +378,16 @@ struct token *dmrC_primary_expression(struct dmr_C *C, struct token *token, stru
 	struct expression *expr = NULL;
 
 	switch (dmrC_token_type(token)) {
-  case TOKEN_CHAR:
-  case TOKEN_CHAR_EMBEDDED_0:
-  case TOKEN_CHAR_EMBEDDED_1:
-  case TOKEN_CHAR_EMBEDDED_2:
-  case TOKEN_CHAR_EMBEDDED_3:
-  case TOKEN_WIDE_CHAR:
-  case TOKEN_WIDE_CHAR_EMBEDDED_0:
-  case TOKEN_WIDE_CHAR_EMBEDDED_1:
-  case TOKEN_WIDE_CHAR_EMBEDDED_2:
-  case TOKEN_WIDE_CHAR_EMBEDDED_3:
+	case TOKEN_CHAR:
+	case TOKEN_CHAR_EMBEDDED_0:
+	case TOKEN_CHAR_EMBEDDED_1:
+	case TOKEN_CHAR_EMBEDDED_2:
+	case TOKEN_CHAR_EMBEDDED_3:
+	case TOKEN_WIDE_CHAR:
+	case TOKEN_WIDE_CHAR_EMBEDDED_0:
+	case TOKEN_WIDE_CHAR_EMBEDDED_1:
+	case TOKEN_WIDE_CHAR_EMBEDDED_2:
+	case TOKEN_WIDE_CHAR_EMBEDDED_3:
 		expr = dmrC_alloc_expression(C, token->pos, EXPR_VALUE);   
 		expr->flags = Int_const_expr;
 		expr->ctype = dmrC_token_type(token) < TOKEN_WIDE_CHAR ? &C->S->int_ctype : &C->S->long_ctype;

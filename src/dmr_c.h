@@ -114,6 +114,9 @@ struct pseudo_list;
 
 DECLARE_PTR_LIST(string_list, char);
 
+#define   ERROR_CURR_PHASE        (1 << 0)
+#define   ERROR_PREV_PHASE        (1 << 1)
+
 struct dmr_C {
 	struct target_t *target;
 	struct global_symbols_t *S;
@@ -141,6 +144,7 @@ struct dmr_C {
 	int once;
 	int preprocess_only;
 	int codegen;
+	int has_error;
 
 	const char *gcc_base_dir;
 	const char *multiarch_dir;

@@ -17,6 +17,7 @@ extern "C" {
 
 #define REPEAT_CSE		1
 #define REPEAT_SYMBOL_CLEANUP	2
+#define REPEAT_CFG_CLEANUP	3
 
 struct entrypoint;
 struct instruction;

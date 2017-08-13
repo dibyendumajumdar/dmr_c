@@ -25,7 +25,6 @@ DECLARE_PTR_LIST(basic_block_list, struct basic_block);
 DECLARE_PTR_LIST(instruction_list, struct instruction);
 DECLARE_PTR_LIST(multijmp_list, struct multijmp);
 DECLARE_PTR_LIST(pseudo_list, struct pseudo);
-//DECLARE_PTR_LIST(pseudo_ptr_list, pseudo_t);
 
 struct pseudo_user {
 	struct instruction *insn;
@@ -186,6 +185,7 @@ enum opcode {
 	OP_TERMINATOR,
 	OP_RET = OP_TERMINATOR,
 	OP_BR,
+	OP_CBR,
 	OP_SWITCH,
 	OP_INVOKE,
 	OP_COMPUTEDGOTO,
@@ -393,10 +393,6 @@ static inline int dmrC_bb_reachable(struct basic_block *bb)
 	return bb != NULL;
 }
 
-//static inline void dmrC_add_pseudo_ptr(struct dmr_C *C, pseudo_t *ptr, struct pseudo_ptr_list **list)
-//{
-//	ptrlist_add((struct ptr_list **)list, ptr, &C->ptrlist_allocator);
-//}
 
 static inline void dmrC_add_pseudo_user_ptr(struct dmr_C *C, struct pseudo_user *user, struct pseudo_user_list **list)
 {

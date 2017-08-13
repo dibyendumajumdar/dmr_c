@@ -33,7 +33,8 @@ static int rewrite_branch(struct dmr_C *C, struct basic_block *bb,
 		return 0;
 
 	/* We might find new if-conversions or non-dominating CSEs */
-	C->L->repeat_phase |= REPEAT_CSE;
+	/* we may also create new dead cycles */
+	C->L->repeat_phase |= REPEAT_CSE | REPEAT_CFG_CLEANUP;
 	*ptr = new;
 	dmrC_replace_bb_in_list(&bb->children, old, new, 1);
 	dmrC_remove_bb_from_list(&old->parents, bb, 1);
@@ -79,6 +80,27 @@ static int bb_depends_on(struct basic_block *target, struct basic_block *src)
 }
 
 /*
+ * This really should be handled by bb_depends_on()
+ * which efficiently check the dependence using the
+ * defines - needs liveness info. Problem is that
+ * there is no liveness done on OP_PHI & OP_PHISRC.
+ *
+ * This function add the missing dependency checks.
+ */
+static int bb_depends_on_phi(struct basic_block *target, struct basic_block *src)
+{
+	struct instruction *insn;
+	FOR_EACH_PTR(src->insns, insn) {
+		if (!insn->bb)
+			continue;
+		if (insn->opcode != OP_PHI)
+			continue;
+		if (dmrC_pseudo_in_list(target->needs, insn->target))
+			return 1;
+	} END_FOR_EACH_PTR(insn);
+	return 0;
+}
+/*
  * When we reach here, we have:
  *  - a basic block that ends in a conditional branch and
  *    that has no side effects apart from the pseudos it
@@ -93,6 +115,14 @@ static int try_to_simplify_bb(struct dmr_C *C, struct basic_block *bb, struct in
 {
 	int changed = 0;
 	pseudo_t phi;
+	int bogus;
+
+	/*
+	 * This a due to improper dominance tracking during
+	 * simplify_symbol_usage()/conversion to SSA form.
+	 * No sane simplification can be done when we have this.
+	 */
+	bogus = dmrC_bb_list_size(bb->parents) != dmrC_pseudo_list_size(first->phi_list);
 
 	FOR_EACH_PTR(first->phi_list, phi) {
 		struct instruction *def = phi->def;
@@ -110,7 +140,7 @@ static int try_to_simplify_bb(struct dmr_C *C, struct basic_block *bb, struct in
 		br = dmrC_last_instruction(source->insns);
 		if (!br)
 			continue;
-		if (br->opcode != OP_BR)
+		if (br->opcode != OP_CBR && br->opcode != OP_BR)
 			continue;
 		true = pseudo_truth_value(pseudo);
 		if (true < 0)
@@ -118,8 +148,12 @@ static int try_to_simplify_bb(struct dmr_C *C, struct basic_block *bb, struct in
 		target = true ? second->bb_true : second->bb_false;
 		if (bb_depends_on(target, bb))
 			continue;
+		if (bb_depends_on_phi(target, bb))
+			continue;
 		changed |= rewrite_branch(C, source, &br->bb_true, bb, target);
 		changed |= rewrite_branch(C, source, &br->bb_false, bb, target);
+		if (changed && !bogus)
+			dmrC_kill_use(C, THIS_ADDRESS(pseudo_t, phi));
 	} END_FOR_EACH_PTR(phi);
 	return changed;
 }
@@ -173,7 +207,7 @@ static int simplify_branch_branch(struct dmr_C *C, struct basic_block *bb, struc
 	if (target == bb)
 		return 0;
 	insn = dmrC_last_instruction(target->insns);
-	if (!insn || insn->opcode != OP_BR || insn->cond != br->cond)
+	if (!insn || insn->opcode != OP_CBR || insn->cond != br->cond)
 		return 0;
 	/*
 	 * Ahhah! We've found a branch to a branch on the same conditional!
@@ -185,6 +219,8 @@ static int simplify_branch_branch(struct dmr_C *C, struct basic_block *bb, struc
 		goto try_to_rewrite_target;
 	if (bb_depends_on(final, target))
 		goto try_to_rewrite_target;
+	if (bb_depends_on_phi(final, target))
+		return 0;
 	return rewrite_branch(C, bb, target_p, target, final);
 
 try_to_rewrite_target:
@@ -195,7 +231,6 @@ try_to_rewrite_target:
 	if (dmrC_bb_list_size(target->parents) != 1)
 		return retval;
 	dmrC_insert_branch(C, target, insn, final);
-	dmrC_kill_instruction(C, insn);
 	return 1;
 }
 
@@ -215,7 +250,7 @@ static int simplify_branch_nodes(struct dmr_C *C, struct entrypoint *ep)
 	FOR_EACH_PTR(ep->bbs, bb) {
 		struct instruction *br = dmrC_last_instruction(bb->insns);
 
-		if (!br || br->opcode != OP_BR || !br->bb_false)
+		if (!br || br->opcode != OP_CBR)
 			continue;
 		changed |= simplify_one_branch(C, bb, br);
 	} END_FOR_EACH_PTR(bb);
@@ -283,6 +318,14 @@ static inline int same_memop(struct instruction *a, struct instruction *b)
 	return	a->offset == b->offset && a->size == b->size;
 }
 
+static inline int distinct_symbols(pseudo_t a, pseudo_t b)
+{
+	if (a->type != PSEUDO_SYM)
+		return 0;
+	if (b->type != PSEUDO_SYM)
+		return 0;
+	return a->sym != b->sym;
+}
 /*
  * Return 1 if "dom" dominates the access to "pseudo"
  * in "insn".
@@ -301,12 +344,14 @@ int dmrC_dominates(struct dmr_C *C, pseudo_t pseudo, struct instruction *insn, s
 		if (local)
 			return 0;
 		/* We don't think two explicitly different symbols ever alias */
-		if (dom->src->type == PSEUDO_SYM)
+		if (distinct_symbols(insn->src, dom->src))
 			return 0;
 		/* We could try to do some alias analysis here */
 		return -1;
 	}
 	if (!same_memop(insn, dom)) {
+		// TODO I think I changed this to fix some simplification issue
+		// http://marc.info/?l=linux-sparse&m=148966371314267&w=2
 		if (dom->opcode == OP_LOAD)
 			return -1;
 		if (!overlapping_memop(C, insn, dom))
@@ -607,11 +652,11 @@ static void simplify_one_symbol(struct dmr_C *C, struct entrypoint *ep, struct s
 {
 #if SINGLE_STORE_SHORTCUT
 	pseudo_t pseudo, src;
+	struct instruction *def;
 #else
     pseudo_t pseudo;
 #endif
 	struct pseudo_user *pu;
-	struct instruction *def;
 	unsigned long mod;
 #if SINGLE_STORE_SHORTCUT
 	int all, stores, complex;
@@ -845,9 +890,11 @@ static int rewrite_parent_branch(struct dmr_C *C, struct basic_block *bb, struct
 		return 0;
 
 	switch (insn->opcode) {
+	case OP_CBR:
+		changed |= rewrite_branch(C, bb, &insn->bb_false, old, new);
+		/* fall through */
 	case OP_BR:
 		changed |= rewrite_branch(C, bb, &insn->bb_true, old, new);
-		changed |= rewrite_branch(C, bb, &insn->bb_false, old, new);
 		assert(changed);
 		return changed;
 	case OP_SWITCH: {
@@ -869,7 +916,7 @@ static struct basic_block * rewrite_branch_bb(struct dmr_C *C, struct basic_bloc
 	struct basic_block *target = br->bb_true;
 	struct basic_block *false = br->bb_false;
 
-	if (target && false) {
+	if (br->opcode == OP_CBR) {
 		pseudo_t cond = br->cond;
 		if (cond->type != PSEUDO_VAL)
 			return NULL;
@@ -920,9 +967,11 @@ static void vrfy_children(struct basic_block *bb)
 	}
 	switch (br->opcode) {
 		struct multijmp *jmp;
+	case OP_CBR:
+		vrfy_bb_in_list(br->bb_false, bb->children);
+		/* fall through */
 	case OP_BR:
 		vrfy_bb_in_list(br->bb_true, bb->children);
-		vrfy_bb_in_list(br->bb_false, bb->children);
 		break;
 	case OP_SWITCH:
 	case OP_COMPUTEDGOTO:
@@ -980,6 +1029,7 @@ void dmrC_pack_basic_blocks(struct dmr_C *C, struct entrypoint *ep)
 			case OP_NOP: case OP_LNOP: case OP_SNOP:
 			case OP_INLINED_CALL:
 				continue;
+			case OP_CBR:
 			case OP_BR: {
 				struct basic_block *replace;
 				replace = rewrite_branch_bb(C, bb, first);

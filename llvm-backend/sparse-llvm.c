@@ -1106,21 +1106,23 @@ static LLVMValueRef bool_value(struct dmr_C *C, struct function *fn, LLVMValueRe
 	return value;
 }
 
+static LLVMValueRef output_op_cbr(struct dmr_C *C, struct function *fn, struct instruction *br)
+{
+	LLVMValueRef cond = bool_value(C, fn,
+		pseudo_to_value(C, fn, br->type, br->cond));
+
+	return LLVMBuildCondBr(fn->builder, cond,
+		br->bb_true->priv,
+		br->bb_false->priv);
+}
+
 static LLVMValueRef output_op_br(struct dmr_C *C, struct function *fn, struct instruction *br)
 {
-	if (br->cond) {
-		LLVMValueRef cond = bool_value(C, fn,
-			pseudo_to_value(C, fn, br->type, br->cond));
-
-		return LLVMBuildCondBr(fn->builder, cond,
-			br->bb_true->priv,
-			br->bb_false->priv);
-	}
-	else
-		return LLVMBuildBr(fn->builder,
-			br->bb_true ? br->bb_true->priv :
-			br->bb_false->priv);
+	return LLVMBuildBr(fn->builder,
+		br->bb_true ? br->bb_true->priv :
+		br->bb_false->priv);
 }
+
 
 static LLVMValueRef output_op_sel(struct dmr_C *C, struct function *fn, struct instruction *insn)
 {
@@ -1517,6 +1519,9 @@ static int output_insn(struct dmr_C *C, struct function *fn, struct instruction 
 	switch (insn->opcode) {
 	case OP_RET:
 		v = output_op_ret(C, fn, insn);
+		break;
+	case OP_CBR:
+		v = output_op_cbr(C, fn, insn);
 		break;
 	case OP_BR:
 		v = output_op_br(C, fn, insn);

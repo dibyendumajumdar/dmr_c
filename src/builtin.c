@@ -181,13 +181,15 @@ static struct symbol_op choose_op = {
 /* The argument is constant and valid if the cost is zero */
 static int expand_bswap(struct dmr_C *C, struct expression *expr, int cost)
 {
+	struct expression *arg;
 	long long val;
 
 	if (cost)
 		return cost;
 
 	/* the arguments number & type have already been checked */
-	val = dmrC_const_expression_value(C, dmrC_first_expression(expr->args));
+	arg = dmrC_first_expression(expr->args);
+	val = dmrC_get_expression_value_silent(C, arg);
 	switch (expr->ctype->bit_size) {
 	case 16: expr->value = __builtin_bswap16(val); break;
 	case 32: expr->value = __builtin_bswap32(val); break;

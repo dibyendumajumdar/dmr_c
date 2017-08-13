@@ -159,6 +159,7 @@ static const char *opcodes[] = {
 	/* Terminator */
 	[OP_RET] = "ret",
 	[OP_BR] = "br",
+	[OP_CBR] = "cbr",
 	[OP_SWITCH] = "switch",
 	[OP_INVOKE] = "invoke",
 	[OP_COMPUTEDGOTO] = "jmp *",
@@ -300,12 +301,12 @@ const char *dmrC_show_instruction(struct dmr_C *C, struct instruction *insn)
 		if (insn->src && insn->src != VOID_PSEUDO(C))
 			buf += sprintf(buf, "%s", dmrC_show_pseudo(C, insn->src));
 		break;
+	case OP_CBR:
+		buf += sprintf(buf, "%s, .L%u, .L%u", dmrC_show_pseudo(C, insn->cond), insn->bb_true->nr, insn->bb_false->nr);
+		break;
+
 	case OP_BR:
-		if (insn->bb_true && insn->bb_false) {
-			buf += sprintf(buf, "%s, .L%u, .L%u", dmrC_show_pseudo(C, insn->cond), insn->bb_true->nr, insn->bb_false->nr);
-			break;
-		}
-		buf += sprintf(buf, ".L%u", insn->bb_true ? insn->bb_true->nr : insn->bb_false->nr);
+		buf += sprintf(buf, ".L%u", insn->bb_true->nr);
 		break;
 
 	case OP_SYMADDR: {
@@ -431,32 +432,32 @@ const char *dmrC_show_instruction(struct dmr_C *C, struct instruction *insn)
 			type_size(insn->orig_type),
 			dmrC_show_pseudo(C, insn->src));
 		break;
-  case OP_ADD:
-  case OP_SUB:
-  case OP_MULU:
-  case OP_MULS:
-  case OP_DIVU:
-  case OP_DIVS:
-  case OP_MODU: 
-  case OP_MODS:
-  case OP_SHL:
-  case OP_LSR: 
-  case OP_ASR:
-  case OP_AND:
-  case OP_OR:      
-  case OP_XOR:
-  case OP_AND_BOOL:
-  case OP_OR_BOOL:
-  case OP_SET_EQ:
-  case OP_SET_NE:
-  case OP_SET_LE:
-  case OP_SET_GE:
-  case OP_SET_LT:
-  case OP_SET_GT:
-  case OP_SET_B:
-  case OP_SET_A:
-  case OP_SET_BE:
-  case OP_SET_AE:
+	case OP_ADD:
+	case OP_SUB:
+	case OP_MULU:
+	case OP_MULS:
+	case OP_DIVU:
+	case OP_DIVS:
+	case OP_MODU: 
+	case OP_MODS:
+	case OP_SHL:
+	case OP_LSR: 
+	case OP_ASR:
+	case OP_AND:
+	case OP_OR:      
+	case OP_XOR:
+	case OP_AND_BOOL:
+	case OP_OR_BOOL:
+	case OP_SET_EQ:
+	case OP_SET_NE:
+	case OP_SET_LE:
+	case OP_SET_GE:
+	case OP_SET_LT:
+	case OP_SET_GT:
+	case OP_SET_B:
+	case OP_SET_A:
+	case OP_SET_BE:
+	case OP_SET_AE:
 
 		buf += sprintf(buf, "%s <- %s, %s", dmrC_show_pseudo(C, insn->target), dmrC_show_pseudo(C, insn->src1), dmrC_show_pseudo(C, insn->src2));
 		break;
@@ -670,7 +671,7 @@ static void remove_parent(struct dmr_C *C, struct basic_block *child, struct bas
 {
 	dmrC_remove_bb_from_list(&child->parents, parent, 1);
 	if (!child->parents)
-		dmrC_kill_bb(C, child);
+		C->L->repeat_phase |= REPEAT_CFG_CLEANUP;
 }
 
 /* Change a "switch" into a branch */
@@ -682,6 +683,7 @@ void dmrC_insert_branch(struct dmr_C *C, struct basic_block *bb, struct instruct
 	/* Remove the switch */
 	old = dmrC_delete_last_instruction(&bb->insns);
 	assert(old == jmp);
+	dmrC_kill_instruction(C, old);
 
 	br = alloc_instruction(C, OP_BR, 0);
 	br->bb = bb;
@@ -755,7 +757,7 @@ static void add_branch(struct dmr_C *C, struct entrypoint *ep, struct expression
 	struct instruction *br;
 
 	if (dmrC_bb_reachable(bb)) {
-       		br = alloc_instruction(C, OP_BR, 0);
+       		br = alloc_instruction(C, OP_CBR, 0);
 		dmrC_use_pseudo(C, br, cond, &br->cond);
 		br->bb_true = bb_true;
 		br->bb_false = bb_false;
@@ -872,7 +874,7 @@ struct access_data {
 	struct symbol *result_type;	// result ctype
 	struct symbol *source_type;	// source ctype
 	pseudo_t address;		// pseudo containing address ..
-	unsigned int offset;	// byte offset
+	unsigned int offset;		// byte offset
 	struct position pos;
 };
 
@@ -1181,6 +1183,25 @@ static int opcode_sign(struct dmr_C *C, int opcode, struct symbol *ctype)
 	return opcode;
 }
 
+static inline pseudo_t add_convert_to_bool(struct dmr_C *C, struct entrypoint *ep, pseudo_t src, struct symbol *type)
+{
+	pseudo_t zero;
+	int op;
+
+	if (dmrC_is_bool_type(C->S, type))
+		return src;
+	zero = dmrC_value_pseudo(C, 0);
+	op = OP_SET_NE;
+	return add_binary_op(C, ep, &C->S->bool_ctype, op, src, zero);
+}
+
+static pseudo_t linearize_expression_to_bool(struct dmr_C *C, struct entrypoint *ep, struct expression *expr)
+{
+	pseudo_t dst;
+	dst = linearize_expression(C, ep, expr);
+	dst = add_convert_to_bool(C, ep, dst, expr->ctype);
+	return dst;
+}
 static pseudo_t linearize_assignment(struct dmr_C *C, struct entrypoint *ep, struct expression *expr)
 {
 	struct access_data ad = { NULL, };
@@ -1324,6 +1345,18 @@ static pseudo_t linearize_call_expression(struct dmr_C *C, struct entrypoint *ep
 	return retval;
 }
 
+static pseudo_t linearize_binop_bool(struct dmr_C *C, struct entrypoint *ep, struct expression *expr)
+{
+	pseudo_t src1, src2, dst;
+	int op = (expr->op == SPECIAL_LOGICAL_OR) ? OP_OR_BOOL : OP_AND_BOOL;
+
+	src1 = linearize_expression_to_bool(C, ep, expr->left);
+	src2 = linearize_expression_to_bool(C, ep, expr->right);
+	dst = add_binary_op(C, ep, &C->S->bool_ctype, op, src1, src2);
+	if (expr->ctype != &C->S->bool_ctype)
+		dst = cast_pseudo(C, ep, dst, &C->S->bool_ctype, expr->ctype);
+	return dst;
+}
 static pseudo_t linearize_binop(struct dmr_C *C, struct entrypoint *ep, struct expression *expr)
 {
 	pseudo_t src1, src2, dst;
@@ -1334,8 +1367,6 @@ static pseudo_t linearize_binop(struct dmr_C *C, struct entrypoint *ep, struct e
 		['|'] = OP_OR,  ['^'] = OP_XOR,
 		[SPECIAL_LEFTSHIFT] = OP_SHL,
 		[SPECIAL_RIGHTSHIFT] = OP_LSR,
-		[SPECIAL_LOGICAL_AND] = OP_AND_BOOL,
-		[SPECIAL_LOGICAL_OR] = OP_OR_BOOL,
 	};
 	int op;
 
@@ -1616,6 +1647,8 @@ static pseudo_t linearize_expression(struct dmr_C *C, struct entrypoint *ep, str
 		return linearize_call_expression(C, ep, expr);
 
 	case EXPR_BINOP:
+		if (expr->op == SPECIAL_LOGICAL_AND || expr->op == SPECIAL_LOGICAL_OR)
+			return linearize_binop_bool(C, ep, expr);
 		return linearize_binop(C, ep, expr);
 
 	case EXPR_LOGICAL:
@@ -1727,7 +1760,7 @@ static pseudo_t linearize_inlined_call(struct dmr_C *C, struct entrypoint *ep, s
 		dmrC_concat_symbol_list(args->declaration, &ep->syms);
 		FOR_EACH_PTR(args->declaration, sym) {
 			pseudo_t value = linearize_one_symbol(C, ep, sym);
-			dmrC_add_pseudo(C, &insn->inlined_args, value);
+			dmrC_use_pseudo(C, insn, value, dmrC_add_pseudo(C, &insn->inlined_args, value));
 		} END_FOR_EACH_PTR(sym);
 	}
 
@@ -2221,6 +2254,13 @@ static struct entrypoint *linearize_fn(struct dmr_C *C, struct symbol *sym, stru
 		printf("%s(%d): pre dmrC_kill_unreachable_bbs()\n", __FILE__, __LINE__);
 		dmrC_show_entry(C, ep);
 	}
+	if (C->fdump_linearize) {
+		if (C->fdump_linearize == 2)
+			return ep;
+		dmrC_show_entry(C, ep);
+	}
+
+	
 	/*
 	 * Do trivial flow simplification - branches to
 	 * branches, kill dead basicblocks etc

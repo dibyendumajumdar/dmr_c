@@ -27,23 +27,51 @@ static struct basic_block *phi_parent(struct dmr_C *C, struct basic_block *sourc
 	return dmrC_first_basic_block(source->parents);
 }
 
+/*
+ * Copy the phi-node's phisrcs into to given array.
+ * Returns 0 if the the list contained the expected
+ * number of element, a positive number if there was
+ * more than expected and a negative one if less.
+ *
+ * Note: we can't reuse a function like linearize_ptr_list()
+ * because any VOIDs in the phi-list must be ignored here
+ * as in this context they mean 'entry has been removed'.
+ */
+static int get_phisources(struct dmr_C *C, struct instruction *sources[], int nbr, struct instruction *insn)
+{
+	pseudo_t phi;
+	int i = 0;
+
+	assert(insn->opcode == OP_PHI);
+	FOR_EACH_PTR(insn->phi_list, phi) {
+		struct instruction *def;
+		if (phi == VOID_PSEUDO(C))
+			continue;
+		if (i >= nbr)
+			return 1;
+		def = phi->def;
+		assert(def->opcode == OP_PHISOURCE);
+		sources[i++] = def;
+	} END_FOR_EACH_PTR(phi);
+	return i - nbr;
+}
 static int if_convert_phi(struct dmr_C *C, struct instruction *insn)
 {
-	pseudo_t array[3];
+	struct instruction *array[2];
 	struct basic_block *parents[3];
 	struct basic_block *bb, *bb1, *bb2, *source;
 	struct instruction *br;
 	pseudo_t p1, p2;
 
 	bb = insn->bb;
-	if (ptrlist_linearize((struct ptr_list *)insn->phi_list, (void **)array, 3) != 2)
+	if (get_phisources(C, array, 2, insn))
 		return 0;
 	if (ptrlist_linearize((struct ptr_list *)bb->parents, (void **)parents, 3) != 2)
 		return 0;
-	p1 = array[0]->def->src1;
-	bb1 = array[0]->def->bb;
-	p2 = array[1]->def->src1;
-	bb2 = array[1]->def->bb;
+	p1 = array[0]->src1;
+	bb1 = array[0]->bb;
+	p2 = array[1]->src1;
+	bb2 = array[1]->bb;
 
 	/* Only try the simple "direct parents" case */
 	if ((bb1 != parents[0] || bb2 != parents[1]) &&
@@ -68,7 +96,7 @@ static int if_convert_phi(struct dmr_C *C, struct instruction *insn)
 	 * stuff. Verify that here.
 	 */
 	br = dmrC_last_instruction(source->insns);
-	if (!br || br->opcode != OP_BR)
+	if (!br || br->opcode != OP_CBR)
 		return 0;
 
 	assert(br->cond);
@@ -144,7 +172,6 @@ static int delete_pseudo_user_list_entry(struct dmr_C *C, struct pseudo_user_lis
 
 	FOR_EACH_PTR(*list, pu) {
 		if (pu->userp == entry) {
-			//DELETE_CURRENT_PTR(pu);
 			MARK_CURRENT_DELETED(struct pseudo_user *, pu);
 			if (!--count)
 				goto out;
@@ -152,7 +179,6 @@ static int delete_pseudo_user_list_entry(struct dmr_C *C, struct pseudo_user_lis
 	} END_FOR_EACH_PTR(pu);
 	assert(count <= 0);
 out:
-	//ptrlist_pack((struct ptr_list **)list);
 	if (ptrlist_size((struct ptr_list *)*list) == 0)
 		*list = NULL;
 	return count;
@@ -268,11 +294,8 @@ void dmrC_kill_insn(struct dmr_C *C, struct instruction *insn, int force)
 		C->L->repeat_phase |= REPEAT_SYMBOL_CLEANUP;
 		break;
 
-	case OP_BR:
-		if (!insn->bb_true || !insn->bb_false)
-			break;
+	case OP_CBR:
 		/* fall through */
-
 	case OP_COMPUTEDGOTO:
 		dmrC_kill_use(C, &insn->cond);
 		break;
@@ -307,6 +330,7 @@ void dmrC_kill_insn(struct dmr_C *C, struct instruction *insn, int force)
 		/* ignore */
 		return;
 
+	case OP_BR:
 	default:
 		break;
 	}
@@ -931,6 +955,15 @@ offset:
 	if (new == orig) {
 		if (new == VOID_PSEUDO(C))
 			return 0;
+		/*
+		 * If some BB have been removed it is possible that this
+		 * memop is in fact part of a dead BB. In this case
+		 * we must not warn since nothing is wrong.
+		 * If not part of a dead BB this will be redone after
+		 * the BBs have been cleaned up.
+		 */
+		if (C->L->repeat_phase & REPEAT_CFG_CLEANUP)
+			return 0;
 		new = VOID_PSEUDO(C);
 		dmrC_warning(C, insn->pos, "crazy programmer");
 	}
@@ -1113,9 +1146,6 @@ static int simplify_branch(struct dmr_C *C, struct instruction *insn)
 {
 	pseudo_t cond = insn->cond;
 
-	if (!cond)
-		return 0;
-
 	/* Constant conditional */
 	if (constant(cond)) {
 		dmrC_insert_branch(C, insn->bb, insn, cond->value ? insn->bb_true : insn->bb_false);
@@ -1131,6 +1161,7 @@ static int simplify_branch(struct dmr_C *C, struct instruction *insn)
 		insn->bb_false = NULL;
 		dmrC_kill_use(C, &insn->cond);
 		insn->cond = NULL;
+		insn->opcode = OP_BR;
 		return REPEAT_CSE;
 	}
 
@@ -1206,6 +1237,7 @@ found:
 
 int dmrC_simplify_instruction(struct dmr_C *C, struct instruction *insn)
 {
+	// This is a workaround for bugs in how floats are handled
 	if (!insn->bb || insn->type && dmrC_is_float_type(C->S, insn->type))
 		return 0;
 	switch (insn->opcode) {
@@ -1262,7 +1294,7 @@ int dmrC_simplify_instruction(struct dmr_C *C, struct instruction *insn)
 		break;
 	case OP_SEL:
 		return simplify_select(C, insn);
-	case OP_BR:
+	case OP_CBR:
 		return simplify_branch(C, insn);
 	case OP_SWITCH:
 		return simplify_switch(C, insn);

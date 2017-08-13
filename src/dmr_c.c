@@ -253,13 +253,19 @@ void dmrC_die(struct dmr_C *C, const char *fmt, ...)
 #error Unsupported compiler
 #endif
 
+#ifdef __BIG_ENDIAN__
+#define ARCH_BIG_ENDIAN 1
+#else
+#define ARCH_BIG_ENDIAN 0
+#endif
+
 struct dmr_C *new_dmr_C()
 {
 	struct dmr_C *C = (struct dmr_C *)calloc(1, sizeof(struct dmr_C));
 	C->standard = STANDARD_GNU89;
 	C->arch_m64 = ARCH_M64_DEFAULT;
 	C->arch_msize_long = 0;
-
+	C->arch_big_endian = ARCH_BIG_ENDIAN;
 #ifdef GCC_BASE
 	C->gcc_base_dir = GCC_BASE;
 #else
@@ -981,6 +987,14 @@ static void predefined_macros(struct dmr_C *C)
 	predefined_sizeof(C, "FLOAT", C->target->bits_in_float);
 	predefined_sizeof(C, "DOUBLE", C->target->bits_in_double);
 	predefined_sizeof(C, "LONG_DOUBLE", C->target->bits_in_longdouble);
+	dmrC_add_pre_buffer(C, "#weak_define __%s_ENDIAN__ 1\n",
+		C->arch_big_endian ? "BIG" : "LITTLE");
+
+	dmrC_add_pre_buffer(C, "#weak_define __ORDER_LITTLE_ENDIAN__ 1234\n");
+	dmrC_add_pre_buffer(C, "#weak_define __ORDER_BIG_ENDIAN__ 4321\n");
+	dmrC_add_pre_buffer(C, "#weak_define __ORDER_PDP_ENDIAN__ 3412\n");
+	dmrC_add_pre_buffer(C, "#weak_define __BYTE_ORDER__ __ORDER_%s_ENDIAN__\n",
+		C->arch_big_endian ? "BIG" : "LITTLE");
 }
 
 void dmrC_declare_builtin_functions(struct dmr_C *C)
@@ -1173,6 +1187,8 @@ void dmrC_create_builtin_stream(struct dmr_C *C)
 
 	dmrC_add_pre_buffer(C, "#define __extension__\n");
 	dmrC_add_pre_buffer(C, "#define __pragma__\n");
+	dmrC_add_pre_buffer(C, "#define _Pragma(x)\n");
+
 
 	// gcc defines __SIZE_TYPE__ to be size_t.  For linux/i86 and
 	// solaris/sparc that is really "unsigned int" and for linux/x86_64

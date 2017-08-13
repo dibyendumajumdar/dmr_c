@@ -152,9 +152,9 @@ static void check_byte_count(struct dmr_C *C, struct instruction *insn, pseudo_t
 	if (!count)
 		return;
 	if (count->type == PSEUDO_VAL) {
-		long long val = count->value;
-		if (val <= 0 || val > 100000)
-			dmrC_warning(C, insn->pos, "%s with byte count of %lld",
+		unsigned long long val = count->value;
+		if (C->Wmemcpy_max_count && val > C->fmemcpy_max_count)
+			dmrC_warning(C, insn->pos, "%s with byte count of %llu",
 				dmrC_show_ident(C, insn->func->sym->ident), val);
 		return;
 	}

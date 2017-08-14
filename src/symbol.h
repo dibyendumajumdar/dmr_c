@@ -472,7 +472,7 @@ static inline int dmrC_is_simple_type(struct global_symbols_t *S, struct symbol 
 // From Luc - sssa-mini
 static inline int dmrC_is_simple_var(struct global_symbols_t *S, struct symbol *var)
 {
-	if (!is_simple_type(S, var))
+	if (!dmrC_is_simple_type(S, var))
 		return 0;
 #define	MOD_NONREG	(MOD_STATIC|MOD_NONLOCAL|MOD_ADDRESSABLE|MOD_VOLATILE)
 	if (var->ctype.modifiers & MOD_NONREG)

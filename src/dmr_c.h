@@ -37,14 +37,17 @@
 * Copyright (C) 2017 Dibyendu Majumdar
 */
 
+#define NEW_SSA 1
+
 #include <allocate.h>
 #include <ptrlist.h>
+#if NEW_SSA
+#include <ptrmap.h>
+#endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#define NEW_SSA 1
 
 #define DO_STRINGIFY(x) #x
 #define STRINGIFY(x) DO_STRINGIFY(x)
@@ -113,6 +116,7 @@ struct basic_block_list;
 struct instruction_list;
 struct multijmp_list;
 struct pseudo_list;
+struct phi_map;
 
 DECLARE_PTR_LIST(string_list, char);
 
@@ -130,6 +134,9 @@ struct dmr_C {
 
 	// memory allocators
 	struct allocator ptrlist_allocator;
+#if NEW_SSA
+	struct allocator ptrmap_allocator;
+#endif
 	struct allocator token_allocator;
 	struct allocator protected_token_allocator;
 	struct allocator byte_allocator;

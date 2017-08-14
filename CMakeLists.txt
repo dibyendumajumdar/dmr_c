@@ -108,10 +108,12 @@ set(LIB_H
 	src/parse.h
 	src/port.h 
 	src/ptrlist.h
+	src/ptrmap.h
 	src/scope.h
 	src/symbol.h
 	src/target.h
 	src/token.h 
+	src/ssa.h
 	)
 
 set(LIB_SRCS 
@@ -133,11 +135,13 @@ set(LIB_SRCS
 	src/tokenize.c
 	src/pre-process.c
 	src/ptrlist.c
+	src/ptrmap.c
 	src/scope.c
 	src/show-parse.c
 	src/simplify.c
 	src/symbol.c
 	src/unssa.c
+	src/ssa.c
 	)
 
 # Enable minimal required LLVM components so that the

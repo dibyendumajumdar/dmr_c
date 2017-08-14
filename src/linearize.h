@@ -43,6 +43,9 @@ enum pseudo_type {
 	PSEUDO_VAL,
 	PSEUDO_ARG,
 	PSEUDO_PHI,
+#if NEW_SSA
+	PSEUDO_INDIR,
+#endif
 };
 
 struct pseudo {
@@ -54,6 +57,9 @@ struct pseudo {
 		struct symbol *sym;	     // PSEUDO_SYM, VAL & ARG
 		struct instruction *def; // PSEUDO_REG & PHI
 		long long value;	     // PSEUDO_VAL
+#if NEW_SSA
+		pseudo_t target;
+#endif
 	};
 	DMRC_BACKEND_TYPE priv;
 	DMRC_BACKEND_TYPE priv2;	/* FIXME - we use this to save ptr to allocated stack in PHI instructions (nanojit) */
@@ -133,6 +139,9 @@ struct instruction {
 		};
 		struct /* phi_node */ {
 			struct pseudo_list *phi_list; /* pseudo list */
+#if NEW_SSA
+			struct symbol *var;		/* SSSA only */
+#endif
 		};
 		struct /* phi source */ {
 			pseudo_t phi_src;
@@ -279,7 +288,19 @@ struct basic_block {
 	struct basic_block_list *parents; /* basic_block sources */
 	struct basic_block_list *children; /* basic_block destinations */
 	struct instruction_list *insns;	/* Linear list of instructions */
+#if NEW_SSA
+	union {
+		struct {		// SSA construction
+			unsigned int sealed:1;
+			unsigned int unsealable:1;
+		};
+		struct {		// liveness
+			struct pseudo_list *needs, *defines;
+		};
+	};
+#else
 	struct pseudo_list *needs, *defines; /* pseudo lists */
+#endif
     /* TODO Following fields are used by the codegen backends.
        In Sparse this is a union but we need the nr field 
        for NanoJIT backend's liveness analysis in addition to 

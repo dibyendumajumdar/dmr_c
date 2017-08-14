@@ -934,6 +934,19 @@ static int linearize_address_gen(struct dmr_C *C, struct entrypoint *ep,
 	return 0;
 }
 
+// From Luc sssa-mini
+static inline struct symbol *simple_access(struct dmr_C *C, struct access_data *ad)
+{
+	pseudo_t addr = ad->address;
+	struct symbol *sym;
+
+	if (addr->type != PSEUDO_SYM)
+		return NULL;
+	sym = addr->sym;
+	if (!dmrC_is_simple_var(C->S, sym))
+		return NULL;
+	return sym;
+}
 static pseudo_t add_load(struct dmr_C *C, struct entrypoint *ep, struct access_data *ad)
 {
 	struct instruction *insn;

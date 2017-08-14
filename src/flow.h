@@ -34,6 +34,7 @@ extern int dmrC_simplify_instruction(struct dmr_C *C, struct instruction *);
 
 extern void dmrC_kill_bb(struct dmr_C *C, struct basic_block *);
 extern void dmrC_kill_use(struct dmr_C *C, pseudo_t *usep);
+extern void dmrC_remove_use(struct dmr_C *C, pseudo_t *);
 extern void dmrC_kill_insn(struct dmr_C *C, struct instruction *, int force);
 static inline void dmrC_kill_instruction(struct dmr_C *C, struct instruction *insn)
 {

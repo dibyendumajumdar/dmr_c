@@ -878,6 +878,29 @@ pseudo_t dmrC_alloc_phi(struct dmr_C *C, struct basic_block *source, pseudo_t ps
 	return phi;
 }
 
+// From Luc: sssa-mini
+pseudo_t dmrC_insert_phi_node(struct dmr_C *C, struct basic_block *bb, struct symbol *type)
+{
+	struct instruction *phi_node = alloc_typed_instruction(C, OP_PHI, type);
+	struct instruction *insn;
+	pseudo_t phi;
+
+	phi = dmrC_alloc_pseudo(C, phi_node);
+	phi_node->target = phi;
+	phi_node->bb = bb;
+
+	FOR_EACH_PTR(bb->insns, insn) {
+		enum opcode op = insn->opcode;
+		if (op == OP_ENTRY || op == OP_PHI)
+			continue;
+		INSERT_CURRENT(phi_node, insn);
+		return phi;
+	} END_FOR_EACH_PTR(insn);
+
+	dmrC_add_instruction(C, &bb->insns, phi_node);
+	return phi;
+}
+
 /*
  * We carry the "access_data" structure around for any accesses,
  * which simplifies things a lot. It contains all the access

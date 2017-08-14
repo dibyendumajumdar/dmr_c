@@ -44,6 +44,8 @@
 extern "C" {
 #endif
 
+#define NEW_SSA 1
+
 #define DO_STRINGIFY(x) #x
 #define STRINGIFY(x) DO_STRINGIFY(x)
 

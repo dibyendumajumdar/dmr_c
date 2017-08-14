@@ -35,6 +35,9 @@ DECLARE_PTR_LIST(pseudo_user_list, struct pseudo_user);
 
 enum pseudo_type {
 	PSEUDO_VOID,
+#if NEW_SSA
+	PSEUDO_UNDEF,
+#endif
 	PSEUDO_REG,
 	PSEUDO_SYM,
 	PSEUDO_VAL,
@@ -401,7 +404,11 @@ static inline void dmrC_add_pseudo_user_ptr(struct dmr_C *C, struct pseudo_user 
 
 static inline int dmrC_has_use_list(pseudo_t p)
 {
+#if NEW_SSA
+	return (p && p->type != PSEUDO_VOID && p->type != PSEUDO_UNDEF && p->type != PSEUDO_VAL);
+#else
 	return (p && p->type != PSEUDO_VOID && p->type != PSEUDO_VAL);
+#endif
 }
 
 static inline struct pseudo_user *dmrC_alloc_pseudo_user(struct dmr_C *C, struct instruction *insn, pseudo_t *pp)

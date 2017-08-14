@@ -144,6 +144,10 @@ const char *dmrC_show_pseudo(struct dmr_C *C, pseudo_t pseudo)
 		if (pseudo->ident)
 			sprintf(buf+i, "(%s)", dmrC_show_ident(C, pseudo->ident));
 		break;
+#if NEW_SSA
+	case PSEUDO_UNDEF:
+		return "UNDEF";
+#endif
 	default:
 		snprintf(buf, 64, "<bad pseudo type %d>", pseudo->type);
 	}

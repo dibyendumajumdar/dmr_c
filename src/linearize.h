@@ -449,6 +449,7 @@ struct entrypoint {
 extern void dmrC_insert_select(struct dmr_C *C, struct basic_block *bb, struct instruction *br, struct instruction *phi, pseudo_t if_true, pseudo_t if_false);
 extern void dmrC_insert_branch(struct dmr_C *C, struct basic_block *bb, struct instruction *br, struct basic_block *target);
 // From Luc: sssa-mini
+struct instruction *dmrC_alloc_phisrc(struct dmr_C *C, pseudo_t pseudo, struct symbol *type);
 pseudo_t dmrC_insert_phi_node(struct dmr_C *C, struct basic_block *bb, struct symbol *type);
 pseudo_t dmrC_alloc_phi(struct dmr_C *C, struct basic_block *source, pseudo_t pseudo, struct symbol *type);
 pseudo_t dmrC_alloc_pseudo(struct dmr_C *C, struct instruction *def);

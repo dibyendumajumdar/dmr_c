@@ -856,26 +856,34 @@ pseudo_t dmrC_undef_pseudo(struct dmr_C *C)
 }
 #endif
 
-pseudo_t dmrC_alloc_phi(struct dmr_C *C, struct basic_block *source, pseudo_t pseudo, struct symbol *type)
+// From Luc: sssa-mini
+struct instruction *dmrC_alloc_phisrc(struct dmr_C *C, pseudo_t pseudo, struct symbol *type)
 {
-	struct instruction *insn;
-	pseudo_t phi;
+	struct instruction *insn = alloc_typed_instruction(C, OP_PHISOURCE, type);
+	pseudo_t phi = (pseudo_t)dmrC_allocator_allocate(&C->L->pseudo_allocator, 0);
 	static int nr = 0;
 
-	if (!source)
-		return VOID_PSEUDO(C);
-
-	insn = alloc_typed_instruction(C, OP_PHISOURCE, type);
-	phi = (pseudo_t)dmrC_allocator_allocate(&C->L->pseudo_allocator, 0);
 	phi->type = PSEUDO_PHI;
 	phi->nr = ++nr;
 	phi->def = insn;
 
 	dmrC_use_pseudo(C, insn, pseudo, &insn->phi_src);
-	insn->bb = source;
 	insn->target = phi;
+	return insn;
+}
+
+// From Luc: sssa-mini
+pseudo_t dmrC_alloc_phi(struct dmr_C *C, struct basic_block *source, pseudo_t pseudo, struct symbol *type)
+{
+	struct instruction *insn;
+
+	if (!source)
+		return VOID_PSEUDO(C);
+
+	insn = dmrC_alloc_phisrc(C, pseudo, type);
+	insn->bb = source;
 	dmrC_add_instruction(C, &source->insns, insn);
-	return phi;
+	return insn->target;
 }
 
 // From Luc: sssa-mini

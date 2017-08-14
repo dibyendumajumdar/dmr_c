@@ -847,6 +847,15 @@ static pseudo_t argument_pseudo(struct dmr_C *C, struct entrypoint *ep, int nr, 
 	return pseudo;
 }
 
+#if NEW_SSA
+pseudo_t dmrC_undef_pseudo(struct dmr_C *C)
+{
+	pseudo_t pseudo = (pseudo_t)dmrC_allocator_allocate(&C->L->pseudo_allocator, 0);
+	pseudo->type = PSEUDO_UNDEF;
+	return pseudo;
+}
+#endif
+
 pseudo_t dmrC_alloc_phi(struct dmr_C *C, struct basic_block *source, pseudo_t pseudo, struct symbol *type)
 {
 	struct instruction *insn;

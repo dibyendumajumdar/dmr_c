@@ -452,6 +452,9 @@ extern void dmrC_insert_branch(struct dmr_C *C, struct basic_block *bb, struct i
 pseudo_t dmrC_alloc_phi(struct dmr_C *C, struct basic_block *source, pseudo_t pseudo, struct symbol *type);
 pseudo_t dmrC_alloc_pseudo(struct dmr_C *C, struct instruction *def);
 pseudo_t dmrC_value_pseudo(struct dmr_C *C, long long val);
+#if NEW_SSA
+pseudo_t dmrC_undef_pseudo(struct dmr_C *C);
+#endif
 
 struct entrypoint *dmrC_linearize_symbol(struct dmr_C *C, struct symbol *sym);
 int dmrC_unssa(struct dmr_C *C, struct entrypoint *ep);

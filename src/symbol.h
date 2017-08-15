@@ -460,9 +460,11 @@ static inline int dmrC_is_simple_type(struct global_symbols_t *S, struct symbol 
 	case SYM_PTR:
 	case SYM_RESTRICT:	// OK, always integer types
 		return 1;
-	case SYM_STRUCT:
-	case SYM_UNION:
-		return type->bit_size <= S->long_ctype.bit_size;
+	// Following is causing failures because the IR
+	// attempts to store values into unions or structs
+	//case SYM_STRUCT:
+	//case SYM_UNION:
+	//	return type->bit_size <= S->long_ctype.bit_size;
 	default:
 		break;
 	}

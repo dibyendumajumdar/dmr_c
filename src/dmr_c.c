@@ -383,6 +383,9 @@ void destroy_dmr_C(struct dmr_C *C)
 	dmrC_allocator_destroy(&C->expression_allocator);
 	dmrC_allocator_destroy(&C->statement_allocator);
 	dmrC_allocator_destroy(&C->ptrlist_allocator);
+#if NEW_SSA
+	dmrC_allocator_destroy(&C->ptrmap_allocator);
+#endif
 	free(C);
 }
 

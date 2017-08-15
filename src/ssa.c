@@ -14,6 +14,8 @@
 #include <flow.h>
 #include <assert.h>
 
+#if NEW_SSA
+
 DECLARE_PTRMAP(phi_map, struct basic_block *, pseudo_t);
 
 static pseudo_t load_var_(struct dmr_C *C, struct basic_block*, struct symbol*, unsigned long);
@@ -221,3 +223,5 @@ void dmrC_seal_gotos(struct dmr_C *C, struct entrypoint *ep)
 		bb->sealed = bb->unsealable = 0;
 	} END_FOR_EACH_PTR(bb);
 }
+
+#endif

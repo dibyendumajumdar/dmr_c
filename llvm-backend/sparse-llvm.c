@@ -1114,8 +1114,11 @@ static LLVMValueRef bool_value(struct dmr_C *C, struct function *fn, LLVMValueRe
 
 static LLVMValueRef output_op_cbr(struct dmr_C *C, struct function *fn, struct instruction *br)
 {
-	LLVMValueRef cond = bool_value(C, fn,
-		pseudo_to_value(C, fn, br->type, br->cond));
+	LLVMValueRef cond = pseudo_to_value(C, fn, br->type, br->cond);
+	if (cond)
+		cond = bool_value(C, fn, cond);
+	if (!cond)
+		return NULL;
 
 	return LLVMBuildCondBr(fn->builder, cond,
 		br->bb_true->priv,

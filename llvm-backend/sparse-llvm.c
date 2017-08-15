@@ -660,7 +660,8 @@ static LLVMValueRef val_to_value(struct dmr_C *C, struct function *fn, unsigned 
 {
 	LLVMTypeRef dtype;
 
-	assert(ctype);
+	if (!ctype)
+		return NULL;
 	dtype = get_symnode_or_basetype(C, fn->module, ctype);
 	if (!dtype)
 		return NULL;

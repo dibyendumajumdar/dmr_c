@@ -1114,7 +1114,12 @@ static LLVMValueRef bool_value(struct dmr_C *C, struct function *fn, LLVMValueRe
 
 static LLVMValueRef output_op_cbr(struct dmr_C *C, struct function *fn, struct instruction *br)
 {
-	LLVMValueRef cond = pseudo_to_value(C, fn, br->type, br->cond);
+	// FIXME - NEW_SSA changes appear to result in cond being PSEUDO_VAL in some cases
+	// This is a workaround for VALUE PSEUDO appearing in cond
+	struct symbol *ctype = br->type;
+	if (!ctype && br->cond->type == PSEUDO_VAL)
+		ctype = &C->S->llong_ctype;
+	LLVMValueRef cond = pseudo_to_value(C, fn, ctype, br->cond);
 	if (cond)
 		cond = bool_value(C, fn, cond);
 	if (!cond)

@@ -3,7 +3,7 @@
 *
 * Original copyrights: Pekka Enberg and Jeff Garzik (https://lwn.net/Articles/456709/)
 * Additional copyrights: Dibyendu Majumdar and Luc Van Oostenryck
-* 
+*
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
 * in the Software without restriction, including without limitation the rights
@@ -50,6 +50,30 @@ struct function {
 
 static LLVMTypeRef type_to_llvmtype(struct dmr_C *C, LLVMModuleRef module, struct symbol *sym, struct symbol *sym_node);
 static LLVMValueRef constant_value(struct dmr_C *C, LLVMModuleRef module, unsigned long long val, LLVMTypeRef dtype);
+
+static const char *get_llvmtypekind_name(LLVMTypeKind kind) {
+	switch (kind) {
+	case LLVMVoidTypeKind: return "VoidType";        /**< type with no size */
+	case LLVMHalfTypeKind: return "HalfFloatType";        /**< 16 bit floating point type */
+	case LLVMFloatTypeKind: return "FloatType";       /**< 32 bit floating point type */
+	case LLVMDoubleTypeKind: return "DoubleType";      /**< 64 bit floating point type */
+	case LLVMX86_FP80TypeKind: return "LongDoubleType";    /**< 80 bit floating point type (X87) */
+	case LLVMFP128TypeKind: return "128BitDoubleType";       /**< 128 bit floating point type (112-bit mantissa)*/
+	case LLVMPPC_FP128TypeKind: return "128BitPPCDoubleType";   /**< 128 bit floating point type (two 64-bits) */
+	case LLVMLabelTypeKind: return "LabelType";       /**< Labels */
+	case LLVMIntegerTypeKind: return "IntegerType";     /**< Arbitrary bit width integers */
+	case LLVMFunctionTypeKind: return "FunctionType";    /**< Functions */
+	case LLVMStructTypeKind: return "StructType";      /**< Structures */
+	case LLVMArrayTypeKind: return "ArrayType";       /**< Arrays */
+	case LLVMPointerTypeKind: return "PointerType";     /**< Pointers */
+	case LLVMVectorTypeKind: return "VectorType";      /**< SIMD 'packed' format, or other vector type */
+	case LLVMMetadataTypeKind: return "MetadataType";    /**< Metadata */
+	case LLVMX86_MMXTypeKind: return "MMXType";     /**< X86 MMX */
+	case LLVMTokenTypeKind: return "TokenType";        /**< Tokens */
+	default: assert(0);
+	}
+	return "";
+}
 
 static LLVMTypeRef get_symnode_type(struct dmr_C *C, LLVMModuleRef module, struct symbol *sym)
 {
@@ -383,7 +407,7 @@ static LLVMValueRef build_cast(struct dmr_C *C, struct function *fn, LLVMValueRe
 			op = LLVMFPToSI;
 			break;
 		default:
-			fprintf(stderr, "unsupported value type %d in cast to integer vale\n", valkind);
+			fprintf(stderr, "unsupported value type %s in cast to integer value\n", get_llvmtypekind_name(valkind));
 			return NULL;
 		}
 		break;
@@ -397,7 +421,7 @@ static LLVMValueRef build_cast(struct dmr_C *C, struct function *fn, LLVMValueRe
 			op = LLVMIntToPtr;
 			break;
 		default:
-			fprintf(stderr, "unsupported value type %d in cast to ptr\n", valkind);
+			fprintf(stderr, "unsupported value type %s in cast to ptr\n", get_llvmtypekind_name(valkind));
 			return NULL;
 		}
 		break;
@@ -423,7 +447,7 @@ static LLVMValueRef build_cast(struct dmr_C *C, struct function *fn, LLVMValueRe
 			break;
 		}
 		default:
-			fprintf(stderr, "unsupported value type %d in cast to floating point value\n", valkind);
+			fprintf(stderr, "unsupported value type %s in cast to floating point value\n", get_llvmtypekind_name(valkind));
 			return NULL;
 		}
 		break;
@@ -432,7 +456,7 @@ static LLVMValueRef build_cast(struct dmr_C *C, struct function *fn, LLVMValueRe
 		if (dkind == valkind)
 			op = LLVMBitCast;
 		else {
-			fprintf(stderr, "unsupported target type %d in cast\n", dkind);
+			fprintf(stderr, "unsupported target type %s in cast from value kind %s\n", get_llvmtypekind_name(dkind), get_llvmtypekind_name(valkind));
 			return NULL;
 		}
 	}
@@ -532,7 +556,7 @@ static LLVMValueRef get_sym_value(struct dmr_C *C, struct function *fn, pseudo_t
 		switch (expr->type) {
 		case EXPR_STRING: {
 			const char *s = expr->string->data;
-			LLVMValueRef indices[] = { LLVMConstInt(LLVMInt64TypeInContext(LLVMGetModuleContext(fn->module)), 0, 0), 
+			LLVMValueRef indices[] = { LLVMConstInt(LLVMInt64TypeInContext(LLVMGetModuleContext(fn->module)), 0, 0),
 				LLVMConstInt(LLVMInt64TypeInContext(LLVMGetModuleContext(fn->module)), 0, 0) };
 			LLVMValueRef data;
 
@@ -650,7 +674,7 @@ static LLVMValueRef constant_value(struct dmr_C *C, LLVMModuleRef module, unsign
 		result = LLVMConstReal(dtype, (double)(long long)val);
 		break;
 	default:
-		fprintf(stderr, "unsupported pseudo value kind %d\n", kind);
+		fprintf(stderr, "unsupported pseudo value kind %s\n", get_llvmtypekind_name(kind));
 		return NULL;
 	}
 	return result;
@@ -1954,17 +1978,17 @@ static void set_target(struct dmr_C *C, LLVMModuleRef module)
 
 static void add_intrinsics(LLVMModuleRef module)
 {
-	LLVMTypeRef param_types[] = { LLVMPointerType(LLVMInt8TypeInContext(LLVMGetModuleContext(module)), 0), 
-		LLVMInt8TypeInContext(LLVMGetModuleContext(module)), 
-		LLVMInt32TypeInContext(LLVMGetModuleContext(module)), 
-		LLVMInt32TypeInContext(LLVMGetModuleContext(module)), 
+	LLVMTypeRef param_types[] = { LLVMPointerType(LLVMInt8TypeInContext(LLVMGetModuleContext(module)), 0),
+		LLVMInt8TypeInContext(LLVMGetModuleContext(module)),
+		LLVMInt32TypeInContext(LLVMGetModuleContext(module)),
+		LLVMInt32TypeInContext(LLVMGetModuleContext(module)),
 		LLVMInt1TypeInContext(LLVMGetModuleContext(module)) };
 	LLVMTypeRef fn_type = LLVMFunctionType(LLVMVoidTypeInContext(LLVMGetModuleContext(module)), param_types, 5, false);
 	LLVMValueRef fn = LLVMAddFunction(module, "llvm.memset.p0i8.i32", fn_type);
 }
 
 bool dmrC_llvmcompile(int argc, char **argv, LLVMModuleRef module,
-		      const char *inputbuffer)
+	const char *inputbuffer)
 {
 	struct string_list *filelist = NULL;
 	struct symbol_list *symlist;
@@ -2007,12 +2031,14 @@ bool dmrC_llvmcompile(int argc, char **argv, LLVMModuleRef module,
 				free(buffer);
 				if (C->die_if_error) {
 					rc = 1;
-				} else if (!compile(C, module, symlist)) {
+				}
+				else if (!compile(C, module, symlist)) {
 					rc = 1;
 				}
 			}
 		}
-	} else
+	}
+	else
 		rc = 1;
 	char *error_message = NULL;
 	int dump_module = 0;
@@ -2020,7 +2046,7 @@ bool dmrC_llvmcompile(int argc, char **argv, LLVMModuleRef module,
 		fprintf(stderr, "Failed to compile given inputs\n");
 	}
 	if (rc == 0 &&
-	    LLVMVerifyModule(module, LLVMPrintMessageAction, &error_message)) {
+		LLVMVerifyModule(module, LLVMPrintMessageAction, &error_message)) {
 		dump_module = 1;
 		rc = 1;
 	}
@@ -2034,7 +2060,8 @@ bool dmrC_llvmcompile(int argc, char **argv, LLVMModuleRef module,
 		if (C->output_file_name[0])
 			filename = C->output_file_name;
 		LLVMWriteBitcodeToFile(module, filename);
-	} else {
+	}
+	else {
 		if (dump_module)
 			/* we only dump the LLVM module if verification fails */
 			LLVMDumpModule(module);

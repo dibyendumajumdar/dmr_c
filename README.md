@@ -165,3 +165,4 @@ Many bugs have been fixed in the LLVM backend and the tool is able to compile an
 * [Article on Sparse](https://lwn.net/Articles/689907/)
 * [Wikipedia entry for Sparse](https://en.wikipedia.org/wiki/Sparse)
 * [Sparse Linux Man Page](https://linux.die.net/man/1/sparse)
+* [Smatch](http://smatch.sourceforge.net) is a tool based on Sparse

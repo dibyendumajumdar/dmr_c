@@ -2262,8 +2262,8 @@ static pseudo_t linearize_statement(struct dmr_C *C, struct entrypoint *ep, stru
 		if (label->used) {
 			bb = add_label(C, ep, label);
 #if NEW_SSA
-			// label's bb must not be sealed if some
-			// goto to this label hasn't been issued yet
+			/* label's bb must not be sealed if some
+			   goto to this label hasn't been issued yet */
 			assert(!bb->sealed);
 			bb->unsealable = 1;
 #endif

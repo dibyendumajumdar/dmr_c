@@ -18,7 +18,7 @@
 
 DECLARE_PTRMAP(phi_map, struct basic_block *, pseudo_t);
 
-static pseudo_t load_var_(struct dmr_C *C, struct basic_block*, struct symbol*, unsigned long);
+static pseudo_t load_var_parents(struct dmr_C *C, struct basic_block*, struct symbol*, unsigned long);
 
 
 static inline void concat_user_list(struct pseudo_user_list *src, struct pseudo_user_list **dst)
@@ -71,6 +71,26 @@ static void kill_phi_node(struct dmr_C *C, struct instruction *node)
 	ptrlist_remove_all((struct ptr_list **)&node->phi_list);
 }
 
+/*
+Detect and remove trivial phi-nodes.
+
+These trivial phi-nodes have all their sources but one
+which are defined by the phi-node itself . This typically
+arises if a var is present in a loop and only set in the
+loop header.
+
+In this case, the only possible value for the phi-node and
+these sources is the value of the other unique source.
+These phi-nodes can this easily be replaced by this value
+avoiding firther unwanted processing.
+
+This function removes these trivial phi-nodes in most simple
+cases.
+
+More complex cases need more complex methods to get rid of them.
+
+tryRemoveTrivialPhi() in paper
+*/
 static pseudo_t try_remove_trivial_phi(struct dmr_C *C, pseudo_t phi)
 {
 	struct instruction *node = phi->def;
@@ -90,19 +110,26 @@ static pseudo_t try_remove_trivial_phi(struct dmr_C *C, pseudo_t phi)
 			continue;
 		src = p->def->src;
 		if (src == same || src == phi)
+			/* Unique value or self-reference */
 			continue;
 		if (same)
+			/* The phi merges at least two values: not trivial */
 			return phi;
 		same = src;
 	} END_FOR_EACH_PTR(p);
 
 	if (same == NULL)
+		/*  The phi is unreachable or in the start block */
 		same = dmrC_undef_pseudo(C);
 
+	/* Reroute all uses of phi to same and remove phi */
 	convert_phi(C, node, same);
 	phi->target = same;
 	phi->type = PSEUDO_INDIR;
 	kill_phi_node(C, node);
+
+	/* The paper recursively removes all phi users which might have become trivial
+	   but this is not implemented here? */
 
 	return same;
 }
@@ -116,25 +143,29 @@ static void append_instruction(struct dmr_C *C, struct basic_block *bb, struct i
 	dmrC_add_instruction(C, &bb->insns, br);
 }
 
+/* addPhiOperands() in paper */
 static pseudo_t add_phi_operand(struct dmr_C *C, struct symbol *var, pseudo_t phi, unsigned long generation)
 {
 	struct instruction *node = phi->def;
 	struct basic_block *parent;
 
+	/* Determine operands from predecessors */
 	assert(node->opcode == OP_PHI);
 	FOR_EACH_PTR(node->bb->parents, parent) {
-		pseudo_t val = load_var_(C, parent, var, generation);
+		pseudo_t val = load_var_parents(C, parent, var, generation);
 		struct instruction *phisrc = dmrC_alloc_phisrc(C, val, var);
 		pseudo_t src = phisrc->target;
 		append_instruction(C, parent, phisrc);
 		dmrC_use_pseudo(C, node, src, dmrC_add_pseudo(C, &node->phi_list, src));
+		/* assign the variable's ident to the corresponding phi-node's pseudo */
 		src->ident = var->ident;
 	} END_FOR_EACH_PTR(parent);
 	phi = try_remove_trivial_phi(C, phi);
 	return phi;
 }
 
-static pseudo_t load_var_(struct dmr_C *C, struct basic_block *bb, struct symbol *var, unsigned long generation)
+/* Known as readVariableRecursive() in the paper. */
+static pseudo_t load_var_parents(struct dmr_C *C, struct basic_block *bb, struct symbol *var, unsigned long generation)
 {
 	pseudo_t val = phi_map_lookup(var->phi_map, bb);
 	unsigned long bbgen = bb->generation;
@@ -148,6 +179,7 @@ static pseudo_t load_var_(struct dmr_C *C, struct basic_block *bb, struct symbol
 	if (!bb->sealed) {	// incomplete CFG
 		val = dmrC_insert_phi_node(C, bb, var);
 		val->def->var = var;
+		/* assign the variable's ident to the corresponding phi-node's pseudo */
 		val->ident = var->ident;
 		goto out;
 	}
@@ -157,15 +189,29 @@ static pseudo_t load_var_(struct dmr_C *C, struct basic_block *bb, struct symbol
 		val = dmrC_undef_pseudo(C);
 		break;
 	case 1:
+		/*
+		If unreachable loops are somehow present at the moment
+		we're doing a lookup things can turn into infinite loops.
+		Protect us against this by using the classic 'generation'
+		counter to detech any cycle and take the appropriate actions.
+
+		Note: reachable loops don't need this protection since
+		at least one node will have more than 1 parent.
+		Note: how does libfirm handle this? By adding keep-alive edge
+		(to keep endless loops to be observable)?
+		*/
 		if (bbgen == generation)
 			goto cycle;
 		bb->generation = generation;
-		// no phi needed
-		val = load_var_(C, dmrC_first_basic_block(bb->parents), var, generation);
+		/*  Optimize the common case of one predecessor: No phi needed */
+		val = load_var_parents(C, dmrC_first_basic_block(bb->parents), var, generation);
 		break;
 	default:
 	cycle:
+		/* Paper says: Break potential cycles with operandless phi, but here we are doing
+		  something different as cycles are detected using BB->generation? */
 		val = dmrC_insert_phi_node(C, bb, var);
+		/* assign the variable's ident to the corresponding phi-node's pseudo */
 		val->ident = var->ident;
 		dmrC_store_var(C, bb, var, val);
 		val = add_phi_operand(C, var, val, generation);
@@ -179,7 +225,7 @@ out:
 
 pseudo_t dmrC_load_var(struct dmr_C *C, struct basic_block *bb, struct symbol *var)
 {
-	return load_var_(C, bb, var, ++C->L->bb_generation);
+	return load_var_parents(C, bb, var, ++C->L->bb_generation);
 }
 
 void dmrC_store_var(struct dmr_C *C, struct basic_block *bb, struct symbol *var, pseudo_t val)
@@ -187,6 +233,12 @@ void dmrC_store_var(struct dmr_C *C, struct basic_block *bb, struct symbol *var,
 	phi_map_update(&var->phi_map, bb, val, &C->ptrmap_allocator);
 }
 
+/*
+* This is called when in the linearization process it is 
+* known that the BB cannot possibly have another parent. This
+* function 'seals' the BB as described in the paper.
+* sealBlock() in paper.
+*/
 void dmrC_seal_bb(struct dmr_C *C, struct basic_block *bb)
 {
 	struct instruction *insn;

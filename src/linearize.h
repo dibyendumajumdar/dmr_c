@@ -44,6 +44,17 @@ enum pseudo_type {
 	PSEUDO_ARG,
 	PSEUDO_PHI,
 #if NEW_SSA
+	/*
+	Simplification of trivial pseudos requires us to replace
+	a pseudo for another in all ptrmap. Since this could
+	be an annoying and relatively costly operation
+	if effectively done by looking after each pseudos,
+	a new type of pseudo is used as a
+	a sort of a symlink for another one : PSEUDO_INDIR.
+
+	So the processing is almost for free and this indirection
+	has just to be done when looking after the corresponding var.
+	*/
 	PSEUDO_INDIR,
 #endif
 };
@@ -290,8 +301,13 @@ struct basic_block {
 	struct instruction_list *insns;	/* Linear list of instructions */
 #if NEW_SSA
 	union {
-		struct {		// SSA construction
+		struct {		
+			/* SSA construction */
+			/* Sealed means that the BB can no longer acquire
+			   predecessors (parents) */
 			unsigned int sealed:1;
+			/* Flag used to denote that the BB has lables with unresolved gotos
+			   and therefore cannot be sealed */
 			unsigned int unsealable:1;
 		};
 		struct {		// liveness

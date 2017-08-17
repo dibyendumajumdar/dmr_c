@@ -22,7 +22,7 @@ dmr_C is a fork of Sparse. The main changes are:
 
 ## News
 * Aug-2017 - synced with Sparse 0.5.1 release
-* Aug-2017 - New SSA construction integrated and is being tested in ssa branch
+* Aug-2017 - New SSA construction integrated and is being tested in newssa branch
 
 ## Build instructions
 

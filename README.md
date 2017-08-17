@@ -56,8 +56,6 @@ The dmr_C is also a library and can be linked and used by application programs. 
 * Optimizer - this performs various optimizations on the SSA IR
 * LLVM backend - this takes the SSA IR output and converts this to LLVM IR
 
-Details of each of these is given below.
-
 ## Using dmr_C as a JIT
 
 dmr_C can be linked as a library. To use it as a JIT you only need to invoke following:

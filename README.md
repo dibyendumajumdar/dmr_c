@@ -20,6 +20,10 @@ dmr_C is a fork of Sparse. The main changes are:
 * We are now able to build on Windows, Linux and Mac OSX. However there are platform specific limitations - see below for details.
 * The LLVM backend has had many fixes and is able to compile real programs. See details below for what works and what doesn't.
 
+## News
+* Aug-2017 - synced with Sparse 0.5.1 release
+* Aug-2017 - New SSA construction integrated and is being tested in ssa branch
+
 ## Build instructions
 
 The build is pretty standard CMake build. There are no external dependencies except LLVM. To build without LLVM backend just try:

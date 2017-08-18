@@ -20,7 +20,7 @@ This is very early days. We are able to generate code for following simple C pro
   
 ## Issues
 
-### Unimplemented features
+### Features not yet implemented
 
 * switch statement
 * computed gotos

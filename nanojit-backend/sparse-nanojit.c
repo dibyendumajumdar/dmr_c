@@ -723,7 +723,7 @@ static NJXLInsRef output_op_call(struct dmr_C *C, struct function *fn,
 	struct instruction *arg;
 	NJXLInsRef *args;
 
-	n_arg = ptrlist_size(insn->arguments);
+	n_arg = dmrC_instruction_list_size(insn->arguments);
 	args = alloca(n_arg * sizeof(NJXLInsRef));
 	struct symbol *ftype = get_function_basetype(insn->fntype);
 
@@ -1469,27 +1469,14 @@ static NJXLInsRef output_op_cbr(struct dmr_C *C, struct function *fn,
 static NJXLInsRef output_op_br(struct dmr_C *C, struct function *fn,
 			       struct instruction *br)
 {
-	if (br->bb_true) {
-		// Mark registers needed by destination BB as live
-		// we should only output if bb_true precedes
-		// current bb
-		if (br->bb->nr > br->bb_true->nr)
-			output_liveness(C, fn, br->bb_true);
-	} else if (br->bb_false) {
-		// Mark registers needed by destination BB as live
-		// we should only output if bb_false precedes
-		// current bb
-		if (br->bb->nr > br->bb_false->nr)
-			output_liveness(C, fn, br->bb_false);
-	}
+	// Mark registers needed by destination BB as live
+	// we should only output if bb_true precedes
+	// current bb
+	if (br->bb->nr > br->bb_true->nr)
+		output_liveness(C, fn, br->bb_true);
 	NJXLInsRef br1 = NJX_br(fn->builder, NULL);
-	if (br->bb_true) {
-		if (!add_jump_instruction(fn, br->bb_true, br1))
-			return NULL;
-	} else {
-		if (!add_jump_instruction(fn, br->bb_false, br1))
-			return NULL;
-	}
+	if (!add_jump_instruction(fn, br->bb_true, br1))
+		return NULL;
 	return br1;
 }
 

@@ -48,3 +48,7 @@ cmake -DNANO_JIT=ON -G "Visual Studio 15 2017 Win64" ..
 ```
 
 Process on Linux should be similar except for the CMake generator target.
+
+## Using NanoJIT backend
+
+Please see [testnanobackend.c](https://github.com/dibyendumajumdar/dmr_c/blob/master/nanojit-backend/testnanobackend.c) for example usage. Note that this backend is not yet well tested so nothing is guaranteed to work.

@@ -1,0 +1,60 @@
+sets3:
+.L0:
+	<entry-point>
+	load.32     %r1 <- 0[%arg1]
+	and.32      %r3 <- %r1, $-57
+	or.32       %r4 <- %r3, $56
+	lsr.32      %r6 <- %r4, $3
+	scast.3     %r7 <- (32) %r6
+	cast.2      %r8 <- (3) %r7
+	and.32      %r10 <- %r4, $-4
+	or.32       %r11 <- %r10, %r8
+	scast.2     %r13 <- (32) %r11
+	cast.3      %r14 <- (2) %r13
+	shl.32      %r16 <- %r14, $3
+	and.32      %r17 <- %r11, $-57
+	or.32       %r18 <- %r17, %r16
+	scast.9     %r19 <- (32) %arg2
+	shl.32      %r21 <- %r19, $7
+	and.32      %r22 <- %r18, $0xffffffffffff007f
+	or.32       %r23 <- %r22, %r21
+	store.32    %r23 -> 0[%arg1]
+	lsr.32      %r25 <- %r23, $3
+	scast.3     %r26 <- (32) %r25
+	cast.32     %r27 <- (3) %r26
+	setne.32    %r28 <- %r27, $3
+	phisrc.32   %phi5(rc) <- $0
+	cbr         %r28, .L1, .L2
+
+.L1:
+	load.32     %r29 <- 0[%arg1]
+	lsr.32      %r30 <- %r29, $3
+	scast.3     %r31 <- (32) %r30
+	cast.32     %r32 <- (3) %r31
+	seteq.32    %r33 <- %r32, $0xffffffff
+	phisrc.32   %phi8(rc) <- %r33
+	br          .L2
+
+.L2:
+	phi.32      %r46(rc) <- %phi5(rc), %phi8(rc)
+	load.32     %r37 <- 0[%arg1]
+	and.32      %r39 <- %r37, $-65
+	or.32       %r40 <- %r39, $64
+	store.32    %r40 -> 0[%arg1]
+	lsr.32      %r42 <- %r40, $6
+	cast.1      %r43 <- (32) %r42
+	cast.32     %r44 <- (1) %r43
+	setne.32    %r45 <- %r44, $1
+	phisrc.32   %phi9(rc) <- %r46(rc)
+	cbr         %r45, .L5, .L6
+
+.L5:
+	add.32      %r48 <- %r46(rc), $1
+	phisrc.32   %phi10(rc) <- %r48
+	br          .L6
+
+.L6:
+	phi.32      %r49(rc) <- %phi9(rc), %phi10(rc)
+	ret.32      %r49(rc)
+
+

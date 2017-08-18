@@ -1,10 +1,10 @@
 # NanoJIT backend
 
-This backend is trying to use a [NanoJIT](https://github.com/dibyendumajumdar/nanojit) backend. 
+This is a [NanoJIT](https://github.com/dibyendumajumdar/nanojit) backend. 
 
 ## Status
 
-This is very early days. We are able to generate code for following simple C programs. 
+These are very early days. We are able to generate code for following simple C programs. 
 
 * [strlen](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/strlen.c). The generated LIR and assembly instructions look 
   [like this](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/strlen.lir). 
@@ -27,7 +27,8 @@ This is very early days. We are able to generate code for following simple C pro
 * computed gotos (probably can't be implemented)
 * bitfield access is implemented but not fully tested
 * calling functions through function pointers
-* aggregate initializers 
+* aggregate initializers
+* recursive function calls not possible at present due to the way functions are resolved
 
 ### Limitations
 

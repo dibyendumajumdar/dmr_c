@@ -187,7 +187,6 @@ static struct NanoType *sym_func_type(struct dmr_C *C, struct function *fn,
 				      struct symbol *sym_node)
 {
 	struct NanoType *ret_type;
-	// struct symbol *arg;
 	int n_arg = 0;
 
 	// TODO we probably need a better way to encode function type
@@ -300,12 +299,31 @@ static enum NJXValueKind check_supported_argtype(struct dmr_C *C,
 static struct NanoType *check_supported_returntype(struct dmr_C *C,
 						   struct NanoType *type)
 {
-
 	if (type->type == RT_AGGREGATE || type->type == RT_FUNCTION ||
 	    type->type == RT_INT || type->type == RT_UNSUPPORTED ||
 	    type->type == RT_VOID)
 		return &BadType;
 	return type;
+}
+
+static NJXLInsRef truncate(struct dmr_C *C, struct function *fn,
+	NJXLInsRef val, struct NanoType *dtype,
+	int unsigned_cast) {
+	if (NJX_is_q(val) && dtype->bit_size <= 64) {
+		if (dtype->bit_size == 64)
+			return val;
+		uint64_t mask = (1ULL << dtype->bit_size) - 1;
+		return NJX_andq(fn->builder, val, NJX_immq(fn->builder, mask));
+	}
+	else if (NJX_is_i(val) && dtype->bit_size <= 32) {
+		if (dtype->bit_size == 32)
+			return val;
+		uint32_t mask = (1U << dtype->bit_size) - 1;
+		return NJX_andi(fn->builder, val, NJX_immi(fn->builder, mask));
+	}
+	else {
+		return NULL;
+	}
 }
 
 static NJXLInsRef build_cast(struct dmr_C *C, struct function *fn,
@@ -314,9 +332,7 @@ static NJXLInsRef build_cast(struct dmr_C *C, struct function *fn,
 {
 	switch (dtype->type) {
 	case RT_INT:
-		if (dtype->bit_size == 8 || dtype->bit_size == 16)
-			return val;
-		break;
+		return truncate(C, fn, val, dtype, unsigned_cast);
 
 	case RT_INT32:
 		if (NJX_is_q(val)) {
@@ -1370,14 +1386,6 @@ static NJXLInsRef output_op_store(struct dmr_C *C, struct function *fn,
 	if (!target_in)
 		return NULL;
 
-	// desttype = insn_symbol_type(C, fn, insn);
-	// if (!desttype)
-	//	return NULL;
-
-	// target_in = build_cast(C, fn, target_in, desttype, 0);
-	// if (!target_in)
-	//	return NULL;
-
 	NJXLInsRef value = NULL;
 	switch (insn->size) {
 	case 8:
@@ -1478,6 +1486,54 @@ static NJXLInsRef output_op_br(struct dmr_C *C, struct function *fn,
 	if (!add_jump_instruction(fn, br->bb_true, br1))
 		return NULL;
 	return br1;
+}
+
+static NJXLInsRef is_eq_zero(struct dmr_C *C, struct function *fn, NJXLInsRef value)
+{
+	NJXLInsRef cond = NULL;
+	if (NJX_is_i(value)) {
+		cond = NJX_eqi(fn->builder, value, NJX_immi(fn->builder, 0));
+	}
+	else if (NJX_is_q(value)) {
+		cond = NJX_eqq(fn->builder, value, NJX_immq(fn->builder, 0));
+	}
+	else if (NJX_is_d(value)) {
+		cond = NJX_eqd(fn->builder, value, NJX_immd(fn->builder, 0));
+	}
+	else if (NJX_is_f(value)) {
+		cond = NJX_eqf(fn->builder, value, NJX_immf(fn->builder, 0));
+	}
+	if (cond == NULL)
+		return NULL;
+	return cond;
+}
+
+static NJXLInsRef output_op_sel(struct dmr_C *C, struct function *fn, struct instruction *insn)
+{
+	NJXLInsRef target, src1, src2, src3;
+	NJXLInsRef desttype = insn_symbol_type(C, fn, insn);
+	if (!desttype)
+		return NULL;
+
+	src1 = pseudo_to_value(C, fn, insn->type, insn->src1);
+	if (!src1)
+		return NULL;
+	src1 = is_eq_zero(C, fn, src1);
+	if (!src1)
+		return NULL;
+
+	src2 = get_operand(C, fn, insn->type, insn->src2, 0, 0);
+	if (!src2)
+		return NULL;
+	src3 = get_operand(C, fn, insn->type, insn->src3, 0, 0);
+	if (!src3)
+		return NULL;
+
+	// As we compare to 0 above we have to flip the branches
+	target = NJX_choose(fn->builder, src1, src3, src2, true);
+
+	insn->target->priv = target;
+	return target;
 }
 
 static NJXLInsRef output_op_ret(struct dmr_C *C, struct function *fn,
@@ -1633,7 +1689,15 @@ static int output_insn(struct dmr_C *C, struct function *fn,
 		break;
 
 	case OP_SWITCH:
+		dmrC_sparse_error(C, insn->pos,
+			"switch statement is not supported\n");
+		return 0;
+
 	case OP_COMPUTEDGOTO:
+		dmrC_sparse_error(C, insn->pos,
+			"computed goto is not supported\n");
+		return 0;
+
 	case OP_LNOP:
 		return 0;
 
@@ -1703,6 +1767,10 @@ static int output_insn(struct dmr_C *C, struct function *fn,
 		break;
 
 	case OP_SEL:
+		NJX_comment(fn->builder, make_comment(C, insn));
+		v = output_op_sel(C, fn, insn);
+		break;
+
 	case OP_SLICE:
 		return 0;
 

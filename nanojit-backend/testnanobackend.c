@@ -223,6 +223,69 @@ int test5(int argc, char **argv)
 	return rc;
 }
 
+static int test6(int argc, char **argv) 
+{
+	const char *code =
+		"struct S3 { "
+		"	int twobit : 2; "
+		"	int : 1; "
+		"	int threebit : 3; "
+		"	unsigned int onebit : 1; "
+		"	int ninebit : 9; "
+		"}; "
+		"int sets3(struct S3 *s3, int v) { "
+		"	int rc = 0; "
+		"	s3->threebit = 7; "
+		"	s3->twobit = s3->threebit; "
+		"	s3->threebit = s3->twobit; "
+		"	s3->ninebit = v; "
+		"	if (s3->threebit != 3) { "
+		"		if (s3->threebit == -1) { "
+		"			rc = 1; "
+		"		} "
+		"	} "
+		"	s3->onebit = 1; "
+		"	if (s3->onebit != 1) { "
+		"		rc = 2; "
+		"	} "
+		"	return rc; "
+		"}";
+
+	struct S3 {
+		int twobit : 2;
+		int : 1;
+		int threebit : 3;
+		unsigned int onebit : 1;
+		int ninebit : 9;
+	};
+	struct S3 s3;
+	int (*fp)(struct S3 *s3, int v) = NULL;
+	NJXContextRef module = NJX_create_context(true);
+	int rc = 0;
+	if (!dmrC_nanocompile(argc, argv, module, code))
+		rc = 1;
+	if (rc == 0) {
+		fp = NJX_get_function_by_name(module, "sets3");
+		if (!fp)
+			rc = 1;
+	}
+	if (rc == 0 && fp) {
+		int rc1 = fp(&s3, 129);
+		if (rc1 != 0)
+			printf("In Test 6 JITed sets3() returned %d; this is a known issue\n", rc1);
+		if (rc == 0 && s3.ninebit != 129)
+			rc = 1;
+		if (rc == 0 && s3.threebit != 3)
+			rc = 1;
+		if (rc == 0 && s3.twobit != -1)
+			rc = 1;
+		if (rc == 0 && s3.onebit != 1)
+			rc = 1;
+	}
+	NJX_destroy_context(module);
+	return rc;
+}
+
 int main(int argc, char **argv)
 {
 	int rc = 0;
@@ -231,6 +294,7 @@ int main(int argc, char **argv)
 	rc += test3(argc, argv);
 	rc += test4(argc, argv);
 	rc += test5(argc, argv);
+	rc += test6(argc, argv);
 	if (rc == 0)
 		printf("Test OK\n");
 	else

@@ -1116,9 +1116,22 @@ static LLVMValueRef output_op_store(struct dmr_C *C, struct function *fn, struct
 
 static LLVMValueRef bool_value(struct dmr_C *C, struct function *fn, LLVMValueRef value)
 {
-	if (LLVMTypeOf(value) != LLVMInt1TypeInContext(LLVMGetModuleContext(fn->module)))
-		value = LLVMBuildIsNotNull(fn->builder, value, "cond");
-
+	LLVMTypeRef type = LLVMTypeOf(value);
+	if (type != LLVMInt1TypeInContext(LLVMGetModuleContext(fn->module))) {
+		LLVMTypeKind kind = LLVMGetTypeKind(type);
+		switch (kind) {
+		case LLVMPointerTypeKind:
+		case LLVMIntegerTypeKind:
+			value = LLVMBuildIsNotNull(fn->builder, value, "cond");
+			break;
+		case LLVMFloatTypeKind:
+		case LLVMDoubleTypeKind:
+			value = LLVMBuildFCmp(fn->builder, LLVMRealUNE, value, LLVMConstReal(type, 0.0), "cond");
+			break;
+		default:
+			return NULL;
+		}
+	}
 	return value;
 }
 
@@ -1132,9 +1145,10 @@ static LLVMValueRef output_op_cbr(struct dmr_C *C, struct function *fn, struct i
 	LLVMValueRef cond = pseudo_to_value(C, fn, ctype, br->cond);
 	if (cond)
 		cond = bool_value(C, fn, cond);
-	if (!cond)
+	if (!cond) {
+		dmrC_sparse_error(C, br->pos, "failure at insn %s\n", dmrC_show_instruction(C, br));
 		return NULL;
-
+	}
 	return LLVMBuildCondBr(fn->builder, cond,
 		br->bb_true->priv,
 		br->bb_false->priv);

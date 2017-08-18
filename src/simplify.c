@@ -55,6 +55,7 @@ static int get_phisources(struct dmr_C *C, struct instruction *sources[], int nb
 	} END_FOR_EACH_PTR(phi);
 	return i - nbr;
 }
+
 static int if_convert_phi(struct dmr_C *C, struct instruction *insn)
 {
 	struct instruction *array[2];
@@ -199,6 +200,20 @@ void dmrC_kill_use(struct dmr_C *C, pseudo_t *usep)
 		pseudo_t p = *usep;
 		*usep = VOID_PSEUDO(C);
 		remove_usage(C, p, usep);
+	}
+}
+
+// From Luc: sssa-mini
+/*
+ * Like kill_use() but do not recursively kill instructions
+ * that become without users.
+ */
+void dmrC_remove_use(struct dmr_C *C, pseudo_t *usep)
+{
+	pseudo_t p = *usep;
+	*usep = VOID_PSEUDO(C);
+	if (dmrC_has_use_list(p)) {
+		delete_pseudo_user_list_entry(C, &p->users, usep, 1);
 	}
 }
 

@@ -35,11 +35,28 @@ DECLARE_PTR_LIST(pseudo_user_list, struct pseudo_user);
 
 enum pseudo_type {
 	PSEUDO_VOID,
+#if NEW_SSA
+	PSEUDO_UNDEF,
+#endif
 	PSEUDO_REG,
 	PSEUDO_SYM,
 	PSEUDO_VAL,
 	PSEUDO_ARG,
 	PSEUDO_PHI,
+#if NEW_SSA
+	/*
+	Simplification of trivial pseudos requires us to replace
+	a pseudo for another in all ptrmap. Since this could
+	be an annoying and relatively costly operation
+	if effectively done by looking after each pseudos,
+	a new type of pseudo is used as a
+	a sort of a symlink for another one : PSEUDO_INDIR.
+
+	So the processing is almost for free and this indirection
+	has just to be done when looking after the corresponding var.
+	*/
+	PSEUDO_INDIR,
+#endif
 };
 
 struct pseudo {
@@ -51,6 +68,9 @@ struct pseudo {
 		struct symbol *sym;	     // PSEUDO_SYM, VAL & ARG
 		struct instruction *def; // PSEUDO_REG & PHI
 		long long value;	     // PSEUDO_VAL
+#if NEW_SSA
+		pseudo_t target;
+#endif
 	};
 	DMRC_BACKEND_TYPE priv;
 	DMRC_BACKEND_TYPE priv2;	/* FIXME - we use this to save ptr to allocated stack in PHI instructions (nanojit) */
@@ -130,6 +150,9 @@ struct instruction {
 		};
 		struct /* phi_node */ {
 			struct pseudo_list *phi_list; /* pseudo list */
+#if NEW_SSA
+			struct symbol *var;		/* SSSA only */
+#endif
 		};
 		struct /* phi source */ {
 			pseudo_t phi_src;
@@ -276,7 +299,24 @@ struct basic_block {
 	struct basic_block_list *parents; /* basic_block sources */
 	struct basic_block_list *children; /* basic_block destinations */
 	struct instruction_list *insns;	/* Linear list of instructions */
+#if NEW_SSA
+	union {
+		struct {		
+			/* SSA construction */
+			/* Sealed means that the BB can no longer acquire
+			   predecessors (parents) */
+			unsigned int sealed:1;
+			/* Flag used to denote that the BB has lables with unresolved gotos
+			   and therefore cannot be sealed */
+			unsigned int unsealable:1;
+		};
+		struct {		// liveness
+			struct pseudo_list *needs, *defines;
+		};
+	};
+#else
 	struct pseudo_list *needs, *defines; /* pseudo lists */
+#endif
     /* TODO Following fields are used by the codegen backends.
        In Sparse this is a union but we need the nr field 
        for NanoJIT backend's liveness analysis in addition to 
@@ -401,7 +441,11 @@ static inline void dmrC_add_pseudo_user_ptr(struct dmr_C *C, struct pseudo_user 
 
 static inline int dmrC_has_use_list(pseudo_t p)
 {
+#if NEW_SSA
+	return (p && p->type != PSEUDO_VOID && p->type != PSEUDO_UNDEF && p->type != PSEUDO_VAL);
+#else
 	return (p && p->type != PSEUDO_VOID && p->type != PSEUDO_VAL);
+#endif
 }
 
 static inline struct pseudo_user *dmrC_alloc_pseudo_user(struct dmr_C *C, struct instruction *insn, pseudo_t *pp)
@@ -441,10 +485,15 @@ struct entrypoint {
 
 extern void dmrC_insert_select(struct dmr_C *C, struct basic_block *bb, struct instruction *br, struct instruction *phi, pseudo_t if_true, pseudo_t if_false);
 extern void dmrC_insert_branch(struct dmr_C *C, struct basic_block *bb, struct instruction *br, struct basic_block *target);
-
+// From Luc: sssa-mini
+struct instruction *dmrC_alloc_phisrc(struct dmr_C *C, pseudo_t pseudo, struct symbol *type);
+pseudo_t dmrC_insert_phi_node(struct dmr_C *C, struct basic_block *bb, struct symbol *type);
 pseudo_t dmrC_alloc_phi(struct dmr_C *C, struct basic_block *source, pseudo_t pseudo, struct symbol *type);
 pseudo_t dmrC_alloc_pseudo(struct dmr_C *C, struct instruction *def);
 pseudo_t dmrC_value_pseudo(struct dmr_C *C, long long val);
+#if NEW_SSA
+pseudo_t dmrC_undef_pseudo(struct dmr_C *C);
+#endif
 
 struct entrypoint *dmrC_linearize_symbol(struct dmr_C *C, struct symbol *sym);
 int dmrC_unssa(struct dmr_C *C, struct entrypoint *ep);

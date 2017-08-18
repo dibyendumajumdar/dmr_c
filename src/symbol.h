@@ -104,6 +104,7 @@ struct context {
 };
 
 DECLARE_PTR_LIST(context_list, struct context);
+struct phi_map;
 
 struct ctype {
 	unsigned long modifiers;
@@ -196,6 +197,9 @@ struct symbol {
 			struct expression *initializer;
 			struct entrypoint *ep;
 			long long value;		/* Initial value */
+#if NEW_SSA
+			struct phi_map *phi_map;
+#endif
 			struct symbol *definition;
 		};
 	};
@@ -443,6 +447,43 @@ static inline int dmrC_is_scalar_type(struct global_symbols_t *S, struct symbol 
 	if (type->ctype.base_type == &S->fp_type)
 		return 1;
 	return 0;
+}
+
+// From Luc - sssa-mini
+static inline int dmrC_is_simple_type(struct global_symbols_t *S, struct symbol *type)
+{
+	if (type->type == SYM_NODE)
+		type = type->ctype.base_type;
+	switch (type->type) {
+	case SYM_ENUM:
+	case SYM_BITFIELD:
+	case SYM_PTR:
+	case SYM_RESTRICT:	// OK, always integer types
+		return 1;
+	// Following is causing failures because the IR
+	// attempts to store values into unions or structs
+	//case SYM_STRUCT:
+	//case SYM_UNION:
+	//	return type->bit_size <= S->long_ctype.bit_size;
+	default:
+		break;
+	}
+	if (type->ctype.base_type == &S->int_type)
+		return 1;
+	if (type->ctype.base_type == &S->fp_type)
+		return 1;
+	return 0;
+}
+
+// From Luc - sssa-mini
+static inline int dmrC_is_simple_var(struct global_symbols_t *S, struct symbol *var)
+{
+	if (!dmrC_is_simple_type(S, var))
+		return 0;
+#define	MOD_NONREG	(MOD_STATIC|MOD_NONLOCAL|MOD_ADDRESSABLE|MOD_VOLATILE)
+	if (var->ctype.modifiers & MOD_NONREG)
+		return 0;
+	return 1;
 }
 
 static inline int dmrC_is_function(struct symbol *type)

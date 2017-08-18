@@ -27,6 +27,7 @@ This is very early days. We are able to generate code for following simple C pro
 * selection operator (?:)
 * bitfield access has problems
 * calling functions through function pointers
+* aggregate initializers 
 
 ### Limitations
 

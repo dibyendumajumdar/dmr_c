@@ -1105,20 +1105,6 @@ static LLVMValueRef output_op_store(struct dmr_C *C, struct function *fn, struct
 	if (!desttype)
 		return NULL;
 
-	//LLVMTypeKind kind = LLVMGetTypeKind(desttype);
-	//switch (kind) {
-	//case LLVMFloatTypeKind:       /**< 32 bit floating point type */
-	//case LLVMDoubleTypeKind:      /**< 64 bit floating point type */
-	//case LLVMIntegerTypeKind:     /**< Arbitrary bit width integers */
-	//case LLVMFunctionTypeKind:    /**< Functions */
-	//case LLVMPointerTypeKind:     /**< Pointers */
-	//	break;
-	//default:
-	//	dmrC_sparse_error(C, insn->pos, "store to unsupported type at insn %s, type is:", dmrC_show_instruction(C, insn));
-	//	LLVMDumpType(desttype);
-	//	return NULL;
-	//}
-
 	/* Cast to the right type - to resolve issue with union types */
 	target_in = build_cast(C, fn, target_in, desttype, LLVMGetValueName(target_in), 0);
 	if (!target_in)
@@ -1156,9 +1142,7 @@ static LLVMValueRef output_op_cbr(struct dmr_C *C, struct function *fn, struct i
 
 static LLVMValueRef output_op_br(struct dmr_C *C, struct function *fn, struct instruction *br)
 {
-	return LLVMBuildBr(fn->builder,
-		br->bb_true ? br->bb_true->priv :
-		br->bb_false->priv);
+	return LLVMBuildBr(fn->builder, br->bb_true->priv);
 }
 
 

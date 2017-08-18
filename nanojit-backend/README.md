@@ -16,16 +16,16 @@ This is very early days. We are able to generate code for following simple C pro
   [like this](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/testif.lir).
 * [locals](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/locals.c). The generated LIR and assembly instructions look
   [like this](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/locals.lir).  
-  
+* [bitfields](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/bitfields.c). The generated LIR and assembly instructions   look [like this](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/bitfields.lir).  
+    
   
 ## Issues
 
 ### Features not yet implemented
 
-* switch statement
-* computed gotos
-* selection operator (?:)
-* bitfield access has problems
+* switch statement (probably can't be implemented)
+* computed gotos (probably can't be implemented)
+* bitfield access is implemented but not fully tested
 * calling functions through function pointers
 * aggregate initializers 
 

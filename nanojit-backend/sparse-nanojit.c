@@ -430,11 +430,13 @@ static NJXLInsRef output_op_phi(struct dmr_C *C, struct function *fn,
 	switch (insn->size) {
 	case 8:
 		// TODO do we need to do unsigned here?
-		load = NJX_load_c2i(fn->builder, ptr, 0);
+		//load = NJX_load_c2i(fn->builder, ptr, 0);
+		load = NJX_load_uc2ui(fn->builder, ptr, 0);
 		break;
 	case 16:
 		// TODO do we need to do unsigned here?
-		load = NJX_load_s2i(fn->builder, ptr, 0);
+		//load = NJX_load_s2i(fn->builder, ptr, 0);
+		load = NJX_load_us2ui(fn->builder, ptr, 0);
 		break;
 	case 32:
 		load = NJX_load_i(fn->builder, ptr, 0);
@@ -2022,14 +2024,14 @@ bool dmrC_nanocompile(int argc, char **argv, NJXContextRef module,
 	char *file;
 
 	struct dmr_C *C = new_dmr_C();
-	C->optimize = 1;
-	C->codegen = 1; /* disables macros related to vararg processing */
+	C->optimize = 1; /* We need the liveness data for NanoJIT */
+	C->codegen = 1; /* Disables macros related to vararg processing */
 
 	symlist = dmrC_sparse_initialize(C, argc, argv, &filelist);
 
 	int rc = 0;
 	if (compile(C, module, symlist)) {
-		/* need ->phi_users */
+		/* We need ->phi_users */
 		/* This flag enables call to dmrC_track_pseudo_death() in
 		linearize.c which sets
 		phi_users list on PHISOURCE instructions  */

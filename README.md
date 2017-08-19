@@ -99,6 +99,7 @@ This is basically what the sparse-llvm command (see below) does.
 
 * Initializers on static and globals do not work yet except for simple strings and scalar variables. The front-end does handle these - the limitation is in the LLVM backend.
 * Aggregate assignments are not yet supported by the LLVM backend, i.e. you cannot assign a struct by value.
+* Initialization of char[] doesn't work as it is treated as an aggregate assignment.
 * The `va_arg` mechanism is not supported.
 * There is no support for computed gotos in the LLVM backend.
 * The front-end parser and pre-processor knows about many Linux constructs hence it can process C header files on Linux. However, it doesn't know about Windows or Mac OSX features. As typically the vendor supplied header files have many platform specific extensions, unfortunately this means that you cannot process vendor supplied header files on these platforms.

@@ -30,6 +30,7 @@ struct symbol_info {
 
 struct symbol_visitor {
 	void *data;
+	uint64_t id;
 	void(*begin_symbol)(void *data, struct symbol_info *syminfo);
 	void(*end_symbol)(void *data, struct symbol_info *syminfo);
 	void(*begin_members)(void *data, struct symbol_info *syminfo);
@@ -37,6 +38,9 @@ struct symbol_visitor {
 	void(*begin_arguments)(void *data, struct symbol_info *syminfo);
 	void(*end_arguments)(void *data, struct symbol_info *syminfo);
 	void(*reference_symbol)(void *data, uint64_t id);
+	void(*begin_body)(void *data, struct symbol_info *syminfo);
+	void(*end_body)(void *data, struct symbol_info *syminfo);
+
 };
 
 extern void dmrC_walk_symbol_list(struct dmr_C *C, struct symbol_list *list, struct symbol_visitor *visitor);

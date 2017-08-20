@@ -26,7 +26,8 @@ void dmrC_walk_symbol(struct dmr_C *C, struct symbol *sym, struct symbol_visitor
 			visitor->reference_symbol(visitor->data, (uint64_t)sym);
 			return;
 		}
-		sym->aux = (void *)1;
+		visitor->id++;
+		sym->aux = (void *)visitor->id;
 	}
 	char name[80] = { 0 };
 	if (sym->ident)
@@ -34,7 +35,7 @@ void dmrC_walk_symbol(struct dmr_C *C, struct symbol *sym, struct symbol_visitor
 	else if (sym->type == SYM_BASETYPE)
 		snprintf(name, sizeof name, "%s", dmrC_builtin_typename(C, sym));
 	struct symbol_info syminfo = {
-		.id = (uint64_t)sym,
+		.id = (uint64_t)sym->aux,
 		.name = name,
 		.symbol_namespace = sym->ns,
 		.symbol_type = sym->type,
@@ -105,6 +106,13 @@ void dmrC_walk_symbol(struct dmr_C *C, struct symbol *sym, struct symbol_visitor
 			dmrC_show_expression(C, sym->initializer);
 		}
 #endif
+	}
+
+	if (sym->type == SYM_FN) {
+		if (sym->stmt) {
+			visitor->begin_body(visitor->data, &syminfo);
+			visitor->end_body(visitor->data, &syminfo);
+		}
 	}
 	visitor->end_symbol(visitor->data, &syminfo);
 }

@@ -83,6 +83,19 @@ static void end_arguments_impl(void *data, struct symbol_info *syminfo)
 	const char spaces[] = "                                           ";
 	printf("%.*s)\n", treevisitor->symbol_nesting, spaces);
 }
+static void begin_body_impl(void *data, struct symbol_info *syminfo)
+{
+	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
+	const char spaces[] = "                                           ";
+	printf("%.*s{\n", treevisitor->symbol_nesting, spaces);
+}
+static void end_body_impl(void *data, struct symbol_info *syminfo)
+{
+	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
+	const char spaces[] = "                                           ";
+	printf("%.*s}\n", treevisitor->symbol_nesting, spaces);
+}
+
 
 static void reference_symbol_impl(void *data, uint64_t sym)
 {
@@ -115,13 +128,16 @@ int main(int argc, char **argv)
 
 	struct symbol_visitor visitor = {
 		.data = &treevisitor,
+		.id = 0,
 		.begin_symbol = begin_symbol_impl,
 		.end_symbol = end_symbol_impl,
 		.reference_symbol = reference_symbol_impl,
 		.begin_members = begin_members_impl,
 		.end_members = end_members_impl,
 		.begin_arguments = begin_arguments_impl,
-		.end_arguments = end_arguments_impl
+		.end_arguments = end_arguments_impl,
+		.begin_body = begin_body_impl,
+		.end_body = end_body_impl
 	};
 
 	list = dmrC_sparse_initialize(C, argc, argv, &filelist);

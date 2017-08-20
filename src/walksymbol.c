@@ -13,6 +13,8 @@ static void walk_statement(struct dmr_C *C, struct statement *stmt,
 	struct symbol_visitor *visitor);
 static void walk_symbol_expression(struct dmr_C *C, struct expression *expr,
 	struct symbol_visitor *visitor);
+static void walk_assignment_expression(struct dmr_C *C, struct expression *expr,
+	struct symbol_visitor *visitor);
 
 void walk_statement(struct dmr_C *C, struct statement *stmt,
 		    struct symbol_visitor *visitor)
@@ -175,6 +177,43 @@ void walk_symbol_expression(struct dmr_C *C, struct expression *expr,
 	dmrC_walk_symbol(C, sym, visitor);
 }
 
+void walk_assignment_expression(struct dmr_C *C, struct expression *expr,
+	struct symbol_visitor *visitor)
+{
+	assert(expr->type == EXPR_ASSIGNMENT);
+	if (!expr->ctype)
+		return;
+
+	int op = expr->op;
+	visitor->begin_assignment_expression(visitor->data, expr->type, op);
+	walk_expression(C, expr->left, visitor);
+	walk_expression(C, expr->right, visitor);
+	visitor->end_assignment_expression(visitor->data, expr->type);
+}
+
+void walk_preop_expression(struct dmr_C *C, struct expression *expr,
+	struct symbol_visitor *visitor)
+{
+	assert(expr->type == EXPR_PREOP);
+	switch (expr->op) {
+	case '!':
+		break;
+	case '~':
+		break;
+	case '-':
+		break;
+	case '*':
+		walk_expression(C, expr->unop, visitor);
+		break;
+	case SPECIAL_INCREMENT:
+		break;
+	case SPECIAL_DECREMENT:
+		break;
+	default:
+		walk_expression(C, expr->unop, visitor);
+	}
+}
+
 void walk_expression(struct dmr_C *C, struct expression *expr,
 		     struct symbol_visitor *visitor)
 {
@@ -190,7 +229,7 @@ void walk_expression(struct dmr_C *C, struct expression *expr,
 		break;
 
 	case EXPR_ASSIGNMENT:
-		// return show_assignment(C, expr);
+		walk_assignment_expression(C, expr, visitor);
 		break;
 
 	case EXPR_COMMA:
@@ -202,7 +241,7 @@ void walk_expression(struct dmr_C *C, struct expression *expr,
 		// return show_binop(C, expr);
 		break;
 	case EXPR_PREOP:
-		// return show_preop(C, expr);
+		walk_preop_expression(C, expr, visitor);
 		break;
 	case EXPR_POSTOP:
 		// return show_postop(C, expr);
@@ -282,7 +321,7 @@ void dmrC_walk_symbol(struct dmr_C *C, struct symbol *sym,
 	if (sym->type != SYM_BASETYPE) {
 		if (sym->aux) {
 			/* already visited */
-			visitor->reference_symbol(visitor->data, (uint64_t)sym);
+			visitor->reference_symbol(visitor->data, (uint64_t)sym->aux);
 			return;
 		}
 		visitor->id++;
@@ -392,6 +431,9 @@ static void begin_statement_default(void *data, enum statement_type statement_ty
 static void end_statement_default(void *data, enum statement_type statement_type) {}
 static void begin_expression_default(void *data, enum expression_type expr_type) {}
 static void end_expression_default(void *data, enum expression_type expr_type) {}
+static void begin_assignment_expression_default(void *data, enum expression_type expr_type, int op) {}
+static void end_assignment_expression_default(void *data, enum expression_type expr_type) {}
+
 
 void dmrC_init_symbol_visitor(struct symbol_visitor *visitor)
 {
@@ -419,4 +461,6 @@ void dmrC_init_symbol_visitor(struct symbol_visitor *visitor)
 	visitor->end_statement = end_statement_default;
 	visitor->begin_expression = begin_expression_default;
 	visitor->end_expression = end_expression_default;
+	visitor->begin_assignment_expression = begin_assignment_expression_default;
+	visitor->end_assignment_expression = end_assignment_expression_default;
 }

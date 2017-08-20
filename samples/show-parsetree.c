@@ -134,38 +134,12 @@ static void begin_assignment_expression_impl(void *data,
 {
 	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
 	const char spaces[] = "                                           ";
-	const char *oper = "=";
-	switch (op) {
-	case SPECIAL_ADD_ASSIGN:
-		oper = "+=";
-		break;
-	case SPECIAL_SUB_ASSIGN:
-		oper = "-=";
-		break;
-	case SPECIAL_MUL_ASSIGN:
-		oper = "*=";
-		break;
-	case SPECIAL_DIV_ASSIGN:
-		oper = "/=";
-		break;
-	case SPECIAL_MOD_ASSIGN:
-		oper = "%=";
-		break;
-	case SPECIAL_SHL_ASSIGN:
-		oper = "<<=";
-		break;
-	case SPECIAL_SHR_ASSIGN:
-		oper = ">>=";
-		break;
-	case SPECIAL_AND_ASSIGN:
-		oper = "&=";
-		break;
-	case SPECIAL_OR_ASSIGN:
-		oper = "|=";
-		break;
-	case SPECIAL_XOR_ASSIGN:
-		oper = "^=";
-		break;
+	char oper[4] = { 0 };
+	const char *opname = dmrC_show_special(treevisitor->C, op);
+	if (op < 125)
+		oper[0] = (char)op;
+	else {
+		strcpy(oper, opname);
 	}
 	printf("%.*s%s\t\t\t\t(EXPR_ASSIGNMENT)\n", treevisitor->nesting_level, spaces, oper);
 	treevisitor->nesting_level++;

@@ -198,7 +198,7 @@ void walk_assignment_expression(struct dmr_C *C, struct expression *expr,
 void walk_binary_expression(struct dmr_C *C, struct expression *expr,
 	struct symbol_visitor *visitor)
 {
-	assert(expr->type == EXPR_BINOP);
+	assert(expr->type == EXPR_BINOP || expr->type == EXPR_COMPARE || expr->type == EXPR_LOGICAL);
 	if (!expr->ctype)
 		return;
 
@@ -240,11 +240,9 @@ void walk_expression(struct dmr_C *C, struct expression *expr,
 		// return show_comma(C, expr);
 		break;
 	case EXPR_BINOP:
-		walk_binary_expression(C, expr, visitor);
-		break;
 	case EXPR_COMPARE:
 	case EXPR_LOGICAL:
-		// return show_binop(C, expr);
+		walk_binary_expression(C, expr, visitor);
 		break;
 	case EXPR_PREOP:
 		walk_preop_expression(C, expr, visitor);

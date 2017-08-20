@@ -183,7 +183,14 @@ static void begin_binop_expression_impl(void *data,
 {
 	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
 	const char spaces[] = "                                           ";
-	printf("%.*s%c\t\t\t\t(EXPR_BINOP)\n", treevisitor->nesting_level, spaces, (char)op);
+	char oper[4] = { 0 };
+	const char *opname = dmrC_show_special(treevisitor->C, op);
+	if (op < 125)
+		oper[0] = (char)op;
+	else {
+		strcpy(oper, opname);
+	}
+	printf("%.*s%s\t\t\t\t(EXPR_BINOP)\n", treevisitor->nesting_level, spaces, oper);
 	treevisitor->nesting_level++;
 }
 
@@ -199,17 +206,12 @@ static void begin_preop_expression_impl(void *data,
 {
 	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
 	const char spaces[] = "                                           ";
-	char oper[3] = { 0 };
-	if (op == SPECIAL_INCREMENT) {
-		oper[0] = '+';
-		oper[1] = '+';
-	}
-	else if (op == SPECIAL_DECREMENT) {
-		oper[0] = '-';
-		oper[1] = '-';
-	}
-	else {
+	char oper[4] = { 0 };
+	const char *opname = dmrC_show_special(treevisitor->C, op);
+	if (op < 125)
 		oper[0] = (char)op;
+	else {
+		strcpy(oper, opname);
 	}
 	printf("%.*s%s\t\t\t\t(EXPR_PREOP)\n", treevisitor->nesting_level, spaces, oper);
 	treevisitor->nesting_level++;

@@ -40,9 +40,15 @@ struct symbol_visitor {
 	void(*reference_symbol)(void *data, uint64_t id);
 	void(*begin_body)(void *data, struct symbol_info *syminfo);
 	void(*end_body)(void *data, struct symbol_info *syminfo);
-
+	void(*begin_func_returntype)(void *data, struct symbol_info *syminfo);
+	void(*end_func_returntype)(void *data, struct symbol_info *syminfo);
+	void(*begin_basetype)(void *data, struct symbol_info *syminfo);
+	void(*end_basetype)(void *data, struct symbol_info *syminfo);
+	void(*begin_initializer)(void *data, struct symbol_info *syminfo);
+	void(*end_initializer)(void *data, struct symbol_info *syminfo);
 };
 
+extern void dmrC_init_symbol_visitor(struct symbol_visitor *visitor);
 extern void dmrC_walk_symbol_list(struct dmr_C *C, struct symbol_list *list, struct symbol_visitor *visitor);
 extern void dmrC_walk_symbol(struct dmr_C *C, struct symbol *sym, struct symbol_visitor *visitor);
 

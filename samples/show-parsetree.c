@@ -126,19 +126,19 @@ int main(int argc, char **argv)
 		.symbol_nesting = -1
 	};
 
-	struct symbol_visitor visitor = {
-		.data = &treevisitor,
-		.id = 0,
-		.begin_symbol = begin_symbol_impl,
-		.end_symbol = end_symbol_impl,
-		.reference_symbol = reference_symbol_impl,
-		.begin_members = begin_members_impl,
-		.end_members = end_members_impl,
-		.begin_arguments = begin_arguments_impl,
-		.end_arguments = end_arguments_impl,
-		.begin_body = begin_body_impl,
-		.end_body = end_body_impl
-	};
+	struct symbol_visitor visitor;
+	dmrC_init_symbol_visitor(&visitor);
+
+	visitor.data = &treevisitor;
+	visitor.begin_symbol = begin_symbol_impl;
+	visitor.end_symbol = end_symbol_impl;
+	visitor.reference_symbol = reference_symbol_impl;
+	visitor.begin_members = begin_members_impl;
+	visitor.end_members = end_members_impl;
+	visitor.begin_arguments = begin_arguments_impl;
+	visitor.end_arguments = end_arguments_impl;
+	visitor.begin_body = begin_body_impl;
+	visitor.end_body = end_body_impl;
 
 	list = dmrC_sparse_initialize(C, argc, argv, &filelist);
 

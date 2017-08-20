@@ -7,6 +7,17 @@
 
 #include <walksymbol.h>
 
+static void walk_expression(struct dmr_C *C, struct expression *expr, struct symbol_visitor *visitor);
+static void walk_statement(struct dmr_C *C, struct statement *stmt, struct symbol_visitor *visitor);
+
+void walk_statement(struct dmr_C *C, struct statement *stmt, struct symbol_visitor *visitor)
+{
+}
+
+void walk_expression(struct dmr_C *C, struct expression *expr, struct symbol_visitor *visitor)
+{
+}
+
 void dmrC_walk_symbol_list(struct dmr_C *C, struct symbol_list *list, struct symbol_visitor *visitor)
 {
 	struct symbol *sym;
@@ -73,46 +84,67 @@ void dmrC_walk_symbol(struct dmr_C *C, struct symbol *sym, struct symbol_visitor
 
 	// Is there a base type?
 	if (sym->type != SYM_BASETYPE && sym->ctype.base_type) {
+		if (sym->type == SYM_FN)
+			visitor->begin_func_returntype(visitor->data, &syminfo);
+		else
+			visitor->begin_basetype(visitor->data, &syminfo);
 		dmrC_walk_symbol(C, sym->ctype.base_type, visitor);
-
-#if 0
-		dmrC_show_type(C, sym);
-		/*
-		* Show actual implementation information
-		*/
-		switch (type->type) {
-			struct symbol *member;
-
-		case SYM_FN: {
-			struct statement *stmt = type->stmt;
-			printf("\n");
-			if (stmt) {
-				int val;
-				val = dmrC_show_statement(C, stmt);
-				if (val)
-					printf("\tmov.%d\t\tretval,%d\n", stmt->ret->bit_size, val);
-				printf("\tret\n");
-			}
-			break;
-		}
-
-		default:
-			printf("\n");
-			break;
-		}
-
-		if (sym->initializer) {
-			printf(" = \n");
-			dmrC_show_expression(C, sym->initializer);
-		}
-#endif
+		if (sym->type == SYM_FN)
+			visitor->end_func_returntype(visitor->data, &syminfo);
+		else
+			visitor->end_basetype(visitor->data, &syminfo);
 	}
 
 	if (sym->type == SYM_FN) {
 		if (sym->stmt) {
 			visitor->begin_body(visitor->data, &syminfo);
+			walk_statement(C, sym->stmt, visitor);
 			visitor->end_body(visitor->data, &syminfo);
 		}
 	}
+	if (sym->initializer) {
+		visitor->begin_initializer(visitor->data, &syminfo);
+		walk_expression(C, sym->initializer, visitor);
+		visitor->end_initializer(visitor->data, &syminfo);
+	}
 	visitor->end_symbol(visitor->data, &syminfo);
+}
+
+
+static void begin_symbol_default(void *data, struct symbol_info *syminfo) {}
+static void end_symbol_default(void *data, struct symbol_info *syminfo) {}
+static void begin_members_default(void *data, struct symbol_info *syminfo) {}
+static void end_members_default(void *data, struct symbol_info *syminfo) {}
+static void begin_arguments_default(void *data, struct symbol_info *syminfo) {}
+static void end_arguments_default(void *data, struct symbol_info *syminfo) {}
+static void reference_symbol_default(void *data, uint64_t id) {}
+static void begin_body_default(void *data, struct symbol_info *syminfo) {}
+static void end_body_default(void *data, struct symbol_info *syminfo) {}
+static void begin_func_returntype_default(void *data, struct symbol_info *syminfo) {}
+static void end_func_returntype_default(void *data, struct symbol_info *syminfo) {}
+static void begin_basetype_default(void *data, struct symbol_info *syminfo) {}
+static void end_basetype_default(void *data, struct symbol_info *syminfo) {}
+static void begin_initializer_default(void *data, struct symbol_info *syminfo) {}
+static void end_initializer_default(void *data, struct symbol_info *syminfo) {}
+
+
+void dmrC_init_symbol_visitor(struct symbol_visitor *visitor)
+{
+	visitor->data = NULL;
+	visitor->id = 0;
+	visitor->begin_symbol = begin_symbol_default;
+	visitor->end_symbol = end_symbol_default;
+	visitor->begin_members = begin_members_default;
+	visitor->end_members = end_members_default;
+	visitor->begin_arguments = begin_arguments_default;
+	visitor->end_arguments = end_arguments_default;
+	visitor->reference_symbol = reference_symbol_default;
+	visitor->begin_body = begin_body_default;
+	visitor->end_body = end_body_default;
+	visitor->begin_func_returntype = begin_func_returntype_default;
+	visitor->end_func_returntype = end_func_returntype_default;
+	visitor->begin_basetype = begin_basetype_default;
+	visitor->end_basetype = end_basetype_default;
+	visitor->begin_initializer = begin_initializer_default;
+	visitor->end_initializer = end_initializer_default;
 }

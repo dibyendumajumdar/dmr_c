@@ -8,16 +8,18 @@
 #include <walksymbol.h>
 
 static void walk_expression(struct dmr_C *C, struct expression *expr,
-			    struct symbol_visitor *visitor);
+	struct symbol_visitor *visitor);
 static void walk_statement(struct dmr_C *C, struct statement *stmt,
 	struct symbol_visitor *visitor);
 static void walk_symbol_expression(struct dmr_C *C, struct expression *expr,
 	struct symbol_visitor *visitor);
 static void walk_assignment_expression(struct dmr_C *C, struct expression *expr,
 	struct symbol_visitor *visitor);
+static void walk_binary_expression(struct dmr_C *C, struct expression *expr,
+	struct symbol_visitor *visitor);
 
 void walk_statement(struct dmr_C *C, struct statement *stmt,
-		    struct symbol_visitor *visitor)
+	struct symbol_visitor *visitor)
 {
 	if (!stmt)
 		return;
@@ -25,7 +27,7 @@ void walk_statement(struct dmr_C *C, struct statement *stmt,
 	visitor->begin_statement(visitor->data, stmt->type);
 	switch (stmt->type) {
 	case STMT_DECLARATION:
-		//show_symbol_decl(C, stmt->declaration);
+		dmrC_walk_symbol_list(C, stmt->declaration, visitor);
 		break;
 	case STMT_RETURN:
 		//return show_return_stmt(C, stmt);
@@ -173,7 +175,9 @@ void walk_statement(struct dmr_C *C, struct statement *stmt,
 void walk_symbol_expression(struct dmr_C *C, struct expression *expr,
 	struct symbol_visitor *visitor)
 {
+	assert(expr->type == EXPR_SYMBOL);
 	struct symbol *sym = expr->symbol;
+	assert(sym);
 	dmrC_walk_symbol(C, sym, visitor);
 }
 
@@ -191,31 +195,31 @@ void walk_assignment_expression(struct dmr_C *C, struct expression *expr,
 	visitor->end_assignment_expression(visitor->data, expr->type);
 }
 
+void walk_binary_expression(struct dmr_C *C, struct expression *expr,
+	struct symbol_visitor *visitor)
+{
+	assert(expr->type == EXPR_BINOP);
+	if (!expr->ctype)
+		return;
+
+	int op = expr->op;
+	visitor->begin_binop_expression(visitor->data, expr->type, op);
+	walk_expression(C, expr->left, visitor);
+	walk_expression(C, expr->right, visitor);
+	visitor->end_binop_expression(visitor->data, expr->type);
+}
+
 void walk_preop_expression(struct dmr_C *C, struct expression *expr,
 	struct symbol_visitor *visitor)
 {
 	assert(expr->type == EXPR_PREOP);
-	switch (expr->op) {
-	case '!':
-		break;
-	case '~':
-		break;
-	case '-':
-		break;
-	case '*':
-		walk_expression(C, expr->unop, visitor);
-		break;
-	case SPECIAL_INCREMENT:
-		break;
-	case SPECIAL_DECREMENT:
-		break;
-	default:
-		walk_expression(C, expr->unop, visitor);
-	}
+	visitor->begin_preop_expression(visitor->data, expr->type, expr->op);
+	walk_expression(C, expr->unop, visitor);
+	visitor->end_preop_expression(visitor->data, expr->type);
 }
 
 void walk_expression(struct dmr_C *C, struct expression *expr,
-		     struct symbol_visitor *visitor)
+	struct symbol_visitor *visitor)
 {
 	if (!expr)
 		return;
@@ -236,6 +240,8 @@ void walk_expression(struct dmr_C *C, struct expression *expr,
 		// return show_comma(C, expr);
 		break;
 	case EXPR_BINOP:
+		walk_binary_expression(C, expr, visitor);
+		break;
 	case EXPR_COMPARE:
 	case EXPR_LOGICAL:
 		// return show_binop(C, expr);
@@ -305,7 +311,7 @@ void walk_expression(struct dmr_C *C, struct expression *expr,
 }
 
 void dmrC_walk_symbol_list(struct dmr_C *C, struct symbol_list *list,
-			   struct symbol_visitor *visitor)
+	struct symbol_visitor *visitor)
 {
 	struct symbol *sym;
 
@@ -314,7 +320,7 @@ void dmrC_walk_symbol_list(struct dmr_C *C, struct symbol_list *list,
 }
 
 void dmrC_walk_symbol(struct dmr_C *C, struct symbol *sym,
-		      struct symbol_visitor *visitor)
+	struct symbol_visitor *visitor)
 {
 	if (!sym)
 		return;
@@ -327,27 +333,27 @@ void dmrC_walk_symbol(struct dmr_C *C, struct symbol *sym,
 		visitor->id++;
 		sym->aux = (void *)visitor->id;
 	}
-	char name[80] = {0};
+	char name[80] = { 0 };
 	if (sym->ident)
 		snprintf(name, sizeof name, "%s",
-			 dmrC_show_ident(C, sym->ident));
+			dmrC_show_ident(C, sym->ident));
 	else if (sym->type == SYM_BASETYPE)
 		snprintf(name, sizeof name, "%s",
-			 dmrC_builtin_typename(C, sym));
-	struct symbol_info syminfo = {.id = (uint64_t)sym->aux,
+			dmrC_builtin_typename(C, sym));
+	struct symbol_info syminfo = { .id = (uint64_t)sym->aux,
 				      .name = name,
 				      .symbol_namespace = sym->ns,
 				      .symbol_type = sym->type,
 				      .alignment = sym->ctype.alignment,
 				      .pos = sym->pos,
 				      .bit_size = sym->bit_size,
-				      .offset = sym->offset};
+				      .offset = sym->offset };
 	if (dmrC_is_bitfield_type(sym)) {
 		syminfo.bit_offset = sym->bit_offset;
 	}
 	if (sym->array_size) {
 		syminfo.array_size =
-		    dmrC_get_expression_value(C, sym->array_size);
+			dmrC_get_expression_value(C, sym->array_size);
 	}
 
 	visitor->begin_symbol(visitor->data, &syminfo);
@@ -412,7 +418,7 @@ static void reference_symbol_default(void *data, uint64_t id) {}
 static void begin_body_default(void *data, struct symbol_info *syminfo) {}
 static void end_body_default(void *data, struct symbol_info *syminfo) {}
 static void begin_func_returntype_default(void *data,
-					  struct symbol_info *syminfo)
+	struct symbol_info *syminfo)
 {
 }
 static void end_func_returntype_default(void *data, struct symbol_info *syminfo)
@@ -433,6 +439,12 @@ static void begin_expression_default(void *data, enum expression_type expr_type)
 static void end_expression_default(void *data, enum expression_type expr_type) {}
 static void begin_assignment_expression_default(void *data, enum expression_type expr_type, int op) {}
 static void end_assignment_expression_default(void *data, enum expression_type expr_type) {}
+static void begin_binop_expression_default(void *data, enum expression_type expr_type, int op) {}
+static void end_binop_expression_default(void *data, enum expression_type expr_type) {}
+static void begin_preop_expression_default(void *data,
+	enum expression_type expr_type, int op) {}
+static void end_preop_expression_default(void *data,
+	enum expression_type expr_type) {}
 
 
 void dmrC_init_symbol_visitor(struct symbol_visitor *visitor)
@@ -463,4 +475,8 @@ void dmrC_init_symbol_visitor(struct symbol_visitor *visitor)
 	visitor->end_expression = end_expression_default;
 	visitor->begin_assignment_expression = begin_assignment_expression_default;
 	visitor->end_assignment_expression = end_assignment_expression_default;
+	visitor->begin_binop_expression = begin_binop_expression_default;
+	visitor->end_binop_expression = end_binop_expression_default;
+	visitor->begin_preop_expression = begin_preop_expression_default;
+	visitor->end_preop_expression = end_preop_expression_default;
 }

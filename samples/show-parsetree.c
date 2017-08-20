@@ -1,10 +1,5 @@
 /*
- * Example trivial client program that uses the sparse library
- * to tokenize, preprocess and parse a C file, and prints out
- * the results.
- *
- * Copyright (C) 2003 Transmeta Corp.
- *               2003 Linus Torvalds
+ * Dumps the parse tree
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,7 +32,6 @@
 struct tree_visitor {
 	struct dmr_C *C;
 	int nesting_level;
-	int indented;
 };
 
 static void begin_symbol_impl(void *data, struct symbol_info *syminfo)
@@ -58,7 +52,6 @@ static void begin_symbol_impl(void *data, struct symbol_info *syminfo)
 	else
 		printf("%.*s%s\n", treevisitor->nesting_level, spaces,
 		       dmrC_get_type_name(syminfo->symbol_type));
-	treevisitor->indented = 0;
 	treevisitor->nesting_level++;
 }
 
@@ -73,28 +66,24 @@ static void begin_members_impl(void *data, struct symbol_info *syminfo)
 	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
 	const char spaces[] = "                                           ";
 	printf("%.*s{\n", treevisitor->nesting_level, spaces);
-	treevisitor->indented = 0;
 }
 static void end_members_impl(void *data, struct symbol_info *syminfo)
 {
 	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
 	const char spaces[] = "                                           ";
 	printf("%.*s}\n", treevisitor->nesting_level, spaces);
-	treevisitor->indented = 0;
 }
 static void begin_arguments_impl(void *data, struct symbol_info *syminfo)
 {
 	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
 	const char spaces[] = "                                           ";
 	printf("%.*s(\n", treevisitor->nesting_level, spaces);
-	treevisitor->indented = 0;
 }
 static void end_arguments_impl(void *data, struct symbol_info *syminfo)
 {
 	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
 	const char spaces[] = "                                           ";
 	printf("%.*s)\n", treevisitor->nesting_level, spaces);
-	treevisitor->indented = 0;
 }
 static void begin_statement_impl(void *data, enum statement_type stmt_type)
 {
@@ -102,15 +91,13 @@ static void begin_statement_impl(void *data, enum statement_type stmt_type)
 	const char spaces[] = "                                           ";
 	treevisitor->nesting_level++;
 	printf("%.*s{\n", treevisitor->nesting_level, spaces);
-	treevisitor->indented = 0;
 }
 static void end_statement_impl(void *data, enum statement_type stmt_type)
 {
 	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
 	const char spaces[] = "                                           ";
-	printf("\n%.*s}\n", treevisitor->nesting_level, spaces);
+	printf("%.*s}\n", treevisitor->nesting_level, spaces);
 	treevisitor->nesting_level--;
-	treevisitor->indented = 0;
 }
 
 static void reference_symbol_impl(void *data, uint64_t sym)
@@ -124,31 +111,22 @@ static void int_literal_impl(void *data, long long value, int bit_size,
 {
 	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
 	const char spaces[] = "                                           ";
-	if (!treevisitor->indented) {
-		printf("%.*s", treevisitor->nesting_level, spaces);
-		treevisitor->indented = 1;
-	}
-	printf("(%d)%lld", bit_size, value);
+	printf("%.*s", treevisitor->nesting_level, spaces);
+	printf("(%d)%lld\n", bit_size, value);
 }
 static void float_literal_impl(void *data, long double fvalue, int bit_size)
 {
 	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
 	const char spaces[] = "                                           ";
-	if (!treevisitor->indented) {
-		printf("%.*s", treevisitor->nesting_level, spaces);
-		treevisitor->indented = 1;
-	}
-	printf("(%d)%f", bit_size, fvalue);
+	printf("%.*s", treevisitor->nesting_level, spaces);
+	printf("(%d)%f\n", bit_size, fvalue);
 }
 static void string_literal_impl(void *data, const char *str)
 {
 	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
 	const char spaces[] = "                                           ";
-	if (!treevisitor->indented) {
-		printf("%.*s", treevisitor->nesting_level, spaces);
-		treevisitor->indented = 1;
-	}
-	printf("%s", str);
+	printf("%.*s", treevisitor->nesting_level, spaces);
+	printf("%s\n", str);
 }
 static void begin_assignment_expression_impl(void *data,
 					     enum expression_type expr_type,
@@ -158,20 +136,92 @@ static void begin_assignment_expression_impl(void *data,
 	const char spaces[] = "                                           ";
 	const char *oper = "=";
 	switch (op) {
-	case SPECIAL_ADD_ASSIGN: oper = "+="; break;
-	case SPECIAL_SUB_ASSIGN: oper = "-="; break;
-	case SPECIAL_MUL_ASSIGN: oper = "*="; break;
-	case SPECIAL_DIV_ASSIGN: oper = "/="; break;
-	case SPECIAL_MOD_ASSIGN: oper = "%="; break;
-	case SPECIAL_SHL_ASSIGN: oper = "<<="; break;
-	case SPECIAL_SHR_ASSIGN: oper = ">>="; break;
-	case SPECIAL_AND_ASSIGN: oper = "&="; break;
-	case SPECIAL_OR_ASSIGN: oper = "|="; break;
-	case SPECIAL_XOR_ASSIGN: oper = "^="; break;
+	case SPECIAL_ADD_ASSIGN:
+		oper = "+=";
+		break;
+	case SPECIAL_SUB_ASSIGN:
+		oper = "-=";
+		break;
+	case SPECIAL_MUL_ASSIGN:
+		oper = "*=";
+		break;
+	case SPECIAL_DIV_ASSIGN:
+		oper = "/=";
+		break;
+	case SPECIAL_MOD_ASSIGN:
+		oper = "%=";
+		break;
+	case SPECIAL_SHL_ASSIGN:
+		oper = "<<=";
+		break;
+	case SPECIAL_SHR_ASSIGN:
+		oper = ">>=";
+		break;
+	case SPECIAL_AND_ASSIGN:
+		oper = "&=";
+		break;
+	case SPECIAL_OR_ASSIGN:
+		oper = "|=";
+		break;
+	case SPECIAL_XOR_ASSIGN:
+		oper = "^=";
+		break;
 	}
-	printf("%.*s%s\n", treevisitor->nesting_level, spaces, oper);
-	treevisitor->indented = 0;
+	printf("%.*s%s\t\t\t\t(EXPR_ASSIGNMENT)\n", treevisitor->nesting_level, spaces, oper);
+	treevisitor->nesting_level++;
 }
+
+static void end_assignment_expression_impl(void *data,
+	enum expression_type expr_type)
+{
+	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
+	treevisitor->nesting_level--;
+}
+
+static void begin_binop_expression_impl(void *data,
+					enum expression_type expr_type, int op)
+{
+	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
+	const char spaces[] = "                                           ";
+	printf("%.*s%c\t\t\t\t(EXPR_BINOP)\n", treevisitor->nesting_level, spaces, (char)op);
+	treevisitor->nesting_level++;
+}
+
+static void end_binop_expression_impl(void *data,
+	enum expression_type expr_type)
+{
+	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
+	treevisitor->nesting_level--;
+}
+
+static void begin_preop_expression_impl(void *data,
+	enum expression_type expr_type, int op)
+{
+	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
+	const char spaces[] = "                                           ";
+	char oper[3] = { 0 };
+	if (op == SPECIAL_INCREMENT) {
+		oper[0] = '+';
+		oper[1] = '+';
+	}
+	else if (op == SPECIAL_DECREMENT) {
+		oper[0] = '-';
+		oper[1] = '-';
+	}
+	else {
+		oper[0] = (char)op;
+	}
+	printf("%.*s%s\t\t\t\t(EXPR_PREOP)\n", treevisitor->nesting_level, spaces, oper);
+	treevisitor->nesting_level++;
+}
+
+static void end_preop_expression_impl(void *data,
+	enum expression_type expr_type)
+{
+	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
+	treevisitor->nesting_level--;
+}
+
 
 static void clean_up_symbols(struct dmr_C *C, struct symbol_list *list)
 {
@@ -190,7 +240,7 @@ int main(int argc, char **argv)
 	struct dmr_C *C = new_dmr_C();
 
 	struct tree_visitor treevisitor = {
-	    .C = C, .nesting_level = 0, .indented = 0};
+	    .C = C, .nesting_level = 0};
 
 	struct symbol_visitor visitor;
 	dmrC_init_symbol_visitor(&visitor);
@@ -210,6 +260,11 @@ int main(int argc, char **argv)
 	visitor.begin_statement = begin_statement_impl;
 	visitor.end_statement = end_statement_impl;
 	visitor.begin_assignment_expression = begin_assignment_expression_impl;
+	visitor.end_assignment_expression = end_assignment_expression_impl;
+	visitor.begin_binop_expression = begin_binop_expression_impl;
+	visitor.end_binop_expression = end_binop_expression_impl;
+	visitor.begin_preop_expression = begin_preop_expression_impl;
+	visitor.end_preop_expression = end_preop_expression_impl;
 
 	list = dmrC_sparse_initialize(C, argc, argv, &filelist);
 

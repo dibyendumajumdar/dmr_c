@@ -55,8 +55,19 @@ struct symbol_visitor {
 	void (*end_statement)(void *data, enum statement_type statement_type);
 	void (*begin_expression)(void *data, enum expression_type expr_type);
 	void (*end_expression)(void *data, enum expression_type expr_type);
-	void(*begin_assignment_expression)(void *data, enum expression_type expr_type, int op);
-	void(*end_assignment_expression)(void *data, enum expression_type expr_type);
+	void (*begin_assignment_expression)(void *data,
+					    enum expression_type expr_type,
+					    int op);
+	void (*end_assignment_expression)(void *data,
+					  enum expression_type expr_type);
+	void (*begin_binop_expression)(void *data,
+				       enum expression_type expr_type, int op);
+	void (*end_binop_expression)(void *data,
+				     enum expression_type expr_type);
+	void (*begin_preop_expression)(void *data,
+				       enum expression_type expr_type, int op);
+	void (*end_preop_expression)(void *data,
+				     enum expression_type expr_type);
 };
 
 extern void dmrC_init_symbol_visitor(struct symbol_visitor *visitor);

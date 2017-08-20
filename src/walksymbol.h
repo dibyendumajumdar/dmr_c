@@ -31,7 +31,11 @@ struct symbol_info {
 struct symbol_visitor {
 	void *data;
 	void(*begin_symbol)(void *data, struct symbol_info *syminfo);
-	void(*end_symbol)(void *data, uint64_t id);
+	void(*end_symbol)(void *data, struct symbol_info *syminfo);
+	void(*begin_members)(void *data, struct symbol_info *syminfo);
+	void(*end_members)(void *data, struct symbol_info *syminfo);
+	void(*begin_arguments)(void *data, struct symbol_info *syminfo);
+	void(*end_arguments)(void *data, struct symbol_info *syminfo);
 	void(*reference_symbol)(void *data, uint64_t id);
 };
 

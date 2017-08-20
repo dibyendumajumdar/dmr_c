@@ -46,17 +46,42 @@ static void begin_symbol_impl(void *data, struct symbol_info *syminfo)
 	const char spaces[] = "                                           ";
 
 	if (syminfo->symbol_type == SYM_NODE)
-		printf("%.*s%s %llu\n", treevisitor->symbol_nesting, spaces, syminfo->name, syminfo->id);
+		printf("%.*s%s id:%llu\n", treevisitor->symbol_nesting, spaces, syminfo->name, syminfo->id);
 	else if (syminfo->symbol_type == SYM_BASETYPE)
 		printf("%.*s%s\n", treevisitor->symbol_nesting, spaces, syminfo->name);
 	else
 		printf("%.*s%s\n", treevisitor->symbol_nesting, spaces, dmrC_get_type_name(syminfo->symbol_type));
 }
 
-static void end_symbol_impl(void *data, uint64_t sym)
+static void end_symbol_impl(void *data, struct symbol_info *syminfo)
 {
 	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
 	treevisitor->symbol_nesting--;
+}
+
+static void begin_members_impl(void *data, struct symbol_info *syminfo)
+{
+	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
+	const char spaces[] = "                                           ";
+	printf("%.*s{\n", treevisitor->symbol_nesting, spaces);
+}
+static void end_members_impl(void *data, struct symbol_info *syminfo)
+{
+	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
+	const char spaces[] = "                                           ";
+	printf("%.*s}\n", treevisitor->symbol_nesting, spaces);
+}
+static void begin_arguments_impl(void *data, struct symbol_info *syminfo)
+{
+	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
+	const char spaces[] = "                                           ";
+	printf("%.*s(\n", treevisitor->symbol_nesting, spaces);
+}
+static void end_arguments_impl(void *data, struct symbol_info *syminfo)
+{
+	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
+	const char spaces[] = "                                           ";
+	printf("%.*s)\n", treevisitor->symbol_nesting, spaces);
 }
 
 static void reference_symbol_impl(void *data, uint64_t sym)
@@ -85,14 +110,18 @@ int main(int argc, char **argv)
 
 	struct tree_visitor treevisitor = {
 		.C = C,
-		.symbol_nesting = 0
+		.symbol_nesting = -1
 	};
 
 	struct symbol_visitor visitor = {
 		.data = &treevisitor,
 		.begin_symbol = begin_symbol_impl,
 		.end_symbol = end_symbol_impl,
-		.reference_symbol = reference_symbol_impl
+		.reference_symbol = reference_symbol_impl,
+		.begin_members = begin_members_impl,
+		.end_members = end_members_impl,
+		.begin_arguments = begin_arguments_impl,
+		.end_arguments = end_arguments_impl
 	};
 
 	list = dmrC_sparse_initialize(C, argc, argv, &filelist);

@@ -16,11 +16,8 @@ void dmrC_walk_symbol_list(struct dmr_C *C, struct symbol_list *list, struct sym
 	} END_FOR_EACH_PTR(sym);
 }
 
-
 void dmrC_walk_symbol(struct dmr_C *C, struct symbol *sym, struct symbol_visitor *visitor)
 {
-	struct symbol *type;
-
 	if (!sym)
 		return;
 	if (sym->type != SYM_BASETYPE) {
@@ -36,15 +33,16 @@ void dmrC_walk_symbol(struct dmr_C *C, struct symbol *sym, struct symbol_visitor
 		snprintf(name, sizeof name, "%s", dmrC_show_ident(C, sym->ident));
 	else if (sym->type == SYM_BASETYPE)
 		snprintf(name, sizeof name, "%s", dmrC_builtin_typename(C, sym));
-	struct symbol_info syminfo;
-	syminfo.id = (uint64_t)sym;
-	syminfo.name = name;
-	syminfo.symbol_namespace = sym->ns;
-	syminfo.symbol_type = sym->type;
-	syminfo.alignment = sym->ctype.alignment; 
-	syminfo.pos = sym->pos;
-	syminfo.bit_size = sym->bit_size;
-	syminfo.offset = sym->offset;
+	struct symbol_info syminfo = {
+		.id = (uint64_t)sym,
+		.name = name,
+		.symbol_namespace = sym->ns,
+		.symbol_type = sym->type,
+		.alignment = sym->ctype.alignment,
+		.pos = sym->pos,
+		.bit_size = sym->bit_size,
+		.offset = sym->offset 
+	};
 	if (dmrC_is_bitfield_type(sym)) {
 		syminfo.bit_offset =  sym->bit_offset;
 	}
@@ -56,14 +54,25 @@ void dmrC_walk_symbol(struct dmr_C *C, struct symbol *sym, struct symbol_visitor
 
 	if (sym->type == SYM_STRUCT || sym->type == SYM_UNION) {
 		struct symbol *member;
+		visitor->begin_members(visitor->data, &syminfo);
 		FOR_EACH_PTR(sym->symbol_list, member) {
 			dmrC_walk_symbol(C, member, visitor);
 		} END_FOR_EACH_PTR(member);
+		visitor->end_members(visitor->data, &syminfo);
 	}
-	
-	type = sym->ctype.base_type;
-	if (sym->type != SYM_BASETYPE && type) {
-		dmrC_walk_symbol(C, type, visitor);
+
+	if (sym->type == SYM_FN) {
+		struct symbol *arg;
+		visitor->begin_arguments(visitor->data, &syminfo);
+		FOR_EACH_PTR(sym->arguments, arg) {
+			dmrC_walk_symbol(C, arg, visitor);
+		} END_FOR_EACH_PTR(member);
+		visitor->end_arguments(visitor->data, &syminfo);
+	}
+
+	// Is there a base type?
+	if (sym->type != SYM_BASETYPE && sym->ctype.base_type) {
+		dmrC_walk_symbol(C, sym->ctype.base_type, visitor);
 
 #if 0
 		dmrC_show_type(C, sym);
@@ -97,5 +106,5 @@ void dmrC_walk_symbol(struct dmr_C *C, struct symbol *sym, struct symbol_visitor
 		}
 #endif
 	}
-	visitor->end_symbol(visitor->data, (uint64_t)sym);
+	visitor->end_symbol(visitor->data, &syminfo);
 }

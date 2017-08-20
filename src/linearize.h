@@ -59,6 +59,11 @@ enum pseudo_type {
 #endif
 };
 
+/* Have you ever heard of "static single assignment" or SSA form? 
+   struct pseudo represents one of those single-assignment variables. 
+   Each one has a pointer to the symbol it represents (which may 
+   have many pseudos referencing it). Each one also has a pointer 
+   to the instruction that defines it.*/
 struct pseudo {
 	int nr;
 	enum pseudo_type type;
@@ -291,13 +296,26 @@ enum opcode {
 	OP_COPY,
 };
 
+/*
+A basic block represents a series of instructions with no branches. 
+Straight-line code. A branch only occurs at the end of a basic block, 
+and branches can only target the beginning of a basic block. Typically, 
+a conditional will consist of a basic block leading up to the branch, 
+a basic block for the true case, a basic block for the false case, 
+and a basic block where the two paths merge back together. Either the true 
+or the false case may not exist. A loop will normally have a basic block 
+for the loop body, which can branch to the top at the end or continue 
+to the next basic block. So basic blocks represent a node in the control 
+flow graph. The edges in that graph lead from one basic block to a 
+basic block which can follow it in the execution of the program.
+*/
 struct basic_block {
 	struct position pos;
 	unsigned long generation;
 	int context;
 	struct entrypoint *ep;
-	struct basic_block_list *parents; /* basic_block sources */
-	struct basic_block_list *children; /* basic_block destinations */
+	struct basic_block_list *parents; /* basic_block sources */ /* predecessors */
+	struct basic_block_list *children; /* basic_block destinations */ /* successors */
 	struct instruction_list *insns;	/* Linear list of instructions */
 #if NEW_SSA
 	union {

@@ -30,14 +30,42 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 
-#include <allocate.h>
-#include <dmr_c.h>
-#include <expression.h>
-#include <parse.h>
-#include <port.h>
-#include <symbol.h>
-#include <token.h>
+#include <walksymbol.h>
+
+struct tree_visitor {
+	struct dmr_C *C;
+	int symbol_nesting;
+};
+
+static void begin_symbol_impl(void *data, struct symbol_info *syminfo)
+{
+	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
+	treevisitor->symbol_nesting++;
+	const char spaces[] = "                                           ";
+
+	if (syminfo->symbol_type == SYM_NODE)
+		printf("%.*s%s %llu\n", treevisitor->symbol_nesting, spaces, syminfo->name, syminfo->id);
+	else if (syminfo->symbol_type == SYM_BASETYPE)
+		printf("%.*s%s\n", treevisitor->symbol_nesting, spaces, syminfo->name);
+	else
+		printf("%.*s%s\n", treevisitor->symbol_nesting, spaces, dmrC_get_type_name(syminfo->symbol_type));
+}
+
+static void end_symbol_impl(void *data, uint64_t sym)
+{
+	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
+	treevisitor->symbol_nesting--;
+}
+
+static void reference_symbol_impl(void *data, uint64_t sym)
+{
+	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
+	const char spaces[] = "                                           ";
+	printf("%.*ssym(%llu)\n", treevisitor->symbol_nesting+1, spaces, sym);
+}
+
 
 static void clean_up_symbols(struct dmr_C *C, struct symbol_list *list)
 {
@@ -55,12 +83,23 @@ int main(int argc, char **argv)
 
 	struct dmr_C *C = new_dmr_C();
 
+	struct tree_visitor treevisitor = {
+		.C = C,
+		.symbol_nesting = 0
+	};
+
+	struct symbol_visitor visitor = {
+		.data = &treevisitor,
+		.begin_symbol = begin_symbol_impl,
+		.end_symbol = end_symbol_impl,
+		.reference_symbol = reference_symbol_impl
+	};
+
 	list = dmrC_sparse_initialize(C, argc, argv, &filelist);
 
 	// Simplification
 	clean_up_symbols(C, list);
-	dmrC_show_symbol_list(C, list, "\n\n");
-	printf("\n\n");
+	dmrC_walk_symbol_list(C, list, &visitor);
 
 	FOR_EACH_PTR(filelist, file)
 	{
@@ -70,8 +109,7 @@ int main(int argc, char **argv)
 		clean_up_symbols(C, list);
 
 		// Show the end result.
-		dmrC_show_symbol_list(C, list, "\n\n");
-		printf("\n\n");
+		dmrC_walk_symbol_list(C, list, &visitor);
 	}
 	END_FOR_EACH_PTR(file);
 

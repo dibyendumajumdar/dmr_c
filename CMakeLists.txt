@@ -114,6 +114,7 @@ set(LIB_H
 	src/target.h
 	src/token.h 
 	src/ssa.h
+    src/walksymbol.h
 	)
 
 set(LIB_SRCS 
@@ -142,6 +143,7 @@ set(LIB_SRCS
 	src/symbol.c
 	src/unssa.c
 	src/ssa.c
+    src/walksymbol.c
 	)
 
 # Enable minimal required LLVM components so that the
@@ -228,8 +230,8 @@ target_link_libraries(sparse dmr_c)
 add_executable(linearize samples/show-linearize.c)
 target_link_libraries(linearize dmr_c) 
 
-add_executable(showparse samples/show-parse.c)
-target_link_libraries(showparse dmr_c) 
+add_executable(showparsetree samples/show-parsetree.c)
+target_link_libraries(showparsetree dmr_c) 
 
 add_executable(showsymbols samples/show-symbols.c)
 target_link_libraries(showsymbols dmr_c) 

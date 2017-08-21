@@ -649,6 +649,19 @@ static int expand_dereference(struct dmr_C *C, struct expression *expr)
 		if (value) {
 			/* FIXME! We should check that the size is right! */
 			if (value->type == EXPR_VALUE) {
+				/*
+				During the expansion of a dereference, it's if the initializer
+				which corrrespond to the offset we're interested is a constant.
+				In which case this dereference can be avoided and the value
+				given in the initializer can be used instead.
+
+				However, it's not enough to check for the offset since for bitfields
+				several are placed at the same offset.
+				Hence refuse such expansion if the constant value correspond
+				to a bitfield.
+				*/
+				if (dmrC_is_bitfield_type(value->ctype))
+					return UNSAFE;
 				expr->type = EXPR_VALUE;
 				expr->value = value->value;
 				expr->taint = 0;

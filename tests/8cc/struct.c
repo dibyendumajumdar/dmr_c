@@ -265,7 +265,7 @@ static void bitfield_initializer(void) {
 
     struct { char a:4; char b:4; } x = { 2, 4 };
     expect(2, x.a);
-    //expect(4, x.b);
+    expect(4, x.b);
 }
 
 static void test_offsetof(void) {

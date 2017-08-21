@@ -218,6 +218,45 @@ void walk_preop_expression(struct dmr_C *C, struct expression *expr,
 	visitor->end_preop_expression(visitor->data, expr->type);
 }
 
+void walk_call_expression(struct dmr_C *C, struct expression *expr,
+	struct symbol_visitor *visitor)
+{
+	assert(expr->type == EXPR_CALL);
+	if (!expr->ctype) {
+		return;
+	}
+	struct symbol *direct;
+	struct expression *arg, *fn;
+	fn = expr->fn;
+
+	/* Remove dereference, if any */
+	direct = NULL;
+	if (fn->type == EXPR_PREOP) {
+		if (fn->unop->type == EXPR_SYMBOL) {
+			struct symbol *sym = fn->unop->symbol;
+			if (sym->ctype.base_type->type == SYM_FN)
+				direct = sym;
+		}
+	}
+	if (direct && !direct->aux) {
+		dmrC_walk_symbol(C, direct, visitor);
+	}
+	if (direct) {
+		visitor->begin_direct_call_expression(visitor->data, expr->type, dmrC_show_ident(C, direct->ident));
+	}
+	else {
+		visitor->begin_indirect_call_expression(visitor->data, expr->type);
+		walk_expression(C, fn, visitor);
+	}
+	int n = 0;
+	FOR_EACH_PTR(expr->args, arg) {
+		visitor->begin_callarg_expression(visitor->data, expr->type, ++n);
+		walk_expression(C, arg, visitor);
+		visitor->end_callarg_expression(visitor->data, expr->type);
+	} END_FOR_EACH_PTR(arg);
+	visitor->end_call_expression(visitor->data, expr->type);
+}
+
 void walk_expression(struct dmr_C *C, struct expression *expr,
 	struct symbol_visitor *visitor)
 {
@@ -229,7 +268,7 @@ void walk_expression(struct dmr_C *C, struct expression *expr,
 	visitor->begin_expression(visitor->data, expr->type);
 	switch (expr->type) {
 	case EXPR_CALL:
-		// return show_call_expression(C, expr);
+		walk_call_expression(C, expr, visitor);
 		break;
 
 	case EXPR_ASSIGNMENT:
@@ -436,6 +475,17 @@ static void begin_preop_expression_default(void *data,
 	enum expression_type expr_type, int op) {}
 static void end_preop_expression_default(void *data,
 	enum expression_type expr_type) {}
+static void begin_direct_call_expression_default(void *data,
+	enum expression_type expr_type, const char *name) {}
+static void begin_indirect_call_expression_default(void *data,
+	enum expression_type expr_type) {}
+static void end_call_expression_default(void *data, enum expression_type expr_type) {}
+
+static void begin_callarg_expression_default(void *data,
+	enum expression_type expr_type,
+	int argpos) {}
+static void end_callarg_expression_default(void *data,
+	enum expression_type expr_type) {}
 
 
 void dmrC_init_symbol_visitor(struct symbol_visitor *visitor)
@@ -470,4 +520,10 @@ void dmrC_init_symbol_visitor(struct symbol_visitor *visitor)
 	visitor->end_binop_expression = end_binop_expression_default;
 	visitor->begin_preop_expression = begin_preop_expression_default;
 	visitor->end_preop_expression = end_preop_expression_default;
+	visitor->begin_direct_call_expression = begin_direct_call_expression_default;
+	visitor->begin_indirect_call_expression = begin_indirect_call_expression_default;
+	visitor->end_call_expression = end_call_expression_default;
+	visitor->begin_callarg_expression = begin_callarg_expression_default;
+	visitor->end_callarg_expression = end_callarg_expression_default;
+
 }

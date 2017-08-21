@@ -68,6 +68,17 @@ struct symbol_visitor {
 				       enum expression_type expr_type, int op);
 	void (*end_preop_expression)(void *data,
 				     enum expression_type expr_type);
+	void (*begin_direct_call_expression)(void *data,
+					     enum expression_type expr_type,
+					     const char *name);
+	void (*begin_indirect_call_expression)(void *data,
+					       enum expression_type expr_type);
+	void (*end_call_expression)(void *data, enum expression_type expr_type);
+	void (*begin_callarg_expression)(void *data,
+					 enum expression_type expr_type,
+					 int argpos);
+	void (*end_callarg_expression)(void *data,
+				       enum expression_type expr_type);
 };
 
 extern void dmrC_init_symbol_visitor(struct symbol_visitor *visitor);

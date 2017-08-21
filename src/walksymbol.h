@@ -84,6 +84,27 @@ struct symbol_visitor {
 				      int oldbits, int newbits,
 				      bool is_unsigned);
 	void (*end_cast_expression)(void *data, enum expression_type expr_type);
+	void (*begin_conditional_expression)(void *data,
+					     enum expression_type expr_type);
+	void (*end_conditional_expression)(void *data,
+					   enum expression_type expr_type);
+	void (*begin_label_expression)(void *data,
+				       enum expression_type expr_type);
+	void (*end_label_expression)(void *data,
+				     enum expression_type expr_type);
+	void (*do_expression_identifier)(void *data,
+					 enum expression_type expr_type,
+					 const char *ident);
+	void (*do_expression_index)(void *data, enum expression_type expr_type,
+				    unsigned from, unsigned to);
+	void (*begin_expression_position)(void *data,
+					  enum expression_type expr_type,
+					  unsigned init_offset, int bit_offset, const char *ident);
+	void (*end_expression_position)(void *data,
+					enum expression_type expr_type);
+	void (*begin_initialization)(void *data,
+				     enum expression_type expr_type);
+	void (*end_initialization)(void *data, enum expression_type expr_type);
 };
 
 extern void dmrC_init_symbol_visitor(struct symbol_visitor *visitor);

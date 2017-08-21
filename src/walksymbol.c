@@ -21,6 +21,10 @@ static void walk_preop_expression(struct dmr_C *C, struct expression *expr,
 	struct symbol_visitor *visitor);
 static void walk_call_expression(struct dmr_C *C, struct expression *expr,
 	struct symbol_visitor *visitor);
+static void walk_conditional_expression(struct dmr_C *C, struct expression *expr,
+	struct symbol_visitor *visitor);
+static void walk_label_expression(struct dmr_C *C, struct expression *expr,
+	struct symbol_visitor *visitor);
 
 void walk_statement(struct dmr_C *C, struct statement *stmt,
 	struct symbol_visitor *visitor)
@@ -280,6 +284,82 @@ void walk_cast_expression(struct dmr_C *C, struct expression *expr, struct symbo
 	visitor->end_cast_expression(visitor->data, expr->type);
 }
 
+void walk_conditional_expression(struct dmr_C *C, struct expression *expr,
+	struct symbol_visitor *visitor)
+{
+	visitor->begin_conditional_expression(visitor->data, expr->type);
+	walk_expression(C, expr->conditional, visitor);
+	walk_expression(C, expr->cond_true, visitor);
+	walk_expression(C, expr->cond_false, visitor);
+	visitor->end_conditional_expression(visitor->data, expr->type);
+}
+
+void walk_label_expression(struct dmr_C *C, struct expression *expr,
+	struct symbol_visitor *visitor)
+{
+	visitor->begin_label_expression(visitor->data, expr->type);
+	dmrC_walk_symbol(C, expr->label_symbol, visitor);
+	visitor->end_label_expression(visitor->data, expr->type);
+}
+
+void walk_initialization(struct dmr_C *C, struct symbol *sym, struct expression *expr, struct symbol_visitor *visitor)
+{
+	int val, addr, bits;
+
+	if (!expr->ctype)
+		return;
+	visitor->begin_initialization(visitor->data, expr->type);
+	walk_expression(C, expr, visitor);
+	dmrC_walk_symbol(C, sym, visitor);
+	visitor->end_initialization(visitor->data, expr->type);
+}
+
+void walk_position_expression(struct dmr_C *C, struct expression *expr, struct symbol *base, struct symbol_visitor *visitor)
+{
+	struct symbol *ctype = expr->init_expr->ctype;
+	int bit_offset;
+
+	bit_offset = ctype ? ctype->bit_offset : -1;
+	visitor->begin_expression_position(visitor->data, EXPR_POS, expr->init_offset, bit_offset,
+		dmrC_show_ident(C, base->ident));
+	walk_expression(C, expr->init_expr, visitor);
+	visitor->end_expression_position(visitor->data, EXPR_POS);
+}
+
+void walk_initializer_expression(struct dmr_C *C, struct expression *expr, struct symbol *ctype, struct symbol_visitor *visitor)
+{
+	struct expression *entry;
+
+	FOR_EACH_PTR(expr->expr_list, entry) {
+
+	again:
+		// Nested initializers have their positions already
+		// recursively calculated - just output them too
+		if (entry->type == EXPR_INITIALIZER) {
+			walk_initializer_expression(C, entry, ctype, visitor);
+			continue;
+		}
+
+		// Initializer indexes and identifiers should
+		// have been evaluated to EXPR_POS
+		if (entry->type == EXPR_IDENTIFIER) {
+			visitor->do_expression_identifier(visitor->data, entry->type, dmrC_show_ident(C, entry->expr_ident));
+			entry = entry->ident_expression;
+			goto again;
+		}
+
+		if (entry->type == EXPR_INDEX) {
+			visitor->do_expression_index(visitor->data, entry->type, entry->idx_from, entry->idx_to);
+			entry = entry->idx_expression;
+			goto again;
+		}
+		if (entry->type == EXPR_POS) {
+			walk_position_expression(C, entry, ctype, visitor);
+			continue;
+		}
+		walk_initialization(C, ctype, entry, visitor);
+	} END_FOR_EACH_PTR(entry);
+}
 
 void walk_expression(struct dmr_C *C, struct expression *expr,
 	struct symbol_visitor *visitor)
@@ -337,17 +417,17 @@ void walk_expression(struct dmr_C *C, struct expression *expr,
 		visitor->string_literal(visitor->data, dmrC_show_string(C, expr->string));
 		break;
 	case EXPR_INITIALIZER:
-		// return show_initializer_expr(C, expr, expr->ctype);
+		walk_initializer_expression(C, expr, expr->ctype, visitor);
 		break;
 	case EXPR_SELECT:
 	case EXPR_CONDITIONAL:
-		// return show_conditional_expr(C, expr);
+		walk_conditional_expression(C, expr, visitor);
 		break;
 	case EXPR_STATEMENT:
 		// return show_statement_expr(C, expr);
 		break;
 	case EXPR_LABEL:
-		// return show_label_expr(C, expr);
+		walk_label_expression(C, expr, visitor);
 		break;
 	case EXPR_SLICE:
 		// return show_slice(C, expr);
@@ -516,6 +596,22 @@ static void begin_cast_expression_default(void *data,
 	int oldbits, int newbits,
 	bool is_unsigned) {}
 static void end_cast_expression_default(void *data, enum expression_type expr_type) {}
+static void begin_conditional_expression_default(void *data, enum expression_type expr_type) {}
+static void end_conditional_expression_default(void *data, enum expression_type expr_type) {}
+static void begin_label_expression_default(void *data, enum expression_type expr_type) {}
+static void end_label_expression_default(void *data, enum expression_type expr_type) {}
+static void do_expression_identifier_default(void *data,
+	enum expression_type expr_type, const char *ident) {}
+static void do_expression_index_default(void *data,
+	enum expression_type expr_type, unsigned from, unsigned to) {}
+static void begin_expression_position_default(void *data,
+	enum expression_type expr_type, unsigned init_offset, int bit_offset, const char *ident) {}
+static void end_expression_position_default(void *data,
+	enum expression_type expr_type) {}
+static void begin_initialization_default(void *data,
+	enum expression_type expr_type) {}
+static void end_initialization_default(void *data,
+	enum expression_type expr_type) {}
 
 
 void dmrC_init_symbol_visitor(struct symbol_visitor *visitor)
@@ -557,5 +653,14 @@ void dmrC_init_symbol_visitor(struct symbol_visitor *visitor)
 	visitor->end_callarg_expression = end_callarg_expression_default;
 	visitor->begin_cast_expression = begin_cast_expression_default;
 	visitor->end_cast_expression = end_cast_expression_default;
-
+	visitor->begin_conditional_expression = begin_conditional_expression_default;
+	visitor->end_conditional_expression = end_conditional_expression_default;
+	visitor->begin_label_expression = begin_label_expression_default;
+	visitor->end_label_expression = end_label_expression_default;
+	visitor->do_expression_identifier = do_expression_identifier_default;
+	visitor->do_expression_index = do_expression_index_default;
+	visitor->begin_expression_position = begin_expression_position_default;
+	visitor->end_expression_position = end_expression_position_default;
+	visitor->begin_initialization = begin_initialization_default;
+	visitor->end_initialization = end_initialization_default;
 }

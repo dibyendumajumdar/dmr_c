@@ -57,10 +57,11 @@ static void begin_symbol_impl(void *data, struct symbol_info *syminfo)
 
 	if (syminfo->symbol_type == SYM_NODE) {
 		if (syminfo->name && syminfo->name[0])
-			output(treevisitor, "%s id:%llu\t\t\t\tSYM_NODE\n", syminfo->name,
-			       syminfo->id);
+			output(treevisitor, "%s id:%llu\t\t\t\tSYM_NODE\n",
+			       syminfo->name, syminfo->id);
 		else
-			output(treevisitor, "id:%llu\t\t\t\tSYM_NODE\n", syminfo->id);
+			output(treevisitor, "id:%llu\t\t\t\tSYM_NODE\n",
+			       syminfo->id);
 	} else if (syminfo->symbol_type == SYM_BASETYPE)
 		output(treevisitor, "%s\n", syminfo->name);
 	else
@@ -240,18 +241,80 @@ static void begin_initializer_impl(void *data, struct symbol_info *syminfo)
 	output(treevisitor, "=\n");
 }
 static void begin_cast_expression_impl(void *data,
-	enum expression_type expr_type,
-	int oldbits, int newbits,
-	bool is_unsigned) 
+				       enum expression_type expr_type,
+				       int oldbits, int newbits,
+				       bool is_unsigned)
 {
 	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
-	output(treevisitor, "cast (%d) to (%d) %s\n", oldbits, newbits, (is_unsigned ? "[unsigned]" : ""));
+	output(treevisitor, "cast %s\n", (is_unsigned ? "[unsigned]" : ""));
 	treevisitor->nesting_level++;
 }
-static void end_cast_expression_impl(void *data, enum expression_type expr_type) 
+static void end_cast_expression_impl(void *data, enum expression_type expr_type)
 {
 	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
 	treevisitor->nesting_level--;
+}
+static void begin_conditional_expression_impl(void *data,
+					      enum expression_type expr_type)
+{
+	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
+	output(treevisitor, "select\n");
+	treevisitor->nesting_level++;
+}
+static void end_conditional_expression_impl(void *data,
+					    enum expression_type expr_type)
+{
+	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
+	treevisitor->nesting_level--;
+}
+static void begin_label_expression_impl(void *data,
+					enum expression_type expr_type)
+{
+	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
+	output(treevisitor, "label\n");
+	treevisitor->nesting_level++;
+}
+static void end_label_expression_impl(void *data,
+				      enum expression_type expr_type)
+{
+	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
+	treevisitor->nesting_level--;
+}
+static void do_expression_identifier_impl(void *data,
+					  enum expression_type expr_type,
+					  const char *ident)
+{
+	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
+	output(treevisitor, "set %s\n", ident);
+}
+static void do_expression_index_impl(void *data, enum expression_type expr_type,
+				     unsigned from, unsigned to)
+{
+	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
+	output(treevisitor, "set %u..%u\n", from, to);
+}
+static void begin_expression_position_impl(void *data,
+					   enum expression_type expr_type,
+					   unsigned init_offset, int bit_offset, const char *ident)
+{
+	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
+	output(treevisitor, "set [%d:%d] of %s\n", init_offset, bit_offset, ident);
+	treevisitor->nesting_level++;
+}
+static void end_expression_position_impl(void *data,
+					 enum expression_type expr_type)
+{
+	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
+	treevisitor->nesting_level--;
+}
+static void begin_initialization_impl(void *data,
+				      enum expression_type expr_type)
+{
+	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
+}
+static void end_initialization_impl(void *data, enum expression_type expr_type)
+{
+	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
 }
 
 static void clean_up_symbols(struct dmr_C *C, struct symbol_list *list)
@@ -295,14 +358,27 @@ int main(int argc, char **argv)
 	visitor.end_binop_expression = end_binop_expression_impl;
 	visitor.begin_preop_expression = begin_preop_expression_impl;
 	visitor.end_preop_expression = end_preop_expression_impl;
-	visitor.begin_direct_call_expression = begin_direct_call_expression_impl;
-	visitor.begin_indirect_call_expression = begin_indirect_call_expression_impl;
+	visitor.begin_direct_call_expression =
+	    begin_direct_call_expression_impl;
+	visitor.begin_indirect_call_expression =
+	    begin_indirect_call_expression_impl;
 	visitor.end_call_expression = end_call_expression_impl;
 	visitor.begin_callarg_expression = begin_callarg_expression_impl;
 	visitor.end_callarg_expression = end_callarg_expression_impl;
 	visitor.begin_initializer = begin_initializer_impl;
 	visitor.begin_cast_expression = begin_cast_expression_impl;
 	visitor.end_cast_expression = end_cast_expression_impl;
+	visitor.begin_conditional_expression =
+	    begin_conditional_expression_impl;
+	visitor.end_conditional_expression = end_conditional_expression_impl;
+	visitor.begin_label_expression = begin_label_expression_impl;
+	visitor.end_label_expression = end_label_expression_impl;
+	visitor.do_expression_identifier = do_expression_identifier_impl;
+	visitor.do_expression_index = do_expression_index_impl;
+	visitor.begin_expression_position = begin_expression_position_impl;
+	visitor.end_expression_position = end_expression_position_impl;
+	visitor.begin_initialization = begin_initialization_impl;
+	visitor.end_initialization = end_initialization_impl;
 
 	list = dmrC_sparse_initialize(C, argc, argv, &filelist);
 

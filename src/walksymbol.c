@@ -17,6 +17,10 @@ static void walk_assignment_expression(struct dmr_C *C, struct expression *expr,
 	struct symbol_visitor *visitor);
 static void walk_binary_expression(struct dmr_C *C, struct expression *expr,
 	struct symbol_visitor *visitor);
+static void walk_preop_expression(struct dmr_C *C, struct expression *expr,
+	struct symbol_visitor *visitor);
+static void walk_call_expression(struct dmr_C *C, struct expression *expr,
+	struct symbol_visitor *visitor);
 
 void walk_statement(struct dmr_C *C, struct statement *stmt,
 	struct symbol_visitor *visitor)
@@ -177,7 +181,8 @@ void walk_symbol_expression(struct dmr_C *C, struct expression *expr,
 {
 	assert(expr->type == EXPR_SYMBOL);
 	struct symbol *sym = expr->symbol;
-	assert(sym);
+	if (!sym)
+		return;
 	dmrC_walk_symbol(C, sym, visitor);
 }
 
@@ -257,6 +262,25 @@ void walk_call_expression(struct dmr_C *C, struct expression *expr,
 	visitor->end_call_expression(visitor->data, expr->type);
 }
 
+void walk_cast_expression(struct dmr_C *C, struct expression *expr, struct symbol_visitor *visitor)
+{
+	struct symbol *old_type, *new_type;
+	int oldbits, newbits;
+	int news, is_signed;
+
+	old_type = expr->cast_expression->ctype;
+	new_type = expr->cast_type;
+
+	oldbits = old_type->bit_size;
+	newbits = new_type->bit_size;
+	is_signed = dmrC_is_signed_type(old_type);
+	visitor->begin_cast_expression(visitor->data, expr->type, oldbits, newbits, !is_signed);
+	walk_expression(C, expr->cast_expression, visitor);
+	dmrC_walk_symbol(C, new_type, visitor);
+	visitor->end_cast_expression(visitor->data, expr->type);
+}
+
+
 void walk_expression(struct dmr_C *C, struct expression *expr,
 	struct symbol_visitor *visitor)
 {
@@ -301,7 +325,7 @@ void walk_expression(struct dmr_C *C, struct expression *expr,
 	case EXPR_CAST:
 	case EXPR_FORCE_CAST:
 	case EXPR_IMPLIED_CAST:
-		// return show_cast_expr(C, expr);
+		walk_cast_expression(C, expr, visitor);
 		break;
 	case EXPR_VALUE:
 		visitor->int_literal(visitor->data, expr->value, expr->ctype->bit_size, expr->ctype->ctype.modifiers & MOD_UNSIGNED);
@@ -487,6 +511,12 @@ static void begin_callarg_expression_default(void *data,
 static void end_callarg_expression_default(void *data,
 	enum expression_type expr_type) {}
 
+static void begin_cast_expression_default(void *data,
+	enum expression_type expr_type,
+	int oldbits, int newbits,
+	bool is_unsigned) {}
+static void end_cast_expression_default(void *data, enum expression_type expr_type) {}
+
 
 void dmrC_init_symbol_visitor(struct symbol_visitor *visitor)
 {
@@ -525,5 +555,7 @@ void dmrC_init_symbol_visitor(struct symbol_visitor *visitor)
 	visitor->end_call_expression = end_call_expression_default;
 	visitor->begin_callarg_expression = begin_callarg_expression_default;
 	visitor->end_callarg_expression = end_callarg_expression_default;
+	visitor->begin_cast_expression = begin_cast_expression_default;
+	visitor->end_cast_expression = end_cast_expression_default;
 
 }

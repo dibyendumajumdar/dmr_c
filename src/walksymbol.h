@@ -79,6 +79,11 @@ struct symbol_visitor {
 					 int argpos);
 	void (*end_callarg_expression)(void *data,
 				       enum expression_type expr_type);
+	void (*begin_cast_expression)(void *data,
+				      enum expression_type expr_type,
+				      int oldbits, int newbits,
+				      bool is_unsigned);
+	void (*end_cast_expression)(void *data, enum expression_type expr_type);
 };
 
 extern void dmrC_init_symbol_visitor(struct symbol_visitor *visitor);

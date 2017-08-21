@@ -239,6 +239,20 @@ static void begin_initializer_impl(void *data, struct symbol_info *syminfo)
 	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
 	output(treevisitor, "=\n");
 }
+static void begin_cast_expression_impl(void *data,
+	enum expression_type expr_type,
+	int oldbits, int newbits,
+	bool is_unsigned) 
+{
+	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
+	output(treevisitor, "cast (%d) to (%d) %s\n", oldbits, newbits, (is_unsigned ? "[unsigned]" : ""));
+	treevisitor->nesting_level++;
+}
+static void end_cast_expression_impl(void *data, enum expression_type expr_type) 
+{
+	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
+	treevisitor->nesting_level--;
+}
 
 static void clean_up_symbols(struct dmr_C *C, struct symbol_list *list)
 {
@@ -287,6 +301,8 @@ int main(int argc, char **argv)
 	visitor.begin_callarg_expression = begin_callarg_expression_impl;
 	visitor.end_callarg_expression = end_callarg_expression_impl;
 	visitor.begin_initializer = begin_initializer_impl;
+	visitor.begin_cast_expression = begin_cast_expression_impl;
+	visitor.end_cast_expression = end_cast_expression_impl;
 
 	list = dmrC_sparse_initialize(C, argc, argv, &filelist);
 

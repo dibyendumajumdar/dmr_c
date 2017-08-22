@@ -29,6 +29,15 @@
 
 #include <walksymbol.h>
 
+/*
+Issues:
+	1) display of labels - the sym display repeats the identifier
+	2) Symbols should display name when available
+	3) if statements should probably use then and else sub sections.
+	4) Better way to show iterator statements
+*/
+
+
 struct tree_visitor {
 	struct dmr_C *C;
 	int nesting_level;
@@ -62,16 +71,17 @@ static void begin_symbol_impl(void *data, struct symbol_info *syminfo)
 		else
 			output(treevisitor, "id:%llu\t\t\t\tSYM_NODE\n",
 			       syminfo->id);
-	}
-	else if (syminfo->symbol_type == SYM_BASETYPE || syminfo->symbol_type == SYM_LABEL) {
+	} else if (syminfo->symbol_type == SYM_BASETYPE ||
+		   syminfo->symbol_type == SYM_LABEL) {
 		output(treevisitor, "%s\n", syminfo->name);
-	}
-	else if (syminfo->symbol_type == SYM_STRUCT || syminfo->symbol_type == SYM_UNION || syminfo->symbol_type == SYM_ENUM) {
-		output(treevisitor, "%s %s\n", dmrC_get_type_name(syminfo->symbol_type), syminfo->name);
-	}
-	else {
+	} else if (syminfo->symbol_type == SYM_STRUCT ||
+		   syminfo->symbol_type == SYM_UNION ||
+		   syminfo->symbol_type == SYM_ENUM) {
+		output(treevisitor, "%s %s\n",
+		       dmrC_get_type_name(syminfo->symbol_type), syminfo->name);
+	} else {
 		output(treevisitor, "%s\n",
-			dmrC_get_type_name(syminfo->symbol_type));
+		       dmrC_get_type_name(syminfo->symbol_type));
 	}
 	treevisitor->nesting_level++;
 }
@@ -103,15 +113,25 @@ static void end_arguments_impl(void *data, struct symbol_info *syminfo)
 	output(treevisitor, ")\n");
 }
 
-static const char *statement_type_name(enum statement_type type) 
+static const char *statement_type_name(enum statement_type type)
 {
 	switch (type) {
-	case STMT_COMPOUND: return "";
-	case STMT_RETURN: return "return";
-	case STMT_IF: return "if";
-	case STMT_GOTO: return "goto";
-	case STMT_SWITCH: return "switch";
-	case STMT_CASE: return "case";
+	case STMT_COMPOUND:
+		return "";
+	case STMT_RETURN:
+		return "ret";
+	case STMT_IF:
+		return "if";
+	case STMT_GOTO:
+		return "goto";
+	case STMT_SWITCH:
+		return "switch";
+	case STMT_CASE:
+		return "case";
+	case STMT_ITERATOR:
+		return "iter";
+	case STMT_DECLARATION:
+		return "decl";
 	}
 	return "";
 }
@@ -224,6 +244,25 @@ static void end_preop_expression_impl(void *data,
 	treevisitor->nesting_level--;
 }
 
+static void begin_postop_expression_impl(void *data,
+					 enum expression_type expr_type, int op)
+{
+	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
+	const char spaces[] = "                                           ";
+	char oper[6] = {0};
+	const char *opname = dmrC_show_special(treevisitor->C, op);
+	strcpy(oper, opname);
+	output(treevisitor, "%s\t\t\t\t(EXPR_POSTOP)\n", oper);
+	treevisitor->nesting_level++;
+}
+
+static void end_postop_expression_impl(void *data,
+				       enum expression_type expr_type)
+{
+	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
+	treevisitor->nesting_level--;
+}
+
 static void begin_direct_call_expression_impl(void *data,
 					      enum expression_type expr_type,
 					      const char *name)
@@ -319,10 +358,12 @@ static void do_expression_index_impl(void *data, enum expression_type expr_type,
 }
 static void begin_expression_position_impl(void *data,
 					   enum expression_type expr_type,
-					   unsigned init_offset, int bit_offset, const char *ident)
+					   unsigned init_offset, int bit_offset,
+					   const char *ident)
 {
 	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
-	output(treevisitor, "set [%d:%d] of %s\n", init_offset, bit_offset, ident);
+	output(treevisitor, "set [%d:%d] of %s\n", init_offset, bit_offset,
+	       ident);
 	treevisitor->nesting_level++;
 }
 static void end_expression_position_impl(void *data,
@@ -341,13 +382,72 @@ static void end_initialization_impl(void *data, enum expression_type expr_type)
 	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
 }
 
-static void begin_label_impl(void *data, const char *name) 
+static void begin_label_impl(void *data, const char *name)
 {
 	printf("%s:", name);
 }
 
-static void end_label_impl(void *data)
+static void end_label_impl(void *data) {}
+
+static void begin_iterator_prestatement_impl(void *data) 
 {
+	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
+	output(treevisitor, "prestatement {\n");
+	treevisitor->nesting_level++;
+}
+static void end_iterator_prestatement_impl(void *data) 
+{
+	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
+	treevisitor->nesting_level--;
+	output(treevisitor, "}\n");
+}
+static void begin_iterator_precondition_impl(void *data) 
+{
+	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
+	output(treevisitor, "precondition {\n");
+	treevisitor->nesting_level++;
+}
+static void end_iterator_precondition_impl(void *data) 
+{
+	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
+	treevisitor->nesting_level--;
+	output(treevisitor, "}\n");
+}
+static void begin_iterator_statement_impl(void *data) 
+{
+	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
+	output(treevisitor, "statement {\n");
+	treevisitor->nesting_level++;
+}
+static void end_iterator_statement_impl(void *data) 
+{
+	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
+	treevisitor->nesting_level--;
+	output(treevisitor, "}\n");
+}
+static void begin_iterator_postcondition_impl(void *data) 
+{
+	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
+	output(treevisitor, "postcondition {\n");
+	treevisitor->nesting_level++;
+}
+static void end_iterator_postcondition_impl(void *data) 
+{
+	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
+	treevisitor->nesting_level--;
+	output(treevisitor, "}\n");
+}
+static void begin_iterator_poststatement_impl(void *data) 
+{
+	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
+	output(treevisitor, "poststatement {\n");
+	treevisitor->nesting_level++;
+}
+static void end_iterator_poststatement_impl(void *data) 
+{
+	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
+	treevisitor->nesting_level--;
+	output(treevisitor, "}\n");
 }
 
 static void clean_up_symbols(struct dmr_C *C, struct symbol_list *list)
@@ -391,6 +491,8 @@ int main(int argc, char **argv)
 	visitor.end_binop_expression = end_binop_expression_impl;
 	visitor.begin_preop_expression = begin_preop_expression_impl;
 	visitor.end_preop_expression = end_preop_expression_impl;
+	visitor.begin_postop_expression = begin_postop_expression_impl;
+	visitor.end_postop_expression = end_postop_expression_impl;
 	visitor.begin_direct_call_expression =
 	    begin_direct_call_expression_impl;
 	visitor.begin_indirect_call_expression =
@@ -414,6 +516,16 @@ int main(int argc, char **argv)
 	visitor.end_initialization = end_initialization_impl;
 	visitor.begin_label = begin_label_impl;
 	visitor.end_label = end_label_impl;
+	visitor.begin_iterator_prestatement = begin_iterator_prestatement_impl;
+	visitor.end_iterator_prestatement = end_iterator_prestatement_impl;
+	visitor.begin_iterator_precondition = begin_iterator_precondition_impl;
+	visitor.end_iterator_precondition = end_iterator_precondition_impl;
+	visitor.begin_iterator_statement = begin_iterator_statement_impl;
+	visitor.end_iterator_statement = end_iterator_statement_impl;
+	visitor.begin_iterator_postcondition = begin_iterator_postcondition_impl;
+	visitor.end_iterator_postcondition = end_iterator_postcondition_impl;
+	visitor.begin_iterator_poststatement = begin_iterator_poststatement_impl;
+	visitor.end_iterator_poststatement = end_iterator_poststatement_impl;
 
 	list = dmrC_sparse_initialize(C, argc, argv, &filelist);
 

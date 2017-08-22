@@ -55,7 +55,6 @@ struct symbol_visitor {
 	void (*begin_statement)(void *data, enum statement_type statement_type);
 	void (*end_statement)(void *data, enum statement_type statement_type);
 
-
 	void (*begin_expression)(void *data, enum expression_type expr_type);
 	void (*end_expression)(void *data, enum expression_type expr_type);
 	void (*begin_assignment_expression)(void *data,
@@ -71,6 +70,11 @@ struct symbol_visitor {
 				       enum expression_type expr_type, int op);
 	void (*end_preop_expression)(void *data,
 				     enum expression_type expr_type);
+	void (*begin_postop_expression)(void *data,
+					enum expression_type expr_type, int op);
+	void (*end_postop_expression)(void *data,
+				      enum expression_type expr_type);
+
 	void (*begin_direct_call_expression)(void *data,
 					     enum expression_type expr_type,
 					     const char *name);
@@ -102,15 +106,27 @@ struct symbol_visitor {
 				    unsigned from, unsigned to);
 	void (*begin_expression_position)(void *data,
 					  enum expression_type expr_type,
-					  unsigned init_offset, int bit_offset, const char *ident);
+					  unsigned init_offset, int bit_offset,
+					  const char *ident);
 	void (*end_expression_position)(void *data,
 					enum expression_type expr_type);
 	void (*begin_initialization)(void *data,
 				     enum expression_type expr_type);
 	void (*end_initialization)(void *data, enum expression_type expr_type);
 
-	void(*begin_label)(void *data, const char *name);
-	void(*end_label)(void *data);
+	void (*begin_label)(void *data, const char *name);
+	void (*end_label)(void *data);
+
+	void(*begin_iterator_prestatement)(void *data);
+	void(*end_iterator_prestatement)(void *data);
+	void(*begin_iterator_precondition)(void *data);
+	void(*end_iterator_precondition)(void *data);
+	void(*begin_iterator_statement)(void *data);
+	void(*end_iterator_statement)(void *data);
+	void(*begin_iterator_postcondition)(void *data);
+	void(*end_iterator_postcondition)(void *data);
+	void(*begin_iterator_poststatement)(void *data);
+	void(*end_iterator_poststatement)(void *data);
 };
 
 extern void dmrC_init_symbol_visitor(struct symbol_visitor *visitor);

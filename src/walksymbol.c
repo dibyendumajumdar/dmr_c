@@ -26,6 +26,7 @@ static void walk_conditional_expression(struct dmr_C *C, struct expression *expr
 static void walk_label_expression(struct dmr_C *C, struct expression *expr,
 	struct symbol_visitor *visitor);
 static void walk_initializer_expression(struct dmr_C *C, struct expression *expr, struct symbol *ctype, struct symbol_visitor *visitor);
+static void walk_label(struct dmr_C *C, struct symbol *label, struct symbol_visitor *visitor);
 
 void walk_return_statement(struct dmr_C *C, struct statement *stmt, struct symbol_visitor *visitor)
 {
@@ -39,6 +40,53 @@ void walk_return_statement(struct dmr_C *C, struct statement *stmt, struct symbo
 	dmrC_walk_symbol(C, target, visitor);
 	visitor->end_statement(visitor->data, STMT_GOTO);
 }
+
+void walk_label(struct dmr_C *C, struct symbol *label, struct symbol_visitor *visitor)
+{
+	visitor->begin_label(visitor->data, dmrC_show_ident(C, label->ident));
+	dmrC_walk_symbol(C, label, visitor);
+	visitor->end_label(visitor->data);
+}
+
+void walk_iterator_statement(struct dmr_C *C, struct statement *stmt, struct symbol_visitor *visitor)
+{
+	struct statement  *pre_statement = stmt->iterator_pre_statement;
+	struct expression *pre_condition = stmt->iterator_pre_condition;
+	struct statement  *statement = stmt->iterator_statement;
+	struct statement  *post_statement = stmt->iterator_post_statement;
+	struct expression *post_condition = stmt->iterator_post_condition;
+	dmrC_walk_symbol_list(C, stmt->iterator_syms, visitor);
+	if (pre_statement) {
+		visitor->begin_iterator_prestatement(visitor->data);
+		walk_statement(C, pre_statement, visitor);
+		visitor->end_iterator_prestatement(visitor->data);
+	}
+	if (pre_condition) {
+		visitor->begin_iterator_precondition(visitor->data);
+		walk_expression(C, pre_condition, visitor);
+		visitor->end_iterator_precondition(visitor->data);
+	}
+	visitor->begin_iterator_statement(visitor->data);
+	walk_statement(C, statement, visitor);
+	visitor->end_iterator_statement(visitor->data);
+	if (stmt->iterator_continue->used) {
+		walk_label(C, stmt->iterator_continue, visitor);
+	}
+	if (post_statement) {
+		visitor->begin_iterator_poststatement(visitor->data);
+		walk_statement(C, post_statement, visitor);
+		visitor->end_iterator_poststatement(visitor->data);
+	}
+	if (post_condition) {
+		visitor->begin_iterator_postcondition(visitor->data);
+		walk_expression(C, post_condition, visitor);
+		visitor->end_iterator_postcondition(visitor->data);
+	}
+	if (stmt->iterator_break->used) {
+		walk_label(C, stmt->iterator_break, visitor);
+	}
+}
+
 
 void walk_statement(struct dmr_C *C, struct statement *stmt,
 	struct symbol_visitor *visitor)
@@ -64,9 +112,7 @@ void walk_statement(struct dmr_C *C, struct statement *stmt,
 			walk_statement(C, s, visitor);
 		} END_FOR_EACH_PTR(s);
 		if (stmt->ret) {
-			visitor->begin_label(visitor->data, dmrC_show_ident(C, stmt->ret->ident));
-			dmrC_walk_symbol(C, stmt->ret, visitor);
-			visitor->end_label(visitor->data);
+			walk_label(C, stmt->ret, visitor);
 		}
 		//if (stmt->inline_fn)
 		//	printf("\tend_inlined\t%s\n", dmrC_show_ident(C, stmt->inline_fn->ident));
@@ -90,58 +136,14 @@ void walk_statement(struct dmr_C *C, struct statement *stmt,
 		break;
 
 	case STMT_CASE:
-		//printf(".L%p:\n", stmt->case_label);
-		//dmrC_show_statement(C, stmt->case_statement);
+		walk_label(C, stmt->case_label, visitor);
+		walk_statement(C, stmt->case_statement, visitor);
 		break;
 
-	case STMT_ITERATOR: {
-		//struct statement  *pre_statement = stmt->iterator_pre_statement;
-		//struct expression *pre_condition = stmt->iterator_pre_condition;
-		//struct statement  *statement = stmt->iterator_statement;
-		//struct statement  *post_statement = stmt->iterator_post_statement;
-		//struct expression *post_condition = stmt->iterator_post_condition;
-		//int val, loop_top = 0, loop_bottom = 0;
-
-		//show_symbol_decl(C, stmt->iterator_syms);
-		//dmrC_show_statement(C, pre_statement);
-		//if (pre_condition) {
-		//	if (pre_condition->type == EXPR_VALUE) {
-		//		if (!pre_condition->value) {
-		//			loop_bottom = new_label();
-		//			printf("\tjmp\t\t.L%d\n", loop_bottom);
-		//		}
-		//	}
-		//	else {
-		//		loop_bottom = new_label();
-		//		val = dmrC_show_expression(C, pre_condition);
-		//		printf("\tje\t\tv%d, .L%d\n", val, loop_bottom);
-		//	}
-		//}
-		//if (!post_condition || post_condition->type != EXPR_VALUE || post_condition->value) {
-		//	loop_top = new_label();
-		//	printf(".L%d:\n", loop_top);
-		//}
-		//dmrC_show_statement(C, statement);
-		//if (stmt->iterator_continue->used)
-		//	printf(".L%p:\n", stmt->iterator_continue);
-		//dmrC_show_statement(C, post_statement);
-		//if (!post_condition) {
-		//	printf("\tjmp\t\t.L%d\n", loop_top);
-		//}
-		//else if (post_condition->type == EXPR_VALUE) {
-		//	if (post_condition->value)
-		//		printf("\tjmp\t\t.L%d\n", loop_top);
-		//}
-		//else {
-		//	val = dmrC_show_expression(C, post_condition);
-		//	printf("\tjne\t\tv%d, .L%d\n", val, loop_top);
-		//}
-		//if (stmt->iterator_break->used)
-		//	printf(".L%p:\n", stmt->iterator_break);
-		//if (loop_bottom)
-		//	printf(".L%d:\n", loop_bottom);
+	case STMT_ITERATOR:
+		walk_iterator_statement(C, stmt, visitor);
 		break;
-	}
+	
 	case STMT_NONE:
 		break;
 
@@ -225,6 +227,16 @@ void walk_preop_expression(struct dmr_C *C, struct expression *expr,
 	walk_expression(C, expr->unop, visitor);
 	visitor->end_preop_expression(visitor->data, expr->type);
 }
+
+void walk_postop_expression(struct dmr_C *C, struct expression *expr,
+	struct symbol_visitor *visitor)
+{
+	assert(expr->type == EXPR_POSTOP);
+	visitor->begin_postop_expression(visitor->data, expr->type, expr->op);
+	walk_expression(C, expr->unop, visitor);
+	visitor->end_postop_expression(visitor->data, expr->type);
+}
+
 
 void walk_call_expression(struct dmr_C *C, struct expression *expr,
 	struct symbol_visitor *visitor)
@@ -390,7 +402,7 @@ void walk_expression(struct dmr_C *C, struct expression *expr,
 		walk_preop_expression(C, expr, visitor);
 		break;
 	case EXPR_POSTOP:
-		// return show_postop(C, expr);
+		walk_postop_expression(C, expr, visitor);
 		break;
 	case EXPR_SYMBOL:
 		walk_symbol_expression(C, expr, visitor);
@@ -481,7 +493,7 @@ void dmrC_walk_symbol(struct dmr_C *C, struct symbol *sym,
 				      .pos = sym->pos,
 				      .bit_size = sym->bit_size,
 				      .offset = sym->offset };
-	if (dmrC_is_bitfield_type(sym)) {
+	if (sym->ns == NS_STRUCT && dmrC_is_bitfield_type(sym)) {
 		syminfo.bit_offset = sym->bit_offset;
 	}
 	if (sym->array_size) {
@@ -578,6 +590,10 @@ static void begin_preop_expression_default(void *data,
 	enum expression_type expr_type, int op) {}
 static void end_preop_expression_default(void *data,
 	enum expression_type expr_type) {}
+static void begin_postop_expression_default(void *data,
+	enum expression_type expr_type, int op) {}
+static void end_postop_expression_default(void *data,
+	enum expression_type expr_type) {}
 static void begin_direct_call_expression_default(void *data,
 	enum expression_type expr_type, const char *name) {}
 static void begin_indirect_call_expression_default(void *data,
@@ -613,6 +629,16 @@ static void end_initialization_default(void *data,
 	enum expression_type expr_type) {}
 static void begin_label_default(void *data, const char *name) {}
 static void end_label_default(void *data) {}
+static void begin_iterator_prestatement_default(void *data) {}
+static void end_iterator_prestatement_default(void *data) {}
+static void begin_iterator_precondition_default(void *data) {}
+static void end_iterator_precondition_default(void *data) {}
+static void begin_iterator_statement_default(void *data) {}
+static void end_iterator_statement_default(void *data) {}
+static void begin_iterator_postcondition_default(void *data) {}
+static void end_iterator_postcondition_default(void *data) {}
+static void begin_iterator_poststatement_default(void *data) {}
+static void end_iterator_poststatement_default(void *data) {}
 
 
 void dmrC_init_symbol_visitor(struct symbol_visitor *visitor)
@@ -647,6 +673,8 @@ void dmrC_init_symbol_visitor(struct symbol_visitor *visitor)
 	visitor->end_binop_expression = end_binop_expression_default;
 	visitor->begin_preop_expression = begin_preop_expression_default;
 	visitor->end_preop_expression = end_preop_expression_default;
+	visitor->begin_postop_expression = begin_postop_expression_default;
+	visitor->end_postop_expression = end_postop_expression_default;
 	visitor->begin_direct_call_expression = begin_direct_call_expression_default;
 	visitor->begin_indirect_call_expression = begin_indirect_call_expression_default;
 	visitor->end_call_expression = end_call_expression_default;
@@ -666,4 +694,14 @@ void dmrC_init_symbol_visitor(struct symbol_visitor *visitor)
 	visitor->end_initialization = end_initialization_default;
 	visitor->begin_label = begin_label_default;
 	visitor->end_label = end_label_default;
+	visitor->begin_iterator_prestatement = begin_iterator_prestatement_default;
+	visitor->end_iterator_prestatement = end_iterator_prestatement_default;
+	visitor->begin_iterator_precondition = begin_iterator_precondition_default;
+	visitor->end_iterator_precondition = end_iterator_precondition_default;
+	visitor->begin_iterator_statement = begin_iterator_statement_default;
+	visitor->end_iterator_statement = end_iterator_statement_default;
+	visitor->begin_iterator_postcondition = begin_iterator_postcondition_default;
+	visitor->end_iterator_postcondition = end_iterator_postcondition_default;
+	visitor->begin_iterator_poststatement = begin_iterator_poststatement_default;
+	visitor->end_iterator_poststatement = end_iterator_poststatement_default;
 }

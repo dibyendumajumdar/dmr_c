@@ -341,11 +341,14 @@ static void end_initialization_impl(void *data, enum expression_type expr_type)
 	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
 }
 
-static void do_label_impl(void *data, const char *label) 
+static void begin_label_impl(void *data, const char *name) 
 {
-	printf("%s:\n", label);
+	printf("%s:", name);
 }
 
+static void end_label_impl(void *data)
+{
+}
 
 static void clean_up_symbols(struct dmr_C *C, struct symbol_list *list)
 {
@@ -409,7 +412,8 @@ int main(int argc, char **argv)
 	visitor.end_expression_position = end_expression_position_impl;
 	visitor.begin_initialization = begin_initialization_impl;
 	visitor.end_initialization = end_initialization_impl;
-	visitor.do_label = do_label_impl;
+	visitor.begin_label = begin_label_impl;
+	visitor.end_label = end_label_impl;
 
 	list = dmrC_sparse_initialize(C, argc, argv, &filelist);
 

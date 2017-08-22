@@ -109,7 +109,8 @@ struct symbol_visitor {
 				     enum expression_type expr_type);
 	void (*end_initialization)(void *data, enum expression_type expr_type);
 
-	void(*do_label)(void *data, const char *label);
+	void(*begin_label)(void *data, const char *name);
+	void(*end_label)(void *data);
 };
 
 extern void dmrC_init_symbol_visitor(struct symbol_visitor *visitor);

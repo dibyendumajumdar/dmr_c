@@ -35,6 +35,9 @@ void walk_return_statement(struct dmr_C *C, struct statement *stmt, struct symbo
 	if (expr && expr->ctype) {
 		walk_expression(C, expr, visitor);
 	}
+	visitor->begin_statement(visitor->data, STMT_GOTO);
+	dmrC_walk_symbol(C, target, visitor);
+	visitor->end_statement(visitor->data, STMT_GOTO);
 }
 
 void walk_statement(struct dmr_C *C, struct statement *stmt,
@@ -53,8 +56,6 @@ void walk_statement(struct dmr_C *C, struct statement *stmt,
 		break;
 	case STMT_COMPOUND: {
 		struct statement *s;
-		//int last = 0;
-
 		//if (stmt->inline_fn) {
 		//	dmrC_show_statement(C, stmt->args);
 		//	printf("\tbegin_inline \t%s\n", dmrC_show_ident(C, stmt->inline_fn->ident));
@@ -62,17 +63,13 @@ void walk_statement(struct dmr_C *C, struct statement *stmt,
 		FOR_EACH_PTR(stmt->stmts, s) {
 			walk_statement(C, s, visitor);
 		} END_FOR_EACH_PTR(s);
-		//if (stmt->ret) {
-		//	int addr, bits;
-		//	printf(".L%p:\n", stmt->ret);
-		//	addr = show_symbol_expr(C, stmt->ret);
-		//	bits = stmt->ret->bit_size;
-		//	last = new_pseudo();
-		//	printf("\tld.%d\t\tv%d,[v%d]\n", bits, last, addr);
-		//}
+		if (stmt->ret) {
+			visitor->begin_label(visitor->data, dmrC_show_ident(C, stmt->ret->ident));
+			dmrC_walk_symbol(C, stmt->ret, visitor);
+			visitor->end_label(visitor->data);
+		}
 		//if (stmt->inline_fn)
 		//	printf("\tend_inlined\t%s\n", dmrC_show_ident(C, stmt->inline_fn->ident));
-		//return last;
 		break;
 	}
 
@@ -149,7 +146,9 @@ void walk_statement(struct dmr_C *C, struct statement *stmt,
 		break;
 
 	case STMT_LABEL:
-		visitor->do_label(visitor->data, dmrC_show_ident(C, stmt->label_identifier->ident));
+		visitor->begin_label(visitor->data, dmrC_show_ident(C, stmt->label_identifier->ident));
+		dmrC_walk_symbol(C, stmt->label_identifier, visitor);
+		visitor->end_label(visitor->data);
 		walk_statement(C, stmt->label_statement, visitor);
 		break;
 
@@ -612,7 +611,8 @@ static void begin_initialization_default(void *data,
 	enum expression_type expr_type) {}
 static void end_initialization_default(void *data,
 	enum expression_type expr_type) {}
-static void do_label_default(void *data, const char *label) {}
+static void begin_label_default(void *data, const char *name) {}
+static void end_label_default(void *data) {}
 
 
 void dmrC_init_symbol_visitor(struct symbol_visitor *visitor)
@@ -664,5 +664,6 @@ void dmrC_init_symbol_visitor(struct symbol_visitor *visitor)
 	visitor->end_expression_position = end_expression_position_default;
 	visitor->begin_initialization = begin_initialization_default;
 	visitor->end_initialization = end_initialization_default;
-	visitor->do_label = do_label_default;
+	visitor->begin_label = begin_label_default;
+	visitor->end_label = end_label_default;
 }

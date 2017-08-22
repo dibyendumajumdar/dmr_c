@@ -8,4 +8,5 @@ char hello[] = { 'a', 'b', [5] = 'c'};
 void foo(void)
 {
 	struct S s2 = (struct S) { .a = s.b, .b = s.a };
+	return;
 }

@@ -62,11 +62,17 @@ static void begin_symbol_impl(void *data, struct symbol_info *syminfo)
 		else
 			output(treevisitor, "id:%llu\t\t\t\tSYM_NODE\n",
 			       syminfo->id);
-	} else if (syminfo->symbol_type == SYM_BASETYPE)
+	}
+	else if (syminfo->symbol_type == SYM_BASETYPE || syminfo->symbol_type == SYM_LABEL) {
 		output(treevisitor, "%s\n", syminfo->name);
-	else
+	}
+	else if (syminfo->symbol_type == SYM_STRUCT || syminfo->symbol_type == SYM_UNION || syminfo->symbol_type == SYM_ENUM) {
+		output(treevisitor, "%s %s\n", dmrC_get_type_name(syminfo->symbol_type), syminfo->name);
+	}
+	else {
 		output(treevisitor, "%s\n",
-		       dmrC_get_type_name(syminfo->symbol_type));
+			dmrC_get_type_name(syminfo->symbol_type));
+	}
 	treevisitor->nesting_level++;
 }
 
@@ -96,10 +102,28 @@ static void end_arguments_impl(void *data, struct symbol_info *syminfo)
 	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
 	output(treevisitor, ")\n");
 }
+
+static const char *statement_type_name(enum statement_type type) 
+{
+	switch (type) {
+	case STMT_COMPOUND: return "";
+	case STMT_RETURN: return "return";
+	case STMT_IF: return "if";
+	case STMT_GOTO: return "goto";
+	case STMT_SWITCH: return "switch";
+	case STMT_CASE: return "case";
+	}
+	return "";
+}
+
 static void begin_statement_impl(void *data, enum statement_type stmt_type)
 {
 	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
-	output(treevisitor, "{\n");
+	const char *s = statement_type_name(stmt_type);
+	if (s && *s)
+		output(treevisitor, "%s {\n", s);
+	else
+		output(treevisitor, "{\n");
 	treevisitor->nesting_level++;
 }
 static void end_statement_impl(void *data, enum statement_type stmt_type)
@@ -317,6 +341,12 @@ static void end_initialization_impl(void *data, enum expression_type expr_type)
 	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
 }
 
+static void do_label_impl(void *data, const char *label) 
+{
+	printf("%s:\n", label);
+}
+
+
 static void clean_up_symbols(struct dmr_C *C, struct symbol_list *list)
 {
 	struct symbol *sym;
@@ -379,6 +409,7 @@ int main(int argc, char **argv)
 	visitor.end_expression_position = end_expression_position_impl;
 	visitor.begin_initialization = begin_initialization_impl;
 	visitor.end_initialization = end_initialization_impl;
+	visitor.do_label = do_label_impl;
 
 	list = dmrC_sparse_initialize(C, argc, argv, &filelist);
 

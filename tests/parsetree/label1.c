@@ -7,6 +7,8 @@ void foo(void)
 		goto Ok;
 	if (a == 2)
 		goto Error;
+	else
+		goto Ok;
 
 Error:
 	a = 0;	

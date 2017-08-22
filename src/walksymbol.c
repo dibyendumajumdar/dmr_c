@@ -25,6 +25,17 @@ static void walk_conditional_expression(struct dmr_C *C, struct expression *expr
 	struct symbol_visitor *visitor);
 static void walk_label_expression(struct dmr_C *C, struct expression *expr,
 	struct symbol_visitor *visitor);
+static void walk_initializer_expression(struct dmr_C *C, struct expression *expr, struct symbol *ctype, struct symbol_visitor *visitor);
+
+void walk_return_statement(struct dmr_C *C, struct statement *stmt, struct symbol_visitor *visitor)
+{
+	struct expression *expr = stmt->ret_value;
+	struct symbol *target = stmt->ret_target;
+
+	if (expr && expr->ctype) {
+		walk_expression(C, expr, visitor);
+	}
+}
 
 void walk_statement(struct dmr_C *C, struct statement *stmt,
 	struct symbol_visitor *visitor)
@@ -38,7 +49,7 @@ void walk_statement(struct dmr_C *C, struct statement *stmt,
 		dmrC_walk_symbol_list(C, stmt->declaration, visitor);
 		break;
 	case STMT_RETURN:
-		//return show_return_stmt(C, stmt);
+		walk_return_statement(C, stmt, visitor);
 		break;
 	case STMT_COMPOUND: {
 		struct statement *s;
@@ -69,22 +80,12 @@ void walk_statement(struct dmr_C *C, struct statement *stmt,
 		walk_expression(C, stmt->expression, visitor);
 		break;
 	case STMT_IF: {
-		//int val, target;
-		//struct expression *cond = stmt->if_conditional;
-
-		///* This is only valid if nobody can jump into the "dead" statement */
-		//val = dmrC_show_expression(C, cond);
-		//target = new_label();
-		//printf("\tje\t\tv%d,.L%d\n", val, target);
-		//dmrC_show_statement(C, stmt->if_true);
-		//if (stmt->if_false) {
-		//	int last = new_label();
-		//	printf("\tjmp\t\t.L%d\n", last);
-		//	printf(".L%d:\n", target);
-		//	target = last;
-		//	dmrC_show_statement(C, stmt->if_false);
-		//}
-		//printf(".L%d:\n", target);
+		struct expression *cond = stmt->if_conditional;
+		walk_expression(C, cond, visitor);
+		walk_statement(C, stmt->if_true, visitor);
+		if (stmt->if_false) {
+			walk_statement(C, stmt->if_false, visitor);
+		}
 		break;
 	}
 	case STMT_SWITCH:
@@ -148,18 +149,17 @@ void walk_statement(struct dmr_C *C, struct statement *stmt,
 		break;
 
 	case STMT_LABEL:
-		//printf(".L%p:\n", stmt->label_identifier);
-		//dmrC_show_statement(C, stmt->label_statement);
+		visitor->do_label(visitor->data, dmrC_show_ident(C, stmt->label_identifier->ident));
+		walk_statement(C, stmt->label_statement, visitor);
 		break;
 
 	case STMT_GOTO:
-		//if (stmt->goto_expression) {
-		//	int val = dmrC_show_expression(C, stmt->goto_expression);
-		//	printf("\tgoto\t\t*v%d\n", val);
-		//}
-		//else {
-		//	printf("\tgoto\t\t.L%p\n", stmt->goto_label);
-		//}
+		if (stmt->goto_expression) {
+			walk_expression(C, stmt->goto_expression, visitor);
+		}
+		else {
+			dmrC_walk_symbol(C, stmt->goto_label, visitor);
+		}
 		break;
 	case STMT_ASM:
 		//printf("\tasm( .... )\n");
@@ -302,7 +302,7 @@ void walk_label_expression(struct dmr_C *C, struct expression *expr,
 	visitor->end_label_expression(visitor->data, expr->type);
 }
 
-void walk_initialization(struct dmr_C *C, struct symbol *sym, struct expression *expr, struct symbol_visitor *visitor)
+static void walk_initialization(struct dmr_C *C, struct symbol *sym, struct expression *expr, struct symbol_visitor *visitor)
 {
 	int val, addr, bits;
 
@@ -314,7 +314,7 @@ void walk_initialization(struct dmr_C *C, struct symbol *sym, struct expression 
 	visitor->end_initialization(visitor->data, expr->type);
 }
 
-void walk_position_expression(struct dmr_C *C, struct expression *expr, struct symbol *base, struct symbol_visitor *visitor)
+static void walk_position_expression(struct dmr_C *C, struct expression *expr, struct symbol *base, struct symbol_visitor *visitor)
 {
 	struct symbol *ctype = expr->init_expr->ctype;
 	int bit_offset;
@@ -612,6 +612,7 @@ static void begin_initialization_default(void *data,
 	enum expression_type expr_type) {}
 static void end_initialization_default(void *data,
 	enum expression_type expr_type) {}
+static void do_label_default(void *data, const char *label) {}
 
 
 void dmrC_init_symbol_visitor(struct symbol_visitor *visitor)
@@ -663,4 +664,5 @@ void dmrC_init_symbol_visitor(struct symbol_visitor *visitor)
 	visitor->end_expression_position = end_expression_position_default;
 	visitor->begin_initialization = begin_initialization_default;
 	visitor->end_initialization = end_initialization_default;
+	visitor->do_label = do_label_default;
 }

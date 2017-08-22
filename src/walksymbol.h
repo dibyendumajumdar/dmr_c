@@ -51,8 +51,11 @@ struct symbol_visitor {
 	void (*int_literal)(void *data, long long value, int bit_size,
 			    bool is_unsigned);
 	void (*float_literal)(void *data, long double fvalue, int bit_size);
+
 	void (*begin_statement)(void *data, enum statement_type statement_type);
 	void (*end_statement)(void *data, enum statement_type statement_type);
+
+
 	void (*begin_expression)(void *data, enum expression_type expr_type);
 	void (*end_expression)(void *data, enum expression_type expr_type);
 	void (*begin_assignment_expression)(void *data,
@@ -105,6 +108,8 @@ struct symbol_visitor {
 	void (*begin_initialization)(void *data,
 				     enum expression_type expr_type);
 	void (*end_initialization)(void *data, enum expression_type expr_type);
+
+	void(*do_label)(void *data, const char *label);
 };
 
 extern void dmrC_init_symbol_visitor(struct symbol_visitor *visitor);

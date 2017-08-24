@@ -37,7 +37,6 @@ Issues:
 	4) Better way to show iterator statements
 */
 
-
 struct tree_visitor {
 	struct dmr_C *C;
 	int nesting_level;
@@ -115,25 +114,16 @@ static void end_arguments_impl(void *data, struct symbol_info *syminfo)
 
 static const char *statement_type_name(enum statement_type type)
 {
-	switch (type) {
-	case STMT_COMPOUND:
-		return "";
-	case STMT_RETURN:
-		return "ret";
-	case STMT_IF:
-		return "if";
-	case STMT_GOTO:
-		return "goto";
-	case STMT_SWITCH:
-		return "switch";
-	case STMT_CASE:
-		return "case";
-	case STMT_ITERATOR:
-		return "iter";
-	case STMT_DECLARATION:
-		return "decl";
-	}
-	return "";
+	static const char *stmt_names[] = {
+	    [STMT_NONE] = "",		[STMT_DECLARATION] = "decl",
+	    [STMT_EXPRESSION] = "expr", [STMT_COMPOUND] = "",
+	    [STMT_IF] = "if",		[STMT_RETURN] = "ret",
+	    [STMT_CASE] = "case",       [STMT_SWITCH] = "switch",
+	    [STMT_ITERATOR] = "iter",   [STMT_LABEL] = "",
+	    [STMT_GOTO] = "goto",       [STMT_ASM] = "asm",
+	    [STMT_CONTEXT] = "context", [STMT_RANGE] = "range",
+	};
+	return stmt_names[type];
 }
 
 static void begin_statement_impl(void *data, enum statement_type stmt_type)
@@ -153,10 +143,13 @@ static void end_statement_impl(void *data, enum statement_type stmt_type)
 	output(treevisitor, "}\n");
 }
 
-static void reference_symbol_impl(void *data, uint64_t sym)
+static void reference_symbol_impl(void *data, uint64_t sym, const char *name)
 {
 	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
-	output(treevisitor, "sym(%llu)\n", sym);
+	if (*name)
+		output(treevisitor, "%s sym(%llu)\n", name, sym);
+	else
+		output(treevisitor, "sym(%llu)\n", sym);
 }
 static void int_literal_impl(void *data, long long value, int bit_size,
 			     bool is_unsigned)
@@ -389,61 +382,61 @@ static void begin_label_impl(void *data, const char *name)
 
 static void end_label_impl(void *data) {}
 
-static void begin_iterator_prestatement_impl(void *data) 
+static void begin_iterator_prestatement_impl(void *data)
 {
 	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
 	output(treevisitor, "prestatement {\n");
 	treevisitor->nesting_level++;
 }
-static void end_iterator_prestatement_impl(void *data) 
+static void end_iterator_prestatement_impl(void *data)
 {
 	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
 	treevisitor->nesting_level--;
 	output(treevisitor, "}\n");
 }
-static void begin_iterator_precondition_impl(void *data) 
+static void begin_iterator_precondition_impl(void *data)
 {
 	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
 	output(treevisitor, "precondition {\n");
 	treevisitor->nesting_level++;
 }
-static void end_iterator_precondition_impl(void *data) 
+static void end_iterator_precondition_impl(void *data)
 {
 	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
 	treevisitor->nesting_level--;
 	output(treevisitor, "}\n");
 }
-static void begin_iterator_statement_impl(void *data) 
+static void begin_iterator_statement_impl(void *data)
 {
 	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
 	output(treevisitor, "statement {\n");
 	treevisitor->nesting_level++;
 }
-static void end_iterator_statement_impl(void *data) 
+static void end_iterator_statement_impl(void *data)
 {
 	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
 	treevisitor->nesting_level--;
 	output(treevisitor, "}\n");
 }
-static void begin_iterator_postcondition_impl(void *data) 
+static void begin_iterator_postcondition_impl(void *data)
 {
 	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
 	output(treevisitor, "postcondition {\n");
 	treevisitor->nesting_level++;
 }
-static void end_iterator_postcondition_impl(void *data) 
+static void end_iterator_postcondition_impl(void *data)
 {
 	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
 	treevisitor->nesting_level--;
 	output(treevisitor, "}\n");
 }
-static void begin_iterator_poststatement_impl(void *data) 
+static void begin_iterator_poststatement_impl(void *data)
 {
 	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
 	output(treevisitor, "poststatement {\n");
 	treevisitor->nesting_level++;
 }
-static void end_iterator_poststatement_impl(void *data) 
+static void end_iterator_poststatement_impl(void *data)
 {
 	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
 	treevisitor->nesting_level--;
@@ -522,9 +515,11 @@ int main(int argc, char **argv)
 	visitor.end_iterator_precondition = end_iterator_precondition_impl;
 	visitor.begin_iterator_statement = begin_iterator_statement_impl;
 	visitor.end_iterator_statement = end_iterator_statement_impl;
-	visitor.begin_iterator_postcondition = begin_iterator_postcondition_impl;
+	visitor.begin_iterator_postcondition =
+	    begin_iterator_postcondition_impl;
 	visitor.end_iterator_postcondition = end_iterator_postcondition_impl;
-	visitor.begin_iterator_poststatement = begin_iterator_poststatement_impl;
+	visitor.begin_iterator_poststatement =
+	    begin_iterator_poststatement_impl;
 	visitor.end_iterator_poststatement = end_iterator_poststatement_impl;
 
 	list = dmrC_sparse_initialize(C, argc, argv, &filelist);

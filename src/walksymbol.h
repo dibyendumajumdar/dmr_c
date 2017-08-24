@@ -38,7 +38,7 @@ struct symbol_visitor {
 	void (*end_struct_members)(void *data, struct symbol_info *syminfo);
 	void (*begin_func_arguments)(void *data, struct symbol_info *syminfo);
 	void (*end_func_arguments)(void *data, struct symbol_info *syminfo);
-	void (*reference_symbol)(void *data, uint64_t id);
+	void (*reference_symbol)(void *data, uint64_t id, const char *name);
 	void (*begin_func_body)(void *data, struct symbol_info *syminfo);
 	void (*end_func_body)(void *data, struct symbol_info *syminfo);
 	void (*begin_func_returntype)(void *data, struct symbol_info *syminfo);

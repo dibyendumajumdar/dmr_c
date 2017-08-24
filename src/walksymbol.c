@@ -472,7 +472,8 @@ void dmrC_walk_symbol(struct dmr_C *C, struct symbol *sym,
 	if (sym->type != SYM_BASETYPE) {
 		if (sym->aux) {
 			/* already visited */
-			visitor->reference_symbol(visitor->data, (uint64_t)sym->aux);
+			const char *name = sym->ident ? dmrC_show_ident(C, sym->ident) : "";
+			visitor->reference_symbol(visitor->data, (uint64_t)sym->aux, name);
 			return;
 		}
 		visitor->id++;
@@ -559,7 +560,7 @@ static void begin_members_default(void *data, struct symbol_info *syminfo) {}
 static void end_members_default(void *data, struct symbol_info *syminfo) {}
 static void begin_arguments_default(void *data, struct symbol_info *syminfo) {}
 static void end_arguments_default(void *data, struct symbol_info *syminfo) {}
-static void reference_symbol_default(void *data, uint64_t id) {}
+static void reference_symbol_default(void *data, uint64_t id, const char *name) {}
 static void begin_body_default(void *data, struct symbol_info *syminfo) {}
 static void end_body_default(void *data, struct symbol_info *syminfo) {}
 static void begin_func_returntype_default(void *data,

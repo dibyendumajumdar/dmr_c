@@ -443,6 +443,31 @@ static void end_iterator_poststatement_impl(void *data)
 	output(treevisitor, "}\n");
 }
 
+static void begin_case_value_impl(void *data, long long value) 
+{
+	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
+	output(treevisitor, "on %lld goto {\n", value);
+	treevisitor->nesting_level++;
+}
+static void begin_case_range_impl(void *data, long long from, long long to) 
+{
+	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
+	output(treevisitor, "on %lld ... %lld goto {\n", from, to);
+	treevisitor->nesting_level++;
+}
+static void begin_default_case_impl(void *data) 
+{
+	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
+	output(treevisitor, "by default goto {\n");
+	treevisitor->nesting_level++;
+}
+static void end_case_impl(void *data) 
+{
+	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
+	treevisitor->nesting_level--;
+	output(treevisitor, "}\n");
+}
+
 static void clean_up_symbols(struct dmr_C *C, struct symbol_list *list)
 {
 	struct symbol *sym;
@@ -521,6 +546,10 @@ int main(int argc, char **argv)
 	visitor.begin_iterator_poststatement =
 	    begin_iterator_poststatement_impl;
 	visitor.end_iterator_poststatement = end_iterator_poststatement_impl;
+	visitor.begin_case_value = begin_case_value_impl;
+	visitor.begin_case_range = begin_case_range_impl;
+	visitor.begin_default_case = begin_default_case_impl;
+	visitor.end_case = end_case_impl;
 
 	list = dmrC_sparse_initialize(C, argc, argv, &filelist);
 

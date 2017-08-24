@@ -87,6 +87,50 @@ void walk_iterator_statement(struct dmr_C *C, struct statement *stmt, struct sym
 	}
 }
 
+void walk_switch_statement(struct dmr_C *C, struct statement *stmt,
+	struct symbol_visitor *visitor)
+{
+	walk_expression(C, stmt->switch_expression, visitor);
+	struct symbol *sym;
+
+	/*
+	* Debugging only: Check that the case list is correct
+	* by printing it out.
+	*
+	* This is where a _real_ back-end would go through the
+	* cases to decide whether to use a lookup table or a
+	* series of comparisons etc
+	*/
+	FOR_EACH_PTR(stmt->switch_case->symbol_list, sym) {
+		struct statement *case_stmt = sym->stmt;
+		struct expression *expr = case_stmt->case_expression;
+		struct expression *to = case_stmt->case_to;
+
+		if (!expr) {
+			visitor->begin_default_case(visitor->data);
+		}
+		else {
+			if (expr->type == EXPR_VALUE) {
+				if (to) {
+					if (to->type == EXPR_VALUE) {
+						visitor->begin_case_range(visitor->data, expr->value, to->value);
+					}
+				}
+				else {
+					visitor->begin_case_value(visitor->data, expr->value);
+				}
+			}
+		}
+		dmrC_walk_symbol(C, sym, visitor);
+		visitor->end_case(visitor->data);
+	} END_FOR_EACH_PTR(sym);
+
+	walk_statement(C, stmt->switch_statement, visitor);
+
+	if (stmt->switch_break->used)
+		walk_label(C, stmt->switch_break, visitor);
+}
+
 
 void walk_statement(struct dmr_C *C, struct statement *stmt,
 	struct symbol_visitor *visitor)
@@ -132,7 +176,7 @@ void walk_statement(struct dmr_C *C, struct statement *stmt,
 		break;
 	}
 	case STMT_SWITCH:
-		//show_switch_statement(C, stmt);
+		walk_switch_statement(C, stmt, visitor);
 		break;
 
 	case STMT_CASE:
@@ -640,6 +684,10 @@ static void begin_iterator_postcondition_default(void *data) {}
 static void end_iterator_postcondition_default(void *data) {}
 static void begin_iterator_poststatement_default(void *data) {}
 static void end_iterator_poststatement_default(void *data) {}
+static void begin_case_value_default(void *data, long long value) {}
+static void begin_case_range_default(void *data, long long from, long long to) {}
+static void begin_default_case_default(void *data) {}
+static void end_case_default(void *data) {}
 
 
 void dmrC_init_symbol_visitor(struct symbol_visitor *visitor)
@@ -705,4 +753,9 @@ void dmrC_init_symbol_visitor(struct symbol_visitor *visitor)
 	visitor->end_iterator_postcondition = end_iterator_postcondition_default;
 	visitor->begin_iterator_poststatement = begin_iterator_poststatement_default;
 	visitor->end_iterator_poststatement = end_iterator_poststatement_default;
+	visitor->begin_case_value = begin_case_value_default;
+	visitor->begin_case_range = begin_case_range_default;
+	visitor->begin_default_case = begin_default_case_default;
+	visitor->end_case = end_case_default;
+
 }

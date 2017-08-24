@@ -127,6 +127,12 @@ struct symbol_visitor {
 	void(*end_iterator_postcondition)(void *data);
 	void(*begin_iterator_poststatement)(void *data);
 	void(*end_iterator_poststatement)(void *data);
+
+	void(*begin_case_value)(void *data, long long value);
+	void(*begin_case_range)(void *data, long long from, long long to);
+	void(*begin_default_case)(void *data);
+	void(*end_case)(void *data);
+
 };
 
 extern void dmrC_init_symbol_visitor(struct symbol_visitor *visitor);

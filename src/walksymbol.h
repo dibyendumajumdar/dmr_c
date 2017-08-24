@@ -133,6 +133,10 @@ struct symbol_visitor {
 	void(*begin_default_case)(void *data);
 	void(*end_case)(void *data);
 
+	void(*begin_if_then)(void *data);
+	void(*end_if_then)(void *data);
+	void(*begin_if_else)(void *data);
+	void(*end_if_else)(void *data);
 };
 
 extern void dmrC_init_symbol_visitor(struct symbol_visitor *visitor);

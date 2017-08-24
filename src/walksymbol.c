@@ -19,14 +19,21 @@ static void walk_binary_expression(struct dmr_C *C, struct expression *expr,
 	struct symbol_visitor *visitor);
 static void walk_preop_expression(struct dmr_C *C, struct expression *expr,
 	struct symbol_visitor *visitor);
+static void walk_postop_expression(struct dmr_C *C, struct expression *expr,
+	struct symbol_visitor *visitor);
 static void walk_call_expression(struct dmr_C *C, struct expression *expr,
 	struct symbol_visitor *visitor);
+static void walk_cast_expression(struct dmr_C *C, struct expression *expr, struct symbol_visitor *visitor);
 static void walk_conditional_expression(struct dmr_C *C, struct expression *expr,
 	struct symbol_visitor *visitor);
 static void walk_label_expression(struct dmr_C *C, struct expression *expr,
 	struct symbol_visitor *visitor);
 static void walk_initializer_expression(struct dmr_C *C, struct expression *expr, struct symbol *ctype, struct symbol_visitor *visitor);
 static void walk_label(struct dmr_C *C, struct symbol *label, struct symbol_visitor *visitor);
+static void walk_return_statement(struct dmr_C *C, struct statement *stmt, struct symbol_visitor *visitor);
+static void walk_iterator_statement(struct dmr_C *C, struct statement *stmt, struct symbol_visitor *visitor);
+static void walk_switch_statement(struct dmr_C *C, struct statement *stmt,
+	struct symbol_visitor *visitor);
 
 void walk_return_statement(struct dmr_C *C, struct statement *stmt, struct symbol_visitor *visitor)
 {
@@ -169,9 +176,13 @@ void walk_statement(struct dmr_C *C, struct statement *stmt,
 	case STMT_IF: {
 		struct expression *cond = stmt->if_conditional;
 		walk_expression(C, cond, visitor);
+		visitor->begin_if_then(visitor->data);
 		walk_statement(C, stmt->if_true, visitor);
+		visitor->end_if_then(visitor->data);
 		if (stmt->if_false) {
+			visitor->begin_if_else(visitor->data);
 			walk_statement(C, stmt->if_false, visitor);
+			visitor->end_if_else(visitor->data);
 		}
 		break;
 	}
@@ -689,6 +700,11 @@ static void begin_case_range_default(void *data, long long from, long long to) {
 static void begin_default_case_default(void *data) {}
 static void end_case_default(void *data) {}
 
+static void begin_if_then_default(void *data) {}
+static void end_if_then_default(void *data) {}
+static void begin_if_else_default(void *data) {}
+static void end_if_else_default(void *data) {}
+
 
 void dmrC_init_symbol_visitor(struct symbol_visitor *visitor)
 {
@@ -757,5 +773,8 @@ void dmrC_init_symbol_visitor(struct symbol_visitor *visitor)
 	visitor->begin_case_range = begin_case_range_default;
 	visitor->begin_default_case = begin_default_case_default;
 	visitor->end_case = end_case_default;
-
+	visitor->begin_if_then = begin_if_then_default;
+	visitor->end_if_then = end_if_then_default;
+	visitor->begin_if_else = begin_if_else_default;
+	visitor->end_if_else = end_if_else_default;
 }

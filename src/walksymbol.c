@@ -45,7 +45,7 @@ void walk_return_statement(struct dmr_C *C, struct statement *stmt, struct symbo
 	}
 	visitor->begin_statement(visitor->data, STMT_GOTO);
 	dmrC_walk_symbol(C, target, visitor);
-	visitor->end_statement(visitor->data, STMT_GOTO);
+	visitor->end_statement(visitor->data);
 }
 
 void walk_label(struct dmr_C *C, struct symbol *label, struct symbol_visitor *visitor)
@@ -233,7 +233,7 @@ void walk_statement(struct dmr_C *C, struct statement *stmt,
 		break;
 	}
 	}
-	visitor->end_statement(visitor->data, stmt->type);
+	visitor->end_statement(visitor->data);
 }
 
 void walk_symbol_expression(struct dmr_C *C, struct expression *expr,
@@ -257,7 +257,7 @@ void walk_assignment_expression(struct dmr_C *C, struct expression *expr,
 	visitor->begin_assignment_expression(visitor->data, expr->type, op);
 	walk_expression(C, expr->left, visitor);
 	walk_expression(C, expr->right, visitor);
-	visitor->end_assignment_expression(visitor->data, expr->type);
+	visitor->end_assignment_expression(visitor->data);
 }
 
 void walk_binary_expression(struct dmr_C *C, struct expression *expr,
@@ -271,7 +271,7 @@ void walk_binary_expression(struct dmr_C *C, struct expression *expr,
 	visitor->begin_binop_expression(visitor->data, expr->type, op);
 	walk_expression(C, expr->left, visitor);
 	walk_expression(C, expr->right, visitor);
-	visitor->end_binop_expression(visitor->data, expr->type);
+	visitor->end_binop_expression(visitor->data);
 }
 
 void walk_preop_expression(struct dmr_C *C, struct expression *expr,
@@ -280,7 +280,7 @@ void walk_preop_expression(struct dmr_C *C, struct expression *expr,
 	assert(expr->type == EXPR_PREOP);
 	visitor->begin_preop_expression(visitor->data, expr->type, expr->op);
 	walk_expression(C, expr->unop, visitor);
-	visitor->end_preop_expression(visitor->data, expr->type);
+	visitor->end_preop_expression(visitor->data);
 }
 
 void walk_postop_expression(struct dmr_C *C, struct expression *expr,
@@ -289,7 +289,7 @@ void walk_postop_expression(struct dmr_C *C, struct expression *expr,
 	assert(expr->type == EXPR_POSTOP);
 	visitor->begin_postop_expression(visitor->data, expr->type, expr->op);
 	walk_expression(C, expr->unop, visitor);
-	visitor->end_postop_expression(visitor->data, expr->type);
+	visitor->end_postop_expression(visitor->data);
 }
 
 
@@ -327,9 +327,9 @@ void walk_call_expression(struct dmr_C *C, struct expression *expr,
 	FOR_EACH_PTR(expr->args, arg) {
 		visitor->begin_callarg_expression(visitor->data, expr->type, ++n);
 		walk_expression(C, arg, visitor);
-		visitor->end_callarg_expression(visitor->data, expr->type);
+		visitor->end_callarg_expression(visitor->data);
 	} END_FOR_EACH_PTR(arg);
-	visitor->end_call_expression(visitor->data, expr->type);
+	visitor->end_call_expression(visitor->data);
 }
 
 void walk_cast_expression(struct dmr_C *C, struct expression *expr, struct symbol_visitor *visitor)
@@ -347,7 +347,7 @@ void walk_cast_expression(struct dmr_C *C, struct expression *expr, struct symbo
 	visitor->begin_cast_expression(visitor->data, expr->type, oldbits, newbits, !is_signed);
 	walk_expression(C, expr->cast_expression, visitor);
 	dmrC_walk_symbol(C, new_type, visitor);
-	visitor->end_cast_expression(visitor->data, expr->type);
+	visitor->end_cast_expression(visitor->data);
 }
 
 void walk_conditional_expression(struct dmr_C *C, struct expression *expr,
@@ -357,7 +357,7 @@ void walk_conditional_expression(struct dmr_C *C, struct expression *expr,
 	walk_expression(C, expr->conditional, visitor);
 	walk_expression(C, expr->cond_true, visitor);
 	walk_expression(C, expr->cond_false, visitor);
-	visitor->end_conditional_expression(visitor->data, expr->type);
+	visitor->end_conditional_expression(visitor->data);
 }
 
 void walk_label_expression(struct dmr_C *C, struct expression *expr,
@@ -365,7 +365,7 @@ void walk_label_expression(struct dmr_C *C, struct expression *expr,
 {
 	visitor->begin_label_expression(visitor->data, expr->type);
 	dmrC_walk_symbol(C, expr->label_symbol, visitor);
-	visitor->end_label_expression(visitor->data, expr->type);
+	visitor->end_label_expression(visitor->data);
 }
 
 static void walk_initialization(struct dmr_C *C, struct symbol *sym, struct expression *expr, struct symbol_visitor *visitor)
@@ -377,7 +377,7 @@ static void walk_initialization(struct dmr_C *C, struct symbol *sym, struct expr
 	visitor->begin_initialization(visitor->data, expr->type);
 	walk_expression(C, expr, visitor);
 	dmrC_walk_symbol(C, sym, visitor);
-	visitor->end_initialization(visitor->data, expr->type);
+	visitor->end_initialization(visitor->data);
 }
 
 static void walk_position_expression(struct dmr_C *C, struct expression *expr, struct symbol *base, struct symbol_visitor *visitor)
@@ -389,7 +389,7 @@ static void walk_position_expression(struct dmr_C *C, struct expression *expr, s
 	visitor->begin_expression_position(visitor->data, EXPR_POS, expr->init_offset, bit_offset,
 		dmrC_show_ident(C, base->ident));
 	walk_expression(C, expr->init_expr, visitor);
-	visitor->end_expression_position(visitor->data, EXPR_POS);
+	visitor->end_expression_position(visitor->data);
 }
 
 void walk_initializer_expression(struct dmr_C *C, struct expression *expr, struct symbol *ctype, struct symbol_visitor *visitor)
@@ -507,7 +507,7 @@ void walk_expression(struct dmr_C *C, struct expression *expr,
 	case EXPR_TYPE:
 		break;
 	}
-	visitor->end_expression(visitor->data, expr->type);
+	visitor->end_expression(visitor->data);
 }
 
 void dmrC_walk_symbol_list(struct dmr_C *C, struct symbol_list *list,
@@ -567,7 +567,7 @@ void dmrC_walk_symbol(struct dmr_C *C, struct symbol *sym,
 			dmrC_walk_symbol(C, member, visitor);
 		}
 		END_FOR_EACH_PTR(member);
-		visitor->end_struct_members(visitor->data, &syminfo);
+		visitor->end_struct_members(visitor->data);
 	}
 
 	if (sym->type == SYM_FN) {
@@ -578,7 +578,7 @@ void dmrC_walk_symbol(struct dmr_C *C, struct symbol *sym,
 			dmrC_walk_symbol(C, arg, visitor);
 		}
 		END_FOR_EACH_PTR(member);
-		visitor->end_func_arguments(visitor->data, &syminfo);
+		visitor->end_func_arguments(visitor->data);
 	}
 
 	// Is there a base type?
@@ -589,100 +589,95 @@ void dmrC_walk_symbol(struct dmr_C *C, struct symbol *sym,
 			visitor->begin_basetype(visitor->data, &syminfo);
 		dmrC_walk_symbol(C, sym->ctype.base_type, visitor);
 		if (sym->type == SYM_FN)
-			visitor->end_func_returntype(visitor->data, &syminfo);
+			visitor->end_func_returntype(visitor->data);
 		else
-			visitor->end_basetype(visitor->data, &syminfo);
+			visitor->end_basetype(visitor->data);
 	}
 
 	if (sym->type == SYM_FN) {
 		if (sym->stmt) {
 			visitor->begin_func_body(visitor->data, &syminfo);
 			walk_statement(C, sym->stmt, visitor);
-			visitor->end_func_body(visitor->data, &syminfo);
+			visitor->end_func_body(visitor->data);
 		}
 	}
 	if (sym->initializer) {
 		visitor->begin_initializer(visitor->data, &syminfo);
 		walk_expression(C, sym->initializer, visitor);
-		visitor->end_initializer(visitor->data, &syminfo);
+		visitor->end_initializer(visitor->data);
 	}
-	visitor->end_symbol(visitor->data, &syminfo);
+	visitor->end_symbol(visitor->data);
 }
 
 static void begin_symbol_default(void *data, struct symbol_info *syminfo) {}
-static void end_symbol_default(void *data, struct symbol_info *syminfo) {}
+static void end_symbol_default(void *data) {}
 static void begin_members_default(void *data, struct symbol_info *syminfo) {}
-static void end_members_default(void *data, struct symbol_info *syminfo) {}
+static void end_members_default(void *data) {}
 static void begin_arguments_default(void *data, struct symbol_info *syminfo) {}
-static void end_arguments_default(void *data, struct symbol_info *syminfo) {}
+static void end_arguments_default(void *data) {}
 static void reference_symbol_default(void *data, uint64_t id, const char *name) {}
 static void begin_body_default(void *data, struct symbol_info *syminfo) {}
-static void end_body_default(void *data, struct symbol_info *syminfo) {}
+static void end_body_default(void *data) {}
 static void begin_func_returntype_default(void *data,
 	struct symbol_info *syminfo)
 {
 }
-static void end_func_returntype_default(void *data, struct symbol_info *syminfo)
+static void end_func_returntype_default(void *data)
 {
 }
 static void begin_basetype_default(void *data, struct symbol_info *syminfo) {}
-static void end_basetype_default(void *data, struct symbol_info *syminfo) {}
+static void end_basetype_default(void *data) {}
 static void begin_initializer_default(void *data, struct symbol_info *syminfo)
 {
 }
-static void end_initializer_default(void *data, struct symbol_info *syminfo) {}
+static void end_initializer_default(void *data) {}
 static void string_expression_default(void *data, const char *str) {}
 static void int_literal_default(void *data, long long value, int bit_size, bool is_unsigned) {}
 static void float_literal_default(void *data, long double fvalue, int bit_size) {}
 static void begin_statement_default(void *data, enum statement_type statement_type) {}
-static void end_statement_default(void *data, enum statement_type statement_type) {}
+static void end_statement_default(void *data) {}
 static void begin_expression_default(void *data, enum expression_type expr_type) {}
-static void end_expression_default(void *data, enum expression_type expr_type) {}
+static void end_expression_default(void *data) {}
 static void begin_assignment_expression_default(void *data, enum expression_type expr_type, int op) {}
-static void end_assignment_expression_default(void *data, enum expression_type expr_type) {}
+static void end_assignment_expression_default(void *data) {}
 static void begin_binop_expression_default(void *data, enum expression_type expr_type, int op) {}
-static void end_binop_expression_default(void *data, enum expression_type expr_type) {}
+static void end_binop_expression_default(void *data) {}
 static void begin_preop_expression_default(void *data,
 	enum expression_type expr_type, int op) {}
-static void end_preop_expression_default(void *data,
-	enum expression_type expr_type) {}
+static void end_preop_expression_default(void *data) {}
 static void begin_postop_expression_default(void *data,
 	enum expression_type expr_type, int op) {}
-static void end_postop_expression_default(void *data,
-	enum expression_type expr_type) {}
+static void end_postop_expression_default(void *data) {}
 static void begin_direct_call_expression_default(void *data,
 	enum expression_type expr_type, const char *name) {}
 static void begin_indirect_call_expression_default(void *data,
 	enum expression_type expr_type) {}
-static void end_call_expression_default(void *data, enum expression_type expr_type) {}
+static void end_call_expression_default(void *data) {}
 
 static void begin_callarg_expression_default(void *data,
 	enum expression_type expr_type,
 	int argpos) {}
-static void end_callarg_expression_default(void *data,
-	enum expression_type expr_type) {}
+static void end_callarg_expression_default(void *data) {}
 
 static void begin_cast_expression_default(void *data,
 	enum expression_type expr_type,
 	int oldbits, int newbits,
 	bool is_unsigned) {}
-static void end_cast_expression_default(void *data, enum expression_type expr_type) {}
+static void end_cast_expression_default(void *data) {}
 static void begin_conditional_expression_default(void *data, enum expression_type expr_type) {}
-static void end_conditional_expression_default(void *data, enum expression_type expr_type) {}
+static void end_conditional_expression_default(void *data) {}
 static void begin_label_expression_default(void *data, enum expression_type expr_type) {}
-static void end_label_expression_default(void *data, enum expression_type expr_type) {}
+static void end_label_expression_default(void *data) {}
 static void do_expression_identifier_default(void *data,
 	enum expression_type expr_type, const char *ident) {}
 static void do_expression_index_default(void *data,
 	enum expression_type expr_type, unsigned from, unsigned to) {}
 static void begin_expression_position_default(void *data,
 	enum expression_type expr_type, unsigned init_offset, int bit_offset, const char *ident) {}
-static void end_expression_position_default(void *data,
-	enum expression_type expr_type) {}
+static void end_expression_position_default(void *data) {}
 static void begin_initialization_default(void *data,
 	enum expression_type expr_type) {}
-static void end_initialization_default(void *data,
-	enum expression_type expr_type) {}
+static void end_initialization_default(void *data) {}
 static void begin_label_default(void *data, const char *name) {}
 static void end_label_default(void *data) {}
 static void begin_iterator_prestatement_default(void *data) {}

@@ -85,11 +85,27 @@ static void begin_symbol_impl(void *data, struct symbol_info *syminfo)
 	treevisitor->nesting_level++;
 }
 
-static void end_symbol_impl(void *data)
+static void decrement_nesting(void *data)
 {
 	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
 	treevisitor->nesting_level--;
 }
+
+static void increment_nesting_openbrace(void *data, const char *tag)
+{
+	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
+	output(treevisitor, "%s {\n", tag);
+	treevisitor->nesting_level++;
+}
+
+static void decrement_nesting_closebrace(void *data)
+{
+	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
+	treevisitor->nesting_level--;
+	output(treevisitor, "}\n");
+}
+
+static void end_symbol_impl(void *data) { decrement_nesting(data); }
 
 static void begin_members_impl(void *data, struct symbol_info *syminfo)
 {
@@ -138,9 +154,7 @@ static void begin_statement_impl(void *data, enum statement_type stmt_type)
 }
 static void end_statement_impl(void *data)
 {
-	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
-	treevisitor->nesting_level--;
-	output(treevisitor, "}\n");
+	decrement_nesting_closebrace(data);
 }
 
 static void reference_symbol_impl(void *data, uint64_t sym, const char *name)
@@ -185,8 +199,7 @@ static void begin_assignment_expression_impl(void *data,
 
 static void end_assignment_expression_impl(void *data)
 {
-	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
-	treevisitor->nesting_level--;
+	decrement_nesting(data);
 }
 
 static void begin_binop_expression_impl(void *data,
@@ -204,11 +217,7 @@ static void begin_binop_expression_impl(void *data,
 	treevisitor->nesting_level++;
 }
 
-static void end_binop_expression_impl(void *data)
-{
-	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
-	treevisitor->nesting_level--;
-}
+static void end_binop_expression_impl(void *data) { decrement_nesting(data); }
 
 static void begin_preop_expression_impl(void *data,
 					enum expression_type expr_type, int op)
@@ -228,11 +237,7 @@ static void begin_preop_expression_impl(void *data,
 	treevisitor->nesting_level++;
 }
 
-static void end_preop_expression_impl(void *data)
-{
-	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
-	treevisitor->nesting_level--;
-}
+static void end_preop_expression_impl(void *data) { decrement_nesting(data); }
 
 static void begin_postop_expression_impl(void *data,
 					 enum expression_type expr_type, int op)
@@ -246,11 +251,7 @@ static void begin_postop_expression_impl(void *data,
 	treevisitor->nesting_level++;
 }
 
-static void end_postop_expression_impl(void *data)
-{
-	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
-	treevisitor->nesting_level--;
-}
+static void end_postop_expression_impl(void *data) { decrement_nesting(data); }
 
 static void begin_direct_call_expression_impl(void *data,
 					      enum expression_type expr_type,
@@ -267,11 +268,7 @@ static void begin_indirect_call_expression_impl(void *data,
 	output(treevisitor, "indirect call\n");
 	treevisitor->nesting_level++;
 }
-static void end_call_expression_impl(void *data)
-{
-	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
-	treevisitor->nesting_level--;
-}
+static void end_call_expression_impl(void *data) { decrement_nesting(data); }
 
 static void begin_callarg_expression_impl(void *data,
 					  enum expression_type expr_type,
@@ -281,11 +278,7 @@ static void begin_callarg_expression_impl(void *data,
 	output(treevisitor, "arg[%d]\n", argpos);
 	treevisitor->nesting_level++;
 }
-static void end_callarg_expression_impl(void *data)
-{
-	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
-	treevisitor->nesting_level--;
-}
+static void end_callarg_expression_impl(void *data) { decrement_nesting(data); }
 static void begin_initializer_impl(void *data, struct symbol_info *syminfo)
 {
 	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
@@ -300,11 +293,7 @@ static void begin_cast_expression_impl(void *data,
 	output(treevisitor, "cast %s\n", (is_unsigned ? "[unsigned]" : ""));
 	treevisitor->nesting_level++;
 }
-static void end_cast_expression_impl(void *data)
-{
-	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
-	treevisitor->nesting_level--;
-}
+static void end_cast_expression_impl(void *data) { decrement_nesting(data); }
 static void begin_conditional_expression_impl(void *data,
 					      enum expression_type expr_type)
 {
@@ -314,8 +303,7 @@ static void begin_conditional_expression_impl(void *data,
 }
 static void end_conditional_expression_impl(void *data)
 {
-	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
-	treevisitor->nesting_level--;
+	decrement_nesting(data);
 }
 static void begin_label_expression_impl(void *data,
 					enum expression_type expr_type)
@@ -324,11 +312,7 @@ static void begin_label_expression_impl(void *data,
 	output(treevisitor, "label\n");
 	treevisitor->nesting_level++;
 }
-static void end_label_expression_impl(void *data)
-{
-	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
-	treevisitor->nesting_level--;
-}
+static void end_label_expression_impl(void *data) { decrement_nesting(data); }
 static void do_expression_identifier_impl(void *data,
 					  enum expression_type expr_type,
 					  const char *ident)
@@ -354,19 +338,8 @@ static void begin_expression_position_impl(void *data,
 }
 static void end_expression_position_impl(void *data)
 {
-	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
-	treevisitor->nesting_level--;
+	decrement_nesting(data);
 }
-static void begin_initialization_impl(void *data,
-				      enum expression_type expr_type)
-{
-	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
-}
-static void end_initialization_impl(void *data)
-{
-	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
-}
-
 static void begin_label_impl(void *data, const char *name)
 {
 	printf("%s:", name);
@@ -376,115 +349,73 @@ static void end_label_impl(void *data) {}
 
 static void begin_iterator_prestatement_impl(void *data)
 {
-	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
-	output(treevisitor, "prestatement {\n");
-	treevisitor->nesting_level++;
+	increment_nesting_openbrace(data, "prestatement");
 }
 static void end_iterator_prestatement_impl(void *data)
 {
-	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
-	treevisitor->nesting_level--;
-	output(treevisitor, "}\n");
+	decrement_nesting_closebrace(data);
 }
 static void begin_iterator_precondition_impl(void *data)
 {
-	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
-	output(treevisitor, "precondition {\n");
-	treevisitor->nesting_level++;
+	increment_nesting_openbrace(data, "precondition");
 }
 static void end_iterator_precondition_impl(void *data)
 {
-	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
-	treevisitor->nesting_level--;
-	output(treevisitor, "}\n");
+	decrement_nesting_closebrace(data);
 }
 static void begin_iterator_statement_impl(void *data)
 {
-	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
-	output(treevisitor, "statement {\n");
-	treevisitor->nesting_level++;
+	increment_nesting_openbrace(data, "statement");
 }
 static void end_iterator_statement_impl(void *data)
 {
-	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
-	treevisitor->nesting_level--;
-	output(treevisitor, "}\n");
+	decrement_nesting_closebrace(data);
 }
 static void begin_iterator_postcondition_impl(void *data)
 {
-	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
-	output(treevisitor, "postcondition {\n");
-	treevisitor->nesting_level++;
+	increment_nesting_openbrace(data, "postcondition");
 }
 static void end_iterator_postcondition_impl(void *data)
 {
-	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
-	treevisitor->nesting_level--;
-	output(treevisitor, "}\n");
+	decrement_nesting_closebrace(data);
 }
 static void begin_iterator_poststatement_impl(void *data)
 {
-	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
-	output(treevisitor, "poststatement {\n");
-	treevisitor->nesting_level++;
+	increment_nesting_openbrace(data, "poststatement");
 }
 static void end_iterator_poststatement_impl(void *data)
 {
-	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
-	treevisitor->nesting_level--;
-	output(treevisitor, "}\n");
+	decrement_nesting_closebrace(data);
 }
 
-static void begin_case_value_impl(void *data, long long value) 
+static void begin_case_value_impl(void *data, long long value)
 {
-	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
-	output(treevisitor, "on %lld goto {\n", value);
-	treevisitor->nesting_level++;
+	char temp[100];
+	snprintf(temp, sizeof temp, "on %lld goto", value);
+	increment_nesting_openbrace(data, temp);
 }
-static void begin_case_range_impl(void *data, long long from, long long to) 
+static void begin_case_range_impl(void *data, long long from, long long to)
 {
-	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
-	output(treevisitor, "on %lld ... %lld goto {\n", from, to);
-	treevisitor->nesting_level++;
+	char temp[100];
+	snprintf(temp, sizeof temp, "on %lld ... %lld goto", from, to);
+	increment_nesting_openbrace(data, temp);
 }
-static void begin_default_case_impl(void *data) 
+static void begin_default_case_impl(void *data)
 {
-	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
-	output(treevisitor, "by default goto {\n");
-	treevisitor->nesting_level++;
+	increment_nesting_openbrace(data, "by default goto");
 }
-static void end_case_impl(void *data) 
-{
-	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
-	treevisitor->nesting_level--;
-	output(treevisitor, "}\n");
-}
+static void end_case_impl(void *data) { decrement_nesting_closebrace(data); }
 
-static void begin_if_then_impl(void *data) 
+static void begin_if_then_impl(void *data)
 {
-	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
-	output(treevisitor, "then {\n");
-	treevisitor->nesting_level++;
+	increment_nesting_openbrace(data, "then");
 }
-static void end_if_then_impl(void *data)
-{
-	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
-	treevisitor->nesting_level--;
-	output(treevisitor, "}\n");
-}
+static void end_if_then_impl(void *data) { decrement_nesting_closebrace(data); }
 static void begin_if_else_impl(void *data)
 {
-	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
-	output(treevisitor, "else {\n");
-	treevisitor->nesting_level++;
+	increment_nesting_openbrace(data, "else");
 }
-static void end_if_else_impl(void *data)
-{
-	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
-	treevisitor->nesting_level--;
-	output(treevisitor, "}\n");
-}
-
+static void end_if_else_impl(void *data) { decrement_nesting_closebrace(data); }
 
 static void clean_up_symbols(struct dmr_C *C, struct symbol_list *list)
 {
@@ -548,8 +479,6 @@ int main(int argc, char **argv)
 	visitor.do_expression_index = do_expression_index_impl;
 	visitor.begin_expression_position = begin_expression_position_impl;
 	visitor.end_expression_position = end_expression_position_impl;
-	visitor.begin_initialization = begin_initialization_impl;
-	visitor.end_initialization = end_initialization_impl;
 	visitor.begin_label = begin_label_impl;
 	visitor.end_label = end_label_impl;
 	visitor.begin_iterator_prestatement = begin_iterator_prestatement_impl;

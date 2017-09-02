@@ -1,0 +1,29 @@
+testswitch:
+.L0:
+	<entry-point>
+	add.32      %r1 <- %arg1, $1
+	switch.32   %arg1, 0 -> .L2, 1 -> .L3, 2 -> .L4, default -> .L5
+
+.L2:
+	phisrc.32   %phi2(i) <- %r1
+	br          .L1
+
+.L3:
+	add.32      %r2 <- %arg1, $-4
+	phisrc.32   %phi3(i) <- %r2
+	br          .L1
+
+.L4:
+	add.32      %r3 <- %arg1, $5
+	phisrc.32   %phi4(i) <- %r3
+	br          .L1
+
+.L5:
+	phisrc.32   %phi5(i) <- %r1
+	br          .L1
+
+.L1:
+	phi.32      %r6(i) <- %phi2(i), %phi3(i), %phi4(i), %phi5(i)
+	ret.32      %r6(i)
+
+

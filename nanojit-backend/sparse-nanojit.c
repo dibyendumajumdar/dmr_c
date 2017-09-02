@@ -13,9 +13,9 @@
 #include <symbol.h>
 
 /*
-* The maximum number of jumps we can handle in a single
-* function. This is just a memory allocation issue.
-*/
+ * The maximum number of jumps we can handle in a single
+ * function. This is just a memory allocation issue.
+ */
 #define MAX_JMP_INSTRUCTIONS 100
 
 struct jmp_target {
@@ -67,11 +67,11 @@ struct function {
 };
 
 /*
-* We need to note any jump instructions we get as we do not yet have the label
-* instruction to set the target of the jump. The labels are created as each
-* basic block is processed. At the end of code generation, the resolve_jump()
-* function below is called to set the target for each jump.
-*/
+ * We need to note any jump instructions we get as we do not yet have the label
+ * instruction to set the target of the jump. The labels are created as each
+ * basic block is processed. At the end of code generation, the resolve_jump()
+ * function below is called to set the target for each jump.
+ */
 static bool add_jump_instruction(struct function *fn, struct basic_block *bb,
 				 NJXLInsRef ins)
 {
@@ -306,22 +306,20 @@ static struct NanoType *check_supported_returntype(struct dmr_C *C,
 	return type;
 }
 
-static NJXLInsRef truncate(struct dmr_C *C, struct function *fn,
-	NJXLInsRef val, struct NanoType *dtype,
-	int unsigned_cast) {
+static NJXLInsRef truncate(struct dmr_C *C, struct function *fn, NJXLInsRef val,
+			   struct NanoType *dtype, int unsigned_cast)
+{
 	if (NJX_is_q(val) && dtype->bit_size <= 64) {
 		if (dtype->bit_size == 64)
 			return val;
 		uint64_t mask = (1ULL << dtype->bit_size) - 1;
 		return NJX_andq(fn->builder, val, NJX_immq(fn->builder, mask));
-	}
-	else if (NJX_is_i(val) && dtype->bit_size <= 32) {
+	} else if (NJX_is_i(val) && dtype->bit_size <= 32) {
 		if (dtype->bit_size == 32)
 			return val;
 		uint32_t mask = (1U << dtype->bit_size) - 1;
 		return NJX_andi(fn->builder, val, NJX_immi(fn->builder, mask));
-	}
-	else {
+	} else {
 		return NULL;
 	}
 }
@@ -430,12 +428,12 @@ static NJXLInsRef output_op_phi(struct dmr_C *C, struct function *fn,
 	switch (insn->size) {
 	case 8:
 		// TODO do we need to do unsigned here?
-		//load = NJX_load_c2i(fn->builder, ptr, 0);
+		// load = NJX_load_c2i(fn->builder, ptr, 0);
 		load = NJX_load_uc2ui(fn->builder, ptr, 0);
 		break;
 	case 16:
 		// TODO do we need to do unsigned here?
-		//load = NJX_load_s2i(fn->builder, ptr, 0);
+		// load = NJX_load_s2i(fn->builder, ptr, 0);
 		load = NJX_load_us2ui(fn->builder, ptr, 0);
 		break;
 	case 32:
@@ -464,8 +462,8 @@ static NJXLInsRef val_to_value(struct dmr_C *C, struct function *fn,
 }
 
 /*
-* We do not support globals or aggregate locals with initializers
-*/
+ * We do not support globals or aggregate locals with initializers
+ */
 static NJXLInsRef build_local(struct dmr_C *C, struct function *fn,
 			      struct symbol *sym)
 {
@@ -894,9 +892,9 @@ static NJXLInsRef output_op_load(struct dmr_C *C, struct function *fn,
 }
 
 /**
-* Convert the pseudo to a value, and cast it to the expected type of the
-* instruction. If ptrtoint is true then convert pointer values to integers.
-*/
+ * Convert the pseudo to a case_value, and cast it to the expected type of the
+ * instruction. If ptrtoint is true then convert pointer values to integers.
+ */
 static NJXLInsRef get_operand(struct dmr_C *C, struct function *fn,
 			      struct symbol *ctype, pseudo_t pseudo,
 			      bool ptrtoint, bool unsigned_cast)
@@ -1372,9 +1370,10 @@ static NJXLInsRef output_op_store(struct dmr_C *C, struct function *fn,
 	off = (int32_t)insn->offset;
 
 	if (is_aggregate_type(insn->type)) {
-		dmrC_sparse_error(C, insn->pos, "store to aggregate type is "
-						"not yet supported, failure at "
-						"insn %s\n",
+		dmrC_sparse_error(C, insn->pos,
+				  "store to aggregate type is "
+				  "not yet supported, failure at "
+				  "insn %s\n",
 				  dmrC_show_instruction(C, insn));
 		return NULL;
 	}
@@ -1413,11 +1412,11 @@ static NJXLInsRef output_op_store(struct dmr_C *C, struct function *fn,
 }
 
 /*
-* Add liveness data to help Nanojit's
-* register allocator, which does a scan of the Nanojit instructions
-* from bottom up and can miss the fact that some registers are
-* needed.
-*/
+ * Add liveness data to help Nanojit's
+ * register allocator, which does a scan of the Nanojit instructions
+ * from bottom up and can miss the fact that some registers are
+ * needed.
+ */
 static void output_liveness(struct dmr_C *C, struct function *fn,
 			    struct basic_block *bb)
 {
@@ -1437,6 +1436,83 @@ static void output_liveness(struct dmr_C *C, struct function *fn,
 		}
 	}
 	END_FOR_EACH_PTR(need);
+}
+
+/*
+ * For now we emit a switch statement as if it is a bunch
+ * of if/elseif/else branches. NanoJIT supports a simple jump table
+ * instruction but this is not yet used as a) it requires case values
+ * to be consecutive, starting from 0, and b) default case has to
+ * be handled separately. In future we should emit a jump table when
+ * possible as the current approach penalises case values that appear
+ * later.
+ */
+static NJXLInsRef output_op_switch(struct dmr_C *C, struct function *fn,
+				   struct instruction *insn)
+{
+	NJXLInsRef switch_value;
+	struct basic_block *default_bb = NULL;
+	struct multijmp *jmp;
+	int n_jmp = 0;
+
+	FOR_EACH_PTR(insn->multijmp_list, jmp)
+	{
+		if (jmp->begin <= jmp->end) { /* case M..N */
+			n_jmp += (jmp->end - jmp->begin) + 1;
+		} else /* default case */
+			default_bb = jmp->target;
+	}
+	END_FOR_EACH_PTR(jmp);
+
+	switch_value = pseudo_to_value(C, fn, insn->type, insn->target);
+	if (!switch_value)
+		return NULL;
+
+	FOR_EACH_PTR(insn->multijmp_list, jmp)
+	{
+		long long val;
+		for (val = jmp->begin; val <= jmp->end; val++) {
+			/*
+			 * For each case case_value emit
+			 * if (switch_value == case_value) goto case_block;
+			 */
+			struct NanoType *symtype =
+			    get_symnode_type(C, fn, insn->type);
+			NJXLInsRef case_value = constant_value(C, fn, val, symtype);
+			NJXLInsRef cond = NULL;
+			if (NJX_is_i(case_value)) {
+				cond = NJX_eqi(fn->builder, case_value, switch_value);
+			} else if (NJX_is_q(case_value)) {
+				cond = NJX_eqq(fn->builder, case_value, switch_value);
+			}
+			if (cond == NULL)
+				return NULL;
+			// Mark registers needed by destination BB as live
+			// we should only output if dest bb precedes current bb
+			if (insn->bb->nr > jmp->target->nr)
+				output_liveness(C, fn, jmp->target);
+			NJXLInsRef br1 = NJX_cbr_true(fn->builder, cond,
+						      NULL); // jmp->target
+			if (!add_jump_instruction(fn, jmp->target, br1))
+				return NULL;
+		}
+	}
+	END_FOR_EACH_PTR(jmp);
+
+	if (default_bb) {
+		// Handle default case
+		// Mark registers needed by destination BB as live
+		// we should only output if dest bb precedes
+		// current bb
+		if (insn->bb->nr > default_bb->nr)
+			output_liveness(C, fn, default_bb);
+		NJXLInsRef default_br = NJX_br(fn->builder, NULL);
+		if (!add_jump_instruction(fn, default_bb, default_br))
+			return NULL;
+	}
+	// We need to return some non NULL value
+	// So here we return the switch_value
+	return switch_value;
 }
 
 static NJXLInsRef output_op_cbr(struct dmr_C *C, struct function *fn,
@@ -1490,19 +1566,17 @@ static NJXLInsRef output_op_br(struct dmr_C *C, struct function *fn,
 	return br1;
 }
 
-static NJXLInsRef is_eq_zero(struct dmr_C *C, struct function *fn, NJXLInsRef value)
+static NJXLInsRef is_eq_zero(struct dmr_C *C, struct function *fn,
+			     NJXLInsRef value)
 {
 	NJXLInsRef cond = NULL;
 	if (NJX_is_i(value)) {
 		cond = NJX_eqi(fn->builder, value, NJX_immi(fn->builder, 0));
-	}
-	else if (NJX_is_q(value)) {
+	} else if (NJX_is_q(value)) {
 		cond = NJX_eqq(fn->builder, value, NJX_immq(fn->builder, 0));
-	}
-	else if (NJX_is_d(value)) {
+	} else if (NJX_is_d(value)) {
 		cond = NJX_eqd(fn->builder, value, NJX_immd(fn->builder, 0));
-	}
-	else if (NJX_is_f(value)) {
+	} else if (NJX_is_f(value)) {
 		cond = NJX_eqf(fn->builder, value, NJX_immf(fn->builder, 0));
 	}
 	if (cond == NULL)
@@ -1510,12 +1584,10 @@ static NJXLInsRef is_eq_zero(struct dmr_C *C, struct function *fn, NJXLInsRef va
 	return cond;
 }
 
-static NJXLInsRef output_op_sel(struct dmr_C *C, struct function *fn, struct instruction *insn)
+static NJXLInsRef output_op_sel(struct dmr_C *C, struct function *fn,
+				struct instruction *insn)
 {
 	NJXLInsRef target, src1, src2, src3;
-	NJXLInsRef desttype = insn_symbol_type(C, fn, insn);
-	if (!desttype)
-		return NULL;
 
 	src1 = pseudo_to_value(C, fn, insn->type, insn->src1);
 	if (!src1)
@@ -1691,13 +1763,13 @@ static int output_insn(struct dmr_C *C, struct function *fn,
 		break;
 
 	case OP_SWITCH:
-		dmrC_sparse_error(C, insn->pos,
-			"switch statement is not supported\n");
-		return 0;
+		NJX_comment(fn->builder, make_comment(C, insn));
+		v = output_op_switch(C, fn, insn);
+		break;
 
 	case OP_COMPUTEDGOTO:
 		dmrC_sparse_error(C, insn->pos,
-			"computed goto is not supported\n");
+				  "computed goto is not supported\n");
 		return 0;
 
 	case OP_LNOP:
@@ -1804,11 +1876,11 @@ static int output_insn(struct dmr_C *C, struct function *fn,
 }
 
 /*
-* Add liveness data to help Nanojit's
-* register allocator, which does a scan of the Nanojit instructions
-* from bottom up and can miss the fact that some registers are
-* needed. It is not yet clear the implementation below is correct.
-*/
+ * Add liveness data to help Nanojit's
+ * register allocator, which does a scan of the Nanojit instructions
+ * from bottom up and can miss the fact that some registers are
+ * needed. It is not yet clear the implementation below is correct.
+ */
 static void output_parameter_liveness(struct dmr_C *C, struct function *fn)
 {
 	for (int i = 0; fn->args[i]; i++) {
@@ -1989,7 +2061,8 @@ static int is_prototype(struct symbol *sym)
 }
 
 /* returns 1 on success, 0 on failure */
-static int compile(struct dmr_C *C, NJXContextRef module, struct symbol_list *list)
+static int compile(struct dmr_C *C, NJXContextRef module,
+		   struct symbol_list *list)
 {
 	struct symbol *sym;
 
@@ -2025,7 +2098,7 @@ bool dmrC_nanocompile(int argc, char **argv, NJXContextRef module,
 
 	struct dmr_C *C = new_dmr_C();
 	C->optimize = 1; /* We need the liveness data for NanoJIT */
-	C->codegen = 1; /* Disables macros related to vararg processing */
+	C->codegen = 1;  /* Disables macros related to vararg processing */
 
 	symlist = dmrC_sparse_initialize(C, argc, argv, &filelist);
 

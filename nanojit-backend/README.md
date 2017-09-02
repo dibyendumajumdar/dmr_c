@@ -6,24 +6,21 @@ This is a [NanoJIT](https://github.com/dibyendumajumdar/nanojit) backend.
 
 These are very early days. We are able to generate code for following simple C programs. 
 
-* [strlen](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/strlen.c). The generated LIR and assembly instructions look 
-  [like this](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/strlen.lir). 
-* [sumq](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/sumq.c). The generated LIR and assembly instructions look
+* [strlen.c](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/strlen.c). The generated LIR and assembly instructions look [like this](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/strlen.lir). 
+* [sumq.c](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/sumq.c). The generated LIR and assembly instructions look
   [like this](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/sumq.lir).
-* [store](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/store.c). The generated LIR and assembly instructions look
+* [store.c](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/store.c). The generated LIR and assembly instructions look
   [like this](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/store.lir).
-* [testif](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/testif.c). The generated LIR and assembly instructions look
-  [like this](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/testif.lir).
-* [locals](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/locals.c). The generated LIR and assembly instructions look
-  [like this](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/locals.lir).  
-* [bitfields](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/bitfields.c). The generated LIR and assembly instructions   look [like this](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/bitfields.lir).  
+* [testif.c](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/testif.c). The generated LIR and assembly instructions look [like this](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/testif.lir).
+* [locals.c](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/locals.c). The generated LIR and assembly instructions look [like this](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/locals.lir).  
+* [bitfields.c](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/bitfields.c). The generated LIR and assembly instructions look [like this](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/bitfields.lir).  
+* [switch.c](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/switch.c). The generated LIR and assembly instructions   look [like this](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/switch.lir).  
     
   
 ## Issues
 
 ### Features not yet implemented
 
-* switch statement (probably can't be implemented)
 * computed gotos (probably can't be implemented)
 * bitfield access is implemented but not fully tested
 * calling functions through function pointers
@@ -35,6 +32,7 @@ These are very early days. We are able to generate code for following simple C p
 * NanoJIT only allows 4 integer/pointer parameters inside a JIT function.
 * We cannot have static or global data in JIT code
 * We probably can't generate code for string initializers
+* Generated code for switch statements uses if (cond) branching rather than a jump table.
   
 ## Building 
 

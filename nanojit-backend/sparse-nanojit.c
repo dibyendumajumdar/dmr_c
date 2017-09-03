@@ -438,7 +438,6 @@ static int32_t symbol_size_in_bytes(struct dmr_C *C, struct symbol *sym)
 	return sym->bit_size / C->target->bits_in_char;
 }
 
-
 static NJXLInsRef val_to_value(struct dmr_C *C, struct function *fn,
 			       long long value, struct symbol *ctype)
 {
@@ -716,7 +715,7 @@ static NJXLInsRef pseudo_ins(struct dmr_C *C, struct function *fn,
 }
 
 static NJXLInsRef output_op_phi(struct dmr_C *C, struct function *fn,
-	struct instruction *insn)
+				struct instruction *insn)
 {
 	NJXLInsRef ptr = insn->target->priv2;
 
@@ -756,7 +755,7 @@ static NJXLInsRef output_op_phi(struct dmr_C *C, struct function *fn,
 }
 
 static NJXLInsRef output_op_load(struct dmr_C *C, struct function *fn,
-	struct instruction *insn)
+				 struct instruction *insn)
 {
 	NJXLInsRef ptr = pseudo_to_value(C, fn, insn->type, insn->src);
 
@@ -787,7 +786,6 @@ static NJXLInsRef output_op_load(struct dmr_C *C, struct function *fn,
 	insn->target->priv = value;
 	return value;
 }
-
 
 static struct symbol *get_function_basetype(struct symbol *type)
 {
@@ -982,6 +980,15 @@ static NJXLInsRef is_eq_zero(struct dmr_C *C, struct function *fn,
 	if (cond == NULL)
 		return NULL;
 	return cond;
+}
+
+static NJXLInsRef is_neq_zero(struct dmr_C *C, struct function *fn,
+			      NJXLInsRef value)
+{
+	NJXLInsRef cond = is_eq_zero(C, fn, value);
+	if (cond == NULL)
+		return NULL;
+	return is_eq_zero(C, fn, cond);
 }
 
 static NJXLInsRef output_op_compare(struct dmr_C *C, struct function *fn,
@@ -1294,6 +1301,50 @@ static NJXLInsRef output_op_binary(struct dmr_C *C, struct function *fn,
 			break;
 		}
 		break;
+	case OP_AND_BOOL: {
+		NJXLInsRef lhs_nz, rhs_nz;
+		struct NanoType *dst_type;
+
+		lhs_nz = is_neq_zero(C, fn, lhs);
+		rhs_nz = is_neq_zero(C, fn, rhs);
+		switch (insn->size) {
+		case 64:
+			target = NJX_andq(fn->builder, lhs_nz, rhs_nz);
+			break;
+		case 32:
+			target = NJX_andi(fn->builder, lhs_nz, rhs_nz);
+			break;
+		}
+		if (!target)
+			return NULL;
+		dst_type = insn_symbol_type(C, fn, insn);
+		if (!dst_type)
+			return NULL;
+		target = build_cast(C, fn, target, dst_type, 1);
+		break;
+	}
+	case OP_OR_BOOL: {
+		NJXLInsRef lhs_nz, rhs_nz;
+		struct NanoType *dst_type;
+
+		lhs_nz = is_neq_zero(C, fn, lhs);
+		rhs_nz = is_neq_zero(C, fn, rhs);
+		switch (insn->size) {
+		case 64:
+			target = NJX_orq(fn->builder, lhs_nz, rhs_nz);
+			break;
+		case 32:
+			target = NJX_ori(fn->builder, lhs_nz, rhs_nz);
+			break;
+		}
+		if (!target)
+			return NULL;
+		dst_type = insn_symbol_type(C, fn, insn);
+		if (!dst_type)
+			return NULL;
+		target = build_cast(C, fn, target, dst_type, 1);
+		break;
+	}
 	}
 	insn->target->priv = target;
 
@@ -1412,7 +1463,6 @@ static NJXLInsRef output_op_store(struct dmr_C *C, struct function *fn,
 				  struct instruction *insn)
 {
 	NJXLInsRef ptr, target_in;
-	// struct NanoType *desttype;
 	int32_t off;
 
 	/* int type large enough to hold a pointer */
@@ -1583,7 +1633,7 @@ static NJXLInsRef output_op_cbr(struct dmr_C *C, struct function *fn,
 	if (br->bb->nr > br->bb_false->nr)
 		output_liveness(C, fn, br->bb_false);
 	// As we tested for the value being zero above,
-	// then if this is true, the condition is false, so 
+	// then if this is true, the condition is false, so
 	// we must take the false branch
 	NJXLInsRef br1 =
 	    NJX_cbr_true(fn->builder, cond, NULL); // br->bb_false->priv
@@ -1850,13 +1900,11 @@ static int output_insn(struct dmr_C *C, struct function *fn,
 	case OP_AND:
 	case OP_OR:
 	case OP_XOR:
+	case OP_AND_BOOL:
+	case OP_OR_BOOL:
 		NJX_comment(fn->builder, make_comment(C, insn));
 		v = output_op_binary(C, fn, insn);
 		break;
-
-	case OP_AND_BOOL:
-	case OP_OR_BOOL:
-		return 0;
 
 	case OP_SET_EQ:
 	case OP_SET_NE:

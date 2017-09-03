@@ -21,8 +21,8 @@ dmr_C is a fork of Sparse. The main changes are:
 * The LLVM backend has had many fixes and is able to compile real programs. See details below for what works and what doesn't.
 
 ## News
+* Sep-2017 - a lot more functional NanoJIT backend
 * Aug-2017 - synced with Sparse 0.5.1 release
-* Aug-2017 - New SSA construction integrated and is being tested in newssa branch
 
 ## Build instructions
 
@@ -34,6 +34,8 @@ cd build
 cmake ..
 ```
 This will generate appropriate build files that can then be used to build the project.
+
+### LLVM Backend
 
 To build with LLVM support, additional arguments are needed. Following instructions are for LLVM 3.9 on Windows 10. 
 
@@ -48,6 +50,21 @@ Here $LLVM_INSTALL_DIR refers to the path where LLVM is installed.
 Generation of build scripts follows the same process on Linux and Mac OSX platforms. Note that on Ubuntu the standard LLVM package has broken CMake files hence the recommended approach is to download and build LLVM before attempting to build dmr_C.
 
 Once the build files are generated you can use the normal build tools i.e. Visual Studio on Windows and make on UNIX or Mac OSX platforms.
+
+### NanoJIT Backend 
+
+* First follow instructions to build a [NanoJIT](https://github.com/dibyendumajumdar/nanojit) library.
+* You may need to amend the script [FindNanoJIT.cmake](https://github.com/dibyendumajumdar/dmr_c/blob/master/cmake/FindNanoJIT.cmake) to
+  match your installation details.
+* Next you can generate the CMake build scripts. I use following on Windows 10.
+
+```
+mkdir build
+cd build
+cmake -DNANO_JIT=ON -G "Visual Studio 15 2017 Win64" ..
+```
+
+Process on Linux should be similar except for the CMake generator target.
 
 ## Using dmr_C as a library
 

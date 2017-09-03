@@ -1,0 +1,645 @@
+test_if1:
+.L0:
+	<entry-point>
+	ret.32      $97
+
+
+test_if2:
+.L4:
+	<entry-point>
+	ret.32      $98
+
+
+test_if3:
+.L8:
+	<entry-point>
+	ret.32      $99
+
+
+test_if4:
+.L13:
+	<entry-point>
+	ret.32      $100
+
+
+test_if5:
+.L18:
+	<entry-point>
+	ret.32      $101
+
+
+test_if6:
+.L22:
+	<entry-point>
+	ret.32      $102
+
+
+test_if7:
+.L26:
+	<entry-point>
+	ret.32      $103
+
+
+test_if8:
+.L31:
+	<entry-point>
+	ret.32      $104
+
+
+test_if9:
+.L36:
+	<entry-point>
+	ret.32      $105
+
+
+test_if10:
+.L40:
+	<entry-point>
+	ret.32      $106
+
+
+test_if11:
+.L44:
+	<entry-point>
+	ret.32      $107
+
+
+test_if:
+.L48:
+	<entry-point>
+	call.32     %r12 <- test_if1
+	setne.32    %r13 <- %r12, $97
+	cbr         %r13, .L49, .L50
+
+.L49:
+	phisrc.32   %phi27(return) <- $1
+	br          .L51
+
+.L50:
+	call.32     %r14 <- test_if2
+	setne.32    %r15 <- %r14, $98
+	cbr         %r15, .L52, .L53
+
+.L52:
+	phisrc.32   %phi28(return) <- $1
+	br          .L51
+
+.L53:
+	call.32     %r16 <- test_if3
+	setne.32    %r17 <- %r16, $99
+	cbr         %r17, .L54, .L55
+
+.L54:
+	phisrc.32   %phi29(return) <- $1
+	br          .L51
+
+.L55:
+	call.32     %r18 <- test_if4
+	setne.32    %r19 <- %r18, $100
+	cbr         %r19, .L56, .L57
+
+.L56:
+	phisrc.32   %phi30(return) <- $1
+	br          .L51
+
+.L57:
+	call.32     %r20 <- test_if5
+	setne.32    %r21 <- %r20, $101
+	cbr         %r21, .L58, .L59
+
+.L58:
+	phisrc.32   %phi31(return) <- $1
+	br          .L51
+
+.L59:
+	call.32     %r22 <- test_if6
+	setne.32    %r23 <- %r22, $102
+	cbr         %r23, .L60, .L61
+
+.L60:
+	phisrc.32   %phi32(return) <- $1
+	br          .L51
+
+.L61:
+	call.32     %r24 <- test_if7
+	setne.32    %r25 <- %r24, $103
+	cbr         %r25, .L62, .L63
+
+.L62:
+	phisrc.32   %phi33(return) <- $1
+	br          .L51
+
+.L63:
+	call.32     %r26 <- test_if8
+	setne.32    %r27 <- %r26, $104
+	cbr         %r27, .L64, .L65
+
+.L64:
+	phisrc.32   %phi34(return) <- $1
+	br          .L51
+
+.L65:
+	call.32     %r28 <- test_if9
+	setne.32    %r29 <- %r28, $105
+	cbr         %r29, .L66, .L67
+
+.L66:
+	phisrc.32   %phi35(return) <- $1
+	br          .L51
+
+.L67:
+	call.32     %r30 <- test_if10
+	setne.32    %r31 <- %r30, $106
+	cbr         %r31, .L68, .L69
+
+.L68:
+	phisrc.32   %phi36(return) <- $1
+	br          .L51
+
+.L69:
+	call.32     %r32 <- test_if11
+	setne.32    %r33 <- %r32, $107
+	cbr         %r33, .L70, .L71
+
+.L70:
+	phisrc.32   %phi37(return) <- $1
+	br          .L51
+
+.L71:
+	phisrc.32   %phi38(return) <- $0
+	br          .L51
+
+.L51:
+	phi.32      %r34(return) <- %phi27(return), %phi28(return), %phi29(return), %phi30(return), %phi31(return), %phi32(return), %phi33(return), %phi34(return), %phi35(return), %phi36(return), %phi37(return), %phi38(return)
+	ret.32      %r34(return)
+
+
+test_for:
+.L72:
+	<entry-point>
+	phisrc.32   %phi41(i) <- $0
+	phisrc.32   %phi43(acc) <- $0
+	br          .L76
+
+.L76:
+	phi.32      %r35(i) <- %phi41(i), %phi42(i)
+	phi.32      %r41(acc) <- %phi43(acc), %phi44(acc)
+	setlt.32    %r36 <- %r35(i), $5
+	cbr         %r36, .L73, .L75
+
+.L73:
+	add.32      %r39 <- %r41(acc), %r35(i)
+	add.32      %r40 <- %r35(i), $1
+	phisrc.32   %phi42(i) <- %r40
+	phisrc.32   %phi44(acc) <- %r39
+	br          .L76
+
+.L75:
+	setne.32    %r42 <- %r41(acc), $10
+	cbr         %r42, .L77, .L78
+
+.L77:
+	phisrc.32   %phi75(return) <- $1
+	br          .L79
+
+.L78:
+	phisrc.32   %phi47(i) <- $0
+	phisrc.32   %phi49(acc) <- $0
+	br          .L83
+
+.L83:
+	phi.32      %r43(i) <- %phi47(i), %phi48(i)
+	phi.32      %r49(acc) <- %phi49(acc), %phi50(acc)
+	setlt.32    %r44 <- %r43(i), $5
+	cbr         %r44, .L80, .L82
+
+.L80:
+	add.32      %r47 <- %r49(acc), %r43(i)
+	add.32      %r48 <- %r43(i), $1
+	phisrc.32   %phi48(i) <- %r48
+	phisrc.32   %phi50(acc) <- %r47
+	br          .L83
+
+.L82:
+	setne.32    %r50 <- %r49(acc), $10
+	cbr         %r50, .L84, .L85
+
+.L84:
+	phisrc.32   %phi76(return) <- $1
+	br          .L79
+
+.L85:
+	phisrc.32   %phi55(i) <- $0
+	phisrc.32   %phi57(acc) <- $0
+	br          .L89
+
+.L89:
+	phi.32      %r51(i) <- %phi55(i), %phi56(i)
+	phi.32      %r62(acc) <- %phi57(acc), %phi60(acc)
+	setlt.32    %r52 <- %r51(i), $100
+	cbr         %r52, .L86, .L88
+
+.L86:
+	setlt.32    %r54 <- %r51(i), $5
+	cbr         %r54, .L90, .L91
+
+.L90:
+	phisrc.32   %phi58(acc) <- %r62(acc)
+	br          .L87
+
+.L91:
+	seteq.32    %r55 <- %r51(i), $9
+	cbr         %r55, .L88, .L93
+
+.L93:
+	add.32      %r58 <- %r62(acc), %r51(i)
+	phisrc.32   %phi59(acc) <- %r58
+	br          .L87
+
+.L87:
+	phi.32      %r63(acc) <- %phi58(acc), %phi59(acc)
+	add.32      %r61 <- %r51(i), $1
+	phisrc.32   %phi56(i) <- %r61
+	phisrc.32   %phi60(acc) <- %r63(acc)
+	br          .L89
+
+.L88:
+	setne.32    %r65 <- %r62(acc), $26
+	cbr         %r65, .L94, .L95
+
+.L94:
+	phisrc.32   %phi77(return) <- $1
+	br          .L79
+
+.L95:
+	phisrc.32   %phi66(x) <- $3
+	phisrc.32   %phi68(z) <- $8
+	phisrc.32   %phi70(y) <- $5
+	br          .L99
+
+.L99:
+	phi.32      %r66(x) <- %phi66(x), %phi67(x)
+	phi.32      %r78(z) <- %phi68(z), %phi69(z)
+	phi.32      %r79(y) <- %phi70(y), %phi71(y)
+	setlt.32    %r67 <- %r66(x), $100
+	cbr         %r67, .L96, .L104
+
+.L96:
+	add.32      %r71 <- %r66(x), %r79(y)
+	setne.32    %r72 <- %r78(z), %r71
+	cbr         %r72, .L100, .L97
+
+.L100:
+	phisrc.32   %phi78(return) <- $1
+	br          .L79
+
+.L97:
+	add.32      %r73 <- %r66(x), $1
+	add.32      %r74 <- %r79(y), $1
+	add.32      %r76 <- %r78(z), $2
+	phisrc.32   %phi67(x) <- %r73
+	phisrc.32   %phi69(z) <- %r76
+	phisrc.32   %phi71(y) <- %r74
+	br          .L99
+
+.L104:
+	phisrc.32   %phi73(i) <- $0
+	br          .L109
+
+.L109:
+	phi.32      %r80(i) <- %phi73(i), %phi74(i)
+	setlt.32    %r81 <- %r80(i), $100
+	cbr         %r81, .L107, .L115
+
+.L107:
+	add.32      %r83 <- %r80(i), $1
+	phisrc.32   %phi74(i) <- %r83
+	br          .L109
+
+.L115:
+	phisrc.32   %phi80(return) <- $0
+	br          .L79
+
+.L79:
+	phi.32      %r85(return) <- %phi75(return), %phi76(return), %phi77(return), %phi78(return), VOID, %phi80(return)
+	ret.32      %r85(return)
+
+
+test_while:
+.L116:
+	<entry-point>
+	phisrc.32   %phi83(i) <- $0
+	phisrc.32   %phi85(acc) <- $0
+	br          .L120
+
+.L120:
+	phi.32      %r86(i) <- %phi83(i), %phi84(i)
+	phi.32      %r92(acc) <- %phi85(acc), %phi86(acc)
+	setle.32    %r87 <- %r86(i), $100
+	cbr         %r87, .L117, .L119
+
+.L117:
+	add.32      %r90 <- %r86(i), $1
+	add.32      %r91 <- %r92(acc), %r86(i)
+	phisrc.32   %phi84(i) <- %r90
+	phisrc.32   %phi86(acc) <- %r91
+	br          .L120
+
+.L119:
+	setne.32    %r93 <- %r92(acc), $0x13ba
+	cbr         %r93, .L121, .L122
+
+.L121:
+	phisrc.32   %phi107(return) <- $1
+	br          .L123
+
+.L122:
+	phisrc.32   %phi89(i) <- $0
+	phisrc.32   %phi91(acc) <- $1
+	br          .L127
+
+.L127:
+	phi.32      %r94(i) <- %phi89(i), %phi90(i)
+	phi.32      %r100(acc) <- %phi91(acc), %phi92(acc)
+	setle.32    %r95 <- %r94(i), $100
+	cbr         %r95, .L124, .L126
+
+.L124:
+	add.32      %r98 <- %r94(i), $1
+	add.32      %r99 <- %r100(acc), %r94(i)
+	phisrc.32   %phi90(i) <- %r98
+	phisrc.32   %phi92(acc) <- %r99
+	br          .L127
+
+.L126:
+	setne.32    %r101 <- %r100(acc), $0x13bb
+	cbr         %r101, .L128, .L129
+
+.L128:
+	phisrc.32   %phi108(return) <- $1
+	br          .L123
+
+.L129:
+	phisrc.32   %phi95(i) <- $0
+	phisrc.32   %phi99(acc) <- $0
+	br          .L133
+
+.L133:
+	phi.32      %r102(i) <- %phi95(i), %phi98(i)
+	phi.32      %r112(acc) <- %phi99(acc), %phi102(acc)
+	setlt.32    %r103 <- %r102(i), $10
+	phisrc.32   %phi103(acc) <- %r112(acc)
+	cbr         %r103, .L130, .L132
+
+.L130:
+	add.32      %r105 <- %r102(i), $1
+	setlt.32    %r106 <- %r102(i), $5
+	cbr         %r106, .L134, .L135
+
+.L134:
+	phisrc.32   %phi100(acc) <- %r112(acc)
+	br          .L131
+
+.L135:
+	add.32      %r109 <- %r112(acc), %r105
+	seteq.32    %r111 <- %r105, $9
+	cbr         %r111, .L136, .L137
+
+.L136:
+	phisrc.32   %phi104(acc) <- %r109
+	br          .L132
+
+.L137:
+	phisrc.32   %phi101(acc) <- %r109
+	br          .L131
+
+.L131:
+	phi.32      %r114(acc) <- %phi100(acc), %phi101(acc)
+	phisrc.32   %phi98(i) <- %r105
+	phisrc.32   %phi102(acc) <- %r114(acc)
+	br          .L133
+
+.L132:
+	phi.32      %r115(acc) <- %phi103(acc), %phi104(acc)
+	setne.32    %r116 <- %r115(acc), $30
+	cbr         %r116, .L138, .L139
+
+.L138:
+	phisrc.32   %phi109(return) <- $1
+	br          .L123
+
+.L139:
+	phisrc.32   %phi105(i) <- $0
+	br          .L143
+
+.L143:
+	phi.32      %r117(i) <- %phi105(i), %phi106(i)
+	add.32      %r118 <- %r117(i), $1
+	setlt.32    %r119 <- %r117(i), $100
+	cbr         %r119, .L141, .L149
+
+.L141:
+	phisrc.32   %phi106(i) <- %r118
+	br          .L143
+
+.L149:
+	phisrc.32   %phi111(return) <- $0
+	br          .L123
+
+.L123:
+	phi.32      %r121(return) <- %phi107(return), %phi108(return), %phi109(return), VOID, %phi111(return)
+	ret.32      %r121(return)
+
+
+test_do:
+.L150:
+	<entry-point>
+	phisrc.32   %phi112(acc) <- $0
+	phisrc.32   %phi114(i) <- $0
+	br          .L151
+
+.L151:
+	phi.32      %r122(acc) <- %phi112(acc), %phi113(acc)
+	phi.32      %r123(i) <- %phi114(i), %phi115(i)
+	add.32      %r124 <- %r123(i), $1
+	add.32      %r125 <- %r122(acc), %r123(i)
+	setle.32    %r126 <- %r124, $100
+	phisrc.32   %phi113(acc) <- %r125
+	phisrc.32   %phi115(i) <- %r124
+	cbr         %r126, .L151, .L153
+
+.L153:
+	setne.32    %r127 <- %r125, $0x13ba
+	cbr         %r127, .L154, .L161
+
+.L154:
+	phisrc.32   %phi130(return) <- $1
+	br          .L156
+
+.L161:
+	phisrc.32   %phi118(i) <- $0
+	phisrc.32   %phi120(acc) <- $0
+	br          .L162
+
+.L162:
+	phi.32      %r129(i) <- %phi118(i), %phi119(i)
+	phi.32      %r132(acc) <- %phi120(acc), %phi123(acc)
+	add.32      %r130 <- %r129(i), $1
+	setlt.32    %r131 <- %r129(i), $5
+	cbr         %r131, .L165, .L166
+
+.L165:
+	phisrc.32   %phi121(acc) <- %r132(acc)
+	br          .L163
+
+.L166:
+	add.32      %r134 <- %r132(acc), %r130
+	seteq.32    %r136 <- %r130, $9
+	cbr         %r136, .L167, .L168
+
+.L167:
+	phisrc.32   %phi124(acc) <- %r134
+	br          .L164
+
+.L168:
+	phisrc.32   %phi122(acc) <- %r134
+	br          .L163
+
+.L163:
+	phi.32      %r139(acc) <- %phi121(acc), %phi122(acc)
+	setlt.32    %r138 <- %r130, $10
+	phisrc.32   %phi119(i) <- %r130
+	phisrc.32   %phi123(acc) <- %r139(acc)
+	phisrc.32   %phi125(acc) <- %r139(acc)
+	cbr         %r138, .L162, .L164
+
+.L164:
+	phi.32      %r140(acc) <- %phi124(acc), %phi125(acc)
+	setne.32    %r141 <- %r140(acc), $30
+	cbr         %r141, .L169, .L170
+
+.L169:
+	phisrc.32   %phi132(return) <- $1
+	br          .L156
+
+.L170:
+	phisrc.32   %phi126(i) <- $0
+	br          .L171
+
+.L171:
+	phi.32      %r142(i) <- %phi126(i), %phi127(i)
+	add.32      %r143 <- %r142(i), $1
+	setlt.32    %r144 <- %r142(i), $100
+	phisrc.32   %phi127(i) <- %r143
+	cbr         %r144, .L171, .L173
+
+.L173:
+	phisrc.32   %phi128(i) <- $0
+	br          .L174
+
+.L174:
+	phi.32      %r145(i) <- %phi128(i), %phi129(i)
+	add.32      %r146 <- %r145(i), $1
+	setlt.32    %r147 <- %r145(i), $100
+	phisrc.32   %phi129(i) <- %r146
+	cbr         %r147, .L174, .L176
+
+.L176:
+	phisrc.32   %phi133(return) <- $0
+	br          .L156
+
+.L156:
+	phi.32      %r148(return) <- %phi130(return), VOID, %phi132(return), %phi133(return)
+	ret.32      %r148(return)
+
+
+test_switch:
+.L177:
+	<entry-point>
+	phisrc.32   %phi135(a) <- $0
+	phisrc.32   %phi134(a) <- $3
+	phi.32      %r149(a) <- %phi134(a), %phi135(a)
+	setne.32    %r150 <- %r149(a), $3
+	ret.32      %r150
+
+
+test_goto:
+.L208:
+	<entry-point>
+	phisrc.32   %phi158(i) <- $0
+	phisrc.32   %phi161(acc) <- $0
+	br          .L213
+
+.L213:
+	phi.32      %r168(i) <- %phi158(i), %phi159(i), %phi160(i)
+	phi.32      %r171(acc) <- %phi161(acc), %phi162(acc), %phi163(acc)
+	setgt.32    %r169 <- %r168(i), $10
+	cbr         %r169, .L216, .L215
+
+.L215:
+	add.32      %r170 <- %r168(i), $1
+	add.32      %r173 <- %r171(acc), %r168(i)
+	phisrc.32   %phi159(i) <- %r170
+	phisrc.32   %phi162(acc) <- %r173
+	br          .L213
+
+.L216:
+	setgt.32    %r176 <- %r168(i), $11
+	cbr         %r176, .L219, .L218
+
+.L218:
+	setne.32    %r178 <- %r171(acc), $55
+	cbr         %r178, .L220, .L221
+
+.L220:
+	phisrc.32   %phi155(return) <- $1
+	br          .L212
+
+.L221:
+	add.32      %r179 <- %r168(i), $1
+	phisrc.32   %phi160(i) <- %r179
+	phisrc.32   %phi163(acc) <- %r171(acc)
+	br          .L213
+
+.L219:
+	phisrc.32   %phi156(return) <- $0
+	br          .L212
+
+.L212:
+	phi.32      %r180(return) <- VOID, %phi155(return), %phi156(return)
+	ret.32      %r180(return)
+
+
+test_label:
+.L222:
+	<entry-point>
+	phisrc.32   %phi172(z) <- $0
+	phisrc.32   %phi177(z) <- $0
+	phisrc.32   %phi175(z) <- $3
+	phi.32      %r194(z) <- %phi172(z), %phi175(z)
+	add.32      %r197 <- %r194(z), $5
+	phisrc.32   %phi176(z) <- %r197
+	phi.32      %r199(z) <- %phi176(z), %phi177(z)
+	setne.32    %r200 <- %r199(z), $8
+	ret.32      %r200
+
+
+TestNano:
+.L244:
+	<entry-point>
+	call.32     %r202 <- test_if
+	call.32     %r206 <- test_for
+	add.32      %r208 <- %r202, %r206
+	call.32     %r210 <- test_while
+	add.32      %r212 <- %r208, %r210
+	call.32     %r214 <- test_do
+	add.32      %r216 <- %r212, %r214
+	call.32     %r218 <- test_switch
+	add.32      %r220 <- %r216, %r218
+	call.32     %r222 <- test_goto
+	add.32      %r224 <- %r220, %r222
+	call.32     %r226 <- test_label
+	add.32      %r228 <- %r224, %r226
+	ret.32      %r228
+
+

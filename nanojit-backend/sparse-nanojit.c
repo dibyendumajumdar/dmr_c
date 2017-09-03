@@ -1049,8 +1049,16 @@ static NJXLInsRef output_op_compare(struct dmr_C *C, struct function *fn,
 		else if (NJX_is_i(lhs))
 			target = NJX_eqi(fn->builder, lhs, rhs);
 		if (insn->opcode == OP_SET_NE && target) {
-			assert(NJX_is_i(target));
-			target = NJX_noti(fn->builder, target);
+			//assert(NJX_is_i(target));
+			//target = NJX_noti(fn->builder, target);
+			if (NJX_is_d(target))
+				target = NJX_eqd(fn->builder, target, NJX_immd(fn->builder, 0));
+			else if (NJX_is_f(target))
+				target = NJX_eqf(fn->builder, target, NJX_immf(fn->builder, 0));
+			else if (NJX_is_q(target))
+				target = NJX_eqq(fn->builder, target, NJX_immq(fn->builder, 0));
+			else 
+				target = NJX_eqi(fn->builder, target, NJX_immi(fn->builder, 0));
 		}
 		break;
 	default:
@@ -1420,6 +1428,7 @@ static NJXLInsRef output_op_store(struct dmr_C *C, struct function *fn,
 static void output_liveness(struct dmr_C *C, struct function *fn,
 			    struct basic_block *bb)
 {
+#if 0
 	pseudo_t need;
 	FOR_EACH_PTR(bb->needs, need)
 	{
@@ -1436,6 +1445,7 @@ static void output_liveness(struct dmr_C *C, struct function *fn,
 		}
 	}
 	END_FOR_EACH_PTR(need);
+#endif
 }
 
 /*

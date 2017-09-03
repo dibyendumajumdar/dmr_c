@@ -21,8 +21,9 @@ int main(int argc, char **argv)
 		 */
 		fp = NJX_get_function_by_name(module, "TestNano");
 		if (fp) {
-			if (fp() != 0) {
-				printf("TestNano Failed\n");
+			int fprc = fp();
+			if (fprc != 0) {
+				printf("TestNano Failed (%d)\n", fprc);
 				rc = 1;
 			} else {
 				printf("TestNano OK\n");

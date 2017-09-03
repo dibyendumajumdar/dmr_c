@@ -15,24 +15,27 @@ These are very early days. We are able to generate code for following simple C p
 * [locals.c](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/locals.c). The generated LIR and assembly instructions look [like this](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/locals.lir).  
 * [bitfields.c](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/bitfields.c). The generated LIR and assembly instructions look [like this](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/bitfields.lir).  
 * [switch.c](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/switch.c). The generated LIR and assembly instructions   look [like this](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/switch.lir).  
+* [control.c](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/control.c). The generated LIR and assembly instructions   look [like this](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/control.lir).  
     
   
 ## Issues
 
 ### Features not yet implemented
 
-* computed gotos (probably can't be implemented)
-* bitfield access is implemented but not fully tested
-* calling functions through function pointers
-* aggregate initializers
-* recursive function calls not possible at present due to the way functions are resolved
+* Computed gotos (probably can't be implemented)
+* Bitfield access is implemented but not fully tested
+* Calling functions through function pointers
+* Aggregate initializers
+* Recursive function calls are not possible at present due to the way functions are resolved
 
 ### Limitations
 
 * NanoJIT only allows 4 integer/pointer parameters inside a JIT function.
 * We cannot have static or global data in JIT code
 * We probably can't generate code for string initializers
-* Generated code for switch statements uses if (cond) branching rather than a jump table.
+* Generated code for switch statements uses if (cond) branching rather than a jump table. NanoJIT does have a jump table instruction
+but it requires the indices to be consecutive starting from zero, and there is no support for default case. We can still use this
+instruction when the conditions are met.
   
 ## Building 
 

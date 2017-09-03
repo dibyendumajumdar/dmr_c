@@ -438,45 +438,6 @@ static int32_t symbol_size_in_bytes(struct dmr_C *C, struct symbol *sym)
 	return sym->bit_size / C->target->bits_in_char;
 }
 
-static NJXLInsRef output_op_phi(struct dmr_C *C, struct function *fn,
-				struct instruction *insn)
-{
-	NJXLInsRef ptr = insn->target->priv2;
-
-	if (!ptr)
-		return NULL;
-
-	// Unlike LLVM version which creates the Load instruction
-	// early on and inserts it into the IR stream here, we
-	// create the Load instruction here.
-	NJXLInsRef load = NULL;
-	switch (insn->size) {
-	case 8:
-		// TODO do we need to do unsigned here?
-		// load = NJX_load_c2i(fn->builder, ptr, 0);
-		load = NJX_load_uc2ui(fn->builder, ptr, 0);
-		break;
-	case 16:
-		// TODO do we need to do unsigned here?
-		// load = NJX_load_s2i(fn->builder, ptr, 0);
-		load = NJX_load_us2ui(fn->builder, ptr, 0);
-		break;
-	case 32:
-		if (dmrC_is_float_type(C->S, insn->type))
-			load = NJX_load_f(fn->builder, ptr, 0);
-		else
-			load = NJX_load_i(fn->builder, ptr, 0);
-		break;
-	case 64:
-		if (dmrC_is_float_type(C->S, insn->type))
-			load = NJX_load_d(fn->builder, ptr, 0);
-		else
-			load = NJX_load_q(fn->builder, ptr, 0);
-		break;
-	}
-	insn->target->priv = load;
-	return load;
-}
 
 static NJXLInsRef val_to_value(struct dmr_C *C, struct function *fn,
 			       long long value, struct symbol *ctype)
@@ -754,6 +715,80 @@ static NJXLInsRef pseudo_ins(struct dmr_C *C, struct function *fn,
 	return result;
 }
 
+static NJXLInsRef output_op_phi(struct dmr_C *C, struct function *fn,
+	struct instruction *insn)
+{
+	NJXLInsRef ptr = insn->target->priv2;
+
+	if (!ptr)
+		return NULL;
+
+	// Unlike LLVM version which creates the Load instruction
+	// early on and inserts it into the IR stream here, we
+	// create the Load instruction here.
+	NJXLInsRef load = NULL;
+	switch (insn->size) {
+	case 8:
+		// TODO do we need to do unsigned here?
+		// load = NJX_load_c2i(fn->builder, ptr, 0);
+		load = NJX_load_uc2ui(fn->builder, ptr, 0);
+		break;
+	case 16:
+		// TODO do we need to do unsigned here?
+		// load = NJX_load_s2i(fn->builder, ptr, 0);
+		load = NJX_load_us2ui(fn->builder, ptr, 0);
+		break;
+	case 32:
+		if (dmrC_is_float_type(C->S, insn->type))
+			load = NJX_load_f(fn->builder, ptr, 0);
+		else
+			load = NJX_load_i(fn->builder, ptr, 0);
+		break;
+	case 64:
+		if (dmrC_is_float_type(C->S, insn->type))
+			load = NJX_load_d(fn->builder, ptr, 0);
+		else
+			load = NJX_load_q(fn->builder, ptr, 0);
+		break;
+	}
+	insn->target->priv = load;
+	return load;
+}
+
+static NJXLInsRef output_op_load(struct dmr_C *C, struct function *fn,
+	struct instruction *insn)
+{
+	NJXLInsRef ptr = pseudo_to_value(C, fn, insn->type, insn->src);
+
+	if (!ptr)
+		return NULL;
+
+	NJXLInsRef value = NULL;
+	switch (insn->size) {
+	case 8:
+		value = NJX_load_c2i(fn->builder, ptr, (int)insn->offset);
+		break;
+	case 16:
+		value = NJX_load_s2i(fn->builder, ptr, (int)insn->offset);
+		break;
+	case 32:
+		if (dmrC_is_float_type(C->S, insn->type))
+			value = NJX_load_f(fn->builder, ptr, (int)insn->offset);
+		else
+			value = NJX_load_i(fn->builder, ptr, (int)insn->offset);
+		break;
+	case 64:
+		if (dmrC_is_float_type(C->S, insn->type))
+			value = NJX_load_d(fn->builder, ptr, (int)insn->offset);
+		else
+			value = NJX_load_q(fn->builder, ptr, (int)insn->offset);
+		break;
+	}
+	insn->target->priv = value;
+	return value;
+}
+
+
 static struct symbol *get_function_basetype(struct symbol *type)
 {
 	if (type->type == SYM_PTR)
@@ -887,39 +922,6 @@ static NJXLInsRef output_op_phisrc(struct dmr_C *C, struct function *fn,
 	}
 	END_FOR_EACH_PTR(phi);
 	return v;
-}
-
-static NJXLInsRef output_op_load(struct dmr_C *C, struct function *fn,
-				 struct instruction *insn)
-{
-	NJXLInsRef ptr = pseudo_to_value(C, fn, insn->type, insn->src);
-
-	if (!ptr)
-		return NULL;
-
-	NJXLInsRef value = NULL;
-	switch (insn->size) {
-	case 8:
-		value = NJX_load_c2i(fn->builder, ptr, (int)insn->offset);
-		break;
-	case 16:
-		value = NJX_load_s2i(fn->builder, ptr, (int)insn->offset);
-		break;
-	case 32:
-		if (dmrC_is_float_type(C->S, insn->type))
-			value = NJX_load_f(fn->builder, ptr, (int)insn->offset);
-		else
-			value = NJX_load_i(fn->builder, ptr, (int)insn->offset);
-		break;
-	case 64:
-		if (dmrC_is_float_type(C->S, insn->type))
-			value = NJX_load_d(fn->builder, ptr, (int)insn->offset);
-		else
-			value = NJX_load_q(fn->builder, ptr, (int)insn->offset);
-		break;
-	}
-	insn->target->priv = value;
-	return value;
 }
 
 /**
@@ -1507,7 +1509,7 @@ static NJXLInsRef output_op_switch(struct dmr_C *C, struct function *fn,
 	FOR_EACH_PTR(insn->multijmp_list, jmp)
 	{
 		if (jmp->begin <= jmp->end) { /* case M..N */
-			n_jmp += (jmp->end - jmp->begin) + 1;
+			n_jmp += (int)(jmp->end - jmp->begin) + 1;
 		} else /* default case */
 			default_bb = jmp->target;
 	}

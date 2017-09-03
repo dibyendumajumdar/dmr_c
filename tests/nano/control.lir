@@ -1,0 +1,315 @@
+================================================================================
+=== BEGIN LIR::compile(00000257988DB070, 00000257989BA510)
+===
+=== Translating LIR fragments into assembly:
+=== -- Compile trunk 00000257989BA510: begin
+
+=== BEGIN Initial LIR ===
+  00: start
+  01: paramq85 = paramq 0 rbx
+  02: paramq86 = paramq 1 rsi
+  03: paramq87 = paramq 2 rdi
+  04: paramq88 = paramq 3 r12
+  05: paramq89 = paramq 4 r13
+  06: paramq90 = paramq 5 r14
+  07: paramq91 = paramq 6 r15
+  08: allocp2 = allocp 4
+  09: allocp3 = allocp 4
+  10: allocp4 = allocp 4
+  11: allocp5 = allocp 4
+  12: allocp6 = allocp 4
+  13: allocp7 = allocp 4
+  14: allocp8 = allocp 4
+  15: allocp9 = allocp 4
+  16: allocp10 = allocp 4
+  17: allocp11 = allocp 4
+  18: allocp12 = allocp 4
+  19: allocp13 = allocp 4
+  20: label36:
+  21: ------------------------------ # phisrc.32   %phi41(i) <- $0     (%r35(i))
+  22: immi46 = immi 0
+  23: sti.o allocp2[0] = immi46/*0*/
+  24: ------------------------------ # phisrc.32   %phi43(acc) <- $0     (%r41(acc))
+  25: sti.o allocp3[0] = immi46/*0*/
+  26: ------------------------------ # br          .L1
+  27: j -> label37
+  28: label37:
+  29: ------------------------------ # phi.32      %r35(i) <- %phi41(i), %phi42(i)
+  30: ldi2 = ldi.o allocp2[0]
+  31: ------------------------------ # phi.32      %r41(acc) <- %phi43(acc), %phi44(acc)
+  32: ldi3 = ldi.o allocp3[0]
+  33: ------------------------------ # setlt.32    %r36 <- %r35(i), $5
+  34: immi47 = immi 5
+  35: lti1 = lti ldi2, immi47/*5*/
+  36: ------------------------------ # cbr         %r36, .L2, .L3
+  37: immi48 = immi 0
+  38: eqi23 = eqi lti1, immi48/*0*/
+  39: jf lti1 -> label39
+  40: jt lti1 -> label38
+  41: label38:
+  42: ------------------------------ # add.32      %r39 <- %r41(acc), %r35(i)
+  43: addi1 = addi ldi3, ldi2
+  44: ------------------------------ # add.32      %r40 <- %r35(i), $1
+  45: immi49 = immi 1
+  46: addi2 = addi ldi2, immi49/*1*/
+  47: ------------------------------ # phisrc.32   %phi42(i) <- %r40     (%r35(i))
+  48: sti.o allocp2[0] = addi2
+  49: ------------------------------ # phisrc.32   %phi44(acc) <- %r39     (%r41(acc))
+  50: sti.o allocp3[0] = addi1
+  51: ------------------------------ # br          .L1
+  52: livei ldi2
+  53: livei ldi3
+  54: j -> label37
+  55: label39:
+  56: ------------------------------ # setne.32    %r42 <- %r41(acc), $10
+  57: immi50 = immi 10
+  58: eqi24 = eqi ldi3, immi50/*10*/
+  59: noti12 = noti eqi24
+  60: ------------------------------ # cbr         %r42, .L4, .L5
+  61: immi51 = immi 0
+  62: eqi25 = eqi noti12, immi51/*0*/
+  63: jt eqi25 -> label41
+  64: jf eqi25 -> label40
+  65: label40:
+  66: ------------------------------ # phisrc.32   %phi75(return) <- $1     (%r85(return))
+  67: immi52 = immi 1
+  68: sti.o allocp13[0] = immi52/*1*/
+  69: ------------------------------ # br          .L28
+  70: j -> label64
+  71: label41:
+  72: ------------------------------ # phisrc.32   %phi47(i) <- $0     (%r43(i))
+  73: immi53 = immi 0
+  74: sti.o allocp4[0] = immi53/*0*/
+  75: ------------------------------ # phisrc.32   %phi49(acc) <- $0     (%r49(acc))
+  76: sti.o allocp5[0] = immi53/*0*/
+  77: ------------------------------ # br          .L6
+  78: j -> label42
+  79: label42:
+  80: ------------------------------ # phi.32      %r43(i) <- %phi47(i), %phi48(i)
+  81: ldi4 = ldi.o allocp4[0]
+  82: ------------------------------ # phi.32      %r49(acc) <- %phi49(acc), %phi50(acc)
+  83: ldi5 = ldi.o allocp5[0]
+  84: ------------------------------ # setlt.32    %r44 <- %r43(i), $5
+  85: immi54 = immi 5
+  86: lti2 = lti ldi4, immi54/*5*/
+  87: ------------------------------ # cbr         %r44, .L7, .L8
+  88: immi55 = immi 0
+  89: eqi26 = eqi lti2, immi55/*0*/
+  90: jf lti2 -> label44
+  91: jt lti2 -> label43
+  92: label43:
+  93: ------------------------------ # add.32      %r47 <- %r49(acc), %r43(i)
+  94: addi3 = addi ldi5, ldi4
+  95: ------------------------------ # add.32      %r48 <- %r43(i), $1
+  96: immi56 = immi 1
+  97: addi4 = addi ldi4, immi56/*1*/
+  98: ------------------------------ # phisrc.32   %phi48(i) <- %r48     (%r43(i))
+  99: sti.o allocp4[0] = addi4
+  100: ------------------------------ # phisrc.32   %phi50(acc) <- %r47     (%r49(acc))
+  101: sti.o allocp5[0] = addi3
+  102: ------------------------------ # br          .L6
+  103: livei ldi4
+  104: livei ldi5
+  105: j -> label42
+  106: label44:
+  107: ------------------------------ # setne.32    %r50 <- %r49(acc), $10
+  108: immi57 = immi 10
+  109: eqi27 = eqi ldi5, immi57/*10*/
+  110: noti13 = noti eqi27
+  111: ------------------------------ # cbr         %r50, .L9, .L10
+  112: immi58 = immi 0
+  113: eqi28 = eqi noti13, immi58/*0*/
+  114: jt eqi28 -> label46
+  115: jf eqi28 -> label45
+  116: label45:
+  117: ------------------------------ # phisrc.32   %phi76(return) <- $1     (%r85(return))
+  118: immi59 = immi 1
+  119: sti.o allocp13[0] = immi59/*1*/
+  120: ------------------------------ # br          .L28
+  121: j -> label64
+  122: label46:
+  123: ------------------------------ # phisrc.32   %phi55(i) <- $0     (%r51(i))
+  124: immi60 = immi 0
+  125: sti.o allocp6[0] = immi60/*0*/
+  126: ------------------------------ # phisrc.32   %phi57(acc) <- $0     (%r62(acc))
+  127: sti.o allocp7[0] = immi60/*0*/
+  128: ------------------------------ # br          .L11
+  129: j -> label47
+  130: label47:
+  131: ------------------------------ # phi.32      %r51(i) <- %phi55(i), %phi56(i)
+  132: ldi6 = ldi.o allocp6[0]
+  133: ------------------------------ # phi.32      %r62(acc) <- %phi57(acc), %phi60(acc)
+  134: ldi7 = ldi.o allocp7[0]
+  135: ------------------------------ # setlt.32    %r52 <- %r51(i), $100
+  136: immi61 = immi 100
+  137: lti3 = lti ldi6, immi61/*100*/
+  138: ------------------------------ # cbr         %r52, .L12, .L17
+  139: immi62 = immi 0
+  140: eqi29 = eqi lti3, immi62/*0*/
+  141: jf lti3 -> label53
+  142: jt lti3 -> label48
+  143: label48:
+  144: ------------------------------ # setlt.32    %r54 <- %r51(i), $5
+  145: immi63 = immi 5
+  146: lti4 = lti ldi6, immi63/*5*/
+  147: ------------------------------ # cbr         %r54, .L13, .L14
+  148: immi64 = immi 0
+  149: eqi30 = eqi lti4, immi64/*0*/
+  150: jf lti4 -> label50
+  151: jt lti4 -> label49
+  152: label49:
+  153: ------------------------------ # phisrc.32   %phi58(acc) <- %r62(acc)     (%r63(acc))
+  154: sti.o allocp8[0] = ldi7
+  155: ------------------------------ # br          .L16
+  156: j -> label52
+  157: label50:
+  158: ------------------------------ # seteq.32    %r55 <- %r51(i), $9
+  159: immi65 = immi 9
+  160: eqi31 = eqi ldi6, immi65/*9*/
+  161: ------------------------------ # cbr         %r55, .L17, .L15
+  162: immi66 = immi 0
+  163: eqi32 = eqi eqi31, immi66/*0*/
+  164: jf eqi31 -> label51
+  165: jt eqi31 -> label53
+  166: label51:
+  167: ------------------------------ # add.32      %r58 <- %r62(acc), %r51(i)
+  168: addi5 = addi ldi7, ldi6
+  169: ------------------------------ # phisrc.32   %phi59(acc) <- %r58     (%r63(acc))
+  170: sti.o allocp8[0] = addi5
+  171: ------------------------------ # br          .L16
+  172: j -> label52
+  173: label52:
+  174: ------------------------------ # phi.32      %r63(acc) <- %phi58(acc), %phi59(acc)
+  175: ldi8 = ldi.o allocp8[0]
+  176: ------------------------------ # add.32      %r61 <- %r51(i), $1
+  177: immi67 = immi 1
+  178: addi6 = addi ldi6, immi67/*1*/
+  179: ------------------------------ # phisrc.32   %phi56(i) <- %r61     (%r51(i))
+  180: sti.o allocp6[0] = addi6
+  181: ------------------------------ # phisrc.32   %phi60(acc) <- %r63(acc)     (%r62(acc))
+  182: sti.o allocp7[0] = ldi8
+  183: ------------------------------ # br          .L11
+  184: livei ldi6
+  185: livei ldi7
+  186: j -> label47
+  187: label53:
+  188: ------------------------------ # setne.32    %r65 <- %r62(acc), $26
+  189: immi68 = immi 26
+  190: eqi33 = eqi ldi7, immi68/*26*/
+  191: noti14 = noti eqi33
+  192: ------------------------------ # cbr         %r65, .L18, .L19
+  193: immi69 = immi 0
+  194: eqi34 = eqi noti14, immi69/*0*/
+  195: jt eqi34 -> label55
+  196: jf eqi34 -> label54
+  197: label54:
+  198: ------------------------------ # phisrc.32   %phi77(return) <- $1     (%r85(return))
+  199: immi70 = immi 1
+  200: sti.o allocp13[0] = immi70/*1*/
+  201: ------------------------------ # br          .L28
+  202: j -> label64
+  203: label55:
+  204: ------------------------------ # phisrc.32   %phi66(x) <- $3     (%r66(x))
+  205: immi71 = immi 3
+  206: sti.o allocp9[0] = immi71/*3*/
+  207: ------------------------------ # phisrc.32   %phi68(z) <- $8     (%r78(z))
+  208: immi72 = immi 8
+  209: sti.o allocp10[0] = immi72/*8*/
+  210: ------------------------------ # phisrc.32   %phi70(y) <- $5     (%r79(y))
+  211: immi73 = immi 5
+  212: sti.o allocp11[0] = immi73/*5*/
+  213: ------------------------------ # br          .L20
+  214: j -> label56
+  215: label56:
+  216: ------------------------------ # phi.32      %r66(x) <- %phi66(x), %phi67(x)
+  217: ldi9 = ldi.o allocp9[0]
+  218: ------------------------------ # phi.32      %r78(z) <- %phi68(z), %phi69(z)
+  219: ldi10 = ldi.o allocp10[0]
+  220: ------------------------------ # phi.32      %r79(y) <- %phi70(y), %phi71(y)
+  221: ldi11 = ldi.o allocp11[0]
+  222: ------------------------------ # setlt.32    %r67 <- %r66(x), $100
+  223: immi74 = immi 100
+  224: lti5 = lti ldi9, immi74/*100*/
+  225: ------------------------------ # cbr         %r67, .L21, .L24
+  226: immi75 = immi 0
+  227: eqi35 = eqi lti5, immi75/*0*/
+  228: jf lti5 -> label60
+  229: jt lti5 -> label57
+  230: label57:
+  231: ------------------------------ # add.32      %r71 <- %r66(x), %r79(y)
+  232: addi7 = addi ldi9, ldi11
+  233: ------------------------------ # setne.32    %r72 <- %r78(z), %r71
+  234: eqi36 = eqi ldi10, addi7
+  235: noti15 = noti eqi36
+  236: ------------------------------ # cbr         %r72, .L22, .L23
+  237: immi76 = immi 0
+  238: eqi37 = eqi noti15, immi76/*0*/
+  239: jt eqi37 -> label59
+  240: jf eqi37 -> label58
+  241: label58:
+  242: ------------------------------ # phisrc.32   %phi78(return) <- $1     (%r85(return))
+  243: immi77 = immi 1
+  244: sti.o allocp13[0] = immi77/*1*/
+  245: ------------------------------ # br          .L28
+  246: j -> label64
+  247: label59:
+  248: ------------------------------ # add.32      %r73 <- %r66(x), $1
+  249: immi78 = immi 1
+  250: addi8 = addi ldi9, immi78/*1*/
+  251: ------------------------------ # add.32      %r74 <- %r79(y), $1
+  252: addi9 = addi ldi11, immi78/*1*/
+  253: ------------------------------ # add.32      %r76 <- %r78(z), $2
+  254: immi79 = immi 2
+  255: addi10 = addi ldi10, immi79/*2*/
+  256: ------------------------------ # phisrc.32   %phi67(x) <- %r73     (%r66(x))
+  257: sti.o allocp9[0] = addi8
+  258: ------------------------------ # phisrc.32   %phi69(z) <- %r76     (%r78(z))
+  259: sti.o allocp10[0] = addi10
+  260: ------------------------------ # phisrc.32   %phi71(y) <- %r74     (%r79(y))
+  261: sti.o allocp11[0] = addi9
+  262: ------------------------------ # br          .L20
+  263: livei ldi9
+  264: livei ldi11
+  265: livei ldi10
+  266: j -> label56
+  267: label60:
+  268: ------------------------------ # phisrc.32   %phi73(i) <- $0     (%r80(i))
+  269: immi80 = immi 0
+  270: sti.o allocp12[0] = immi80/*0*/
+  271: ------------------------------ # br          .L25
+  272: j -> label61
+  273: label61:
+  274: ------------------------------ # phi.32      %r80(i) <- %phi73(i), %phi74(i)
+  275: ldi12 = ldi.o allocp12[0]
+  276: ------------------------------ # setlt.32    %r81 <- %r80(i), $100
+  277: immi81 = immi 100
+  278: lti6 = lti ldi12, immi81/*100*/
+  279: ------------------------------ # cbr         %r81, .L26, .L27
+  280: immi82 = immi 0
+  281: eqi38 = eqi lti6, immi82/*0*/
+  282: jf lti6 -> label63
+  283: jt lti6 -> label62
+  284: label62:
+  285: ------------------------------ # add.32      %r83 <- %r80(i), $1
+  286: immi83 = immi 1
+  287: addi11 = addi ldi12, immi83/*1*/
+  288: ------------------------------ # phisrc.32   %phi74(i) <- %r83     (%r80(i))
+  289: sti.o allocp12[0] = addi11
+  290: ------------------------------ # br          .L25
+  291: livei ldi12
+  292: j -> label61
+  293: label63:
+  294: ------------------------------ # phisrc.32   %phi80(return) <- $0     (%r85(return))
+  295: immi84 = immi 0
+  296: sti.o allocp13[0] = immi84/*0*/
+  297: ------------------------------ # br          .L28
+  298: j -> label64
+  299: label64:
+  300: ------------------------------ # phi.32      %r85(return) <- %phi75(return), %phi76(return), %phi77(return), %phi78(return), VOID, %phi80(return)
+  301: ldi13 = ldi.o allocp13[0]
+  302: ------------------------------ # ret.32      %r85(return)
+  303: reti ldi13
+  304: x13: x  -> line=0 (GuardID=000)
+=== END Initial LIR ===
+
+=== -- Compile trunk 00000257989BA510: end

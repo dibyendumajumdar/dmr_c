@@ -130,12 +130,10 @@ static int test_do(void) {
     i = 0;
     do; while (i++ < 100);
 
-// Results in infinite loop 
-// Suspect bug in converting value to boolean
-//    float v = 1;
-//    i = 70;
-//    do i++; while (v -= 0.5);
-//    if (72 != i) return 1;
+    float v = 1;
+    i = 70;
+    do i++; while (v -= 0.5);
+    if (72 != i) return 1;
     return 0;
 }
 

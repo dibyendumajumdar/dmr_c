@@ -1,3 +1,28 @@
+/**
+ * This is a backend code generator for dmr_C that uses
+ * the JIT engine NanoJIT (https://github.com/dibyendumajumdar/nanojit).
+ *
+ * Copyright (C) 2017 Dibyendu Majumdar
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 #include <nanojitextra.h>
 
 #include <assert.h>
@@ -437,10 +462,16 @@ static NJXLInsRef output_op_phi(struct dmr_C *C, struct function *fn,
 		load = NJX_load_us2ui(fn->builder, ptr, 0);
 		break;
 	case 32:
-		load = NJX_load_i(fn->builder, ptr, 0);
+		if (dmrC_is_float_type(C->S, insn->type))
+			load = NJX_load_f(fn->builder, ptr, 0);
+		else
+			load = NJX_load_i(fn->builder, ptr, 0);
 		break;
 	case 64:
-		load = NJX_load_q(fn->builder, ptr, 0);
+		if (dmrC_is_float_type(C->S, insn->type))
+			load = NJX_load_d(fn->builder, ptr, 0);
+		else
+			load = NJX_load_q(fn->builder, ptr, 0);
 		break;
 	}
 	insn->target->priv = load;
@@ -933,6 +964,24 @@ static struct symbol *pseudo_type(struct dmr_C *C, pseudo_t pseudo)
 	}
 }
 
+static NJXLInsRef is_eq_zero(struct dmr_C *C, struct function *fn,
+			     NJXLInsRef value)
+{
+	NJXLInsRef cond = NULL;
+	if (NJX_is_i(value)) {
+		cond = NJX_eqi(fn->builder, value, NJX_immi(fn->builder, 0));
+	} else if (NJX_is_q(value)) {
+		cond = NJX_eqq(fn->builder, value, NJX_immq(fn->builder, 0));
+	} else if (NJX_is_d(value)) {
+		cond = NJX_eqd(fn->builder, value, NJX_immd(fn->builder, 0));
+	} else if (NJX_is_f(value)) {
+		cond = NJX_eqf(fn->builder, value, NJX_immf(fn->builder, 0));
+	}
+	if (cond == NULL)
+		return NULL;
+	return cond;
+}
+
 static NJXLInsRef output_op_compare(struct dmr_C *C, struct function *fn,
 				    struct instruction *insn)
 {
@@ -1048,18 +1097,8 @@ static NJXLInsRef output_op_compare(struct dmr_C *C, struct function *fn,
 			target = NJX_eqq(fn->builder, lhs, rhs);
 		else if (NJX_is_i(lhs))
 			target = NJX_eqi(fn->builder, lhs, rhs);
-		if (insn->opcode == OP_SET_NE && target) {
-			//assert(NJX_is_i(target));
-			//target = NJX_noti(fn->builder, target);
-			if (NJX_is_d(target))
-				target = NJX_eqd(fn->builder, target, NJX_immd(fn->builder, 0));
-			else if (NJX_is_f(target))
-				target = NJX_eqf(fn->builder, target, NJX_immf(fn->builder, 0));
-			else if (NJX_is_q(target))
-				target = NJX_eqq(fn->builder, target, NJX_immq(fn->builder, 0));
-			else 
-				target = NJX_eqi(fn->builder, target, NJX_immi(fn->builder, 0));
-		}
+		if (insn->opcode == OP_SET_NE && target)
+			target = is_eq_zero(C, fn, target);
 		break;
 	default:
 		break;
@@ -1488,12 +1527,15 @@ static NJXLInsRef output_op_switch(struct dmr_C *C, struct function *fn,
 			 */
 			struct NanoType *symtype =
 			    get_symnode_type(C, fn, insn->type);
-			NJXLInsRef case_value = constant_value(C, fn, val, symtype);
+			NJXLInsRef case_value =
+			    constant_value(C, fn, val, symtype);
 			NJXLInsRef cond = NULL;
 			if (NJX_is_i(case_value)) {
-				cond = NJX_eqi(fn->builder, case_value, switch_value);
+				cond = NJX_eqi(fn->builder, case_value,
+					       switch_value);
 			} else if (NJX_is_q(case_value)) {
-				cond = NJX_eqq(fn->builder, case_value, switch_value);
+				cond = NJX_eqq(fn->builder, case_value,
+					       switch_value);
 			}
 			if (cond == NULL)
 				return NULL;
@@ -1531,22 +1573,16 @@ static NJXLInsRef output_op_cbr(struct dmr_C *C, struct function *fn,
 	NJXLInsRef value = pseudo_to_value(C, fn, br->type, br->cond);
 	if (!value)
 		return NULL;
-	NJXLInsRef cond = NULL;
-	if (NJX_is_i(value)) {
-		cond = NJX_eqi(fn->builder, value, NJX_immi(fn->builder, 0));
-	} else if (NJX_is_q(value)) {
-		cond = NJX_eqq(fn->builder, value, NJX_immq(fn->builder, 0));
-	} else if (NJX_is_d(value)) {
-		cond = NJX_eqd(fn->builder, value, NJX_immd(fn->builder, 0));
-	} else if (NJX_is_f(value)) {
-		cond = NJX_eqf(fn->builder, value, NJX_immf(fn->builder, 0));
-	}
+	NJXLInsRef cond = is_eq_zero(C, fn, value);
 	if (cond == NULL)
 		return NULL;
 	// Mark registers needed by destination BB as live
 	// we should only output if bb_false precedes current bb
 	if (br->bb->nr > br->bb_false->nr)
 		output_liveness(C, fn, br->bb_false);
+	// As we tested for the value being zero above,
+	// then if this is true, the condition is false, so 
+	// we must take the false branch
 	NJXLInsRef br1 =
 	    NJX_cbr_true(fn->builder, cond, NULL); // br->bb_false->priv
 	if (!add_jump_instruction(fn, br->bb_false, br1))
@@ -1555,6 +1591,8 @@ static NJXLInsRef output_op_cbr(struct dmr_C *C, struct function *fn,
 	// we should only output if bb_false precedes current bb
 	if (br->bb->nr > br->bb_true->nr)
 		output_liveness(C, fn, br->bb_true);
+	// If condition is not zero then
+	// we take the true branch.
 	NJXLInsRef br2 =
 	    NJX_cbr_false(fn->builder, cond, NULL); // br->bb_true->priv
 	if (!add_jump_instruction(fn, br->bb_true, br2))
@@ -1574,24 +1612,6 @@ static NJXLInsRef output_op_br(struct dmr_C *C, struct function *fn,
 	if (!add_jump_instruction(fn, br->bb_true, br1))
 		return NULL;
 	return br1;
-}
-
-static NJXLInsRef is_eq_zero(struct dmr_C *C, struct function *fn,
-			     NJXLInsRef value)
-{
-	NJXLInsRef cond = NULL;
-	if (NJX_is_i(value)) {
-		cond = NJX_eqi(fn->builder, value, NJX_immi(fn->builder, 0));
-	} else if (NJX_is_q(value)) {
-		cond = NJX_eqq(fn->builder, value, NJX_immq(fn->builder, 0));
-	} else if (NJX_is_d(value)) {
-		cond = NJX_eqd(fn->builder, value, NJX_immd(fn->builder, 0));
-	} else if (NJX_is_f(value)) {
-		cond = NJX_eqf(fn->builder, value, NJX_immf(fn->builder, 0));
-	}
-	if (cond == NULL)
-		return NULL;
-	return cond;
 }
 
 static NJXLInsRef output_op_sel(struct dmr_C *C, struct function *fn,

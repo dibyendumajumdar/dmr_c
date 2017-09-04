@@ -29,7 +29,7 @@
 * Copyright (C) 2017 Dibyendu Majumdar
 */
 
-#include <dmr_c.h>
+#include <lib.h>
 
 #ifdef __cplusplus
 extern "C" {

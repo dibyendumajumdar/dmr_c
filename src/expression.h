@@ -33,7 +33,7 @@
 
 
 #include <allocate.h>
-#include <dmr_c.h>
+#include <lib.h>
 #include <symbol.h>
 
 #ifdef __cplusplus

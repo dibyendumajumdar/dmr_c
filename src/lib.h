@@ -1,5 +1,5 @@
-#ifndef DMR_C_H
-#define DMR_C_H
+#ifndef DMR_LIB_H
+#define DMR_LIB_H
 
 /* This file is derived from lib.h in sparse */
 

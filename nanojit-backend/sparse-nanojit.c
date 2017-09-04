@@ -23,13 +23,12 @@
  * THE SOFTWARE.
  */
 
-#include <nanojitextra.h>
-
 #include <assert.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 
+#include <dmr_c.h>
 #include <allocate.h>
 #include <expression.h>
 #include <flow.h>

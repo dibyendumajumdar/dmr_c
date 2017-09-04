@@ -1,11 +1,8 @@
-#include <nanojitextra.h>
+#include <dmr_c.h>
 
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
-
-extern bool dmrC_nanocompile(int argc, char **argv, NJXContextRef module,
-			     const char *inputbuffer);
 
 static int test1(int argc, char **argv)
 {

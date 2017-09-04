@@ -34,7 +34,8 @@
 #include <assert.h>
 
 #include <port.h>
-#include <dmr_c_llvm.h>
+#include <dmr_c.h>
+#include <lib.h>
 #include <symbol.h>
 #include <expression.h>
 #include <linearize.h>

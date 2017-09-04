@@ -30,7 +30,7 @@
 #include <assert.h>
 
 #include <port.h>
-#include <dmr_c.h>
+#include <lib.h>
 #include <linearize.h>
 #include <allocate.h>
 #include <flow.h>

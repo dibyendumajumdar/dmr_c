@@ -24,7 +24,7 @@
 * THE SOFTWARE.
 */
 
-#include <dmr_c_llvm.h>
+#include <dmr_c.h>
 #include <stdio.h>
 
 int main(int argc, char **argv)

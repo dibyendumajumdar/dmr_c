@@ -8,7 +8,7 @@
 * Copyright (C) 2004 Linus Torvalds
 */
 
-#include <dmr_c.h>
+#include <lib.h>
 
 #ifdef __cplusplus
 extern "C" {

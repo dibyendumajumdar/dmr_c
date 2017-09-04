@@ -32,7 +32,7 @@
 #ifndef DMR_C_TOKENIZER_H
 #define DMR_C_TOKENIZER_H
 
-#include "dmr_c.h"
+#include <lib.h>
 #include <sys/types.h>
 
 #ifdef __cplusplus

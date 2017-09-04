@@ -39,7 +39,7 @@
 #include <sys/types.h>
 
 #include <allocate.h>
-#include <dmr_c.h>
+#include <lib.h>
 #include <port.h>
 #include <target.h>
 #include <token.h>

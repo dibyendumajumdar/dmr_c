@@ -24,7 +24,7 @@
  */
 
 #include <port.h>
-#include <dmr_c.h>
+#include <lib.h>
 #include <expression.h>
 #include <expand.h>
 #include <symbol.h>

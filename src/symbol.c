@@ -32,7 +32,7 @@
 #include <string.h>
 
 #include <port.h>
-#include <dmr_c.h>
+#include <lib.h>
 #include <allocate.h>
 #include <ptrlist.h>
 #include <token.h>

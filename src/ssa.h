@@ -2,7 +2,7 @@
 #define	SSA_H
 
 
-#include <dmr_c.h>
+#include <lib.h>
 #include <linearize.h>
 
 #ifdef __cplusplus

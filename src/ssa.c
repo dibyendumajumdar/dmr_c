@@ -6,7 +6,7 @@
  * cfr. http://www.cdl.uni-saarland.de/papers/bbhlmz13cc.pdf
  */
 
-#include <dmr_c.h>
+#include <lib.h>
 #include <ptrmap.h>
 #include <symbol.h>
 #include <linearize.h>

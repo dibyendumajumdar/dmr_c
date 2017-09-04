@@ -4,11 +4,14 @@ project(dmr_c)
 enable_language(C)
 enable_language(CXX)
 
+message(STATUS "OS type is ${CMAKE_SYSTEM_NAME}")
+message(STATUS "System processor is ${CMAKE_HOST_SYSTEM_PROCESSOR}")
+message(STATUS "Build type is ${CMAKE_BUILD_TYPE}")
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
 option(LLVM_JIT "Controls whether LLVM JIT compilation will be enabled, default is OFF" OFF)
 option(NANO_JIT "Controls whether NANOJIT compilation will be enabled, default is OFF" OFF)
-option(ASM_JIT "Controls whether ASMJIT compilation will be enabled, default is OFF" OFF)
 
 if (LLVM_JIT)
     find_package(LLVM REQUIRED CONFIG)
@@ -16,17 +19,10 @@ if (LLVM_JIT)
     message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
     include_directories(${LLVM_INCLUDE_DIRS})
     add_definitions(${LLVM_DEFINITIONS})
-elseif (ASM_JIT)
-    set (ASMJIT_EMBED TRUE)
-    add_definitions(-DASMJIT_STATIC)
-    set (ASMJIT_DIR asmjit-backend/asmjit)
-    include ("${ASMJIT_DIR}/CMakeLists.txt")
-    include_directories("${ASMJIT_DIR}/src")
 elseif (NANO_JIT)
     find_package(NanoJIT REQUIRED)
     include_directories(${NANOJITEXTRA_INCLUDE_DIRS})
 endif()
-
 
 if (MSVC)
     message( STATUS "MSVC selected" )
@@ -67,8 +63,6 @@ if (UNIX AND NOT APPLE)
     set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -Wno-sign-compare -std=c++14 -fno-exceptions ${CXX_OPTIONS}")
     set(CMAKE_CXX_FLAGS_DEBUG "${SANITIZER_FLAGS} -fno-omit-frame-pointer -O0 -g3 -Wall -Wno-sign-compare -std=c++14 -fno-exceptions ${CXX_OPTIONS}")
     set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${SANITIZER_FLAGS} -O1 -g3 -Wall -Wno-sign-compare -std=c++14 -fno-exceptions ${CXX_OPTIONS}")
-    # In case we are using gcc 5.1 set ABI version
-    # add_definitions("-D_GLIBCXX_USE_CXX11_ABI=0")
 endif ()
 
 if (APPLE)
@@ -97,14 +91,25 @@ message( STATUS "MULTIARCH_TRIPLET : " ${MULTIARCH_TRIPLET} )
 
 include_directories("${PROJECT_SOURCE_DIR}/src")
 
+if (LLVM_JIT)
+    set(DIST_LIB_H
+        llvm-backend/dmr_c.h
+        )
+elseif (NANO_JIT)
+    set(DIST_LIB_H
+        nanojit-backend/dmr_c.h
+        )
+endif()
+
+
 set(LIB_H 
 	src/allocate.h
 	src/char.h
-	src/dmr_c.h
 	src/expression.h
 	src/flow.h
 	src/ident-list.h
 	src/linearize.h
+    src/lib.h
 	src/parse.h
 	src/port.h 
 	src/ptrlist.h
@@ -122,12 +127,12 @@ set(LIB_SRCS
 	src/builtin.c
 	src/char.c
 	src/cse.c
-	src/dmr_c.c
 	src/expression.c
 	src/evaluate.c
 	src/expand.c
 	src/flow.c
 	src/inline.c
+    src/lib.c
 	src/linearize.c
 	src/liveness.c
 	src/memops.c
@@ -203,9 +208,6 @@ elseif (NANO_JIT)
     set(LIB_LLVM_SRCS nanojit-backend/sparse-nanojit.c)
     include_directories("${PROJECT_SOURCE_DIR}/nanojit-backend")
     set(LLVM_LIBS ${NANOJITEXTRA_LIBRARIES})
-elseif (ASM_JIT)
-    set(LIB_LLVM_SRCS asmjit-backend/sparse-asmjit.cpp ${ASMJIT_SRC})
-    include_directories("${PROJECT_SOURCE_DIR}/asmjit-backend")
 endif ()
 
 if (MSVC OR APPLE)
@@ -217,6 +219,7 @@ endif ()
 #Main library
 add_library(dmr_c STATIC 
         ${LIB_H}
+        ${DIST_LIB_H}
         ${LIB_SRCS}
         ${LIB_LLVM_SRCS} )
 target_link_libraries(dmr_c ${LLVM_LIBS})
@@ -245,7 +248,11 @@ elseif (NANO_JIT)
 
     add_executable(test-nanojit nanojit-backend/testnanobackend.c)
     target_link_libraries(test-nanojit dmr_c)	
-elseif (ASM_JIT)
-    add_executable(sparse-asmjit asmjit-backend/asmjitbackend.c)
-    target_link_libraries(sparse-asmjit dmr_c)     
 endif()
+
+install(FILES ${DIST_LIB_H}
+        DESTINATION include/dmr_c)
+install(TARGETS dmr_c
+        RUNTIME DESTINATION bin
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib)

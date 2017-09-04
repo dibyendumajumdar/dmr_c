@@ -41,7 +41,7 @@
 #include <time.h>
 
 #include <port.h>
-#include <dmr_c.h>
+#include <lib.h>
 #include <allocate.h>
 #include <parse.h>
 #include <token.h>

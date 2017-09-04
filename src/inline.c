@@ -31,7 +31,7 @@
 #include <stdio.h>
 
 #include <port.h>
-#include <dmr_c.h>
+#include <lib.h>
 #include <allocate.h>
 #include <token.h>
 #include <parse.h>

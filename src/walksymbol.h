@@ -2,7 +2,7 @@
 #define DMR_C_PARSETREE_H
 
 #include <allocate.h>
-#include <dmr_c.h>
+#include <lib.h>
 #include <expression.h>
 #include <parse.h>
 #include <port.h>

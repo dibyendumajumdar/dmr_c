@@ -11,7 +11,7 @@
 * Copyright (C) 2017 Dibyendu Majumdar
 */
 
-#include <dmr_c.h>
+#include <lib.h>
 
 struct target_t {
   struct symbol *size_t_ctype;

@@ -8,16 +8,16 @@ The name dmr_C is a homage to Dennis M Ritchie.
 
 dmr_C is a fork of Sparse. The main changes are:
 
-* Removed global state
-* Renamed objects and functions with external linkage to avoid polluting the global namespace
-* Ensured that the library can be built on Windows using MSVC
+* Global state has been removed 
+* Functions with external linkage have been renamed to avoid polluting the global namespace
+* The library can be built on Windows using MSVC
 * WIP Ensure that code can be compiled using a C++ compiler
-* Converted the LLVM backend to a JIT compiler - i.e. it is exposed as a library API
-* WIP Work is ongoing on additional backend based on [nanojit](https://github.com/dibyendumajumdar/dmr_c/tree/master/nanojit-backend).
+* The LLVM backend has been converted to a JIT compiler - i.e. it is exposed as a library API
+* WIP Work is ongoing on additional backend based on [NanoJIT](https://github.com/dibyendumajumdar/dmr_c/tree/master/nanojit-backend).
 
 ## Current status
 
-* We are now able to build on Windows, Linux and Mac OSX. However there are platform specific limitations - see below for details.
+* The code builds on Windows, Linux and Mac OSX. However there are platform specific limitations - see below for details.
 * The LLVM backend has had many fixes and is able to compile real programs. See details below for what works and what doesn't.
 * The NanoJIT backend is now able to handle a reasonable subset of C, although it is not yet as well tested as the LLVM backend.
 
@@ -34,6 +34,7 @@ mkdir build
 cd build
 cmake ..
 ```
+
 This will generate appropriate build files that can then be used to build the project.
 
 ### LLVM Backend
@@ -43,7 +44,7 @@ To build with LLVM support, additional arguments are needed. Following instructi
 ```
 mkdir build
 cd build
-cmake -DLLVM_JIT=ON -DLLVM_DIR=$LLVM_INSTALL_DIR\lib\cmake\llvm -G "Visual Studio 15 2017 Win64" ..
+cmake -DCMAKE_INSTALL_PREFIX=/path/to/install -DLLVM_JIT=ON -DLLVM_DIR=$LLVM_INSTALL_DIR\lib\cmake\llvm -G "Visual Studio 15 2017 Win64" ..
 ```
 
 Here $LLVM_INSTALL_DIR refers to the path where LLVM is installed. 
@@ -51,6 +52,8 @@ Here $LLVM_INSTALL_DIR refers to the path where LLVM is installed.
 Generation of build scripts follows the same process on Linux and Mac OSX platforms. Note that on Ubuntu the standard LLVM package has broken CMake files hence the recommended approach is to download and build LLVM before attempting to build dmr_C.
 
 Once the build files are generated you can use the normal build tools i.e. Visual Studio on Windows and make on UNIX or Mac OSX platforms.
+
+Assuming you specified the `CMAKE_INSTALL_PREFIX` you can install the header files and the library using your build script.
 
 ### NanoJIT Backend 
 
@@ -62,10 +65,12 @@ Once the build files are generated you can use the normal build tools i.e. Visua
 ```
 mkdir build
 cd build
-cmake -DNANO_JIT=ON -G "Visual Studio 15 2017 Win64" ..
+cmake -DCMAKE_INSTALL_PREFIX=/path/to/install -DNANO_JIT=ON -G "Visual Studio 15 2017 Win64" ..
 ```
 
-Process on Linux should be similar except for the CMake generator target.
+Process on Linux is similar except for the CMake generator target.
+
+Assuming you specified the `CMAKE_INSTALL_PREFIX` you can install the header files and the library using your build script.
 
 ## Using dmr_C as a JIT
 
@@ -73,14 +78,14 @@ dmr_C has two alternative backend JIT engines, LLVM and NanoJIT. The LLVM backen
 
 ### Using the LLVM backend
 
-To use it as a LLVM based JIT you only need to invoke following:
+To use it as a LLVM based JIT you only need to invoke following function declared in header file `dmr_c.h`:
 
 ```C
 extern bool dmrC_llvmcompile(int argc, char **argv, LLVMModuleRef module,
 			     const char *inputbuffer);
 ```
 
-The call accepts the arguments passed to a main() function, an LLVMModuleRef, and an optional buffer to be compiled. It will preprocess files if needed, and compile each of the source files given in the argument list. It will finally compile the supplied input buffer. The results of the compilation will be in the supplied LLVMModuleRef for the calling program to use as it wishes. 
+The call accepts the arguments passed to a main() function, an `LLVMModuleRef`, and an optional buffer to be compiled. It will preprocess files if needed, and compile each of the source files given in the argument list. It will finally compile the supplied input buffer. The results of the compilation will be in the supplied `LLVMModuleRef` for the calling program to use as it wishes. 
 
 A very simple use is below:
 
@@ -117,7 +122,7 @@ This is basically what the sparse-llvm command (see below) does.
 
 ### Using the NanoJIT backend
 
-This is very similar to how the LLVM backend is used. There is again a single API call to compile C code. There are additional steps need to execute the compiled code.
+This is very similar to how the LLVM backend is used. There is again a single API call to compile C code; this is declared in header file `dmr_c.h`. Additional steps are needed to execute the compiled code.
 
 ```C
 bool dmrC_nanocompile(int argc, char **argv, NJXContextRef module,
@@ -177,13 +182,14 @@ In the example above, we check if there is a compiled function named 'TestNano'.
 * String initializers are not supported
 * Generated code for switch statements uses if (cond) branching rather than a jump table. NanoJIT does have a jump table instruction
 but it requires the indices to be consecutive starting from zero, and there is no support for a default case. In future this instruction may be used when possible.
+* There has been limited amount of testing of this backend, so expect it to fail!
 
 ## Using dmr_C command line tools
 
 The following command line tools are built:
 
 ### sparse-llvm
-The sparse-llvm tool takes in a source C file and generates an LLVM module. It writes the LLVM Module in LLVM bitcode format.
+The sparse-llvm tool takes in a source C file and generates an LLVM module. It writes the LLVM Module in LLVM bitcode format. Note that this command line tool is only built when LLVM backend is being used.
 
 * The tool will output the preprocesed source code if -E option is given.
 * The tool will save the output to specified file if -o option is given, otherwise output is saved to file named 'out.bc' in current directory.
@@ -214,10 +220,10 @@ llvm-dis test.bc
 ```
 
 ### linearize
-The linearize tool outputs the SSA IR generated by the parser and compiler front-end. (Note that these instructions are converted by the sparse-llvm backend to LLVM IR)
+The `linearize` tool outputs the SSA IR generated by the parser and compiler front-end.
 
 ### showsymbols
-The showsymbols tool shows the global symbols found in a source file, output is generated in XML format.
+The `showsymbols` tool shows the global symbols found in a source file, output is generated in XML format.
 
 ### showparsetree
 This tool dumps the parse tree as built by the C parser - note that this tool is experimental and the output format is evolving. 
@@ -225,17 +231,11 @@ This tool dumps the parse tree as built by the C parser - note that this tool is
 ### sparse
 The sparse tool checks C code and outputs warnings or error messages for certain conditions. For details please see [Linux Sparse man page](https://linux.die.net/man/1/sparse).
 
-### The JIT backends
-
-#### How it works
-
-* The JIT backends take the [Sparse SSA IR](https://github.com/dibyendumajumdar/dmr_c/blob/master/docs/instructions.md) generated by the linearizer in sparse and converts these to JIT IR instructions.
-* You can view the Sparse SSA IR output by running the linearize command.
-* The [Sparse SSA IR](https://github.com/dibyendumajumdar/dmr_c/blob/master/docs/instructions.md) is lower level than LLVM IR - in particular it has no concept of types other than primitive integer, floating point and pointer types. The generated LLVM IR therefore relies upon casting the values where required to types expected by LLVM.
-
 #### Bugs
 
 Many bugs have been fixed in the LLVM backend and the tool is able to compile and run real programs. However there are still bugs that mean that the generated code is sometimes not correct. See the `tests/bugs` folder for examples of programs that fail to compile successfully. If you hit a problem, please submit a bug report with a minimal example of program that fails.
+
+The NanoJIT backend is in early phase of development, and has had much less testing. 
 
 ## Using dmr_C as a library
 
@@ -246,8 +246,14 @@ The dmr_C is also a library and can be linked and used by application programs. 
 * Parser - this parses the token stream and creates parse tree and symbols
 * Linearizer - this takes the parsed tree and symbols and generates SSA IR
 * Optimizer - this performs various optimizations on the SSA IR
+
+### The JIT backends
+
 * LLVM backend - this takes the SSA IR output and converts this to LLVM IR
 * NanoJIT backend - alternative backend that generates machine code using NanoJIT
+* The JIT backends take the [Sparse SSA IR](https://github.com/dibyendumajumdar/dmr_c/blob/master/docs/instructions.md) generated by the linearizer in sparse and converts these to JIT IR instructions.
+* You can view the Sparse SSA IR output by running the linearize command.
+* The [Sparse SSA IR](https://github.com/dibyendumajumdar/dmr_c/blob/master/docs/instructions.md) is lower level than LLVM IR - in particular it has no concept of types other than primitive integer, floating point and pointer types, and is similar to NanoJIT IR in this respect. The generated LLVM IR therefore relies upon casting the values where required to types expected by LLVM.
 
 ## Links
 

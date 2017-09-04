@@ -19,6 +19,7 @@ dmr_C is a fork of Sparse. The main changes are:
 
 * We are now able to build on Windows, Linux and Mac OSX. However there are platform specific limitations - see below for details.
 * The LLVM backend has had many fixes and is able to compile real programs. See details below for what works and what doesn't.
+* The NanoJIT backend is now able to handle a reasonable subset of C, although it is not yet as well tested as the LLVM backend.
 
 ## News
 * Sep-2017 - a lot more functional NanoJIT backend
@@ -26,7 +27,7 @@ dmr_C is a fork of Sparse. The main changes are:
 
 ## Build instructions
 
-The build is pretty standard CMake build. There are no external dependencies except LLVM. To build without LLVM backend just try:
+The build is pretty standard CMake build. There are no external dependencies except LLVM or NanoJIT. To build without a backend just try:
 
 ```
 mkdir build
@@ -66,20 +67,13 @@ cmake -DNANO_JIT=ON -G "Visual Studio 15 2017 Win64" ..
 
 Process on Linux should be similar except for the CMake generator target.
 
-## Using dmr_C as a library
-
-The dmr_C is also a library and can be linked and used by application programs. As a library it is made up of several components:
-
-* Tokenizer - this converts the input stream into tokens
-* Preprocesser - this carries out C pre-processing
-* Parser - this parses the token stream and creates parse tree and symbols
-* Linearizer - this takes the parsed tree and symbols and generates SSA IR
-* Optimizer - this performs various optimizations on the SSA IR
-* LLVM backend - this takes the SSA IR output and converts this to LLVM IR
-
 ## Using dmr_C as a JIT
 
-dmr_C can be linked as a library. To use it as a JIT you only need to invoke following:
+dmr_C has two alternative backend JIT engines, LLVM and NanoJIT. The LLVM backend is better tested and has evolved from sparse-llvm tool that comes with Sparse. The NanoJIT backend is entirely new, has had little testing, and is also more limited in the features supported.
+
+### Using the LLVM backend
+
+To use it as a LLVM based JIT you only need to invoke following:
 
 ```C
 extern bool dmrC_llvmcompile(int argc, char **argv, LLVMModuleRef module,
@@ -112,7 +106,7 @@ int main(int argc, char **argv)
 
 This is basically what the sparse-llvm command (see below) does.
 
-### Limitations
+#### Limitations of LLVM backend
 
 * Initializers on static and globals do not work yet except for simple strings and scalar variables. The front-end does handle these - the limitation is in the LLVM backend.
 * Aggregate assignments are not yet supported by the LLVM backend, i.e. you cannot assign a struct by value.
@@ -120,6 +114,58 @@ This is basically what the sparse-llvm command (see below) does.
 * The `va_arg` mechanism is not supported.
 * There is no support for computed gotos in the LLVM backend.
 * The front-end parser and pre-processor knows about many Linux constructs hence it can process C header files on Linux. However, it doesn't know about Windows or Mac OSX features. As typically the vendor supplied header files have many platform specific extensions, unfortunately this means that you cannot process vendor supplied header files on these platforms.
+
+### Using the NanoJIT backend
+
+This is very similar to how the LLVM backend is used. There is again a single API call to compile C code. There are additional steps need to execute the compiled code.
+
+```C
+bool dmrC_nanocompile(int argc, char **argv, NJXContextRef module,
+		      const char *inputbuffer);
+```
+
+Below is what the sparse-nanojit tool does:
+
+```C
+#include <dmr_c.h>
+
+#include <stdbool.h>
+#include <stdio.h>
+
+int main(int argc, char **argv)
+{
+	NJXContextRef module = NJX_create_context(true);
+
+	int rc = 0;
+	if (!dmrC_nanocompile(argc, argv, module, NULL))
+		rc = 1;
+
+	int (*fp)(void) = NULL;
+	if (rc == 0) {
+		/* To help with testing check if the source defined a function
+		 * named TestNano() and if so, execute it
+		 */
+		fp = NJX_get_function_by_name(module, "TestNano");
+		if (fp) {
+			int fprc = fp();
+			if (fprc != 0) {
+				printf("TestNano Failed (%d)\n", fprc);
+				rc = 1;
+			} else {
+				printf("TestNano OK\n");
+			}
+		}
+	}
+	NJX_destroy_context(module);
+
+	return rc;
+}
+```
+
+In the example above, we check if there is a compiled function named 'TestNano'. If it is then we invoke it.
+
+#### Limitations of NanoJIT backend
+
 
 ## Using dmr_C command line tools
 
@@ -176,6 +222,17 @@ The sparse tool checks C code and outputs warnings or error messages for certain
 #### Bugs
 
 Many bugs have been fixed in the LLVM backend and the tool is able to compile and run real programs. However there are still bugs that mean that the generated code is sometimes not correct. See the `tests/bugs` folder for examples of programs that fail to compile successfully. If you hit a problem, please submit a bug report with a minimal example of program that fails.
+
+## Using dmr_C as a library
+
+The dmr_C is also a library and can be linked and used by application programs. As a library it is made up of several components:
+
+* Tokenizer - this converts the input stream into tokens
+* Preprocesser - this carries out C pre-processing
+* Parser - this parses the token stream and creates parse tree and symbols
+* Linearizer - this takes the parsed tree and symbols and generates SSA IR
+* Optimizer - this performs various optimizations on the SSA IR
+* LLVM backend - this takes the SSA IR output and converts this to LLVM IR
 
 ## Links
 

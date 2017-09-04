@@ -91,7 +91,7 @@ The call accepts the arguments passed to a main() function, an LLVMModuleRef, an
 A very simple use is below:
 
 ```C
-#include <dmr_c_llvm.h>
+#include <dmr_c.h>
 #include <stdio.h>
 
 int main(int argc, char **argv)

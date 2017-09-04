@@ -167,7 +167,7 @@ In the example above, we check if there is a compiled function named 'TestNano'.
 #### Limitations of NanoJIT backend
 
 * Computed gotos are not supported
-* Bitfield access is implemented but very well tested
+* Bitfield access is implemented but not well tested
 * Calling functions through function pointers is not yet supported
 * Aggregate initializers are not supported
 * The `va_arg` mechanism is not supported

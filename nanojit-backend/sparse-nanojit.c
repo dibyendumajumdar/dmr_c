@@ -330,7 +330,7 @@ static struct NanoType *check_supported_returntype(struct dmr_C *C,
 	return type;
 }
 
-static NJXLInsRef truncate(struct dmr_C *C, struct function *fn, NJXLInsRef val,
+static NJXLInsRef truncate_intvalue(struct dmr_C *C, struct function *fn, NJXLInsRef val,
 			   struct NanoType *dtype, int unsigned_cast)
 {
 	if (NJX_is_q(val) && dtype->bit_size <= 64) {
@@ -354,7 +354,7 @@ static NJXLInsRef build_cast(struct dmr_C *C, struct function *fn,
 {
 	switch (dtype->type) {
 	case RT_INT:
-		return truncate(C, fn, val, dtype, unsigned_cast);
+		return truncate_intvalue(C, fn, val, dtype, unsigned_cast);
 
 	case RT_INT32:
 		if (NJX_is_q(val)) {

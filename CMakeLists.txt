@@ -24,6 +24,8 @@ elseif (NANO_JIT)
     include_directories(${NANOJITEXTRA_INCLUDE_DIRS})
 endif()
 
+set(LIBRARY_TYPE SHARED)
+
 if (MSVC)
     message( STATUS "MSVC selected" )
     set(CMAKE_C_FLAGS_DEBUG "/Od /D_DEBUG /MDd /Zi /RTC1 /EHsc")
@@ -49,20 +51,22 @@ if (MSVC)
     add_definitions("/wd4996")
     add_definitions("/wd4291")
     add_definitions("/wd4624")
+
+    set(LIBRARY_TYPE STATIC)
 endif ()
 
 
 if (UNIX AND NOT APPLE)
     # -fsanitize=bounds -fsanitize=alignment -fsanitize=object-size
     # set(SANITIZER_FLAGS "-fsanitize=address")
-    set(CMAKE_C_FLAGS "${SANITIZER_FLAGS} -fno-omit-frame-pointer -lstdc++ -std=c99 -O2 -g -Wall -Wno-comment ${CXX_OPTIONS}")
-    set(CMAKE_C_FLAGS_DEBUG "${SANITIZER_FLAGS} -fno-omit-frame-pointer -lstdc++ -std=c99 -O0 -g3 -Wall -Wno-comment ${CXX_OPTIONS}")
-    set(CMAKE_C_FLAGS_RELEASE "-std=c99 -lstdc++ -O3 -Wall -Wno-comment ${CXX_OPTIONS}")
-    set(CMAKE_C_FLAGS_RELWITHDEBINFO "${SANITIZER_FLAGS} -std=c99 -lstdc++ -O1 -g3 -Wall  ${CXX_OPTIONS}")
-    set(CMAKE_CXX_FLAGS "${SANITIZER_FLAGS} -fno-omit-frame-pointer -O0 -g3 -Wall -Wno-sign-compare -std=c++14 -fpermissive -fno-exceptions ${CXX_OPTIONS}")
-    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -Wno-sign-compare -std=c++14 -fpermissive -fno-exceptions ${CXX_OPTIONS}")
-    set(CMAKE_CXX_FLAGS_DEBUG "${SANITIZER_FLAGS} -fno-omit-frame-pointer -O0 -g3 -Wall -Wno-sign-compare -std=c++14 -fpermissive -fno-exceptions ${CXX_OPTIONS}")
-    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${SANITIZER_FLAGS} -O1 -g3 -Wall -Wno-sign-compare -std=c++14 -fpermissive -fno-exceptions ${CXX_OPTIONS}")
+    set(CMAKE_C_FLAGS "${SANITIZER_FLAGS} -fno-omit-frame-pointer -std=c99 -O2 -g -Wall -Wno-comment ${CXX_OPTIONS}")
+    set(CMAKE_C_FLAGS_DEBUG "${SANITIZER_FLAGS} -fno-omit-frame-pointer -std=c99 -O0 -g3 -Wall -Wno-comment ${CXX_OPTIONS}")
+    set(CMAKE_C_FLAGS_RELEASE "-std=c99 -O3 -Wall -Wno-comment ${CXX_OPTIONS}")
+    set(CMAKE_C_FLAGS_RELWITHDEBINFO "${SANITIZER_FLAGS} -std=c99 -O1 -g3 -Wall  ${CXX_OPTIONS}")
+    set(CMAKE_CXX_FLAGS "${SANITIZER_FLAGS} -fno-omit-frame-pointer -O0 -g3 -Wall -Wno-sign-compare -std=c++14 -fno-exceptions ${CXX_OPTIONS}")
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -Wno-sign-compare -std=c++14 -fno-exceptions ${CXX_OPTIONS}")
+    set(CMAKE_CXX_FLAGS_DEBUG "${SANITIZER_FLAGS} -fno-omit-frame-pointer -O0 -g3 -Wall -Wno-sign-compare -std=c++14 -fno-exceptions ${CXX_OPTIONS}")
+    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${SANITIZER_FLAGS} -O1 -g3 -Wall -Wno-sign-compare -std=c++14 -fno-exceptions ${CXX_OPTIONS}")
 endif ()
 
 if (APPLE)
@@ -109,7 +113,7 @@ set(LIB_H
 	src/flow.h
 	src/ident-list.h
 	src/linearize.h
-    src/lib.h
+	src/lib.h
 	src/parse.h
 	src/port.h 
 	src/ptrlist.h
@@ -119,7 +123,7 @@ set(LIB_H
 	src/target.h
 	src/token.h 
 	src/ssa.h
-    src/walksymbol.h
+	src/walksymbol.h
 	)
 
 set(LIB_SRCS 
@@ -132,7 +136,7 @@ set(LIB_SRCS
 	src/expand.c
 	src/flow.c
 	src/inline.c
-    src/lib.c
+	src/lib.c
 	src/linearize.c
 	src/liveness.c
 	src/memops.c
@@ -148,7 +152,7 @@ set(LIB_SRCS
 	src/symbol.c
 	src/unssa.c
 	src/ssa.c
-    src/walksymbol.c
+	src/walksymbol.c
 	)
 
 # Enable minimal required LLVM components so that the
@@ -217,7 +221,7 @@ if (MSVC OR APPLE)
 endif ()
 
 #Main library
-add_library(dmr_c STATIC 
+add_library(dmr_c ${LIBRARY_TYPE}
         ${LIB_H}
         ${DIST_LIB_H}
         ${LIB_SRCS}

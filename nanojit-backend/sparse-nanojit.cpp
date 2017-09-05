@@ -2014,13 +2014,14 @@ static bool output_fn(struct dmr_C *C, NJXContextRef module,
 	struct symbol *sym = ep->name;
 	struct symbol *base_type = sym->ctype.base_type;
 	struct symbol *ret_type = sym->ctype.base_type->ctype.base_type;
-	struct function function = {.context = module};
+	struct function function = {NULL};
 	struct basic_block *bb;
 	struct symbol *arg;
 	const char *name;
 	int nr_args = 0;
 	bool success = false;
 
+	function.context = module;
 	if (base_type->variadic) {
 		fprintf(stderr, "Variadic functions are not supported\n");
 		return false;

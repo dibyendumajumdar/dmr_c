@@ -8,6 +8,7 @@
 
 #ifndef _WIN32
 #include <unistd.h>
+#include <alloca.h>
 #else
 #include <io.h>
 #include <malloc.h>

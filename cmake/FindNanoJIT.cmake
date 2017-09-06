@@ -6,7 +6,7 @@ find_path(NANOJITEXTRA_INCLUDE_DIR nanojitextra.h
 )
 
 find_library(NANOJITEXTRA_LIBRARY
-  NAMES nanojitextra libnanojitextra
+  NAMES nanojitextra libnanojitextra libnanojitextra.dylib
   PATHS
   c:/ravi/lib
   ~/ravi/lib

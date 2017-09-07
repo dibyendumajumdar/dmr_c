@@ -82,6 +82,14 @@ cd build
 cmake -DCMAKE_INSTALL_PREFIX=/path/to/install -DNANO_JIT=ON -G "Visual Studio 15 2017 Win64" ..
 ```
 
+* On Linux, I use:
+
+```
+mkdir build
+cd build
+cmake -DCMAKE_INSTALL_PREFIX=$HOME/ravi -DNANO_JIT=ON -G "Unix Makefiles" ..
+```
+
 Assuming you specified the `CMAKE_INSTALL_PREFIX` you can install the header files and the library using your build script. On Linux just do:
 
 ```

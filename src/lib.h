@@ -37,7 +37,10 @@
 * Copyright (C) 2017 Dibyendu Majumdar
 */
 
-#define NEW_SSA 1
+// Build options
+#define NEW_SSA 0
+#define SINGLE_STORE_SHORTCUT 1
+
 
 #include <allocate.h>
 #include <ptrlist.h>

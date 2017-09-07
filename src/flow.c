@@ -646,8 +646,6 @@ void dmrC_check_access(struct dmr_C *C, struct instruction *insn)
 	}
 }
 
-#define SINGLE_STORE_SHORTCUT 0
-
 static void simplify_one_symbol(struct dmr_C *C, struct entrypoint *ep, struct symbol *sym)
 {
 #if SINGLE_STORE_SHORTCUT

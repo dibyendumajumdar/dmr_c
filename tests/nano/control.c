@@ -180,8 +180,6 @@ static int test_switch(void) {
     case 5 ... 10: break;
     default: return 1;
     }
-#if 0
-// Fails to compile - Sparse linearizer bug
     a = 0;
     int count = 27;
     switch (count % 8) {
@@ -196,7 +194,6 @@ static int test_switch(void) {
             } while ((count -= 8) > 0);
     }
     if (27 != a) return 1;
-#endif
     switch (1)
         ;
     return 0;

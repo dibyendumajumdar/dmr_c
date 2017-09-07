@@ -28,8 +28,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <dmr_c.h>
 #include <allocate.h>
+#include <dmr_c.h>
 #include <expression.h>
 #include <flow.h>
 #include <linearize.h>
@@ -41,6 +41,7 @@
  * function. This is just a memory allocation issue.
  */
 #define MAX_JMP_INSTRUCTIONS 100
+#define MAX_LOCAL_VARS 255
 
 struct jmp_target {
 	struct basic_block *bb;
@@ -88,6 +89,8 @@ struct function {
 	NJXLInsRef args[NJXMaxArgs];
 	struct NanoType *return_type;
 	struct jmp_target jumps[MAX_JMP_INSTRUCTIONS];
+	NJXLInsRef locals[MAX_LOCAL_VARS]; // We need a list of locals to be
+					   // able to set liveness
 };
 
 /*
@@ -99,6 +102,7 @@ struct function {
 static bool add_jump_instruction(struct function *fn, struct basic_block *bb,
 				 NJXLInsRef ins)
 {
+	assert(ins);
 	for (int i = 0; i < MAX_JMP_INSTRUCTIONS; i++) {
 		if (fn->jumps[i].bb == NULL) {
 			fn->jumps[i].bb = bb;
@@ -117,10 +121,23 @@ static bool resolve_jumps(struct function *fn)
 			if (!target)
 				return false;
 			NJXLInsRef insn = fn->jumps[i].jmp_instruction;
+			assert(insn);
 			NJX_set_jmp_target(insn, target);
 		}
 	}
 	return true;
+}
+
+static bool add_local_var(struct function *fn, NJXLInsRef ins)
+{
+	assert(ins);
+	for (int i = 0; i < MAX_LOCAL_VARS; i++) {
+		if (fn->locals[i] == NULL) {
+			fn->locals[i] = ins;
+			return true;
+		}
+	}
+	return false;
 }
 
 static struct NanoType *alloc_nanotype(struct function *fn,
@@ -330,8 +347,9 @@ static struct NanoType *check_supported_returntype(struct dmr_C *C,
 	return type;
 }
 
-static NJXLInsRef truncate_intvalue(struct dmr_C *C, struct function *fn, NJXLInsRef val,
-			   struct NanoType *dtype, int unsigned_cast)
+static NJXLInsRef truncate_intvalue(struct dmr_C *C, struct function *fn,
+				    NJXLInsRef val, struct NanoType *dtype,
+				    int unsigned_cast)
 {
 	if (NJX_is_q(val) && dtype->bit_size <= 64) {
 		if (dtype->bit_size == 64)
@@ -470,6 +488,11 @@ static NJXLInsRef build_local(struct dmr_C *C, struct function *fn,
 		}
 		NJXLInsRef result = NJX_alloca(
 		    fn->builder, type->bit_size / C->target->bits_in_char);
+		if (!add_local_var(fn, result)) {
+			fprintf(stderr, "Number of local vars exceeded %d\n",
+				MAX_LOCAL_VARS);
+			return NULL;
+		}
 		sym->priv = result;
 		return result;
 	}
@@ -691,24 +714,6 @@ static NJXLInsRef pseudo_to_value(struct dmr_C *C, struct function *fn,
 	if (!result) {
 		fprintf(stderr, "error: no result for pseudo\n");
 		return NULL;
-	}
-	return result;
-}
-
-static NJXLInsRef pseudo_ins(struct dmr_C *C, struct function *fn,
-			     pseudo_t pseudo)
-{
-	NJXLInsRef result = NULL;
-	switch (pseudo->type) {
-	case PSEUDO_REG:
-		result = pseudo->priv;
-		break;
-	case PSEUDO_ARG:
-		result = fn->args[pseudo->nr - 1];
-		break;
-	case PSEUDO_PHI:
-		result = pseudo->priv;
-		break;
 	}
 	return result;
 }
@@ -1509,10 +1514,28 @@ static NJXLInsRef output_op_store(struct dmr_C *C, struct function *fn,
 	return value;
 }
 
+static NJXLInsRef pseudo_ins(struct dmr_C *C, struct function *fn,
+			     pseudo_t pseudo)
+{
+	NJXLInsRef result = NULL;
+	switch (pseudo->type) {
+	case PSEUDO_REG:
+		result = pseudo->priv;
+		break;
+	case PSEUDO_ARG:
+		result = fn->args[pseudo->nr - 1];
+		break;
+	case PSEUDO_PHI:
+		result = pseudo->priv2;
+		break;
+	}
+	return result;
+}
+
 /*
  * Add liveness data to help Nanojit's
  * register allocator, which does a scan of the Nanojit instructions
- * from bottom up and can miss the fact that some registers are
+ * from bottom up and can miss the fact that some registers and stack slots are
  * needed.
  */
 static void output_liveness(struct dmr_C *C, struct function *fn,
@@ -1536,6 +1559,30 @@ static void output_liveness(struct dmr_C *C, struct function *fn,
 	}
 	END_FOR_EACH_PTR(need);
 #endif
+	// Mark required stack slots arising from
+	// phi instructions
+	struct instruction *insn;
+	FOR_EACH_PTR(bb->insns, insn)
+	{
+		if (!insn->bb || insn->opcode != OP_PHI)
+			continue;
+		NJXLInsRef ptr = insn->target->priv2;
+		if (ptr)
+			NJX_liveq(fn->builder, ptr);
+	}
+	END_FOR_EACH_PTR(insn);
+}
+
+static void output_liveness_localvars(struct dmr_C *C, struct function *fn)
+{
+	// Mark stack slots arising from
+	// local var declarations
+	for (int i = 0; i < MAX_LOCAL_VARS; i++) {
+		if (fn->locals[i] == NULL)
+			break;
+		NJXLInsRef ptr = fn->locals[i];
+		NJX_liveq(fn->builder, ptr);
+	}
 }
 
 /*
@@ -1577,7 +1624,7 @@ static NJXLInsRef output_op_switch(struct dmr_C *C, struct function *fn,
 			 * if (switch_value == case_value) goto case_block;
 			 */
 			struct NanoType *symtype =
-			    get_symnode_type(C, fn, insn->type);
+			    get_symnode_or_basetype(C, fn, insn->type);
 			NJXLInsRef case_value =
 			    constant_value(C, fn, val, symtype);
 			NJXLInsRef cond = NULL;
@@ -1596,8 +1643,12 @@ static NJXLInsRef output_op_switch(struct dmr_C *C, struct function *fn,
 				output_liveness(C, fn, jmp->target);
 			NJXLInsRef br1 = NJX_cbr_true(fn->builder, cond,
 						      NULL); // jmp->target
-			if (!add_jump_instruction(fn, jmp->target, br1))
-				return NULL;
+			// It appears that NanoJIT may decide jump isn't
+			// necessary
+			if (br1 != NULL) {
+				if (!add_jump_instruction(fn, jmp->target, br1))
+					return NULL;
+			}
 		}
 	}
 	END_FOR_EACH_PTR(jmp);
@@ -2014,13 +2065,14 @@ static bool output_fn(struct dmr_C *C, NJXContextRef module,
 	struct symbol *sym = ep->name;
 	struct symbol *base_type = sym->ctype.base_type;
 	struct symbol *ret_type = sym->ctype.base_type->ctype.base_type;
-	struct function function = {NULL};
+	struct function function;
 	struct basic_block *bb;
 	struct symbol *arg;
 	const char *name;
 	int nr_args = 0;
 	bool success = false;
 
+	memset(&function, 0, sizeof function);
 	function.context = module;
 	if (base_type->variadic) {
 		fprintf(stderr, "Variadic functions are not supported\n");
@@ -2110,6 +2162,7 @@ static bool output_fn(struct dmr_C *C, NJXContextRef module,
 	}
 	END_FOR_EACH_PTR(bb);
 
+	output_liveness_localvars(C, &function);
 	if (resolve_jumps(&function))
 		success = true;
 

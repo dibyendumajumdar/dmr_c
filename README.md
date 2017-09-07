@@ -49,11 +49,25 @@ cmake -DCMAKE_INSTALL_PREFIX=/path/to/install -DLLVM_JIT=ON -DLLVM_DIR=$LLVM_INS
 
 Here $LLVM_INSTALL_DIR refers to the path where LLVM is installed. 
 
-Generation of build scripts follows the same process on Linux and Mac OSX platforms. Note that on Ubuntu the standard LLVM package has broken CMake files hence the recommended approach is to download and build LLVM before attempting to build dmr_C.
+Generation of build scripts follows a similar process on Linux and Mac OSX platforms. Note that on Ubuntu the standard LLVM package has broken CMake files hence the recommended approach is to download and build LLVM before attempting to build dmr_C. 
+
+Following steps are how I build on Linux:
+
+```
+mkdir build
+cd build
+cmake -DCMAKE_INSTALL_PREFIX=$HOME/ravi -DLLVM_JIT=ON -DLLVM_DIR=$HOME/LLVM/lib/cmake/llvm -G "Unix Makefiles" ..
+```
+
+In my setup LLVM is installed at `$HOME/LLVM`.
 
 Once the build files are generated you can use the normal build tools i.e. Visual Studio on Windows and make on UNIX or Mac OSX platforms.
 
-Assuming you specified the `CMAKE_INSTALL_PREFIX` you can install the header files and the library using your build script.
+Assuming you specified the `CMAKE_INSTALL_PREFIX` you can install the header files and the library using your build script. For example, on Linux, just do:
+
+```
+make install
+```
 
 ### NanoJIT Backend 
 
@@ -68,9 +82,11 @@ cd build
 cmake -DCMAKE_INSTALL_PREFIX=/path/to/install -DNANO_JIT=ON -G "Visual Studio 15 2017 Win64" ..
 ```
 
-Process on Linux is similar except for the CMake generator target.
+Assuming you specified the `CMAKE_INSTALL_PREFIX` you can install the header files and the library using your build script. On Linux just do:
 
-Assuming you specified the `CMAKE_INSTALL_PREFIX` you can install the header files and the library using your build script.
+```
+make install
+```
 
 ## Using dmr_C as a JIT
 

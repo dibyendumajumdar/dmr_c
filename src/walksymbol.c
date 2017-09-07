@@ -336,7 +336,7 @@ void walk_cast_expression(struct dmr_C *C, struct expression *expr, struct symbo
 {
 	struct symbol *old_type, *new_type;
 	int oldbits, newbits;
-	int news, is_signed;
+	int is_signed;
 
 	old_type = expr->cast_expression->ctype;
 	new_type = expr->cast_type;
@@ -370,8 +370,6 @@ void walk_label_expression(struct dmr_C *C, struct expression *expr,
 
 static void walk_initialization(struct dmr_C *C, struct symbol *sym, struct expression *expr, struct symbol_visitor *visitor)
 {
-	int val, addr, bits;
-
 	if (!expr->ctype)
 		return;
 	visitor->begin_initialization(visitor->data, expr->type);

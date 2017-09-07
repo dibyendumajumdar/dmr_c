@@ -399,7 +399,7 @@ void dmrC_add_pre_buffer(struct dmr_C *C, const char *fmt, ...)
 	va_start(args, fmt);
 	size = vsnprintf(buffer, sizeof(buffer), fmt, args);
 	va_end(args);
-	begin = dmrC_tokenize_buffer(C, buffer, size, &end);
+	begin = dmrC_tokenize_buffer(C, (unsigned char *)buffer, size, &end);
 	if (!C->pre_buffer_begin)
 		C->pre_buffer_begin = begin;
 	if (C->pre_buffer_end)

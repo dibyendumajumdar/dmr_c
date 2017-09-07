@@ -61,7 +61,6 @@ static void output(struct tree_visitor *visitor, const char *fmt, ...)
 static void begin_symbol_impl(void *data, struct symbol_info *syminfo)
 {
 	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
-	const char spaces[] = "                                           ";
 
 	if (syminfo->symbol_type == SYM_NODE) {
 		if (syminfo->name && syminfo->name[0])
@@ -223,7 +222,6 @@ static void begin_preop_expression_impl(void *data,
 					enum expression_type expr_type, int op)
 {
 	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
-	const char spaces[] = "                                           ";
 	char oper[6] = {0};
 	const char *opname = dmrC_show_special(treevisitor->C, op);
 	if (op == '*')
@@ -243,7 +241,6 @@ static void begin_postop_expression_impl(void *data,
 					 enum expression_type expr_type, int op)
 {
 	struct tree_visitor *treevisitor = (struct tree_visitor *)data;
-	const char spaces[] = "                                           ";
 	char oper[6] = {0};
 	const char *opname = dmrC_show_special(treevisitor->C, op);
 	strcpy(oper, opname);

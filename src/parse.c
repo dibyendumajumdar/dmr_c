@@ -2936,7 +2936,6 @@ int dmrC_test_parse() {
 	for (struct token *p = start; !dmrC_eof_token(p); p = p->next) {
 		printf("%s\n", dmrC_show_token(C, p));
 	}
-	struct symbol_list *symbols = NULL;
 	while (!dmrC_eof_token(start))
 		start = dmrC_external_declaration(C, start, &C->S->translation_unit_used_list, NULL);
 	dmrC_show_symbol_list(C, C->S->translation_unit_used_list, "\n\n");

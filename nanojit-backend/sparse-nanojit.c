@@ -228,7 +228,6 @@ static struct NanoType *sym_func_type(struct dmr_C *C, struct function *fn,
 				      struct symbol *sym_node)
 {
 	struct NanoType *ret_type;
-	int n_arg = 0;
 
 	// TODO we probably need a better way to encode function type
 
@@ -448,11 +447,6 @@ static int32_t instruction_size_in_bytes(struct dmr_C *C,
 					 struct instruction *insn)
 {
 	return insn->size / C->target->bits_in_char;
-}
-
-static int32_t symbol_size_in_bytes(struct dmr_C *C, struct symbol *sym)
-{
-	return sym->bit_size / C->target->bits_in_char;
 }
 
 static NJXLInsRef val_to_value(struct dmr_C *C, struct function *fn,
@@ -1514,24 +1508,6 @@ static NJXLInsRef output_op_store(struct dmr_C *C, struct function *fn,
 	return value;
 }
 
-static NJXLInsRef pseudo_ins(struct dmr_C *C, struct function *fn,
-			     pseudo_t pseudo)
-{
-	NJXLInsRef result = NULL;
-	switch (pseudo->type) {
-	case PSEUDO_REG:
-		result = pseudo->priv;
-		break;
-	case PSEUDO_ARG:
-		result = fn->args[pseudo->nr - 1];
-		break;
-	case PSEUDO_PHI:
-		result = pseudo->priv2;
-		break;
-	}
-	return result;
-}
-
 /*
  * Add liveness data to help Nanojit's
  * register allocator, which does a scan of the Nanojit instructions
@@ -1541,24 +1517,6 @@ static NJXLInsRef pseudo_ins(struct dmr_C *C, struct function *fn,
 static void output_liveness(struct dmr_C *C, struct function *fn,
 			    struct basic_block *bb)
 {
-#if 0
-	pseudo_t need;
-	FOR_EACH_PTR(bb->needs, need)
-	{
-		NJXLInsRef value = pseudo_ins(C, fn, need);
-		if (value) {
-			if (NJX_is_d(value))
-				NJX_lived(fn->builder, value);
-			else if (NJX_is_f(value))
-				NJX_livef(fn->builder, value);
-			else if (NJX_is_i(value))
-				NJX_livei(fn->builder, value);
-			else
-				NJX_liveq(fn->builder, value);
-		}
-	}
-	END_FOR_EACH_PTR(need);
-#endif
 	// Mark required stack slots arising from
 	// phi instructions
 	struct instruction *insn;
@@ -1637,7 +1595,7 @@ static NJXLInsRef output_op_switch(struct dmr_C *C, struct function *fn,
 			}
 			if (cond == NULL)
 				return NULL;
-			// Mark registers needed by destination BB as live
+			// Mark phi allocas needed by destination BB as live
 			// we should only output if dest bb precedes current bb
 			if (insn->bb->nr > jmp->target->nr)
 				output_liveness(C, fn, jmp->target);
@@ -1678,7 +1636,7 @@ static NJXLInsRef output_op_cbr(struct dmr_C *C, struct function *fn,
 	NJXLInsRef cond = is_eq_zero(C, fn, value);
 	if (cond == NULL)
 		return NULL;
-	// Mark registers needed by destination BB as live
+	// Mark phi allocas needed by destination BB as live
 	// we should only output if bb_false precedes current bb
 	if (br->bb->nr > br->bb_false->nr)
 		output_liveness(C, fn, br->bb_false);
@@ -1689,7 +1647,7 @@ static NJXLInsRef output_op_cbr(struct dmr_C *C, struct function *fn,
 	    NJX_cbr_true(fn->builder, cond, NULL); // br->bb_false->priv
 	if (!add_jump_instruction(fn, br->bb_false, br1))
 		return NULL;
-	// Mark registers needed by destination BB as live
+	// Mark phi allocas needed by destination BB as live
 	// we should only output if bb_false precedes current bb
 	if (br->bb->nr > br->bb_true->nr)
 		output_liveness(C, fn, br->bb_true);
@@ -2005,19 +1963,6 @@ static int output_insn(struct dmr_C *C, struct function *fn,
 	return v != NULL;
 }
 
-/*
- * Add liveness data to help Nanojit's
- * register allocator, which does a scan of the Nanojit instructions
- * from bottom up and can miss the fact that some registers are
- * needed. It is not yet clear the implementation below is correct.
- */
-static void output_parameter_liveness(struct dmr_C *C, struct function *fn)
-{
-	for (int i = 0; fn->args[i]; i++) {
-		NJX_liveq(fn->builder, fn->args[i]);
-	}
-}
-
 /* return 1 on success, 0 on failure */
 static int output_bb(struct dmr_C *C, struct function *fn,
 		     struct basic_block *bb)
@@ -2230,7 +2175,7 @@ bool dmrC_nanocompile(int argc, char **argv, NJXContextRef module,
 	char *file;
 
 	struct dmr_C *C = new_dmr_C();
-	C->optimize = 1; /* We need the liveness data for NanoJIT */
+	C->optimize = 1; /* Turn on simplifications as NanoJIT does not optimize much */
 	C->codegen = 1;  /* Disables macros related to vararg processing */
 
 	symlist = dmrC_sparse_initialize(C, argc, argv, &filelist);

@@ -61,13 +61,6 @@ static void newNumProp(const char *name, int value)
 	newProp(name, buf);
 }
 
-static void newIdProp(const char *name, unsigned int id)
-{
-	char buf[256];
-	snprintf(buf, 256, "_%d", id);
-	newProp(name, buf);
-}
-
 static void new_sym_node(struct dmr_C *C, struct symbol *sym, const char *name)
 {
 	const char *ident = dmrC_show_ident(C, sym->ident);

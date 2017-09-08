@@ -1,6 +1,6 @@
 # NanoJIT backend
 
-This is a [NanoJIT](https://github.com/dibyendumajumdar/nanojit) backend. 
+This backend uses [NanoJIT](https://github.com/dibyendumajumdar/nanojit) to generate machine code. The Sparse IR is converted to nanoJIT IR and then translated to machine code. 
 
 ## Status
 
@@ -16,12 +16,15 @@ These are very early days. We are able to generate code for following simple C p
 * [bitfields.c](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/bitfields.c). The generated LIR and assembly instructions look [like this](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/bitfields.lir).  
 * [switch.c](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/switch.c). The generated LIR and assembly instructions   look [like this](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/switch.lir).  
 * [control.c](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/control.c). The generated LIR and assembly instructions   look [like this](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/control.lir).  
-    
+* [matmul.c](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/matmul.c). The generated LIR and assembly instructions   look [like this](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/matmul.lir).  
+* [bool.c](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/bool.c). The generated LIR and assembly instructions   look [like this](https://github.com/dibyendumajumdar/dmr_c/blob/master/tests/nano/bool.lir).  
+
   
 ## Issues
 
 ### Features not yet implemented
 
+* String literals are not supported as they need static storage
 * Computed gotos (probably can't be implemented)
 * Bitfield access is implemented but not fully tested
 * Calling functions through function pointers

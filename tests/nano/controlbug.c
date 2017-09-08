@@ -12,8 +12,6 @@ static int test_do(void) {
     case 1:       a++;
             } while ((count -= 8) > 0);
     }
-    //if (27 != a) return a;
-    //return 0;
     return a;
 }
 
@@ -29,5 +27,6 @@ int main(void)
 
 int TestNano(void)
 {
-	return test_do();
+    int rc = test_do();
+    return rc == 27 ? 0 : rc;
 }

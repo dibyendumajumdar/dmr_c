@@ -1,0 +1,41 @@
+adder:
+.L0:
+	<entry-point>
+	store.32    %arg1 -> 0[a]
+	load.32     %r1 <- 0[a]
+	add.32      %r2 <- %r1, $1
+	cbr         %r2, .L1, .L2
+
+.L1:
+	phisrc.32   %phi1(return) <- $1
+	br          .L3
+
+.L2:
+	phisrc.32   %phi2(return) <- $0
+	br          .L3
+
+.L3:
+	phi.32      %r3 <- %phi1(return), %phi2(return)
+	ret.32      %r3
+
+
+TestNano:
+.L4:
+	<entry-point>
+	store.32    $0 -> 0[rc]
+	push.32     $0xffffffff
+	call.32     %r4 <- adder
+	load.32     %r5 <- 0[rc]
+	scast.32    %r6 <- (32) %r5
+	add.32      %r7 <- %r6, %r4
+	scast.32    %r8 <- (32) %r7
+	store.32    %r8 -> 0[rc]
+	load.32     %r9 <- 0[rc]
+	phisrc.32   %phi3(return) <- %r9
+	br          .L5
+
+.L5:
+	phi.32      %r10 <- %phi3(return)
+	ret.32      %r9
+
+

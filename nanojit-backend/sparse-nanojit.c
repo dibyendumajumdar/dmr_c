@@ -2175,7 +2175,7 @@ bool dmrC_nanocompile(int argc, char **argv, NJXContextRef module,
 	char *file;
 
 	struct dmr_C *C = new_dmr_C();
-	C->optimize = 1; /* Turn on simplifications as NanoJIT does not optimize much */
+	C->optimize = 0; /* Ideally we want to turn simplifications ON as NanoJIT does not optimize much, but for now this is OFF as matmul test fails */
 	C->codegen = 1;  /* Disables macros related to vararg processing */
 
 	symlist = dmrC_sparse_initialize(C, argc, argv, &filelist);

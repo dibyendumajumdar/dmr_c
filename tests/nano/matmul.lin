@@ -1,0 +1,458 @@
+mm_init:
+.L0:
+	<entry-point>
+	store.32    %arg1 -> 0[n]
+	load.32     %r1 <- 0[n]
+	scast.64    %r2 <- (32) %r1
+	mulu.64     %r3 <- %r2, $8
+	push.64     %r3
+	call.64*    %r4 <- malloc
+	ptrcast.64* %r5 <- (64) %r4
+	store.64*   %r5 -> 0[m]
+	store.32    $0 -> 0[i]
+	br          .L4
+
+.L4:
+	load.32     %r6 <- 0[i]
+	load.32     %r7 <- 0[n]
+	setlt.32    %r8 <- %r6, %r7
+	cbr         %r8, .L1, .L3
+
+.L1:
+	load.32     %r9 <- 0[n]
+	scast.64    %r10 <- (32) %r9
+	push.64     %r10
+	push.64     $8
+	call.64*    %r11 <- calloc
+	ptrcast.64* %r12 <- (64) %r11
+	load.64*    %r13 <- 0[m]
+	load.32     %r14 <- 0[i]
+	scast.64    %r15 <- (32) %r14
+	muls.64     %r16 <- %r15, $8
+	add.64*     %r17 <- %r13, %r16
+	store.64*   %r12 -> 0[%r17]
+	br          .L2
+
+.L2:
+	load.32     %r18 <- 0[i]
+	add.32      %r19 <- %r18, $1
+	store.32    %r19 -> 0[i]
+	br          .L4
+
+.L3:
+	load.64*    %r20 <- 0[m]
+	phisrc.64*  %phi1(return) <- %r20
+	br          .L5
+
+.L5:
+	phi.64*     %r21 <- %phi1(return)
+	ret.64*     %r20
+
+
+mm_destroy:
+.L6:
+	<entry-point>
+	store.32    %arg1 -> 0[n]
+	store.64*   %arg2 -> 0[m]
+	store.32    $0 -> 0[i]
+	br          .L10
+
+.L10:
+	load.32     %r22 <- 0[i]
+	load.32     %r23 <- 0[n]
+	setlt.32    %r24 <- %r22, %r23
+	cbr         %r24, .L7, .L9
+
+.L7:
+	load.64*    %r25 <- 0[m]
+	load.32     %r26 <- 0[i]
+	scast.64    %r27 <- (32) %r26
+	muls.64     %r28 <- %r27, $8
+	add.64*     %r29 <- %r25, %r28
+	load.64*    %r30 <- 0[%r29]
+	cast.64*    %r31 <- (64) %r30
+	push.64*    %r31
+	call        free
+	br          .L8
+
+.L8:
+	load.32     %r32 <- 0[i]
+	add.32      %r33 <- %r32, $1
+	store.32    %r33 -> 0[i]
+	br          .L10
+
+.L9:
+	load.64*    %r34 <- 0[m]
+	cast.64*    %r35 <- (64) %r34
+	push.64*    %r35
+	call        free
+	phisrc.32   %phi2(return) <- $0
+	br          .L11
+
+.L11:
+	phi.32      %r36 <- %phi2(return)
+	ret.32      $0
+
+
+mm_gen:
+.L12:
+	<entry-point>
+	store.32    %arg1 -> 0[n]
+	set.f64     %r37 <- 1.000000
+	load.32     %r38 <- 0[n]
+	fpcast.f64  %r39 <- (32) %r38
+	divu.f64    %r40 <- %r37, %r39
+	load.32     %r41 <- 0[n]
+	fpcast.f64  %r42 <- (32) %r41
+	divu.f64    %r43 <- %r40, %r42
+	store.f64   %r43 -> 0[tmp]
+	load.32     %r44 <- 0[n]
+	push.32     %r44
+	call.64*    %r45 <- mm_init
+	store.64*   %r45 -> 0[m]
+	store.32    $0 -> 0[i]
+	br          .L16
+
+.L16:
+	load.32     %r46 <- 0[i]
+	load.32     %r47 <- 0[n]
+	setlt.32    %r48 <- %r46, %r47
+	cbr         %r48, .L13, .L15
+
+.L13:
+	store.32    $0 -> 0[j]
+	br          .L20
+
+.L20:
+	load.32     %r49 <- 0[j]
+	load.32     %r50 <- 0[n]
+	setlt.32    %r51 <- %r49, %r50
+	cbr         %r51, .L17, .L19
+
+.L17:
+	load.f64    %r52 <- 0[tmp]
+	load.32     %r53 <- 0[i]
+	load.32     %r54 <- 0[j]
+	sub.32      %r55 <- %r53, %r54
+	fpcast.f64  %r56 <- (32) %r55
+	mulu.f64    %r57 <- %r52, %r56
+	load.32     %r58 <- 0[i]
+	load.32     %r59 <- 0[j]
+	add.32      %r60 <- %r58, %r59
+	fpcast.f64  %r61 <- (32) %r60
+	mulu.f64    %r62 <- %r57, %r61
+	load.64*    %r63 <- 0[m]
+	load.32     %r64 <- 0[i]
+	scast.64    %r65 <- (32) %r64
+	muls.64     %r66 <- %r65, $8
+	add.64*     %r67 <- %r63, %r66
+	load.64*    %r68 <- 0[%r67]
+	load.32     %r69 <- 0[j]
+	scast.64    %r70 <- (32) %r69
+	muls.64     %r71 <- %r70, $8
+	add.64*     %r72 <- %r68, %r71
+	store.f64   %r62 -> 0[%r72]
+	br          .L18
+
+.L18:
+	load.32     %r73 <- 0[j]
+	add.32      %r74 <- %r73, $1
+	store.32    %r74 -> 0[j]
+	br          .L20
+
+.L19:
+	br          .L14
+
+.L14:
+	load.32     %r75 <- 0[i]
+	add.32      %r76 <- %r75, $1
+	store.32    %r76 -> 0[i]
+	br          .L16
+
+.L15:
+	load.64*    %r77 <- 0[m]
+	phisrc.64*  %phi3(return) <- %r77
+	br          .L21
+
+.L21:
+	phi.64*     %r78 <- %phi3(return)
+	ret.64*     %r77
+
+
+mm_mul:
+.L22:
+	<entry-point>
+	store.32    %arg1 -> 0[n]
+	store.64*   %arg2 -> 0[a]
+	store.64*   %arg3 -> 0[b]
+	load.32     %r79 <- 0[n]
+	push.32     %r79
+	call.64*    %r80 <- mm_init
+	store.64*   %r80 -> 0[m]
+	load.32     %r81 <- 0[n]
+	push.32     %r81
+	call.64*    %r82 <- mm_init
+	store.64*   %r82 -> 0[c]
+	store.32    $0 -> 0[i]
+	br          .L26
+
+.L26:
+	load.32     %r83 <- 0[i]
+	load.32     %r84 <- 0[n]
+	setlt.32    %r85 <- %r83, %r84
+	cbr         %r85, .L23, .L25
+
+.L23:
+	store.32    $0 -> 0[j]
+	br          .L30
+
+.L30:
+	load.32     %r86 <- 0[j]
+	load.32     %r87 <- 0[n]
+	setlt.32    %r88 <- %r86, %r87
+	cbr         %r88, .L27, .L29
+
+.L27:
+	load.64*    %r89 <- 0[b]
+	load.32     %r90 <- 0[j]
+	scast.64    %r91 <- (32) %r90
+	muls.64     %r92 <- %r91, $8
+	add.64*     %r93 <- %r89, %r92
+	load.64*    %r94 <- 0[%r93]
+	load.32     %r95 <- 0[i]
+	scast.64    %r96 <- (32) %r95
+	muls.64     %r97 <- %r96, $8
+	add.64*     %r98 <- %r94, %r97
+	load.f64    %r99 <- 0[%r98]
+	load.64*    %r100 <- 0[c]
+	load.32     %r101 <- 0[i]
+	scast.64    %r102 <- (32) %r101
+	muls.64     %r103 <- %r102, $8
+	add.64*     %r104 <- %r100, %r103
+	load.64*    %r105 <- 0[%r104]
+	load.32     %r106 <- 0[j]
+	scast.64    %r107 <- (32) %r106
+	muls.64     %r108 <- %r107, $8
+	add.64*     %r109 <- %r105, %r108
+	store.f64   %r99 -> 0[%r109]
+	br          .L28
+
+.L28:
+	load.32     %r110 <- 0[j]
+	add.32      %r111 <- %r110, $1
+	store.32    %r111 -> 0[j]
+	br          .L30
+
+.L29:
+	br          .L24
+
+.L24:
+	load.32     %r112 <- 0[i]
+	add.32      %r113 <- %r112, $1
+	store.32    %r113 -> 0[i]
+	br          .L26
+
+.L25:
+	store.32    $0 -> 0[i]
+	br          .L34
+
+.L34:
+	load.32     %r114 <- 0[i]
+	load.32     %r115 <- 0[n]
+	setlt.32    %r116 <- %r114, %r115
+	cbr         %r116, .L31, .L33
+
+.L31:
+	load.64*    %r117 <- 0[a]
+	load.32     %r118 <- 0[i]
+	scast.64    %r119 <- (32) %r118
+	muls.64     %r120 <- %r119, $8
+	add.64*     %r121 <- %r117, %r120
+	load.64*    %r122 <- 0[%r121]
+	store.64*   %r122 -> 0[p]
+	load.64*    %r123 <- 0[m]
+	load.32     %r124 <- 0[i]
+	scast.64    %r125 <- (32) %r124
+	muls.64     %r126 <- %r125, $8
+	add.64*     %r127 <- %r123, %r126
+	load.64*    %r128 <- 0[%r127]
+	store.64*   %r128 -> 0[q]
+	store.32    $0 -> 0[j]
+	br          .L38
+
+.L38:
+	load.32     %r129 <- 0[j]
+	load.32     %r130 <- 0[n]
+	setlt.32    %r131 <- %r129, %r130
+	cbr         %r131, .L35, .L37
+
+.L35:
+	set.f64     %r132 <- 0.000000
+	store.f64   %r132 -> 0[t]
+	load.64*    %r133 <- 0[c]
+	load.32     %r134 <- 0[j]
+	scast.64    %r135 <- (32) %r134
+	muls.64     %r136 <- %r135, $8
+	add.64*     %r137 <- %r133, %r136
+	load.64*    %r138 <- 0[%r137]
+	store.64*   %r138 -> 0[r]
+	store.32    $0 -> 0[k]
+	br          .L42
+
+.L42:
+	load.32     %r139 <- 0[k]
+	load.32     %r140 <- 0[n]
+	setlt.32    %r141 <- %r139, %r140
+	cbr         %r141, .L39, .L41
+
+.L39:
+	load.64*    %r142 <- 0[p]
+	load.32     %r143 <- 0[k]
+	scast.64    %r144 <- (32) %r143
+	muls.64     %r145 <- %r144, $8
+	add.64*     %r146 <- %r142, %r145
+	load.f64    %r147 <- 0[%r146]
+	load.64*    %r148 <- 0[r]
+	load.32     %r149 <- 0[k]
+	scast.64    %r150 <- (32) %r149
+	muls.64     %r151 <- %r150, $8
+	add.64*     %r152 <- %r148, %r151
+	load.f64    %r153 <- 0[%r152]
+	mulu.f64    %r154 <- %r147, %r153
+	load.f64    %r155 <- 0[t]
+	fpcast.f64  %r156 <- (64) %r155
+	add.f64     %r157 <- %r156, %r154
+	fpcast.f64  %r158 <- (64) %r157
+	store.f64   %r158 -> 0[t]
+	br          .L40
+
+.L40:
+	load.32     %r159 <- 0[k]
+	add.32      %r160 <- %r159, $1
+	store.32    %r160 -> 0[k]
+	br          .L42
+
+.L41:
+	load.f64    %r161 <- 0[t]
+	load.64*    %r162 <- 0[q]
+	load.32     %r163 <- 0[j]
+	scast.64    %r164 <- (32) %r163
+	muls.64     %r165 <- %r164, $8
+	add.64*     %r166 <- %r162, %r165
+	store.f64   %r161 -> 0[%r166]
+	br          .L36
+
+.L36:
+	load.32     %r167 <- 0[j]
+	add.32      %r168 <- %r167, $1
+	store.32    %r168 -> 0[j]
+	br          .L38
+
+.L37:
+	br          .L32
+
+.L32:
+	load.32     %r169 <- 0[i]
+	add.32      %r170 <- %r169, $1
+	store.32    %r170 -> 0[i]
+	br          .L34
+
+.L33:
+	load.32     %r171 <- 0[n]
+	load.64*    %r172 <- 0[c]
+	push.32     %r171
+	push.64*    %r172
+	call.32     %r173 <- mm_destroy
+	load.64*    %r174 <- 0[m]
+	phisrc.64*  %phi4(return) <- %r174
+	br          .L43
+
+.L43:
+	phi.64*     %r175 <- %phi4(return)
+	ret.64*     %r174
+
+
+TestNano:
+.L44:
+	<entry-point>
+	store.32    $1000 -> 0[n]
+	load.32     %r176 <- 0[n]
+	divs.32     %r177 <- %r176, $2
+	muls.32     %r178 <- %r177, $2
+	store.32    %r178 -> 0[n]
+	load.32     %r179 <- 0[n]
+	push.32     %r179
+	call.64*    %r180 <- mm_gen
+	store.64*   %r180 -> 0[a]
+	load.32     %r181 <- 0[n]
+	push.32     %r181
+	call.64*    %r182 <- mm_gen
+	store.64*   %r182 -> 0[b]
+	load.32     %r183 <- 0[n]
+	load.64*    %r184 <- 0[a]
+	load.64*    %r185 <- 0[b]
+	push.32     %r183
+	push.64*    %r184
+	push.64*    %r185
+	call.64*    %r186 <- mm_mul
+	store.64*   %r186 -> 0[m]
+	load.64*    %r187 <- 0[m]
+	load.32     %r188 <- 0[n]
+	divs.32     %r189 <- %r188, $2
+	scast.64    %r190 <- (32) %r189
+	muls.64     %r191 <- %r190, $8
+	add.64*     %r192 <- %r187, %r191
+	load.64*    %r193 <- 0[%r192]
+	load.32     %r194 <- 0[n]
+	divs.32     %r195 <- %r194, $2
+	scast.64    %r196 <- (32) %r195
+	muls.64     %r197 <- %r196, $8
+	add.64*     %r198 <- %r193, %r197
+	load.f64    %r199 <- 0[%r198]
+	store.f64   %r199 -> 0[v]
+	load.64*    %r200 <- 0[m]
+	load.32     %r201 <- 0[n]
+	divs.32     %r202 <- %r201, $2
+	scast.64    %r203 <- (32) %r202
+	muls.64     %r204 <- %r203, $8
+	add.64*     %r205 <- %r200, %r204
+	load.64*    %r206 <- 0[%r205]
+	load.32     %r207 <- 0[n]
+	divs.32     %r208 <- %r207, $2
+	scast.64    %r209 <- (32) %r208
+	muls.64     %r210 <- %r209, $8
+	add.64*     %r211 <- %r206, %r210
+	load.f64    %r212 <- 0[%r211]
+	push.f64    %r212
+	call        printd
+	load.32     %r213 <- 0[n]
+	load.64*    %r214 <- 0[a]
+	push.32     %r213
+	push.64*    %r214
+	call.32     %r215 <- mm_destroy
+	load.32     %r216 <- 0[n]
+	load.64*    %r217 <- 0[b]
+	push.32     %r216
+	push.64*    %r217
+	call.32     %r218 <- mm_destroy
+	load.32     %r219 <- 0[n]
+	load.64*    %r220 <- 0[m]
+	push.32     %r219
+	push.64*    %r220
+	call.32     %r221 <- mm_destroy
+	load.f64    %r222 <- 0[v]
+	set.f64     %r223 <- -95.583583
+	sub.f64     %r224 <- %r222, %r223
+	push.f64    %r224
+	call.f64    %r225 <- fabs
+	set.f64     %r226 <- 1000000000000.000000
+	setlt.32    %r227 <- %r225, %r226
+	select.32   %r228 <- %r227, $0, $1
+	phisrc.32   %phi5(return) <- %r228
+	br          .L45
+
+.L45:
+	phi.32      %r229 <- %phi5(return)
+	ret.32      %r228
+
+

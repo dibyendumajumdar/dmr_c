@@ -1,0 +1,547 @@
+    start
+    paramq1 = paramq 0 rbx
+    paramq2 = paramq 1 rsi
+    paramq3 = paramq 2 rdi
+    paramq4 = paramq 3 r12
+    paramq5 = paramq 4 r13
+    paramq6 = paramq 5 r14
+    paramq7 = paramq 6 r15
+    paramq8 = paramq 0 rcx
+    q2i1 = q2i paramq8
+    allocp1 = allocp 4
+    label1:
+    ------------------------------ # store.32    %arg1 -> 0[a]
+    allocp2 = allocp 4
+    sti.o allocp2[0] = q2i1
+    ------------------------------ # load.32     %r1 <- 0[a]
+    ldi1 = ldi.o allocp2[0]
+    ------------------------------ # add.32      %r2 <- %r1, $1
+    immi1 = immi 1
+    addi1 = addi ldi1, immi1/*1*/
+    ------------------------------ # cbr         %r2, .L1, .L2
+    immi2 = immi 0
+    eqi1 = eqi addi1, immi2/*0*/
+    jt eqi1 -> unpatched
+    jf eqi1 -> unpatched
+    label2:
+    ------------------------------ # phisrc.32   %phi1(return) <- $1     (%r3)
+    immi3 = immi 1
+    sti.o allocp1[0] = immi3/*1*/
+    ------------------------------ # br          .L3
+    j -> unpatched
+    label3:
+    ------------------------------ # phisrc.32   %phi2(return) <- $0     (%r3)
+    immi4 = immi 0
+    sti.o allocp1[0] = immi4/*0*/
+    ------------------------------ # br          .L3
+    j -> unpatched
+    label4:
+    ------------------------------ # phi.32      %r3 <- %phi1(return), %phi2(return)
+    ldi2 = ldi.o allocp1[0]
+    ------------------------------ # ret.32      %r3
+    reti ldi2
+    liveq allocp2
+    liveq paramq8
+    x1: x  -> line=0 (GuardID=000)
+================================================================================
+=== BEGIN LIR::compile(000001E6B749B010, 000001E6B74884E0)
+===
+=== Translating LIR fragments into assembly:
+=== -- Compile trunk 000001E6B74884E0: begin
+
+=== BEGIN Initial LIR ===
+  00: start
+  01: paramq1 = paramq 0 rbx
+  02: paramq2 = paramq 1 rsi
+  03: paramq3 = paramq 2 rdi
+  04: paramq4 = paramq 3 r12
+  05: paramq5 = paramq 4 r13
+  06: paramq6 = paramq 5 r14
+  07: paramq7 = paramq 6 r15
+  08: paramq8 = paramq 0 rcx
+  09: q2i1 = q2i paramq8
+  10: allocp1 = allocp 4
+  11: label1:
+  12: ------------------------------ # store.32    %arg1 -> 0[a]
+  13: allocp2 = allocp 4
+  14: sti.o allocp2[0] = q2i1
+  15: ------------------------------ # load.32     %r1 <- 0[a]
+  16: ldi1 = ldi.o allocp2[0]
+  17: ------------------------------ # add.32      %r2 <- %r1, $1
+  18: immi1 = immi 1
+  19: addi1 = addi ldi1, immi1/*1*/
+  20: ------------------------------ # cbr         %r2, .L1, .L2
+  21: immi2 = immi 0
+  22: eqi1 = eqi addi1, immi2/*0*/
+  23: jt eqi1 -> label3
+  24: jf eqi1 -> label2
+  25: label2:
+  26: ------------------------------ # phisrc.32   %phi1(return) <- $1     (%r3)
+  27: immi3 = immi 1
+  28: sti.o allocp1[0] = immi3/*1*/
+  29: ------------------------------ # br          .L3
+  30: j -> label4
+  31: label3:
+  32: ------------------------------ # phisrc.32   %phi2(return) <- $0     (%r3)
+  33: immi4 = immi 0
+  34: sti.o allocp1[0] = immi4/*0*/
+  35: ------------------------------ # br          .L3
+  36: j -> label4
+  37: label4:
+  38: ------------------------------ # phi.32      %r3 <- %phi1(return), %phi2(return)
+  39: ldi2 = ldi.o allocp1[0]
+  40: ------------------------------ # ret.32      %r3
+  41: reti ldi2
+  42: liveq allocp2
+  43: liveq paramq8
+  44: x1: x  -> line=0 (GuardID=000)
+=== END Initial LIR ===
+
+=== -- Compile trunk 000001E6B74884E0: end
+
+=== Aggregated assembly output: BEGIN
+===
+  000001E6B727FF7F                             [prologue]
+  000001E6B727FF7F  55                         push rbp
+  000001E6B727FF80  48 8b ec                   movq rbp, rsp
+  000001E6B727FF83                             [patch entry]
+  000001E6B727FF83  48 83 ec 50                subq rsp, 80
+      paramq1 = paramq 0 rbx (in reg? -1)
+  000001E6B727FF87  48 89 5d c8                movq -56(rbp), rbx  <= spill paramq1
+                            RR
+                            AR 52-56(paramq1)
+      paramq2 = paramq 1 rsi (in reg? -1)
+  000001E6B727FF8B  48 89 75 d0                movq -48(rbp), rsi  <= spill paramq2
+                            RR
+                            AR 44-48(paramq2) 52-56(paramq1)
+      paramq3 = paramq 2 rdi (in reg? -1)
+  000001E6B727FF8F  48 89 7d d8                movq -40(rbp), rdi  <= spill paramq3
+                            RR
+                            AR 36-40(paramq3) 44-48(paramq2) 52-56(paramq1)
+      paramq4 = paramq 3 r12 (in reg? -1)
+  000001E6B727FF93  4c 89 65 e0                movq -32(rbp), r12  <= spill paramq4
+                            RR
+                            AR 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1)
+      paramq5 = paramq 4 r13 (in reg? -1)
+  000001E6B727FF97  4c 89 6d e8                movq -24(rbp), r13  <= spill paramq5
+                            RR
+                            AR 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1)
+      paramq6 = paramq 5 r14 (in reg? -1)
+  000001E6B727FF9B  4c 89 75 f0                movq -16(rbp), r14  <= spill paramq6
+                            RR
+                            AR 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1)
+      paramq7 = paramq 6 r15 (in reg? -1)
+  000001E6B727FF9F  4c 89 7d f8                movq -8(rbp), r15  <= spill paramq7
+                            RR
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1)
+      paramq8 = paramq 0 rcx (in reg? -1)
+  000001E6B727FFA3  48 8b c1                   movq rax, rcx
+                            RR rax(paramq8)
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1)
+      q2i1 = q2i paramq8 (in reg? -1)
+                            RR rax(q2i1)
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1)
+      allocp1 = allocp 4 (in reg? -1)
+                            RR rax(q2i1)
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1) 64(allocp1)
+      label1: (in reg? -1)
+  000001E6B727FFA6                             [label1]
+                            RR rax(q2i1)
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1) 64(allocp1)
+  ------------------------------ # store.32    %arg1 -> 0[a]
+                            RR rax(q2i1)
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1) 64(allocp1)
+      allocp2 = allocp 4 (in reg? -1)
+                            RR rax(q2i1)
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1) 60(allocp2) 64(allocp1)
+      sti.o allocp2[0] = q2i1 (in reg? -1)
+  000001E6B727FFA6  89 45 c4                   movl -60(rbp), eax
+                            RR
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1) 60(allocp2) 64(allocp1)
+  ------------------------------ # load.32     %r1 <- 0[a]
+                            RR
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1) 60(allocp2) 64(allocp1)
+      ldi1 = ldi.o allocp2[0] (in reg? -1)
+  000001E6B727FFA9  8b 45 c4                   movl eax, -60(rbp)
+                            RR rax(ldi1)
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1) 60(allocp2) 64(allocp1)
+  ------------------------------ # add.32      %r2 <- %r1, $1
+                            RR rax(ldi1)
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1) 60(allocp2) 64(allocp1)
+      immi1 = immi 1 (in reg? -1)
+                            RR rax(ldi1)
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1) 60(allocp2) 64(allocp1)
+      addi1 = addi ldi1, immi1/*1*/ (in reg? -1)
+  000001E6B727FFAC  83 c0 01                   addl eax, 1
+                            RR rax(addi1)
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1) 60(allocp2) 64(allocp1)
+  ------------------------------ # cbr         %r2, .L1, .L2
+                            RR rax(addi1)
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1) 60(allocp2) 64(allocp1)
+      immi2 = immi 0 (in reg? -1)
+                            RR rax(addi1)
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1) 60(allocp2) 64(allocp1)
+      eqi1 = eqi addi1, immi2/*0*/ (in reg? -1)
+                            RR rax(addi1)
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1) 60(allocp2) 64(allocp1)
+      jt eqi1 -> label3 (in reg? -1)
+  000001E6B727FFAF  83 f8 00                   cmpl eax, 0
+  000001E6B727FFB2  74 0e                      je 000001E6B727FFC2
+                            RR rax(addi1)
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1) 60(allocp2) 64(allocp1)
+      jf eqi1 -> label2 (in reg? -1)
+  000001E6B727FFB4  83 f8 00                   cmpl eax, 0
+  000001E6B727FFB7  75 00                      jne 000001E6B727FFB9
+                            RR
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1) 60(allocp2) 64(allocp1)
+      label2: (in reg? -1)
+  000001E6B727FFB9                             [label2]
+                            RR
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1) 60(allocp2) 64(allocp1)
+  ------------------------------ # phisrc.32   %phi1(return) <- $1     (%r3)
+                            RR
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1) 60(allocp2) 64(allocp1)
+      immi3 = immi 1 (in reg? -1)
+                            RR
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1) 60(allocp2) 64(allocp1)
+      sti.o allocp1[0] = immi3/*1*/ (in reg? -1)
+  000001E6B727FFB9  c7 45 c0 01 00 00 00       movl -64(rbp), 1
+                            RR
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1) 60(allocp2) 64(allocp1)
+  ------------------------------ # br          .L3
+                            RR
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1) 60(allocp2) 64(allocp1)
+      j -> label4 (in reg? -1)
+  000001E6B727FFC0  eb 09                      jmp 000001E6B727FFCB
+                            RR
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1) 60(allocp2) 64(allocp1)
+      label3: (in reg? -1)
+  000001E6B727FFC2                             [label3]
+                            RR
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1) 60(allocp2) 64(allocp1)
+  ------------------------------ # phisrc.32   %phi2(return) <- $0     (%r3)
+                            RR
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1) 60(allocp2) 64(allocp1)
+      immi4 = immi 0 (in reg? -1)
+                            RR
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1) 60(allocp2) 64(allocp1)
+      sti.o allocp1[0] = immi4/*0*/ (in reg? -1)
+  000001E6B727FFC2  c7 45 c0 00 00 00 00       movl -64(rbp), 0
+                            RR
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1) 60(allocp2) 64(allocp1)
+  ------------------------------ # br          .L3
+                            RR
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1) 60(allocp2) 64(allocp1)
+      j -> label4 (in reg? -1)
+  000001E6B727FFC9  eb 00                      jmp 000001E6B727FFCB
+                            RR
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1) 60(allocp2) 64(allocp1)
+      label4: (in reg? -1)
+  000001E6B727FFCB                             [label4]
+                            RR
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1) 60(allocp2) 64(allocp1)
+  ------------------------------ # phi.32      %r3 <- %phi1(return), %phi2(return)
+                            RR
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1) 60(allocp2) 64(allocp1)
+      ldi2 = ldi.o allocp1[0] (in reg? -1)
+  000001E6B727FFCB  8b 45 c0                   movl eax, -64(rbp)
+                            RR rax(ldi2)
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1) 60(allocp2)
+  ------------------------------ # ret.32      %r3
+                            RR rax(ldi2)
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1) 60(allocp2)
+      reti ldi2 (in reg? -1)
+  000001E6B727FFCE  48 8b e5                   movq rsp, rbp
+  000001E6B727FFD1  5d                         pop rbp
+  000001E6B727FFD2  c3                         ret
+                            RR
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1) 60(allocp2)
+      liveq allocp2 (in reg? -1)
+                            RR
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1)
+      liveq paramq8 (in reg? -1)
+                            RR
+                            AR 4-8(paramq7) 12-16(paramq6) 20-24(paramq5) 28-32(paramq4) 36-40(paramq3) 44-48(paramq2) 52-56(paramq1)
+      x1: x  -> line=-1220608047 (GuardID=000) (in reg? -1)
+  000001E6B727FFD3  e9 d3 ff 16 00             jmp 000001E6B73EFFAB
+  ----------------------------------- ## BEGIN exit block (LIR_xt|LIR_xf)
+  000001E6B73EFFAB:
+  ## merging registers (intersect) with existing edge
+  000001E6B73EFFAB  48 8b 5d c8                movq rbx, -56(rbp)  <= restore paramq1
+  000001E6B73EFFAF  48 8b 75 d0                movq rsi, -48(rbp)  <= restore paramq2
+  000001E6B73EFFB3  48 8b 7d d8                movq rdi, -40(rbp)  <= restore paramq3
+  000001E6B73EFFB7  4c 8b 65 e0                movq r12, -32(rbp)  <= restore paramq4
+  000001E6B73EFFBB  4c 8b 6d e8                movq r13, -24(rbp)  <= restore paramq5
+  000001E6B73EFFBF  4c 8b 75 f0                movq r14, -16(rbp)  <= restore paramq6
+  000001E6B73EFFC3  4c 8b 7d f8                movq r15, -8(rbp)  <= restore paramq7
+  000001E6B73EFFC7  48 8d 05 5a dd 1b 00       lea rax, 1826138(rip)
+  000001E6B73EFFCE  48 8b e5                   movq rsp, rbp
+  000001E6B73EFFD1  e9 00 00 00 00             jmp 000001E6B73EFFD6
+  000001E6B73EFFD6  5d                         pop rbp
+  000001E6B73EFFD7  c3                         ret
+  ----------------------------------- ## END exit block 000001E6B74A3EA8
+                            RR
+                            AR
+===
+=== Aggregated assembly output: END
+
+===
+=== END LIR::compile(000001E6B749B010, 000001E6B74884E0)
+================================================================================
+
+    start
+    paramq9 = paramq 0 rbx
+    paramq10 = paramq 1 rsi
+    paramq11 = paramq 2 rdi
+    paramq12 = paramq 3 r12
+    paramq13 = paramq 4 r13
+    paramq14 = paramq 5 r14
+    paramq15 = paramq 6 r15
+    allocp3 = allocp 4
+    label5:
+    ------------------------------ # store.32    $0 -> 0[rc]
+    allocp4 = allocp 4
+    immi5 = immi 0
+    sti.o allocp4[0] = immi5/*0*/
+    sti.o allocp4[0] = immi5/*0*/
+    ------------------------------ # call.32     %r4 <- adder
+    immi6 = immi -1
+    adder1 = calli.all #adder ( immi6/*-1*/ )
+    ------------------------------ # load.32     %r5 <- 0[rc]
+    ldi3 = ldi.o allocp4[0]
+    ------------------------------ # scast.32    %r6 <- (32) %r5
+    ------------------------------ # add.32      %r7 <- %r6, %r4
+    addi2 = addi ldi3, adder1
+    ------------------------------ # scast.32    %r8 <- (32) %r7
+    ------------------------------ # store.32    %r8 -> 0[rc]
+    sti.o allocp4[0] = addi2
+    ------------------------------ # load.32     %r9 <- 0[rc]
+    ldi4 = ldi.o allocp4[0]
+    ------------------------------ # phisrc.32   %phi3(return) <- %r9     (%r10)
+    sti.o allocp3[0] = ldi4
+    ------------------------------ # br          .L1
+    j -> unpatched
+    label6:
+    ------------------------------ # phi.32      %r10 <- %phi3(return)
+    ldi5 = ldi.o allocp3[0]
+    ------------------------------ # ret.32      %r9
+    reti ldi4
+    liveq allocp4
+    x2: x  -> line=0 (GuardID=000)
+================================================================================
+=== BEGIN LIR::compile(000001E6B749B010, 000001E6B74968F0)
+===
+=== Translating LIR fragments into assembly:
+=== -- Compile trunk 000001E6B74968F0: begin
+
+=== BEGIN Initial LIR ===
+  00: start
+  01: paramq9 = paramq 0 rbx
+  02: paramq10 = paramq 1 rsi
+  03: paramq11 = paramq 2 rdi
+  04: paramq12 = paramq 3 r12
+  05: paramq13 = paramq 4 r13
+  06: paramq14 = paramq 5 r14
+  07: paramq15 = paramq 6 r15
+  08: allocp3 = allocp 4
+  09: label5:
+  10: ------------------------------ # store.32    $0 -> 0[rc]
+  11: allocp4 = allocp 4
+  12: immi5 = immi 0
+  13: sti.o allocp4[0] = immi5/*0*/
+  14: sti.o allocp4[0] = immi5/*0*/
+  15: ------------------------------ # call.32     %r4 <- adder
+  16: immi6 = immi -1
+  17: adder1 = calli.all #adder ( immi6/*-1*/ )
+  18: ------------------------------ # load.32     %r5 <- 0[rc]
+  19: ldi3 = ldi.o allocp4[0]
+  20: ------------------------------ # scast.32    %r6 <- (32) %r5
+  21: ------------------------------ # add.32      %r7 <- %r6, %r4
+  22: addi2 = addi ldi3, adder1
+  23: ------------------------------ # scast.32    %r8 <- (32) %r7
+  24: ------------------------------ # store.32    %r8 -> 0[rc]
+  25: sti.o allocp4[0] = addi2
+  26: ------------------------------ # load.32     %r9 <- 0[rc]
+  27: ldi4 = ldi.o allocp4[0]
+  28: ------------------------------ # phisrc.32   %phi3(return) <- %r9     (%r10)
+  29: sti.o allocp3[0] = ldi4
+  30: ------------------------------ # br          .L1
+  31: j -> label6
+  32: label6:
+  33: ------------------------------ # phi.32      %r10 <- %phi3(return)
+  34: ldi5 = ldi.o allocp3[0]
+  35: ------------------------------ # ret.32      %r9
+  36: reti ldi4
+  37: liveq allocp4
+  38: x2: x  -> line=0 (GuardID=000)
+=== END Initial LIR ===
+
+=== -- Compile trunk 000001E6B74968F0: end
+
+=== Aggregated assembly output: BEGIN
+===
+  000001E6B727FEF5                             [prologue]
+  000001E6B727FEF5  55                         push rbp
+  000001E6B727FEF6  48 8b ec                   movq rbp, rsp
+  000001E6B727FEF9                             [patch entry]
+  000001E6B727FEF9  48 83 ec 70                subq rsp, 112
+      paramq9 = paramq 0 rbx (in reg? -1)
+  000001E6B727FEFD  48 89 5d c8                movq -56(rbp), rbx  <= spill paramq9
+                            RR
+                            AR 52-56(paramq9)
+      paramq10 = paramq 1 rsi (in reg? -1)
+  000001E6B727FF01  48 89 75 d0                movq -48(rbp), rsi  <= spill paramq10
+                            RR
+                            AR 44-48(paramq10) 52-56(paramq9)
+      paramq11 = paramq 2 rdi (in reg? -1)
+  000001E6B727FF05  48 89 7d d8                movq -40(rbp), rdi  <= spill paramq11
+                            RR
+                            AR 36-40(paramq11) 44-48(paramq10) 52-56(paramq9)
+      paramq12 = paramq 3 r12 (in reg? -1)
+  000001E6B727FF09  4c 89 65 e0                movq -32(rbp), r12  <= spill paramq12
+                            RR
+                            AR 28-32(paramq12) 36-40(paramq11) 44-48(paramq10) 52-56(paramq9)
+      paramq13 = paramq 4 r13 (in reg? -1)
+  000001E6B727FF0D  4c 89 6d e8                movq -24(rbp), r13  <= spill paramq13
+                            RR
+                            AR 20-24(paramq13) 28-32(paramq12) 36-40(paramq11) 44-48(paramq10) 52-56(paramq9)
+      paramq14 = paramq 5 r14 (in reg? -1)
+  000001E6B727FF11  4c 89 75 f0                movq -16(rbp), r14  <= spill paramq14
+                            RR
+                            AR 12-16(paramq14) 20-24(paramq13) 28-32(paramq12) 36-40(paramq11) 44-48(paramq10) 52-56(paramq9)
+      paramq15 = paramq 6 r15 (in reg? -1)
+  000001E6B727FF15  4c 89 7d f8                movq -8(rbp), r15  <= spill paramq15
+                            RR
+                            AR 4-8(paramq15) 12-16(paramq14) 20-24(paramq13) 28-32(paramq12) 36-40(paramq11) 44-48(paramq10) 52-56(paramq9)
+      allocp3 = allocp 4 (in reg? -1)
+                            RR
+                            AR 4-8(paramq15) 12-16(paramq14) 20-24(paramq13) 28-32(paramq12) 36-40(paramq11) 44-48(paramq10) 52-56(paramq9) 64(allocp3)
+      label5: (in reg? -1)
+  000001E6B727FF19                             [label5]
+                            RR
+                            AR 4-8(paramq15) 12-16(paramq14) 20-24(paramq13) 28-32(paramq12) 36-40(paramq11) 44-48(paramq10) 52-56(paramq9) 64(allocp3)
+  ------------------------------ # store.32    $0 -> 0[rc]
+                            RR
+                            AR 4-8(paramq15) 12-16(paramq14) 20-24(paramq13) 28-32(paramq12) 36-40(paramq11) 44-48(paramq10) 52-56(paramq9) 64(allocp3)
+      allocp4 = allocp 4 (in reg? -1)
+                            RR
+                            AR 4-8(paramq15) 12-16(paramq14) 20-24(paramq13) 28-32(paramq12) 36-40(paramq11) 44-48(paramq10) 52-56(paramq9) 60(allocp4) 64(allocp3)
+      immi5 = immi 0 (in reg? -1)
+                            RR
+                            AR 4-8(paramq15) 12-16(paramq14) 20-24(paramq13) 28-32(paramq12) 36-40(paramq11) 44-48(paramq10) 52-56(paramq9) 60(allocp4) 64(allocp3)
+      sti.o allocp4[0] = immi5/*0*/ (in reg? -1)
+  000001E6B727FF19  c7 45 c4 00 00 00 00       movl -60(rbp), 0
+                            RR
+                            AR 4-8(paramq15) 12-16(paramq14) 20-24(paramq13) 28-32(paramq12) 36-40(paramq11) 44-48(paramq10) 52-56(paramq9) 60(allocp4) 64(allocp3)
+      sti.o allocp4[0] = immi5/*0*/ (in reg? -1)
+  000001E6B727FF20  c7 45 c4 00 00 00 00       movl -60(rbp), 0
+                            RR
+                            AR 4-8(paramq15) 12-16(paramq14) 20-24(paramq13) 28-32(paramq12) 36-40(paramq11) 44-48(paramq10) 52-56(paramq9) 60(allocp4) 64(allocp3)
+  ------------------------------ # call.32     %r4 <- adder
+                            RR
+                            AR 4-8(paramq15) 12-16(paramq14) 20-24(paramq13) 28-32(paramq12) 36-40(paramq11) 44-48(paramq10) 52-56(paramq9) 60(allocp4) 64(allocp3)
+      immi6 = immi -1 (in reg? -1)
+                            RR
+                            AR 4-8(paramq15) 12-16(paramq14) 20-24(paramq13) 28-32(paramq12) 36-40(paramq11) 44-48(paramq10) 52-56(paramq9) 60(allocp4) 64(allocp3)
+      adder1 = calli.all #adder ( immi6/*-1*/ ) (in reg? -1)
+  000001E6B727FF27  48 c7 c1 ff ff ff ff       movqi32 rcx, -1
+  000001E6B727FF2E  e8 4c 00 00 00             call 000001E6B727FF7F
+          000001E6B727FF33:
+  000001E6B727FF33  48 8b c8                   movq rcx, rax
+                            RR rcx(adder1)
+                            AR 4-8(paramq15) 12-16(paramq14) 20-24(paramq13) 28-32(paramq12) 36-40(paramq11) 44-48(paramq10) 52-56(paramq9) 60(allocp4) 64(allocp3)
+  ------------------------------ # load.32     %r5 <- 0[rc]
+                            RR rcx(adder1)
+                            AR 4-8(paramq15) 12-16(paramq14) 20-24(paramq13) 28-32(paramq12) 36-40(paramq11) 44-48(paramq10) 52-56(paramq9) 60(allocp4) 64(allocp3)
+      ldi3 = ldi.o allocp4[0] (in reg? -1)
+  000001E6B727FF36  8b 45 c4                   movl eax, -60(rbp)
+                            RR rax(ldi3) rcx(adder1)
+                            AR 4-8(paramq15) 12-16(paramq14) 20-24(paramq13) 28-32(paramq12) 36-40(paramq11) 44-48(paramq10) 52-56(paramq9) 60(allocp4) 64(allocp3)
+  ------------------------------ # scast.32    %r6 <- (32) %r5
+                            RR rax(ldi3) rcx(adder1)
+                            AR 4-8(paramq15) 12-16(paramq14) 20-24(paramq13) 28-32(paramq12) 36-40(paramq11) 44-48(paramq10) 52-56(paramq9) 60(allocp4) 64(allocp3)
+  ------------------------------ # add.32      %r7 <- %r6, %r4
+                            RR rax(ldi3) rcx(adder1)
+                            AR 4-8(paramq15) 12-16(paramq14) 20-24(paramq13) 28-32(paramq12) 36-40(paramq11) 44-48(paramq10) 52-56(paramq9) 60(allocp4) 64(allocp3)
+      addi2 = addi ldi3, adder1 (in reg? -1)
+  000001E6B727FF39  03 c1                      addl eax, ecx
+                            RR rax(addi2)
+                            AR 4-8(paramq15) 12-16(paramq14) 20-24(paramq13) 28-32(paramq12) 36-40(paramq11) 44-48(paramq10) 52-56(paramq9) 60(allocp4) 64(allocp3)
+  ------------------------------ # scast.32    %r8 <- (32) %r7
+                            RR rax(addi2)
+                            AR 4-8(paramq15) 12-16(paramq14) 20-24(paramq13) 28-32(paramq12) 36-40(paramq11) 44-48(paramq10) 52-56(paramq9) 60(allocp4) 64(allocp3)
+  ------------------------------ # store.32    %r8 -> 0[rc]
+                            RR rax(addi2)
+                            AR 4-8(paramq15) 12-16(paramq14) 20-24(paramq13) 28-32(paramq12) 36-40(paramq11) 44-48(paramq10) 52-56(paramq9) 60(allocp4) 64(allocp3)
+      sti.o allocp4[0] = addi2 (in reg? -1)
+  000001E6B727FF3B  89 45 c4                   movl -60(rbp), eax
+                            RR
+                            AR 4-8(paramq15) 12-16(paramq14) 20-24(paramq13) 28-32(paramq12) 36-40(paramq11) 44-48(paramq10) 52-56(paramq9) 60(allocp4) 64(allocp3)
+  ------------------------------ # load.32     %r9 <- 0[rc]
+                            RR
+                            AR 4-8(paramq15) 12-16(paramq14) 20-24(paramq13) 28-32(paramq12) 36-40(paramq11) 44-48(paramq10) 52-56(paramq9) 60(allocp4) 64(allocp3)
+      ldi4 = ldi.o allocp4[0] (in reg? -1)
+  000001E6B727FF3E  8b 45 c4                   movl eax, -60(rbp)
+                            RR rax(ldi4)
+                            AR 4-8(paramq15) 12-16(paramq14) 20-24(paramq13) 28-32(paramq12) 36-40(paramq11) 44-48(paramq10) 52-56(paramq9) 60(allocp4) 64(allocp3)
+  ------------------------------ # phisrc.32   %phi3(return) <- %r9     (%r10)
+                            RR rax(ldi4)
+                            AR 4-8(paramq15) 12-16(paramq14) 20-24(paramq13) 28-32(paramq12) 36-40(paramq11) 44-48(paramq10) 52-56(paramq9) 60(allocp4) 64(allocp3)
+      sti.o allocp3[0] = ldi4 (in reg? -1)
+  000001E6B727FF41  89 45 c0                   movl -64(rbp), eax
+                            RR rax(ldi4)
+                            AR 4-8(paramq15) 12-16(paramq14) 20-24(paramq13) 28-32(paramq12) 36-40(paramq11) 44-48(paramq10) 52-56(paramq9) 60(allocp4)
+  ------------------------------ # br          .L1
+                            RR rax(ldi4)
+                            AR 4-8(paramq15) 12-16(paramq14) 20-24(paramq13) 28-32(paramq12) 36-40(paramq11) 44-48(paramq10) 52-56(paramq9) 60(allocp4)
+      j -> label6 (in reg? -1)
+  000001E6B727FF44  eb 00                      jmp 000001E6B727FF46
+                            RR rax(ldi4)
+                            AR 4-8(paramq15) 12-16(paramq14) 20-24(paramq13) 28-32(paramq12) 36-40(paramq11) 44-48(paramq10) 52-56(paramq9) 60(allocp4)
+      label6: (in reg? -1)
+  000001E6B727FF46                             [label6]
+                            RR rax(ldi4)
+                            AR 4-8(paramq15) 12-16(paramq14) 20-24(paramq13) 28-32(paramq12) 36-40(paramq11) 44-48(paramq10) 52-56(paramq9) 60(allocp4)
+  ------------------------------ # phi.32      %r10 <- %phi3(return)
+                            RR rax(ldi4)
+                            AR 4-8(paramq15) 12-16(paramq14) 20-24(paramq13) 28-32(paramq12) 36-40(paramq11) 44-48(paramq10) 52-56(paramq9) 60(allocp4)
+  ------------------------------ # ret.32      %r9
+                            RR rax(ldi4)
+                            AR 4-8(paramq15) 12-16(paramq14) 20-24(paramq13) 28-32(paramq12) 36-40(paramq11) 44-48(paramq10) 52-56(paramq9) 60(allocp4)
+      reti ldi4 (in reg? -1)
+  000001E6B727FF46  48 8b e5                   movq rsp, rbp
+  000001E6B727FF49  5d                         pop rbp
+  000001E6B727FF4A  c3                         ret
+                            RR
+                            AR 4-8(paramq15) 12-16(paramq14) 20-24(paramq13) 28-32(paramq12) 36-40(paramq11) 44-48(paramq10) 52-56(paramq9) 60(allocp4)
+      liveq allocp4 (in reg? -1)
+                            RR
+                            AR 4-8(paramq15) 12-16(paramq14) 20-24(paramq13) 28-32(paramq12) 36-40(paramq11) 44-48(paramq10) 52-56(paramq9)
+      x2: x  -> line=-1220608135 (GuardID=000) (in reg? -1)
+  000001E6B727FF4B  e9 03 00 17 00             jmp 000001E6B73EFF53
+  ----------------------------------- ## BEGIN exit block (LIR_xt|LIR_xf)
+  000001E6B73EFF53:
+  ## merging registers (intersect) with existing edge
+  000001E6B73EFF53  48 8b 5d c8                movq rbx, -56(rbp)  <= restore paramq9
+  000001E6B73EFF57  48 8b 75 d0                movq rsi, -48(rbp)  <= restore paramq10
+  000001E6B73EFF5B  48 8b 7d d8                movq rdi, -40(rbp)  <= restore paramq11
+  000001E6B73EFF5F  4c 8b 65 e0                movq r12, -32(rbp)  <= restore paramq12
+  000001E6B73EFF63  4c 8b 6d e8                movq r13, -24(rbp)  <= restore paramq13
+  000001E6B73EFF67  4c 8b 75 f0                movq r14, -16(rbp)  <= restore paramq14
+  000001E6B73EFF6B  4c 8b 7d f8                movq r15, -8(rbp)  <= restore paramq15
+  000001E6B73EFF6F  48 8d 05 72 54 1c 00       lea rax, 1856626(rip)
+  000001E6B73EFF76  48 8b e5                   movq rsp, rbp
+  000001E6B73EFF79  e9 00 00 00 00             jmp 000001E6B73EFF7E
+  000001E6B73EFF7E  5d                         pop rbp
+  000001E6B73EFF7F  c3                         ret
+  ----------------------------------- ## END exit block 000001E6B74A4178
+                            RR
+                            AR
+===
+=== Aggregated assembly output: END
+
+===
+=== END LIR::compile(000001E6B749B010, 000001E6B74968F0)
+================================================================================
+
+TestNano OK

@@ -1309,6 +1309,7 @@ static NJXLInsRef output_op_binary(struct dmr_C *C, struct function *fn,
 		case 64:
 			target = NJX_andq(fn->builder, lhs_nz, rhs_nz);
 			break;
+		case 1:
 		case 32:
 			target = NJX_andi(fn->builder, lhs_nz, rhs_nz);
 			break;
@@ -1331,6 +1332,7 @@ static NJXLInsRef output_op_binary(struct dmr_C *C, struct function *fn,
 		case 64:
 			target = NJX_orq(fn->builder, lhs_nz, rhs_nz);
 			break;
+		case 1:
 		case 32:
 			target = NJX_ori(fn->builder, lhs_nz, rhs_nz);
 			break;
@@ -1655,8 +1657,13 @@ static NJXLInsRef output_op_cbr(struct dmr_C *C, struct function *fn,
 	// we take the true branch.
 	NJXLInsRef br2 =
 	    NJX_cbr_false(fn->builder, cond, NULL); // br->bb_true->priv
-	if (!add_jump_instruction(fn, br->bb_true, br2))
-		return NULL;
+
+	// It appears that NanoJIT may decide jump isn't
+	// necessary
+	if (br2) {
+		if (!add_jump_instruction(fn, br->bb_true, br2))
+			return NULL;
+	}
 	return br1;
 }
 

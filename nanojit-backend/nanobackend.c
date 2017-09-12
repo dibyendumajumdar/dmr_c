@@ -8,6 +8,11 @@
 static void printd(double d) { printf("%.12f\n", d); }
 static void printi(int i) { printf("%d\n", i); }
 static void printll(long long i) { printf("%lld\n", i); }
+static long long printlllii(long long a, long long b, long long c, int d, int e)
+{
+	printf("received %lld %lld %lld %d %d\n", a, b, c, d, e);
+	return a + b + c + d + e;
+}
 static bool register_builtin_arg1(NJXContextRef module, const char *name,
 				  void *fp, enum NJXValueKind return_type,
 				  enum NJXValueKind arg1)
@@ -26,6 +31,20 @@ static bool register_builtin_arg2(NJXContextRef module, const char *name,
 	args[1] = arg2;
 	return NJX_register_C_function(module, name, fp, return_type, args, 2);
 }
+static bool
+register_builtin_arg5(NJXContextRef module, const char *name, void *fp,
+		      enum NJXValueKind return_type, enum NJXValueKind arg1,
+		      enum NJXValueKind arg2, enum NJXValueKind arg3,
+		      enum NJXValueKind arg4, enum NJXValueKind arg5)
+{
+	enum NJXValueKind args[5];
+	args[0] = arg1;
+	args[1] = arg2;
+	args[2] = arg3;
+	args[3] = arg4;
+	args[4] = arg5;
+	return NJX_register_C_function(module, name, fp, return_type, args, 5);
+}
 
 int main(int argc, char **argv)
 {
@@ -37,6 +56,10 @@ int main(int argc, char **argv)
 				   NJXValueKind_I) ||
 	    !register_builtin_arg1(module, "printll", printll, NJXValueKind_V,
 				   NJXValueKind_Q) ||
+	    !register_builtin_arg5(module, "printlllii", printlllii,
+				   NJXValueKind_Q, NJXValueKind_Q,
+				   NJXValueKind_Q, NJXValueKind_Q,
+				   NJXValueKind_I, NJXValueKind_I) ||
 	    !register_builtin_arg1(module, "fabs", fabs, NJXValueKind_D,
 				   NJXValueKind_D) ||
 	    !register_builtin_arg1(module, "malloc", malloc, NJXValueKind_P,

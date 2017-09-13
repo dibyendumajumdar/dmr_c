@@ -2127,7 +2127,6 @@ static bool output_fn(struct dmr_C *C, NJXContextRef module,
 		{
 			if (dmrC_is_extern(pseudo->sym) || dmrC_is_static(pseudo->sym) || dmrC_is_toplevel(pseudo->sym))
 				continue;
-			dmrC_debug_symbol(C, pseudo->sym);
 			if (!get_sym_value(C, &function, pseudo, false))
 				goto Efailed;
 		}

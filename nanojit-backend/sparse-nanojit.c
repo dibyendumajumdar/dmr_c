@@ -551,7 +551,7 @@ static NJXLInsRef build_store(struct dmr_C *C, struct function *fn,
 }
 
 static NJXLInsRef get_sym_value(struct dmr_C *C, struct function *fn,
-				pseudo_t pseudo)
+	pseudo_t pseudo, bool do_init)
 {
 	NJXLInsRef result = NULL;
 	struct symbol *sym = pseudo->sym;
@@ -565,21 +565,21 @@ static NJXLInsRef get_sym_value(struct dmr_C *C, struct function *fn,
 
 	expr = sym->initializer;
 	if (expr &&
-	    (!sym->ident || (sym->ident && (expr->type == EXPR_VALUE ||
-					    expr->type == EXPR_FVALUE)))) {
+		(!sym->ident || (sym->ident && (expr->type == EXPR_VALUE ||
+			expr->type == EXPR_FVALUE)))) {
 		switch (expr->type) {
 		case EXPR_STRING: {
 			dmrC_sparse_error(
-			    C, expr->pos,
-			    "unsupported string reference in initializer\n");
+				C, expr->pos,
+				"unsupported string reference in initializer\n");
 			dmrC_show_expression(C, expr);
 			return NULL;
 			break;
 		}
 		case EXPR_SYMBOL: {
 			dmrC_sparse_error(
-			    C, expr->pos,
-			    "unresolved symbol reference in initializer\n");
+				C, expr->pos,
+				"unresolved symbol reference in initializer\n");
 			dmrC_show_expression(C, expr);
 			return NULL;
 			break;
@@ -587,87 +587,93 @@ static NJXLInsRef get_sym_value(struct dmr_C *C, struct function *fn,
 		case EXPR_VALUE: {
 			if (dmrC_is_static(sym)) {
 				dmrC_sparse_error(
-				    C, expr->pos,
-				    "unsupported symbol reference\n");
+					C, expr->pos,
+					"unsupported symbol reference\n");
 				dmrC_show_expression(C, expr);
 				return NULL;
 			}
 			struct NanoType *symtype = get_symnode_type(C, fn, sym);
 			if (symtype == NULL) {
 				dmrC_sparse_error(C, expr->pos,
-						  "invalid symbol type\n");
+					"invalid symbol type\n");
 				dmrC_show_expression(C, expr);
 				return NULL;
 			}
 			result = build_local(C, fn, sym);
 			if (!result)
 				return result;
-			NJXLInsRef value =
-			    constant_value(C, fn, expr->value, symtype);
-			build_store(C, fn, value, result, symtype);
+			if (do_init) {
+				NJXLInsRef value =
+					constant_value(C, fn, expr->value, symtype);
+				build_store(C, fn, value, result, symtype);
+			}
 			sym->priv = result;
 			break;
 		}
 		case EXPR_FVALUE: {
 			if (dmrC_is_static(sym)) {
 				dmrC_sparse_error(
-				    C, expr->pos,
-				    "unsupported symbol reference\n");
+					C, expr->pos,
+					"unsupported symbol reference\n");
 				dmrC_show_expression(C, expr);
 				return NULL;
 			}
 			struct NanoType *symtype = get_symnode_type(C, fn, sym);
 			if (symtype == NULL) {
 				dmrC_sparse_error(C, expr->pos,
-						  "invalid symbol type\n");
+					"invalid symbol type\n");
 				dmrC_show_expression(C, expr);
 				return NULL;
 			}
 			result = build_local(C, fn, sym);
 			if (!result)
 				return result;
-			NJXLInsRef value =
-			    constant_fvalue(C, fn, expr->fvalue, symtype);
-			build_store(C, fn, value, result, symtype);
+			if (do_init) {
+				NJXLInsRef value =
+					constant_fvalue(C, fn, expr->fvalue, symtype);
+				build_store(C, fn, value, result, symtype);
+			}
 			sym->priv = result;
 			break;
 		}
 		default:
 			dmrC_sparse_error(
-			    C, expr->pos,
-			    "unsupported expr type in initializer: %d\n",
-			    expr->type);
+				C, expr->pos,
+				"unsupported expr type in initializer: %d\n",
+				expr->type);
 			dmrC_show_expression(C, expr);
 			return NULL;
 		}
-	} else {
+	}
+	else {
 		const char *name = dmrC_show_ident(C, sym->ident);
 		struct NanoType *type = get_symnode_type(C, fn, sym);
 		if (type->type == RT_FUNCTION) {
 			dmrC_sparse_error(
-			    C, expr->pos,
-			    "unsupported expr type: %d, symbol = %s\n",
-			    expr->type, name);
-			dmrC_show_expression(C, expr);
+				C, sym->pos,
+				"unsupported symbol reference for '%s'\n", name);
+			dmrC_debug_symbol(C, sym);
 			return NULL;
-		} else if (dmrC_is_extern(sym) || dmrC_is_toplevel(sym)) {
-			dmrC_sparse_error(C, expr->pos,
-					  "unsupported expr type: %d\n",
-					  expr->type);
-			dmrC_show_expression(C, expr);
+		}
+		else if (dmrC_is_extern(sym) || dmrC_is_toplevel(sym)) {
+			dmrC_sparse_error(
+				C, sym->pos,
+				"unsupported symbol reference for '%s'\n", name);
+			dmrC_debug_symbol(C, sym);
 			return NULL;
-		} else {
+		}
+		else {
 			if (dmrC_is_static(sym)) {
-				dmrC_sparse_error(C, expr->pos,
-						  "unsupported expr type: %d\n",
-						  expr->type);
-				dmrC_show_expression(C, expr);
+				dmrC_sparse_error(
+					C, sym->pos,
+					"unsupported symbol reference for '%s'\n", name);
+				dmrC_debug_symbol(C, sym);
 				return NULL;
 			}
 			if (dmrC_is_static(sym) && sym->initializer) {
 				dmrC_sparse_error(C, sym->initializer->pos,
-						  "unsupported initializer for "
-						  "local static variable\n");
+					"unsupported initializer for "
+					"local static variable\n");
 				dmrC_show_expression(C, sym->initializer);
 				return NULL;
 			}
@@ -690,7 +696,7 @@ static NJXLInsRef pseudo_to_value(struct dmr_C *C, struct function *fn,
 		result = pseudo->priv;
 		break;
 	case PSEUDO_SYM:
-		result = get_sym_value(C, fn, pseudo);
+		result = get_sym_value(C, fn, pseudo, true);
 		break;
 	case PSEUDO_VAL:
 		result = val_to_value(C, fn, pseudo->value, ctype);
@@ -2020,6 +2026,7 @@ static bool output_fn(struct dmr_C *C, NJXContextRef module,
 	struct function function;
 	struct basic_block *bb;
 	struct symbol *arg;
+	pseudo_t pseudo;
 	const char *name;
 	int nr_args = 0;
 	bool success = false;
@@ -2086,6 +2093,7 @@ static bool output_fn(struct dmr_C *C, NJXContextRef module,
 			NJXLInsRef ptr =
 			    NJX_alloca(function.builder,
 				       instruction_size_in_bytes(C, insn));
+			/* add to the list of vars to be given a live instruction */
 			if (!add_local_var(&function, ptr)) {
 				fprintf(stderr, "Number of local vars exceeded %d\n",
 					MAX_LOCAL_VARS);
@@ -2111,6 +2119,20 @@ static bool output_fn(struct dmr_C *C, NJXContextRef module,
 		bb->nr = bbnr++;
 	}
 	END_FOR_EACH_PTR(bb);
+
+	/* Try to do allocas for all the symbols up front */
+	FOR_EACH_PTR(ep->accesses, pseudo)
+	{
+		if (pseudo->type == PSEUDO_SYM) 
+		{
+			if (dmrC_is_extern(pseudo->sym) || dmrC_is_static(pseudo->sym) || dmrC_is_toplevel(pseudo->sym))
+				continue;
+			dmrC_debug_symbol(C, pseudo->sym);
+			if (!get_sym_value(C, &function, pseudo, false))
+				goto Efailed;
+		}
+	}
+	END_FOR_EACH_PTR(arg);
 
 	FOR_EACH_PTR(ep->bbs, bb)
 	{

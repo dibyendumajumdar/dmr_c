@@ -2086,6 +2086,12 @@ static bool output_fn(struct dmr_C *C, NJXContextRef module,
 			NJXLInsRef ptr =
 			    NJX_alloca(function.builder,
 				       instruction_size_in_bytes(C, insn));
+			if (!add_local_var(&function, ptr)) {
+				fprintf(stderr, "Number of local vars exceeded %d\n",
+					MAX_LOCAL_VARS);
+				goto Efailed;
+			}
+
 			// Unlike the Sparse LLVM version we
 			// save the pointer here and perform the load
 			// when we encounter the PHI instruction

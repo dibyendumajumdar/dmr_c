@@ -48,6 +48,9 @@ struct jmp_target {
 	NJXLInsRef jmp_instruction;
 };
 
+DECLARE_PTR_LIST(jmp_target_list, struct jmp_target);
+DECLARE_PTR_LIST(NJXLIns_list, struct NJXLIns);
+
 enum NanoTypeKind {
 	RT_UNSUPPORTED = 0,
 	RT_VOID = 1,
@@ -87,9 +90,10 @@ struct function {
 	NJXContextRef context;
 	struct allocator type_allocator;
 	struct NanoType *return_type;
-	struct jmp_target jumps[MAX_JMP_INSTRUCTIONS];
-	NJXLInsRef locals[MAX_LOCAL_VARS]; // We need a list of locals to be
-					   // able to set liveness
+	struct jmp_target_list *jumps_list;
+	struct NJXLIns_list *local_vars_list; // We need a list of locals to be
+					      // able to set liveness
+	struct allocator jmp_target_allocator;
 };
 
 /*
@@ -98,45 +102,40 @@ struct function {
  * basic block is processed. At the end of code generation, the resolve_jump()
  * function below is called to set the target for each jump.
  */
-static bool add_jump_instruction(struct function *fn, struct basic_block *bb,
-				 NJXLInsRef ins)
+static bool add_jump_instruction(struct dmr_C *C, struct function *fn,
+				 struct basic_block *bb, NJXLInsRef ins)
 {
 	assert(ins);
-	for (int i = 0; i < MAX_JMP_INSTRUCTIONS; i++) {
-		if (fn->jumps[i].bb == NULL) {
-			fn->jumps[i].bb = bb;
-			fn->jumps[i].jmp_instruction = ins;
-			return true;
-		}
-	}
-	return false;
+	struct jmp_target *jmp =
+	    dmrC_allocator_allocate(&fn->jmp_target_allocator, 0);
+	jmp->bb = bb;
+	jmp->jmp_instruction = ins;
+	ptrlist_add((struct ptr_list **) &fn->jumps_list, jmp, &C->ptrlist_allocator);
+	return true;
 }
 
 static bool resolve_jumps(struct function *fn)
 {
-	for (int i = 0; i < MAX_JMP_INSTRUCTIONS; i++) {
-		if (fn->jumps[i].bb != NULL) {
-			NJXLInsRef target = fn->jumps[i].bb->priv;
-			if (!target)
-				return false;
-			NJXLInsRef insn = fn->jumps[i].jmp_instruction;
-			assert(insn);
-			NJX_set_jmp_target(insn, target);
-		}
+	struct jmp_target *jmp;
+
+	FOR_EACH_PTR(fn->jumps_list, jmp)
+	{
+		NJXLInsRef target = jmp->bb->priv;
+		if (!target)
+			return false;
+		NJXLInsRef insn = jmp->jmp_instruction;
+		assert(insn);
+		NJX_set_jmp_target(insn, target);
 	}
+	END_FOR_EACH_PTR(jmp);
 	return true;
 }
 
-static bool add_local_var(struct function *fn, NJXLInsRef ins)
+static bool add_local_var(struct dmr_C *C, struct function *fn, NJXLInsRef ins)
 {
 	assert(ins);
-	for (int i = 0; i < MAX_LOCAL_VARS; i++) {
-		if (fn->locals[i] == NULL) {
-			fn->locals[i] = ins;
-			return true;
-		}
-	}
-	return false;
+	ptrlist_add((struct ptr_list **)&fn->local_vars_list, ins, &C->ptrlist_allocator);
+	return true;
 }
 
 static struct NanoType *alloc_nanotype(struct function *fn,
@@ -481,11 +480,7 @@ static NJXLInsRef build_local(struct dmr_C *C, struct function *fn,
 		}
 		NJXLInsRef result = NJX_alloca(
 		    fn->builder, type->bit_size / C->target->bits_in_char);
-		if (!add_local_var(fn, result)) {
-			fprintf(stderr, "Number of local vars exceeded %d\n",
-				MAX_LOCAL_VARS);
-			return NULL;
-		}
+		add_local_var(C, fn, result);
 		sym->priv = result;
 		return result;
 	}
@@ -550,7 +545,7 @@ static NJXLInsRef build_store(struct dmr_C *C, struct function *fn,
 }
 
 static NJXLInsRef get_sym_value(struct dmr_C *C, struct function *fn,
-	pseudo_t pseudo, bool do_init)
+				pseudo_t pseudo, bool do_init)
 {
 	NJXLInsRef result = NULL;
 	struct symbol *sym = pseudo->sym;
@@ -564,21 +559,21 @@ static NJXLInsRef get_sym_value(struct dmr_C *C, struct function *fn,
 
 	expr = sym->initializer;
 	if (expr &&
-		(!sym->ident || (sym->ident && (expr->type == EXPR_VALUE ||
-			expr->type == EXPR_FVALUE)))) {
+	    (!sym->ident || (sym->ident && (expr->type == EXPR_VALUE ||
+					    expr->type == EXPR_FVALUE)))) {
 		switch (expr->type) {
 		case EXPR_STRING: {
 			dmrC_sparse_error(
-				C, expr->pos,
-				"unsupported string reference in initializer\n");
+			    C, expr->pos,
+			    "unsupported string reference in initializer\n");
 			dmrC_show_expression(C, expr);
 			return NULL;
 			break;
 		}
 		case EXPR_SYMBOL: {
 			dmrC_sparse_error(
-				C, expr->pos,
-				"unresolved symbol reference in initializer\n");
+			    C, expr->pos,
+			    "unresolved symbol reference in initializer\n");
 			dmrC_show_expression(C, expr);
 			return NULL;
 			break;
@@ -586,15 +581,15 @@ static NJXLInsRef get_sym_value(struct dmr_C *C, struct function *fn,
 		case EXPR_VALUE: {
 			if (dmrC_is_static(sym)) {
 				dmrC_sparse_error(
-					C, expr->pos,
-					"unsupported symbol reference\n");
+				    C, expr->pos,
+				    "unsupported symbol reference\n");
 				dmrC_show_expression(C, expr);
 				return NULL;
 			}
 			struct NanoType *symtype = get_symnode_type(C, fn, sym);
 			if (symtype == NULL) {
 				dmrC_sparse_error(C, expr->pos,
-					"invalid symbol type\n");
+						  "invalid symbol type\n");
 				dmrC_show_expression(C, expr);
 				return NULL;
 			}
@@ -603,7 +598,7 @@ static NJXLInsRef get_sym_value(struct dmr_C *C, struct function *fn,
 				return result;
 			if (do_init) {
 				NJXLInsRef value =
-					constant_value(C, fn, expr->value, symtype);
+				    constant_value(C, fn, expr->value, symtype);
 				build_store(C, fn, value, result, symtype);
 			}
 			sym->priv = result;
@@ -612,15 +607,15 @@ static NJXLInsRef get_sym_value(struct dmr_C *C, struct function *fn,
 		case EXPR_FVALUE: {
 			if (dmrC_is_static(sym)) {
 				dmrC_sparse_error(
-					C, expr->pos,
-					"unsupported symbol reference\n");
+				    C, expr->pos,
+				    "unsupported symbol reference\n");
 				dmrC_show_expression(C, expr);
 				return NULL;
 			}
 			struct NanoType *symtype = get_symnode_type(C, fn, sym);
 			if (symtype == NULL) {
 				dmrC_sparse_error(C, expr->pos,
-					"invalid symbol type\n");
+						  "invalid symbol type\n");
 				dmrC_show_expression(C, expr);
 				return NULL;
 			}
@@ -628,8 +623,8 @@ static NJXLInsRef get_sym_value(struct dmr_C *C, struct function *fn,
 			if (!result)
 				return result;
 			if (do_init) {
-				NJXLInsRef value =
-					constant_fvalue(C, fn, expr->fvalue, symtype);
+				NJXLInsRef value = constant_fvalue(
+				    C, fn, expr->fvalue, symtype);
 				build_store(C, fn, value, result, symtype);
 			}
 			sym->priv = result;
@@ -637,42 +632,40 @@ static NJXLInsRef get_sym_value(struct dmr_C *C, struct function *fn,
 		}
 		default:
 			dmrC_sparse_error(
-				C, expr->pos,
-				"unsupported expr type in initializer: %d\n",
-				expr->type);
+			    C, expr->pos,
+			    "unsupported expr type in initializer: %d\n",
+			    expr->type);
 			dmrC_show_expression(C, expr);
 			return NULL;
 		}
-	}
-	else {
+	} else {
 		const char *name = dmrC_show_ident(C, sym->ident);
 		struct NanoType *type = get_symnode_type(C, fn, sym);
 		if (type->type == RT_FUNCTION) {
 			dmrC_sparse_error(
-				C, sym->pos,
-				"unsupported symbol reference for '%s'\n", name);
+			    C, sym->pos,
+			    "unsupported symbol reference for '%s'\n", name);
 			dmrC_debug_symbol(C, sym);
 			return NULL;
-		}
-		else if (dmrC_is_extern(sym) || dmrC_is_toplevel(sym)) {
+		} else if (dmrC_is_extern(sym) || dmrC_is_toplevel(sym)) {
 			dmrC_sparse_error(
-				C, sym->pos,
-				"unsupported symbol reference for '%s'\n", name);
+			    C, sym->pos,
+			    "unsupported symbol reference for '%s'\n", name);
 			dmrC_debug_symbol(C, sym);
 			return NULL;
-		}
-		else {
+		} else {
 			if (dmrC_is_static(sym)) {
 				dmrC_sparse_error(
-					C, sym->pos,
-					"unsupported symbol reference for '%s'\n", name);
+				    C, sym->pos,
+				    "unsupported symbol reference for '%s'\n",
+				    name);
 				dmrC_debug_symbol(C, sym);
 				return NULL;
 			}
 			if (dmrC_is_static(sym) && sym->initializer) {
 				dmrC_sparse_error(C, sym->initializer->pos,
-					"unsupported initializer for "
-					"local static variable\n");
+						  "unsupported initializer for "
+						  "local static variable\n");
 				dmrC_show_expression(C, sym->initializer);
 				return NULL;
 			}
@@ -1515,7 +1508,6 @@ static NJXLInsRef output_op_store(struct dmr_C *C, struct function *fn,
 	return value;
 }
 
-
 /*
  * Add liveness data to help Nanojit's
  * register allocator, which does a scan of the Nanojit instructions
@@ -1525,22 +1517,18 @@ static NJXLInsRef output_op_store(struct dmr_C *C, struct function *fn,
 static void output_liveness(struct dmr_C *C, struct function *fn,
 			    struct basic_block *bb)
 {
-// Right this is not needed it appears as the registers are not
-// shared across basic blocks other than parameters
+	// Right this is not needed it appears as the registers are not
+	// shared across basic blocks other than parameters
 }
 
 static void output_liveness_localvars(struct dmr_C *C, struct function *fn)
 {
 	// Mark stack slots arising from
 	// local var declarations
-	for (int i = 0; i < MAX_LOCAL_VARS; i++) {
-		if (fn->locals[i] == NULL)
-			break;
-		NJXLInsRef ptr = fn->locals[i];
-		NJX_liveq(fn->builder, ptr);
-	}
+	NJXLInsRef ptr;
+	FOR_EACH_PTR(fn->local_vars_list, ptr) { NJX_liveq(fn->builder, ptr); }
+	END_FOR_EACH_PTR(ptr);
 }
-
 
 /*
  * For now we emit a switch statement as if it is a bunch
@@ -1603,8 +1591,7 @@ static NJXLInsRef output_op_switch(struct dmr_C *C, struct function *fn,
 			// It appears that NanoJIT may decide jump isn't
 			// necessary
 			if (br1 != NULL) {
-				if (!add_jump_instruction(fn, jmp->target, br1))
-					return NULL;
+				add_jump_instruction(C, fn, jmp->target, br1);
 			}
 		}
 	}
@@ -1618,8 +1605,7 @@ static NJXLInsRef output_op_switch(struct dmr_C *C, struct function *fn,
 		if (insn->bb->nr > default_bb->nr)
 			output_liveness(C, fn, default_bb);
 		NJXLInsRef default_br = NJX_br(fn->builder, NULL);
-		if (!add_jump_instruction(fn, default_bb, default_br))
-			return NULL;
+		add_jump_instruction(C, fn, default_bb, default_br);
 	}
 	// We need to return some non NULL value
 	// So here we return the switch_value
@@ -1644,8 +1630,7 @@ static NJXLInsRef output_op_cbr(struct dmr_C *C, struct function *fn,
 	// we must take the false branch
 	NJXLInsRef br1 =
 	    NJX_cbr_true(fn->builder, cond, NULL); // br->bb_false->priv
-	if (!add_jump_instruction(fn, br->bb_false, br1))
-		return NULL;
+	add_jump_instruction(C, fn, br->bb_false, br1);
 	// Mark phi allocas needed by destination BB as live
 	// we should only output if bb_false precedes current bb
 	if (br->bb->nr > br->bb_true->nr)
@@ -1658,8 +1643,7 @@ static NJXLInsRef output_op_cbr(struct dmr_C *C, struct function *fn,
 	// It appears that NanoJIT may decide jump isn't
 	// necessary
 	if (br2) {
-		if (!add_jump_instruction(fn, br->bb_true, br2))
-			return NULL;
+		add_jump_instruction(C, fn, br->bb_true, br2);
 	}
 	return br1;
 }
@@ -1673,8 +1657,7 @@ static NJXLInsRef output_op_br(struct dmr_C *C, struct function *fn,
 	if (br->bb->nr > br->bb_true->nr)
 		output_liveness(C, fn, br->bb_true);
 	NJXLInsRef br1 = NJX_br(fn->builder, NULL);
-	if (!add_jump_instruction(fn, br->bb_true, br1))
-		return NULL;
+	add_jump_instruction(C, fn, br->bb_true, br1);
 	return br1;
 }
 
@@ -2032,6 +2015,9 @@ static bool output_fn(struct dmr_C *C, NJXContextRef module,
 	dmrC_allocator_init(&function.type_allocator, "nanotypes",
 			    sizeof(struct NanoType),
 			    __alignof__(struct NanoType), CHUNK);
+	dmrC_allocator_init(&function.jmp_target_allocator, "jump targets",
+			    sizeof(struct jmp_target),
+			    __alignof__(struct jmp_target), CHUNK);
 
 	enum NJXValueKind argtypes[NJXMaxArgs];
 
@@ -2081,12 +2067,9 @@ static bool output_fn(struct dmr_C *C, NJXContextRef module,
 			NJXLInsRef ptr =
 			    NJX_alloca(function.builder,
 				       instruction_size_in_bytes(C, insn));
-			/* add to the list of vars to be given a live instruction */
-			if (!add_local_var(&function, ptr)) {
-				fprintf(stderr, "Number of local vars exceeded %d\n",
-					MAX_LOCAL_VARS);
-				goto Efailed;
-			}
+			/* add to the list of vars to be given a live
+			 * instruction */
+			add_local_var(C, &function, ptr);
 
 			// Unlike the Sparse LLVM version we
 			// save the pointer here and perform the load
@@ -2111,9 +2094,10 @@ static bool output_fn(struct dmr_C *C, NJXContextRef module,
 	/* Try to do allocas for all the symbols up front */
 	FOR_EACH_PTR(ep->accesses, pseudo)
 	{
-		if (pseudo->type == PSEUDO_SYM) 
-		{
-			if (dmrC_is_extern(pseudo->sym) || dmrC_is_static(pseudo->sym) || dmrC_is_toplevel(pseudo->sym))
+		if (pseudo->type == PSEUDO_SYM) {
+			if (dmrC_is_extern(pseudo->sym) ||
+			    dmrC_is_static(pseudo->sym) ||
+			    dmrC_is_toplevel(pseudo->sym))
 				continue;
 			if (!get_sym_value(C, &function, pseudo, false))
 				goto Efailed;
@@ -2144,6 +2128,7 @@ Efailed:
 
 Ereturn:
 	dmrC_allocator_destroy(&function.type_allocator);
+	dmrC_allocator_destroy(&function.jmp_target_allocator);
 
 	return success;
 }
@@ -2192,7 +2177,9 @@ bool dmrC_nanocompile(int argc, char **argv, NJXContextRef module,
 	char *file;
 
 	struct dmr_C *C = new_dmr_C();
-	C->optimize = 0; /* Ideally we want to turn simplifications ON as NanoJIT does not optimize much, but for now this is OFF as matmul test fails */
+	C->optimize = 0; /* Ideally we want to turn simplifications ON as
+			    NanoJIT does not optimize much, but for now this is
+			    OFF as matmul test fails */
 	C->codegen = 1;  /* Disables macros related to vararg processing */
 
 	symlist = dmrC_sparse_initialize(C, argc, argv, &filelist);

@@ -86,7 +86,6 @@ struct function {
 	NJXFunctionBuilderRef builder;
 	NJXContextRef context;
 	struct allocator type_allocator;
-	NJXLInsRef args[NJXMaxArgs];
 	struct NanoType *return_type;
 	struct jmp_target jumps[MAX_JMP_INSTRUCTIONS];
 	NJXLInsRef locals[MAX_LOCAL_VARS]; // We need a list of locals to be
@@ -702,7 +701,7 @@ static NJXLInsRef pseudo_to_value(struct dmr_C *C, struct function *fn,
 		result = val_to_value(C, fn, pseudo->value, ctype);
 		break;
 	case PSEUDO_ARG:
-		result = fn->args[pseudo->nr - 1];
+		result = NJX_get_parameter(fn->builder, pseudo->nr - 1);
 		break;
 	case PSEUDO_PHI:
 		result = pseudo->priv;
@@ -1516,6 +1515,7 @@ static NJXLInsRef output_op_store(struct dmr_C *C, struct function *fn,
 	return value;
 }
 
+
 /*
  * Add liveness data to help Nanojit's
  * register allocator, which does a scan of the Nanojit instructions
@@ -1525,18 +1525,8 @@ static NJXLInsRef output_op_store(struct dmr_C *C, struct function *fn,
 static void output_liveness(struct dmr_C *C, struct function *fn,
 			    struct basic_block *bb)
 {
-	// Mark required stack slots arising from
-	// phi instructions
-	struct instruction *insn;
-	FOR_EACH_PTR(bb->insns, insn)
-	{
-		if (!insn->bb || insn->opcode != OP_PHI)
-			continue;
-		NJXLInsRef ptr = insn->target->priv2;
-		if (ptr)
-			NJX_liveq(fn->builder, ptr);
-	}
-	END_FOR_EACH_PTR(insn);
+// Right this is not needed it appears as the registers are not
+// shared across basic blocks other than parameters
 }
 
 static void output_liveness_localvars(struct dmr_C *C, struct function *fn)
@@ -1550,6 +1540,7 @@ static void output_liveness_localvars(struct dmr_C *C, struct function *fn)
 		NJX_liveq(fn->builder, ptr);
 	}
 }
+
 
 /*
  * For now we emit a switch statement as if it is a bunch
@@ -2074,9 +2065,6 @@ static bool output_fn(struct dmr_C *C, NJXContextRef module,
 
 	function.builder = NJX_create_function_builder(module, name, freturn,
 						       argtypes, nr_args, true);
-	for (int i = 0; i < nr_args; i++) {
-		function.args[i] = NJX_get_parameter(function.builder, i);
-	}
 
 	unsigned int bbnr = 0;
 	/* create the BBs */
@@ -2144,11 +2132,6 @@ static bool output_fn(struct dmr_C *C, NJXContextRef module,
 	output_liveness_localvars(C, &function);
 	if (resolve_jumps(&function))
 		success = true;
-
-	// Not needed anymore as Nanojit does it
-	// But if we convert from long long to int then?
-	// TODO check
-	// output_parameter_liveness(C, &function);
 
 	if (success) {
 		void *p = NJX_finalize(function.builder);

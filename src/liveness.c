@@ -52,7 +52,9 @@ static void track_instruction_usage(struct dmr_C *C, struct basic_block *bb, str
 
 	switch (insn->opcode) {
 	case OP_RET:
+#if USE_OP_PUSH
 	case OP_PUSH:
+#endif
 		USES(src);
 		break;
 
@@ -143,12 +145,20 @@ static void track_instruction_usage(struct dmr_C *C, struct basic_block *bb, str
 		break;
 
 	case OP_CALL: {
+#if USE_OP_PUSH
 		struct instruction *arg;
+#else
+		pseudo_t arg;
+#endif
 		USES(func);
 		if (insn->target != VOID_PSEUDO(C))
 			DEFINES(target);
 		FOR_EACH_PTR(insn->arguments, arg) {
+#if USE_OP_PUSH
 			use(C, bb, arg->src);
+#else
+			use(C, bb, arg);
+#endif
 		} END_FOR_EACH_PTR(arg);
 		break;
 	}

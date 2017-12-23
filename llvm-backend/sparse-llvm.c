@@ -1232,7 +1232,11 @@ static LLVMValueRef output_op_call(struct dmr_C *C, struct function *fn, struct 
 {
 	LLVMValueRef target, func;
 	int n_arg = 0, i;
+#if USE_OP_PUSH
 	struct instruction *arg;
+#else
+	struct pseudo *arg;
+#endif
 	LLVMValueRef *args;
 	char name[64];
 
@@ -1246,7 +1250,23 @@ static LLVMValueRef output_op_call(struct dmr_C *C, struct function *fn, struct 
 		struct symbol *atype;
 
 		atype = dmrC_get_nth_symbol(ftype->arguments, i);
+#if USE_OP_PUSH
 		value = pseudo_to_value(C, fn, arg->type, arg->src);
+#else
+		if (arg->type == PSEUDO_VAL) {
+			/* Value pseudos do not have type information. */
+			/* Use the function prototype to get the type. */
+			if (atype)
+				value = val_to_value(C, fn, arg->value, atype);
+			else {
+				value = val_to_value(C, fn, arg->value, &C->S->ullong_ctype); // Default to 64-bit unsigned int type, i.e. no sign extension
+				dmrC_warning(C, insn->pos, "pseudo value argument[%d] = %lld has no type information, defaulting to long long\n", i+1, arg->value);
+			}
+		}
+		else {
+			value = pseudo_to_value(C, fn, atype, arg);
+		}
+#endif
 		if (!value)
 			return NULL;
 		if (atype) {

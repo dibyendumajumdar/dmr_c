@@ -1374,7 +1374,9 @@ static pseudo_t linearize_call_expression(struct dmr_C *C, struct entrypoint *ep
 {
 	struct expression *arg, *fn;
 	struct instruction *insn = alloc_typed_instruction(C, OP_CALL, expr->ctype);
+#if USE_OP_PUSH
 	struct instruction *push;
+#endif
 	pseudo_t retval, call;
 	struct ctype *ctype = NULL;
 	struct symbol *fntype;

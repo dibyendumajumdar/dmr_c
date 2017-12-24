@@ -1302,7 +1302,6 @@ static LLVMValueRef output_op_call(struct dmr_C *C, struct function *fn, struct 
 static LLVMValueRef output_op_phisrc(struct dmr_C *C, struct function *fn, struct instruction *insn)
 {
 	LLVMValueRef v;
-	LLVMTypeRef srctype;
 	struct instruction *phi;
 
 	assert(insn->target->priv == NULL);
@@ -1357,7 +1356,6 @@ static LLVMValueRef output_op_ptrcast(struct dmr_C *C, struct function *fn, stru
 	LLVMValueRef src, target;
 	LLVMTypeRef dtype;
 	struct symbol *otype = insn->orig_type;
-	LLVMOpcode op;
 	char target_name[64];
 
 	assert(dmrC_is_ptr_type(insn->type));
@@ -1386,7 +1384,6 @@ static LLVMValueRef output_op_cast(struct dmr_C *C, struct function *fn, struct 
 	LLVMTypeRef dtype;
 	struct symbol *otype = insn->orig_type;
 	char target_name[64];
-	unsigned int width;
 
 	if (dmrC_is_ptr_type(insn->type)) {
 		return output_op_ptrcast(C, fn, insn);
@@ -1420,7 +1417,6 @@ static LLVMValueRef output_op_fpcast(struct dmr_C *C, struct function *fn, struc
 	LLVMValueRef src, target;
 	char target_name[64];
 	LLVMTypeRef dtype;
-	LLVMOpcode op;
 	struct symbol *otype = insn->orig_type;
 
 	src = insn->src->priv;
@@ -1730,8 +1726,6 @@ static LLVMValueRef output_fn(struct dmr_C *C, LLVMModuleRef module, struct entr
 	int nr_args = 0;
 
 	FOR_EACH_PTR(base_type->arguments, arg) {
-		struct symbol *arg_base_type = arg->ctype.base_type;
-
 		if (nr_args >= MAX_ARGS)
 			return NULL;
 		arg_types[nr_args] = get_symnode_type(C, module, arg);
@@ -1945,6 +1939,8 @@ static int compile(struct dmr_C *C, LLVMModuleRef module, struct symbol_list *li
 	return 1;
 }
 
+#if 0
+
 #ifndef LLVM_DEFAULT_TARGET_TRIPLE
 #define LLVM_DEFAULT_TARGET_TRIPLE LLVM_HOSTTRIPLE
 #endif
@@ -1995,6 +1991,8 @@ static void set_target(struct dmr_C *C, LLVMModuleRef module)
 	//LLVMSetDataLayout(module, layout);
 }
 
+#endif
+
 static void add_intrinsics(LLVMModuleRef module)
 {
 	LLVMTypeRef param_types[] = { LLVMPointerType(LLVMInt8TypeInContext(LLVMGetModuleContext(module)), 0),
@@ -2003,7 +2001,7 @@ static void add_intrinsics(LLVMModuleRef module)
 		LLVMInt32TypeInContext(LLVMGetModuleContext(module)),
 		LLVMInt1TypeInContext(LLVMGetModuleContext(module)) };
 	LLVMTypeRef fn_type = LLVMFunctionType(LLVMVoidTypeInContext(LLVMGetModuleContext(module)), param_types, 5, false);
-	LLVMValueRef fn = LLVMAddFunction(module, "llvm.memset.p0i8.i32", fn_type);
+	LLVMAddFunction(module, "llvm.memset.p0i8.i32", fn_type);
 }
 
 bool dmrC_llvmcompile(int argc, char **argv, LLVMModuleRef module,

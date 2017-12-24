@@ -227,6 +227,7 @@ static void kill_use_list(struct dmr_C *C, struct pseudo_list *list)
 	} END_FOR_EACH_PTR(p);
 }
 
+#if USE_OP_PUSH
 static void kill_insn_list(struct dmr_C *C, struct instruction_list *list)
 {
     struct instruction *insn;
@@ -234,6 +235,7 @@ static void kill_insn_list(struct dmr_C *C, struct instruction_list *list)
         dmrC_kill_insn(C, insn, 0);
     } END_FOR_EACH_PTR(insn);
 }
+#endif
 
 /*
  * kill an instruction:
@@ -1259,7 +1261,7 @@ found:
 int dmrC_simplify_instruction(struct dmr_C *C, struct instruction *insn)
 {
 	// This is a workaround for bugs in how floats are handled
-	if (!insn->bb || insn->type && dmrC_is_float_type(C->S, insn->type))
+	if (!insn->bb || (insn->type && dmrC_is_float_type(C->S, insn->type)))
 		return 0;
 	switch (insn->opcode) {
 	case OP_ADD: case OP_MULS:

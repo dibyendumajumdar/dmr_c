@@ -184,22 +184,9 @@ struct instruction {
 		};
 		struct /* call */ {
 			pseudo_t func;
-#if USE_OP_PUSH
-			union {
-				struct instruction_list *arguments; /* instruction list */
-				struct pseudo_list *inlined_args; /* pseudo list */
-			};
-#else
 			struct pseudo_list *arguments; /* instruction list */
-#endif
 			struct symbol *fntype;
 		};
-#if USE_OP_PUSH
-		struct /* push/arg */ {
-			pseudo_t arg; /* same as src, src1 & symbol */
-			struct instruction *call;
-		};
-#endif
 		struct /* context */ {
 			int increment;
 			int check;
@@ -286,9 +273,6 @@ enum opcode {
 	OP_FPCAST,
 	OP_PTRCAST,
 	OP_INLINED_CALL,
-#if USE_OP_PUSH
-	OP_PUSH,
-#endif
 	OP_CALL,
 	OP_VANEXT,
 	OP_VAARG,

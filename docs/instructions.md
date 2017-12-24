@@ -229,16 +229,10 @@ Like OP_COPY but exclusively used to give a defining instructions
 - .type: type of .target
 - .phi_users: list of phi instructions using the target pseudo
 
-### OP_PUSH
-Give an argument to the following OP_CALL.
-- .arg: (pseudo_t) argument (alias .src)
-- .type: type of .src
-- .call: corresponding instruction
-
 ### OP_CALL
 Function call.
 - .func: (pseudo_t) the function (can be a symbol or a "register", alias .src))
-- .arguments: list of the associated OP_PUSH instructions
+- .arguments: list of the associated pseudos
 - .target: function return value (if any)
 - .type: type of .target
 - .fntype: the full function type

@@ -227,16 +227,6 @@ static void kill_use_list(struct dmr_C *C, struct pseudo_list *list)
 	} END_FOR_EACH_PTR(p);
 }
 
-#if USE_OP_PUSH
-static void kill_insn_list(struct dmr_C *C, struct instruction_list *list)
-{
-    struct instruction *insn;
-    FOR_EACH_PTR(list, insn) {
-        dmrC_kill_insn(C, insn, 0);
-    } END_FOR_EACH_PTR(insn);
-}
-#endif
-
 /*
  * kill an instruction:
  * - remove it from its bb
@@ -296,9 +286,6 @@ void dmrC_kill_insn(struct dmr_C *C, struct instruction *insn, int force)
 	case OP_SETVAL:
 	case OP_NOT: case OP_NEG:
 	case OP_SLICE:
-#if USE_OP_PUSH
-	case OP_PUSH:
-#endif
 		dmrC_kill_use(C, &insn->src1);
 		break;
 
@@ -327,11 +314,7 @@ void dmrC_kill_insn(struct dmr_C *C, struct instruction *insn, int force)
 			if (!(insn->func->sym->ctype.modifiers & MOD_PURE))
 				return;
 		}
-#if USE_OP_PUSH
-		kill_insn_list(C, insn->arguments);
-#else
 		kill_use_list(C, insn->arguments);
-#endif
 		if (insn->func->type == PSEUDO_REG)
 			dmrC_kill_use(C, &insn->func);
 		break;

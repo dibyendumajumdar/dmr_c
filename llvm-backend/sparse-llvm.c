@@ -1237,11 +1237,7 @@ static LLVMValueRef output_op_call(struct dmr_C *C, struct function *fn, struct 
 {
 	LLVMValueRef target, func;
 	int n_arg = 0, i;
-#if USE_OP_PUSH
-	struct instruction *arg;
-#else
 	struct pseudo *arg;
-#endif
 	LLVMValueRef *args;
 	char name[64];
 
@@ -1255,9 +1251,6 @@ static LLVMValueRef output_op_call(struct dmr_C *C, struct function *fn, struct 
 		struct symbol *atype;
 
 		atype = dmrC_get_nth_symbol(ftype->arguments, i);
-#if USE_OP_PUSH
-		value = pseudo_to_value(C, fn, arg->type, arg->src);
-#else
 		value = NULL;
 		if (arg->type == PSEUDO_VAL) {
 			/* Value pseudos do not have type information. */
@@ -1277,7 +1270,6 @@ static LLVMValueRef output_op_call(struct dmr_C *C, struct function *fn, struct 
 		else {
 			value = pseudo_to_value(C, fn, atype, arg);
 		}
-#endif
 		if (!value)
 			return NULL;
 		if (atype) {

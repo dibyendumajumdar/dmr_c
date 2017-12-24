@@ -810,11 +810,7 @@ static NJXLInsRef output_op_call(struct dmr_C *C, struct function *fn,
 {
 	NJXLInsRef target;
 	int n_arg = 0, i;
-#if USE_OP_PUSH
-	struct instruction *arg;
-#else
 	struct pseudo *arg;
-#endif
 	NJXLInsRef *args;
 
 	n_arg = dmrC_instruction_list_size(insn->arguments);
@@ -828,9 +824,6 @@ static NJXLInsRef output_op_call(struct dmr_C *C, struct function *fn,
 		struct symbol *atype;
 
 		atype = dmrC_get_nth_symbol(ftype->arguments, i);
-#if USE_OP_PUSH
-		value = pseudo_to_value(C, fn, arg->type, arg->src);
-#else
 		value = NULL;
 		if (arg->type == PSEUDO_VAL) {
 			/* Value pseudos do not have type information. */
@@ -850,7 +843,6 @@ static NJXLInsRef output_op_call(struct dmr_C *C, struct function *fn,
 		else {
 			value = pseudo_to_value(C, fn, atype, arg);
 		}
-#endif
 		if (!value)
 			return NULL;
 		if (atype) {

@@ -35,6 +35,7 @@ foo->i = 99, foo->j = 0
 running initializers2.c
 dibyendu
 majumdar
+running initializers3.c
 running locals1.c
 running locals2.c
 running matmul.c

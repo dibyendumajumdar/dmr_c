@@ -68,7 +68,10 @@ struct pseudo {
 	int nr;
 	enum pseudo_type type;
 	struct pseudo_user_list *users; /* pseudo_user list */
-	struct ident *ident;
+	union {
+		struct ident *ident;
+		int size; /* OP_SETVAL only */
+	};
 	union {
 		struct symbol *sym;	     // PSEUDO_SYM, VAL & ARG
 		struct instruction *def; // PSEUDO_REG & PHI
@@ -516,7 +519,8 @@ struct instruction *dmrC_alloc_phisrc(struct dmr_C *C, pseudo_t pseudo, struct s
 pseudo_t dmrC_insert_phi_node(struct dmr_C *C, struct basic_block *bb, struct symbol *type);
 pseudo_t dmrC_alloc_phi(struct dmr_C *C, struct basic_block *source, pseudo_t pseudo, struct symbol *type);
 pseudo_t dmrC_alloc_pseudo(struct dmr_C *C, struct instruction *def);
-pseudo_t dmrC_value_pseudo(struct dmr_C *C, long long val);
+pseudo_t dmrC_value_pseudo(struct dmr_C *C, struct symbol *type, long long val);
+unsigned int dmrC_value_size(long long value);
 #if NEW_SSA
 pseudo_t dmrC_undef_pseudo(struct dmr_C *C);
 #endif

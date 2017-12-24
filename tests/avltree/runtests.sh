@@ -3,7 +3,7 @@ tests_list=test.c
 
 for f in $tests_list; do
 	echo "running $f"
-	sparse-llvm $opt $f
+	sparse-llvm $opt $f 2>/dev/null
 	if [ "$?" -ne "0" ]; then
                 echo "$f failed to compile"
 	else

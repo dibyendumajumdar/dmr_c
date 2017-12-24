@@ -515,7 +515,7 @@ found:
 		if (!local)
 			return 0;
 		dmrC_check_access(C, insn);
-		dmrC_convert_load_instruction(C, insn, dmrC_value_pseudo(C, 0));
+		dmrC_convert_load_instruction(C, insn, dmrC_value_pseudo(C, insn->type, 0));
 		return 1;
 	}
 

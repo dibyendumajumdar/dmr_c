@@ -238,6 +238,31 @@ static LLVMTypeRef sym_ptr_type(struct dmr_C *C, LLVMModuleRef module, struct sy
 	return LLVMPointerType(type, 0);
 }
 
+static LLVMTypeRef int_type_by_size(LLVMModuleRef module, int size)
+{
+	LLVMTypeRef ret = NULL;
+	switch (size) {
+	case 1:
+		ret = LLVMInt1TypeInContext(LLVMGetModuleContext(module));
+		break;
+	case 8:
+		ret = LLVMInt8TypeInContext(LLVMGetModuleContext(module));
+		break;
+	case 16:
+		ret = LLVMInt16TypeInContext(LLVMGetModuleContext(module));
+		break;
+	case 32:
+		ret = LLVMInt32TypeInContext(LLVMGetModuleContext(module));
+		break;
+	case 64:
+		ret = LLVMInt64TypeInContext(LLVMGetModuleContext(module));
+		break;
+	default:
+		fprintf(stderr, "invalid bit size %d\n", size);
+	}
+	return ret;
+}
+
 static LLVMTypeRef sym_basetype_type(struct dmr_C *C, LLVMModuleRef module, struct symbol *sym, struct symbol *sym_node)
 {
 	LLVMTypeRef ret = NULL;
@@ -259,29 +284,10 @@ static LLVMTypeRef sym_basetype_type(struct dmr_C *C, LLVMModuleRef module, stru
 		}
 	}
 	else {
-		switch (sym->bit_size) {
-		case -1:
+		if (sym->bit_size == -1)
 			ret = LLVMVoidTypeInContext(LLVMGetModuleContext(module));
-			break;
-		case 1:
-			ret = LLVMInt1TypeInContext(LLVMGetModuleContext(module));
-			break;
-		case 8:
-			ret = LLVMInt8TypeInContext(LLVMGetModuleContext(module));
-			break;
-		case 16:
-			ret = LLVMInt16TypeInContext(LLVMGetModuleContext(module));
-			break;
-		case 32:
-			ret = LLVMInt32TypeInContext(LLVMGetModuleContext(module));
-			break;
-		case 64:
-			ret = LLVMInt64TypeInContext(LLVMGetModuleContext(module));
-			break;
-		default:
-			fprintf(stderr, "invalid bit size %d for type %d", sym->bit_size, sym->type);
-			return NULL;
-		}
+		else
+			ret = int_type_by_size(module, sym->bit_size);
 	}
 
 	return ret;
@@ -351,16 +357,11 @@ static LLVMTypeRef insn_symbol_type(struct dmr_C *C, LLVMModuleRef module, struc
 		//printf("insn %s sym type %s\n", dmrC_show_instruction(C, insn), dmrC_get_type_name(insn->type->type));
 		return get_symnode_or_basetype(C, module, insn->type);
 	}
-	switch (insn->size) {
-	case 8:		return LLVMInt8TypeInContext(LLVMGetModuleContext(module));
-	case 16:	return LLVMInt16TypeInContext(LLVMGetModuleContext(module));
-	case 32:	return LLVMInt32TypeInContext(LLVMGetModuleContext(module));
-	case 64:	return LLVMInt64TypeInContext(LLVMGetModuleContext(module));
-
-	default:
+	LLVMTypeRef ret = int_type_by_size(module, insn->size);
+	if (!ret) {
 		dmrC_sparse_error(C, insn->pos, "invalid bit size %d", insn->size);
-		return NULL;
 	}
+	return ret;
 }
 
 static LLVMLinkage data_linkage(struct dmr_C *C, struct symbol *sym)
@@ -740,6 +741,8 @@ static LLVMValueRef ptr_toint(struct dmr_C *C, struct function *fn, LLVMValueRef
 	return val;
 }
 
+#if 0
+
 static LLVMValueRef calc_gep(struct dmr_C *C, struct function *fn, LLVMBuilderRef builder, LLVMValueRef base, LLVMValueRef off)
 {
 	LLVMTypeRef type = LLVMTypeOf(base);
@@ -755,6 +758,8 @@ static LLVMValueRef calc_gep(struct dmr_C *C, struct function *fn, LLVMBuilderRe
 	addr = LLVMBuildPointerCast(builder, addr, type, "");
 	return addr;
 }
+
+#endif
 
 static LLVMRealPredicate translate_fop(int opcode)
 {
@@ -1253,14 +1258,20 @@ static LLVMValueRef output_op_call(struct dmr_C *C, struct function *fn, struct 
 #if USE_OP_PUSH
 		value = pseudo_to_value(C, fn, arg->type, arg->src);
 #else
+		value = NULL;
 		if (arg->type == PSEUDO_VAL) {
 			/* Value pseudos do not have type information. */
 			/* Use the function prototype to get the type. */
 			if (atype)
 				value = val_to_value(C, fn, arg->value, atype);
 			else {
-				value = val_to_value(C, fn, arg->value, &C->S->ullong_ctype); // Default to 64-bit unsigned int type, i.e. no sign extension
-				dmrC_warning(C, insn->pos, "pseudo value argument[%d] = %lld has no type information, defaulting to long long\n", i+1, arg->value);
+				LLVMTypeRef type = int_type_by_size(fn->module, arg->size);
+				if (!type) {
+					dmrC_sparse_error(C, insn->pos, "pseudo value argument[%d] = %lld has invalid size %d\n", i+1, arg->value, arg->size);
+				}
+				else {
+					value = constant_value(C, fn->module, arg->value, type); 
+				}
 			}
 		}
 		else {

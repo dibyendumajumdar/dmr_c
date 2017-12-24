@@ -835,20 +835,22 @@ static pseudo_t symbol_pseudo(struct dmr_C *C, struct entrypoint *ep, struct sym
 	return pseudo;
 }
 
-pseudo_t dmrC_value_pseudo(struct dmr_C *C, long long val)
+pseudo_t dmrC_value_pseudo(struct dmr_C *C, struct symbol *type, long long val)
 {
 	int hash = val & (MAX_VAL_HASH-1);
 	struct pseudo_list **list = C->L->prev + hash;
+	int size = type ? type->bit_size : dmrC_value_size(val);
 	pseudo_t pseudo;
 
 	FOR_EACH_PTR(*list, pseudo) {
-		if (pseudo->value == val)
+		if (pseudo->value == val && pseudo->size == size)
 			return pseudo;
 	} END_FOR_EACH_PTR(pseudo);
 
 	pseudo = (pseudo_t)dmrC_allocator_allocate(&C->L->pseudo_allocator, 0);
 	pseudo->type = PSEUDO_VAL;
 	pseudo->value = val;
+	pseudo->size = size;
 	dmrC_add_pseudo(C, list, pseudo);
 
 	/* Value pseudos have neither nr, usage nor def */
@@ -1086,10 +1088,10 @@ static pseudo_t linearize_store_gen(struct dmr_C *C, struct entrypoint *ep,
 		unsigned long long mask = (1ULL << size) - 1;
 
 		if (shift) {
-			store = add_binary_op(C, ep, ad->source_type, OP_SHL, value, dmrC_value_pseudo(C, shift));
+			store = add_binary_op(C, ep, ad->source_type, OP_SHL, value, dmrC_value_pseudo(C, ctype, shift));
 			mask <<= shift;
 		}
-		orig = add_binary_op(C, ep, ad->source_type, OP_AND, orig, dmrC_value_pseudo(C, ~mask));
+		orig = add_binary_op(C, ep, ad->source_type, OP_AND, orig, dmrC_value_pseudo(C, ctype, ~mask));
 		store = add_binary_op(C, ep, ad->source_type, OP_OR, orig, store);
 	}
 	add_store(C, ep, ad, store);
@@ -1135,7 +1137,7 @@ static pseudo_t linearize_load_gen(struct dmr_C *C, struct entrypoint *ep, struc
 	pseudo_t new = add_load(C, ep, ad);
 
 	if (ctype->bit_offset) {
-		pseudo_t shift = dmrC_value_pseudo(C, ctype->bit_offset);
+		pseudo_t shift = dmrC_value_pseudo(C, ctype, ctype->bit_offset);
 		pseudo_t newval = add_binary_op(C, ep, ad->source_type, OP_LSR, new, shift);
 		new = newval;
 	}
@@ -1168,7 +1170,7 @@ static pseudo_t linearize_inc_dec(struct dmr_C *C, struct entrypoint *ep, struct
 		return VOID_PSEUDO(C);
 
 	old = linearize_load_gen(C, ep, &ad);
-	one = dmrC_value_pseudo(C, expr->op_value);
+	one = dmrC_value_pseudo(C, expr->ctype, expr->op_value);
 	new = add_binary_op(C, ep, expr->ctype, op, old, one);
 	linearize_store_gen(C, ep, new, &ad);
 	finish_address_gen(ep, &ad);
@@ -1207,7 +1209,7 @@ static pseudo_t linearize_regular_preop(struct dmr_C *C, struct entrypoint *ep, 
 	case '+':
 		return pre;
 	case '!': {
-		pseudo_t zero = dmrC_value_pseudo(C, 0);
+		pseudo_t zero = dmrC_value_pseudo(C, expr->ctype, 0);
 		return add_binary_op(C, ep, expr->ctype, OP_SET_EQ, pre, zero);
 	}
 	case '~':
@@ -1300,7 +1302,7 @@ static inline pseudo_t add_convert_to_bool(struct dmr_C *C, struct entrypoint *e
 
 	if (dmrC_is_bool_type(C->S, type))
 		return src;
-	zero = dmrC_value_pseudo(C, 0);
+	zero = dmrC_value_pseudo(C, type, 0);
 	op = OP_SET_NE;
 	return add_binary_op(C, ep, &C->S->bool_ctype, op, src, zero);
 }
@@ -1773,7 +1775,7 @@ static pseudo_t linearize_expression(struct dmr_C *C, struct entrypoint *ep, str
 		return add_symbol_address(C, ep, expr);
 
 	case EXPR_VALUE:
-		return dmrC_value_pseudo(C, expr->value);
+		return dmrC_value_pseudo(C, expr->ctype, expr->value);
 
 	case EXPR_STRING: case EXPR_FVALUE: case EXPR_LABEL:
 		return add_setval(C, ep, expr->ctype, expr);

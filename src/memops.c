@@ -127,7 +127,7 @@ static void simplify_loads(struct dmr_C *C, struct basic_block *bb)
 				if (!dominators) {
 					if (local) {
 						assert(pseudo->type != PSEUDO_ARG);
-						dmrC_convert_load_instruction(C, insn, dmrC_value_pseudo(C, 0));
+						dmrC_convert_load_instruction(C, insn, dmrC_value_pseudo(C, insn->type, 0));
 					}
 					goto next_load;
 				}

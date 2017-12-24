@@ -149,6 +149,20 @@ static struct NanoType *alloc_nanotype(struct function *fn,
 	return type;
 }
 
+static struct NanoType *int_type_by_size(struct function *fn, int size)
+{
+	switch (size) {
+	case -1:
+		return NULL;
+	case 32:
+		return &Int32Type;
+	case 64:
+		return &Int64Type;
+	default:
+		return alloc_nanotype(fn, RT_INT, size);
+	}
+}
+
 static struct NanoType *sym_basetype_type(struct dmr_C *C, struct function *fn,
 					  struct symbol *sym,
 					  struct symbol *sym_node)
@@ -796,7 +810,11 @@ static NJXLInsRef output_op_call(struct dmr_C *C, struct function *fn,
 {
 	NJXLInsRef target;
 	int n_arg = 0, i;
+#if USE_OP_PUSH
 	struct instruction *arg;
+#else
+	struct pseudo *arg;
+#endif
 	NJXLInsRef *args;
 
 	n_arg = dmrC_instruction_list_size(insn->arguments);
@@ -810,7 +828,29 @@ static NJXLInsRef output_op_call(struct dmr_C *C, struct function *fn,
 		struct symbol *atype;
 
 		atype = dmrC_get_nth_symbol(ftype->arguments, i);
+#if USE_OP_PUSH
 		value = pseudo_to_value(C, fn, arg->type, arg->src);
+#else
+		value = NULL;
+		if (arg->type == PSEUDO_VAL) {
+			/* Value pseudos do not have type information. */
+			/* Use the function prototype to get the type. */
+			if (atype)
+				value = val_to_value(C, fn, arg->value, atype);
+			else {
+				struct NanoType *type = int_type_by_size(fn, arg->size);
+				if (!type) {
+					dmrC_sparse_error(C, insn->pos, "pseudo value argument[%d] = %lld has invalid size %d\n", i + 1, arg->value, arg->size);
+				}
+				else {
+					value = constant_value(C, fn, arg->value, type);
+				}
+			}
+		}
+		else {
+			value = pseudo_to_value(C, fn, atype, arg);
+		}
+#endif
 		if (!value)
 			return NULL;
 		if (atype) {

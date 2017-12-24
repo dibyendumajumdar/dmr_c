@@ -813,7 +813,7 @@ static NJXLInsRef output_op_call(struct dmr_C *C, struct function *fn,
 	struct pseudo *arg;
 	NJXLInsRef *args;
 
-	n_arg = dmrC_instruction_list_size(insn->arguments);
+	n_arg = ptrlist_size((struct ptr_list *)insn->arguments);
 	args = alloca(n_arg * sizeof(NJXLInsRef));
 	struct symbol *ftype = get_function_basetype(insn->fntype);
 

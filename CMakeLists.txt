@@ -208,6 +208,7 @@ elseif (NANO_JIT)
     set(LIB_LLVM_SRCS nanojit-backend/sparse-nanojit.c)
     include_directories("${PROJECT_SOURCE_DIR}/nanojit-backend")
     set(LLVM_LIBS ${NANOJITEXTRA_LIBRARIES})
+    set(ADDITIONAL_LIBS m)
 endif ()
 
 if (MSVC OR APPLE)
@@ -222,7 +223,7 @@ add_library(dmr_c ${LIBRARY_TYPE}
         ${DIST_LIB_H}
         ${LIB_SRCS}
         ${LIB_LLVM_SRCS} )
-target_link_libraries(dmr_c ${LLVM_LIBS})
+target_link_libraries(dmr_c ${LLVM_LIBS} ${ADDITIONAL_LIBS})
 
 add_executable(runtests src/runtests.c)
 target_link_libraries(runtests dmr_c) 

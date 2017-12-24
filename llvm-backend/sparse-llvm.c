@@ -717,11 +717,6 @@ static LLVMValueRef pseudo_to_value(struct dmr_C *C, struct function *fn, struct
 	case PSEUDO_VOID:
 		result = NULL;
 		break;
-#if NEW_SSA
-	case PSEUDO_UNDEF:
-		result = val_to_value(C, fn, 0, ctype);
-		break;
-#endif
 	default:
 		break;
 	}

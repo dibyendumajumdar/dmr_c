@@ -117,7 +117,6 @@ static void simplify_loads(struct dmr_C *C, struct basic_block *bb)
 					goto next_load;
 				}
 			} END_FOR_EACH_PTR_REVERSE(dom);
-#if !NEW_SSA
 			/* OK, go find the parents */
 			generation = ++C->L->bb_generation;
 			bb->generation = generation;
@@ -133,7 +132,6 @@ static void simplify_loads(struct dmr_C *C, struct basic_block *bb)
 				}
 				dmrC_rewrite_load_instruction(C, insn, dominators);
 			}
-#endif
 		}
 next_load:
 		/* Do the next one */;

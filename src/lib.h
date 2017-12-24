@@ -44,9 +44,6 @@
 
 #include <allocate.h>
 #include <ptrlist.h>
-#if NEW_SSA
-#include <ptrmap.h>
-#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -137,9 +134,6 @@ struct dmr_C {
 
 	// memory allocators
 	struct allocator ptrlist_allocator;
-#if NEW_SSA
-	struct allocator ptrmap_allocator;
-#endif
 	struct allocator token_allocator;
 	struct allocator protected_token_allocator;
 	struct allocator byte_allocator;

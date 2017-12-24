@@ -18,9 +18,6 @@
 #include <linearize.h>
 #include <flow.h>
 #include <target.h>
-#if NEW_SSA
-#include <ssa.h>
-#endif
 
 static pseudo_t linearize_statement(struct dmr_C *C, struct entrypoint *ep, struct statement *stmt);
 static pseudo_t linearize_expression(struct dmr_C *C, struct entrypoint *ep, struct expression *expr);
@@ -147,12 +144,6 @@ const char *dmrC_show_pseudo(struct dmr_C *C, pseudo_t pseudo)
 		if (pseudo->ident)
 			sprintf(buf+i, "(%s)", dmrC_show_ident(C, pseudo->ident));
 		break;
-#if NEW_SSA
-	case PSEUDO_UNDEF:
-		return "UNDEF";
-	case PSEUDO_INDIR:
-		return dmrC_show_pseudo(C, pseudo->target);
-#endif
 	default:
 		snprintf(buf, 64, "<bad pseudo type %d>", pseudo->type);
 	}
@@ -748,11 +739,7 @@ static struct basic_block * add_label(struct dmr_C *C, struct entrypoint *ep, st
 		return bb;
 	}
 	bb = ep->active;
-#if NEW_SSA
-	if (!dmrC_bb_reachable(bb) || !bb_empty(bb) || bb->sealed) {
-#else
 	if (!dmrC_bb_reachable(bb) || !bb_empty(bb)) {
-#endif
 		bb = alloc_basic_block(C, ep, label->pos);
 		set_activeblock(C, ep, bb);
 	}
@@ -853,15 +840,6 @@ static pseudo_t argument_pseudo(struct dmr_C *C, struct entrypoint *ep, int nr, 
 	/* Argument pseudos have neither usage nor def */
 	return pseudo;
 }
-
-#if NEW_SSA
-pseudo_t dmrC_undef_pseudo(struct dmr_C *C)
-{
-	pseudo_t pseudo = (pseudo_t)dmrC_allocator_allocate(&C->L->pseudo_allocator, 0);
-	pseudo->type = PSEUDO_UNDEF;
-	return pseudo;
-}
-#endif
 
 // From Luc: sssa-mini
 struct instruction *dmrC_alloc_phisrc(struct dmr_C *C, pseudo_t pseudo, struct symbol *type)
@@ -1000,21 +978,8 @@ static inline struct symbol *simple_access(struct dmr_C *C, struct access_data *
 }
 static pseudo_t add_load(struct dmr_C *C, struct entrypoint *ep, struct access_data *ad)
 {
-#if NEW_SSA
-	struct basic_block *bb = ep->active;
-	struct symbol *var;
-#endif
 	struct instruction *insn;
 	pseudo_t new;
-
-#if NEW_SSA
-	if (!bb)
-		return VOID_PSEUDO(C);
-	if ((var = simple_access(C, ad))) {
-		new = dmrC_load_var(C, bb, var);
-		return new;
-	}
-#endif
 
 	insn = alloc_typed_instruction(C, OP_LOAD, ad->source_type);
 	new = dmrC_alloc_pseudo(C, insn);
@@ -1029,24 +994,6 @@ static pseudo_t add_load(struct dmr_C *C, struct entrypoint *ep, struct access_d
 static void add_store(struct dmr_C *C, struct entrypoint *ep, struct access_data *ad, pseudo_t value)
 {
 	struct basic_block *bb = ep->active;
-#if NEW_SSA
-	struct instruction *store;
-	struct symbol *var;
-
-	if (!bb)
-		return;
-
-	if ((var = simple_access(C, ad))) {
-		dmrC_store_var(C, bb, var, value);
-		return;
-	}
-
-	store = alloc_typed_instruction(C, OP_STORE, ad->source_type);
-	store->offset = ad->offset;
-	dmrC_use_pseudo(C, store, value, &store->target);
-	dmrC_use_pseudo(C, store, ad->address, &store->src);
-	add_one_insn(C, ep, store);
-#else
 	if (dmrC_bb_reachable(bb)) {
 		struct instruction *store = alloc_typed_instruction(C, OP_STORE, ad->source_type);
 		store->offset = ad->offset;
@@ -1054,7 +1001,6 @@ static void add_store(struct dmr_C *C, struct entrypoint *ep, struct access_data
 		dmrC_use_pseudo(C, store, ad->address, &store->src);
 		add_one_insn(C, ep, store);
 	}
-#endif
 }
 
 static pseudo_t linearize_store_gen(struct dmr_C *C, struct entrypoint *ep,
@@ -1513,15 +1459,9 @@ static pseudo_t linearize_short_conditional(struct dmr_C *C, struct entrypoint *
 	phi1 = dmrC_alloc_phi(C, ep->active, src1, expr->ctype);
 	add_branch(C, ep, expr, src1, merge, bb_false);
 
-#if NEW_SSA
-	dmrC_seal_bb(C, bb_false);
-#endif
 	set_activeblock(C, ep, bb_false);
 	src2 = linearize_expression(C, ep, expr_false);
 	phi2 = dmrC_alloc_phi(C, ep->active, src2, expr->ctype);
-#if NEW_SSA
-	dmrC_seal_bb(C, merge);
-#endif
 	set_activeblock(C, ep, merge);
 
 	return add_join_conditional(C, ep, expr, phi1, phi2);
@@ -1544,23 +1484,14 @@ static pseudo_t linearize_conditional(struct dmr_C *C, struct entrypoint *ep, st
 
 	linearize_cond_branch(C, ep, cond, bb_true, bb_false);
 
-#if NEW_SSA
-	dmrC_seal_bb(C, bb_true);
-#endif
 	set_activeblock(C, ep, bb_true);
 	src1 = linearize_expression(C, ep, expr_true);
 	phi1 = dmrC_alloc_phi(C, ep->active, src1, expr->ctype);
 	add_goto(C, ep, merge); 
 
-#if NEW_SSA
-	dmrC_seal_bb(C, bb_false);
-#endif
 	set_activeblock(C, ep, bb_false);
 	src2 = linearize_expression(C, ep, expr_false);
 	phi2 = dmrC_alloc_phi(C, ep->active, src2, expr->ctype);
-#if NEW_SSA
-	dmrC_seal_bb(C, merge);
-#endif
 	set_activeblock(C, ep, merge);
 
 	return add_join_conditional(C, ep, expr, phi1, phi2);
@@ -1649,9 +1580,6 @@ static pseudo_t linearize_logical_branch(struct dmr_C *C, struct entrypoint *ep,
 		linearize_cond_branch(C, ep, expr->left, bb_true, next);
 	else
 		linearize_cond_branch(C, ep, expr->left, next, bb_false);
-#if NEW_SSA
-	dmrC_seal_bb(C, next);
-#endif
 	set_activeblock(C, ep, next);
 	linearize_cond_branch(C, ep, expr->right, bb_true, bb_false);
 	return VOID_PSEUDO(C);
@@ -1823,13 +1751,6 @@ static pseudo_t linearize_compound_statement(struct dmr_C *C, struct entrypoint 
 
 	if (ret) {
 		struct basic_block *bb = add_label(C, ep, ret);
-#if NEW_SSA
-		dmrC_seal_bb(C, bb);
-		pseudo = VOID_PSEUDO(C);
-		if (!dmrC_is_void_type(C->S, ret))
-			pseudo = dmrC_load_var(C, bb, ret);
-
-#else
 		struct instruction *phi_node = dmrC_first_instruction(bb->insns);
 
 		if (!phi_node)
@@ -1841,7 +1762,6 @@ static pseudo_t linearize_compound_statement(struct dmr_C *C, struct entrypoint 
 			return pseudo->def->src1;
 		}
 		return phi_node->target;
-#endif
 	}
 
 	return pseudo;
@@ -2044,9 +1964,6 @@ static pseudo_t linearize_return(struct dmr_C *C, struct entrypoint *ep, struct 
 	pseudo_t src = linearize_expression(C, ep, expr);
 	active = ep->active;
 	if (active && src != VOID_PSEUDO(C)) {
-#if NEW_SSA
-		dmrC_store_var(C, active, stmt->ret_target, src);
-#else
 		struct instruction *phi_node = dmrC_first_instruction(bb_return->insns);
 		pseudo_t phi;
 		if (!phi_node) {
@@ -2058,7 +1975,6 @@ static pseudo_t linearize_return(struct dmr_C *C, struct entrypoint *ep, struct 
 		phi = dmrC_alloc_phi(C, active, src, expr->ctype);
 		phi->ident = C->S->return_ident;
 		dmrC_use_pseudo(C, phi_node, phi, dmrC_add_pseudo(C, &phi_node->phi_list, phi));
-#endif
 	}
 	add_goto(C, ep, bb_return);
 	return VOID_PSEUDO(C);
@@ -2107,9 +2023,6 @@ static pseudo_t linearize_switch(struct dmr_C *C, struct entrypoint *ep, struct 
 		}
 		dmrC_add_multijmp(C, &switch_ins->multijmp_list, jmp);
 		dmrC_add_bb(C, &bb_case->parents, active);
-#if NEW_SSA
-		dmrC_seal_bb(C, bb_case);
-#endif
 		dmrC_add_bb(C, &active->children, bb_case);
 	} END_FOR_EACH_PTR(sym);
 
@@ -2117,9 +2030,6 @@ static pseudo_t linearize_switch(struct dmr_C *C, struct entrypoint *ep, struct 
 
 	/* And linearize the actual statement */
 	linearize_statement(C, ep, stmt->switch_statement);
-#if NEW_SSA
-	dmrC_seal_bb(C, switch_end);
-#endif
 	set_activeblock(C, ep, switch_end);
 
 	if (!default_case)
@@ -2129,9 +2039,6 @@ static pseudo_t linearize_switch(struct dmr_C *C, struct entrypoint *ep, struct 
 	dmrC_add_multijmp(C, &switch_ins->multijmp_list, jmp);
 	dmrC_add_bb(C, &default_case->parents, active);
 	dmrC_add_bb(C, &active->children, default_case);
-#if NEW_SSA
-	dmrC_seal_bb(C, default_case);
-#endif
 	sort_switch_cases(C, switch_ins);
 
 	return VOID_PSEUDO(C);
@@ -2174,20 +2081,12 @@ static pseudo_t linearize_iterator(struct dmr_C *C, struct entrypoint *ep, struc
 	linearize_statement(C, ep, statement);
 	add_goto(C, ep, loop_continue);
 
-#if NEW_SSA
-	dmrC_seal_bb(C, loop_continue);
-#endif
 	set_activeblock(C, ep, loop_continue);
 	linearize_statement(C, ep, post_statement);
 	if (!post_condition)
 		add_goto(C, ep, loop_top);
 	else
 		linearize_cond_branch(C, ep, post_condition, loop_top, loop_end);
-#if NEW_SSA
-	dmrC_seal_bb(C, loop_body);	// FIXME: can be early if precond
-	dmrC_seal_bb(C, loop_top);
-	dmrC_seal_bb(C, loop_end);
-#endif
 	set_activeblock(C, ep, loop_end);
 
 	return VOID_PSEUDO(C);
@@ -2238,12 +2137,6 @@ static pseudo_t linearize_statement(struct dmr_C *C, struct entrypoint *ep, stru
 
 		if (label->used) {
 			bb = add_label(C, ep, label);
-#if NEW_SSA
-			/* label's bb must not be sealed if some
-			   goto to this label hasn't been issued yet */
-			assert(!bb->sealed);
-			bb->unsealable = 1;
-#endif
 		}
 		return 	linearize_statement(C, ep, stmt->label_statement);
 	}
@@ -2309,24 +2202,15 @@ static pseudo_t linearize_statement(struct dmr_C *C, struct entrypoint *ep, stru
 
  		linearize_cond_branch(C, ep, cond, bb_true, bb_false);
 
-#if NEW_SSA
-		dmrC_seal_bb(C, bb_true);
-#endif
 		set_activeblock(C, ep, bb_true);
  		linearize_statement(C, ep, stmt->if_true);
  
  		if (stmt->if_false) {
 			endif = alloc_basic_block(C, ep, stmt->pos);
 			add_goto(C, ep, endif);
-#if NEW_SSA
-			dmrC_seal_bb(C, bb_false);
-#endif
 			set_activeblock(C, ep, bb_false);
  			linearize_statement(C, ep, stmt->if_false);
 		}
-#if NEW_SSA
-		dmrC_seal_bb(C, endif);
-#endif
 		set_activeblock(C, ep, endif);
 		break;
 	}
@@ -2360,9 +2244,6 @@ static struct entrypoint *linearize_fn(struct dmr_C *C, struct symbol *sym, stru
 	
 	ep->name = sym;
 	sym->ep = ep;
-#if NEW_SSA
-	dmrC_seal_bb(C, bb);
-#endif
 	set_activeblock(C, ep, bb);
 
 	entry = alloc_instruction(C, OP_ENTRY, 0);
@@ -2378,18 +2259,11 @@ static struct entrypoint *linearize_fn(struct dmr_C *C, struct symbol *sym, stru
 	} END_FOR_EACH_PTR(arg);
 
 	result = linearize_statement(C, ep, base_type->stmt);
-#if NEW_SSA
-	dmrC_seal_gotos(C, ep);
-#endif
 	if (dmrC_bb_reachable(ep->active) && !dmrC_bb_terminated(ep->active)) {
 		struct symbol *ret_type = base_type->ctype.base_type;
 		struct instruction *insn = alloc_typed_instruction(C, OP_RET, ret_type);
 
-#if NEW_SSA
-		if (!dmrC_is_void_type(C->S, ret_type))
-#else
 		if (type_size(ret_type) > 0)
-#endif
 			dmrC_use_pseudo(C, insn, result, &insn->src);
 		add_one_insn(C, ep, insn);
 	}
@@ -2420,12 +2294,10 @@ static struct entrypoint *linearize_fn(struct dmr_C *C, struct symbol *sym, stru
 			dmrC_show_entry(C, ep);
 		}
 
-#if !NEW_SSA
 		/*
 		 * Turn symbols into pseudos
 		 */
 		dmrC_simplify_symbol_usage(C, ep);
-#endif
 	repeat:
 		/*
 		 * Remove trivial instructions, and try to CSE

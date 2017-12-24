@@ -197,9 +197,6 @@ struct symbol {
 			struct expression *initializer;
 			struct entrypoint *ep;
 			long long value;		/* Initial value */
-#if NEW_SSA
-			struct phi_map *phi_map;
-#endif
 			struct symbol *definition;
 		};
 	};

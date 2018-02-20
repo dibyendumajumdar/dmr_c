@@ -22,6 +22,8 @@ if (LLVM_JIT)
 elseif (NANO_JIT)
     find_package(NanoJIT REQUIRED)
     include_directories(${NANOJITEXTRA_INCLUDE_DIRS})
+else()
+    include_directories("${CMAKE_SOURCE_DIR}/null-backend")
 endif()
 
 set(LIBRARY_TYPE SHARED)
@@ -102,6 +104,10 @@ if (LLVM_JIT)
 elseif (NANO_JIT)
     set(DIST_LIB_H
         nanojit-backend/dmr_c.h
+        )
+else()
+    set(DIST_LIB_H
+        null-backend/dmr_c.h
         )
 endif()
 

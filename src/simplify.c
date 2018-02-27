@@ -458,6 +458,7 @@ static unsigned int operand_size(struct instruction *insn, pseudo_t pseudo)
 	}
 	if (pseudo->type == PSEUDO_VAL) {
 		unsigned int orig_size = dmrC_value_size(pseudo->value);
+		//unsigned int orig_size = pseudo->size;
 		if (orig_size < size)
 			size = orig_size;
 	}

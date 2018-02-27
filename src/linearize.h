@@ -50,11 +50,9 @@ enum pseudo_type {
 struct pseudo {
 	int nr;
 	enum pseudo_type type;
+	int size; /* OP_SETVAL only */
 	struct pseudo_user_list *users; /* pseudo_user list */
-	union {
-		struct ident *ident;
-		int size; /* OP_SETVAL only */
-	};
+	struct ident *ident;
 	union {
 		struct symbol *sym;	     // PSEUDO_SYM, VAL & ARG
 		struct instruction *def; // PSEUDO_REG & PHI

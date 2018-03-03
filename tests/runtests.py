@@ -46,7 +46,9 @@ def execute_test(bc_file):
     :param bc_file: The LLVM bitcode file to execute
     :return: Tuple pair - status and output
     """
-    result = subprocess.run(['lli', bc_file], universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+    result = subprocess.run(['lli', bc_file], universal_newlines=True,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.DEVNULL)
     if result.returncode != 0:
         return False, None
     return True, result.stdout
@@ -99,22 +101,37 @@ def run_external_test(path):
     return True
 
 def run_tests(test_directory, results_directory):
-    # We CD to the location where the sources are as some tests
+    """
+    Runs tests in a sub-directory
+    :param test_directory: The directory where the tests are
+    :param results_directory: This is where any generated code will be put
+    :return: A tuple (pair) indicating total tests run, and successes
+    """
+    # We change directory to the location where the sources are as some tests
     # include other files
     os.chdir(test_directory)
     print('Running tests in ' + test_directory)
+    # If a test has a main.c defined then we ignore the
+    # other files and simply run main.c
     if os.path.isfile('main.c'):
         result = run_a_test(os.path.join(test_directory, 'main.c'), results_directory)
         if not result:
-            return 1, 1
-        else:
             return 1, 0
-    if os.path.isfile('run.sh') and os.name == 'posix':
-        result = run_external_test(test_directory)
-        if not result:
-            return 1, 1
         else:
-            return 1, 0
+            return 1, 1
+    # If a test has run.sh present then we invoke that
+    # and treat it as an external test
+    # Only works on Unix like systems
+    if os.path.isfile('run.sh'):
+        if os.name == 'posix':
+            result = run_external_test(test_directory)
+            if not result:
+                return 1, 0
+            else:
+                return 1, 1
+        return 0, 0
+    # Scan the sub-directories and run
+    # tests within them
     count = 0
     successes = 0
     with os.scandir(test_directory) as it:
@@ -131,17 +148,26 @@ def run_tests(test_directory, results_directory):
 current_directory = os.getcwd()
 
 # The compiled output will be generated in test_results folder (out.bc)
-temp_directory = os.path.join(current_directory, 'test_results')
+temp_directory = os.path.join(current_directory, '_test_results')
 if not os.path.isdir(temp_directory):
     os.mkdir(temp_directory)
 print('Using folder [' + temp_directory + '] for test results')
 
+totals = 0
+successes = 0
+
+# FIXME these directories should be moved elsewhere
+ignored_list = ['unsupported', 'bugs', 'nano', 'parsetree', 'sqlite']
+
 with os.scandir(current_directory) as it:
     for entry in it:
-        if entry.name == 'unsupported' or entry.name == 'bugs' or entry.name == 'nano':
+        if entry.name in ignored_list:
             continue
-        if entry.name == 'parsetree' or entry.name == 'sqlite':
-            continue
-        if not entry.name.startswith('.') and entry.is_dir():
+        if not entry.name.startswith('.') and not entry.name.startswith('_') and entry.is_dir():
             os.chdir(current_directory)
-            run_tests(entry.path, temp_directory)
+            (x, y) = run_tests(entry.path, temp_directory)
+            totals = totals + x
+            successes = successes + y
+
+print('Total tests run ' + str(totals))
+print('Successful tests ' + str(successes))

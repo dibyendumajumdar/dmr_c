@@ -1,3 +1,5 @@
+#!/bin/bash
+set -e
 tests_list=`find . -name '*.lua' | sed -e 's#^\./\(.*\)#\1#' | sort`
 
 for f in $tests_list; do

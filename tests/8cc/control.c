@@ -1,6 +1,6 @@
 // Copyright 2012 Rui Ueyama. Released under the MIT license.
 
-#include "testmain.c"
+#include "inc/testmain.c"
 
 static int test_if1(void) { if (1) { return 'a';} return 0; }
 static int test_if2(void) { if (0) { return 0;} return 'b'; }

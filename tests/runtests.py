@@ -1,7 +1,4 @@
-#
-#  THIS DOES NOT WORK YET
-#
-import os, os.path, subprocess
+import os, os.path, subprocess, shutil
 
 def compile_a_test(filename, bc_file):
     """
@@ -14,9 +11,9 @@ def compile_a_test(filename, bc_file):
     if os.path.isfile(bc_file):
         os.remove(bc_file)
     with open(bc_file, "wb") as f:
-        result = subprocess.run(['sparse-llvm', filename, '-o', bc_file], stdout=subprocess.DEVNULL,
+        result = subprocess.run([Sparse_Executable, filename, '-o', bc_file], stdout=subprocess.DEVNULL,
                             stderr=subprocess.DEVNULL)
-        #result = subprocess.run(['sparse-llvm', filename], stdout=f,
+        #result = subprocess.run([Sparse_Executable, filename], stdout=f,
         #                    stderr=subprocess.DEVNULL)
         if result.returncode == 0:
             return True
@@ -46,7 +43,7 @@ def execute_test(bc_file):
     :param bc_file: The LLVM bitcode file to execute
     :return: Tuple pair - status and output
     """
-    result = subprocess.run(['lli', bc_file], universal_newlines=True,
+    result = subprocess.run([LLVM_lli, bc_file], universal_newlines=True,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.DEVNULL)
     if result.returncode != 0:
@@ -66,7 +63,7 @@ def run_a_test(filename, results_directory):
     """
     bc_file = os.path.join(results_directory, 'out.bc')
     if not compile_a_test(filename, bc_file):
-        print('Test ' + filename + ' FAILED to compile')
+        print('Test ' + filename + ' FAILED (compile error)')
         return False
     (status, actual_output) = execute_test(bc_file)
     if not status:
@@ -129,6 +126,7 @@ def run_tests(test_directory, results_directory):
                 return 1, 0
             else:
                 return 1, 1
+        print('Skipping ' + test_directory + ' as this requires a POSIX environment')
         return 0, 0
     # Scan the sub-directories and run
     # tests within them
@@ -144,6 +142,19 @@ def run_tests(test_directory, results_directory):
                 successes = successes + 1
     return count, successes
 
+Sparse_Executable = shutil.which('sparse-llvm', os.X_OK)
+if not Sparse_Executable:
+    print('sparse-llvm must be on the PATH')
+    exit(1)
+
+LLVM_lli = shutil.which('lli', os.X_OK)
+LLVM_llc = shutil.which('llc', os.X_OK)
+if not LLVM_lli or not LLVM_llc:
+    print('LLVM binaries (lli, llc) must be on the PATH')
+    exit(1)
+
+print('Using [' + Sparse_Executable + ']')
+print('Using [' + LLVM_lli + ']')
 
 current_directory = os.getcwd()
 

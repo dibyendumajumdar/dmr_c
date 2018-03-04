@@ -1,6 +1,6 @@
 // Copyright 2012 Rui Ueyama. Released under the MIT license.
 
-#include "testmain.c"
+#include "inc/testmain.c"
 
 #define offsetof(st, m) ((size_t)&(((st *)0)->m))
 #define NULL ((void *)0)

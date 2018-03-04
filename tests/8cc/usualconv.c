@@ -1,6 +1,6 @@
 // Copyright 2014 Rui Ueyama. Released under the MIT license.
 
-#include "testmain.c"
+#include "inc/testmain.c"
 #define bool _Bool
 
 static void test_usual_conv(void) {

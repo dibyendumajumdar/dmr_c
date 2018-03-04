@@ -1,6 +1,6 @@
 // Copyright 2012 Rui Ueyama. Released under the MIT license.
 
-#include "testmain.c"
+#include "inc/testmain.c"
 
 static void verify(int *expected, int *got, int len) {
     for (int i = 0; i < len; i++)

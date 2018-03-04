@@ -1,6 +1,6 @@
 // Copyright 2012 Rui Ueyama. Released under the MIT license.
 
-#include "testmain.c"
+#include "inc/testmain.c"
 
 static void t1(void) {
     union { int a; int b; } x;

@@ -1034,7 +1034,7 @@ static int simplify_cast(struct dmr_C *C, struct instruction *insn)
 	if (constant(src)) {
 		int sign = orig_type->ctype.modifiers & MOD_SIGNED;
 		long long val = get_cast_value(src->value, orig_size, size, sign);
-		src = dmrC_value_pseudo(C, orig_type, val);
+		src = dmrC_value_pseudo(C, insn->type, val);
 		goto simplify;
 	}
 

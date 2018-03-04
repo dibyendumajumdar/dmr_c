@@ -56,10 +56,10 @@ Following steps are how I build on Linux:
 ```
 mkdir build
 cd build
-cmake -DCMAKE_INSTALL_PREFIX=$HOME/ravi -DLLVM_JIT=ON -DLLVM_DIR=$HOME/LLVM/lib/cmake/llvm -G "Unix Makefiles" ..
+cmake  -DCMAKE_INSTALL_PREFIX=/path/to/install -DLLVM_JIT=ON -DLLVM_DIR=$HOME/Software/llvm501/lib/cmake/llvm -G "Unix Makefiles" ..
 ```
 
-In my setup LLVM is installed at `$HOME/LLVM`.
+In my setup LLVM is installed at `$HOME/Software/llvm501`.
 
 Once the build files are generated you can use the normal build tools i.e. Visual Studio on Windows and make on UNIX or Mac OSX platforms.
 

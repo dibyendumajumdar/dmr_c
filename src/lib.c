@@ -359,7 +359,9 @@ struct dmr_C *new_dmr_C()
 	dmrC_init_scope(C);
 	dmrC_init_symbols(C);
 	dmrC_init_ctype(C);
+#if !defined(PARSER_ONLY)
 	dmrC_init_linearizer(C);
+#endif
 	return C;
 }
 
@@ -369,7 +371,9 @@ void destroy_dmr_C(struct dmr_C *C)
 	dmrC_destroy_tokenizer(C);
 	dmrC_destroy_target(C);
 	dmrC_destroy_symbols(C);
+#if !defined(PARSER_ONLY)
 	dmrC_destroy_linearizer(C);
+#endif
 	dmrC_allocator_destroy(&C->token_allocator);
 	dmrC_allocator_destroy(&C->protected_token_allocator);
 	dmrC_allocator_destroy(&C->string_allocator);

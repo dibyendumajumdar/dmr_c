@@ -10,22 +10,9 @@ message(STATUS "Build type is ${CMAKE_BUILD_TYPE}")
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
+option(PARSER_ONLY "Controls whether a Parser only version of dmrC is required" OFF)
 option(LLVM_JIT "Controls whether LLVM JIT compilation will be enabled, default is OFF" OFF)
 option(NANO_JIT "Controls whether NANOJIT compilation will be enabled, default is OFF" OFF)
-
-if (LLVM_JIT)
-    find_package(LLVM REQUIRED CONFIG)
-    message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
-    message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
-    include_directories(${LLVM_INCLUDE_DIRS})
-    add_definitions(${LLVM_DEFINITIONS})
-elseif (NANO_JIT)
-    find_package(NanoJIT REQUIRED)
-    include_directories(${NANOJITEXTRA_INCLUDE_DIRS})
-else()
-    include_directories("${CMAKE_SOURCE_DIR}/null-backend")
-endif()
-
 set(LIBRARY_TYPE SHARED)
 
 if (MSVC)
@@ -95,67 +82,96 @@ endif()
 message( STATUS "GCC_BASE_DIR      : " ${GCC_BASE})
 message( STATUS "MULTIARCH_TRIPLET : " ${MULTIARCH_TRIPLET} )
 
-include_directories("${PROJECT_SOURCE_DIR}/src")
+if (NOT PARSER_ONLY)
+    if (LLVM_JIT)
+        find_package(LLVM REQUIRED CONFIG)
+        message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
+        message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
+        include_directories(${LLVM_INCLUDE_DIRS})
+        add_definitions(${LLVM_DEFINITIONS})
+    elseif (NANO_JIT)
+        find_package(NanoJIT REQUIRED)
+        include_directories(${NANOJITEXTRA_INCLUDE_DIRS})
+    else()
+        include_directories("${CMAKE_SOURCE_DIR}/null-backend")
+    endif()
 
-if (LLVM_JIT)
-    set(DIST_LIB_H
-        llvm-backend/dmr_c.h
-        )
-elseif (NANO_JIT)
-    set(DIST_LIB_H
-        nanojit-backend/dmr_c.h
-        )
+    if (LLVM_JIT)
+        set(DIST_LIB_H
+            llvm-backend/dmr_c.h
+            )
+    elseif (NANO_JIT)
+        set(DIST_LIB_H
+            nanojit-backend/dmr_c.h
+            )
+    else()
+        set(DIST_LIB_H
+            null-backend/dmr_c.h
+            )
+    endif()
 else()
-    set(DIST_LIB_H
-        null-backend/dmr_c.h
-        )
+    set(LLVM_JIT OFF)
+    set(NANO_JIT OFF)
+	include_directories("${CMAKE_SOURCE_DIR}/null-backend")
+	set(DIST_LIB_H
+		null-backend/dmr_c.h
+		)
+    add_definitions(-DPARSER_ONLY=1)
 endif()
 
+include_directories("${PROJECT_SOURCE_DIR}/src")
 
-set(LIB_H 
-	src/allocate.h
-	src/char.h
-	src/expression.h
-	src/flow.h
-	src/ident-list.h
-	src/linearize.h
-	src/lib.h
-	src/parse.h
-	src/port.h 
-	src/ptrlist.h
-	src/scope.h
-	src/symbol.h
-	src/target.h
-	src/token.h 
-	src/walksymbol.h
-	)
+set(PARSER_LIB_H 
+    src/allocate.h
+    src/char.h
+    src/expression.h
+    src/ident-list.h
+    src/lib.h
+    src/parse.h
+    src/port.h 
+    src/ptrlist.h
+    src/scope.h
+    src/symbol.h
+    src/target.h
+    src/token.h 
+    src/walksymbol.h
+    )
 
-set(LIB_SRCS 
-	src/allocate.c
-	src/builtin.c
-	src/char.c
-	src/cse.c
-	src/expression.c
-	src/evaluate.c
-	src/expand.c
-	src/flow.c
-	src/inline.c
-	src/lib.c
-	src/linearize.c
-	src/liveness.c
-	src/memops.c
-	src/parse.c
-	src/target.c
-	src/tokenize.c
-	src/pre-process.c
-	src/ptrlist.c
-	src/scope.c
-	src/show-parse.c
-	src/simplify.c
-	src/symbol.c
-	src/unssa.c
-	src/walksymbol.c
-	)
+set(PARSER_LIB_SRCS 
+    src/allocate.c
+    src/builtin.c
+    src/char.c
+    src/expression.c
+    src/evaluate.c
+    src/expand.c
+    src/inline.c
+    src/lib.c
+    src/parse.c
+    src/target.c
+    src/tokenize.c
+    src/pre-process.c
+    src/ptrlist.c
+    src/scope.c
+    src/show-parse.c
+    src/symbol.c
+    src/walksymbol.c
+    )
+
+if (NOT PARSER_ONLY)
+	set(LINEARIZER_LIB_H 
+		src/linearize.h
+        src/flow.h
+		)
+	set(LINEARIZER_LIB_SRCS 
+		src/cse.c
+		src/flow.c
+		src/linearize.c
+		src/liveness.c
+		src/memops.c
+		src/simplify.c
+		src/unssa.c
+		)
+endif()
 
 # Enable minimal required LLVM components so that the
 # the size of the resulting binary is manageable
@@ -214,48 +230,57 @@ elseif (NANO_JIT)
     set(LIB_LLVM_SRCS nanojit-backend/sparse-nanojit.c)
     include_directories("${PROJECT_SOURCE_DIR}/nanojit-backend")
     set(LLVM_LIBS ${NANOJITEXTRA_LIBRARIES})
-    set(ADDITIONAL_LIBS m)
+	if (NOT WIN32)
+		set(ADDITIONAL_LIBS m)
+	endif()
 endif ()
 
 if (MSVC OR APPLE)
-    source_group("Headers" FILES ${LIB_H})
-    source_group("Source Files" FILES ${LIB_SRCS})
-    source_group("LLVM backend Source Files" FILES ${LIB_LLVM_SRCS})
+    source_group("Headers" FILES ${PARSER_LIB_H} ${LINEARIZER_LIB_H})
+    source_group("Source Files" FILES ${PARSER_LIB_SRCS} ${LINEARIZER_LIB_SRCS})
+    if (NOT PARSER_ONLY)
+        source_group("Backend Source Files" FILES ${LIB_LLVM_SRCS})
+    endif()
 endif ()
 
 #Main library
 add_library(dmr_c ${LIBRARY_TYPE}
-        ${LIB_H}
+        ${PARSER_LIB_H}
+        ${LINEARIZER_LIB_H}
         ${DIST_LIB_H}
-        ${LIB_SRCS}
+        ${PARSER_LIB_SRCS}
+        ${LINEARIZER_LIB_SRCS}
         ${LIB_LLVM_SRCS} )
 target_link_libraries(dmr_c ${LLVM_LIBS} ${ADDITIONAL_LIBS})
 
-add_executable(runtests src/runtests.c)
-target_link_libraries(runtests dmr_c) 
+if (NOT PARSER_ONLY)
+    add_executable(runtests src/runtests.c)
+    target_link_libraries(runtests dmr_c) 
 
-add_executable(sparse sparse/sparse.c)
-target_link_libraries(sparse dmr_c) 
+    add_executable(sparse sparse/sparse.c)
+    target_link_libraries(sparse dmr_c) 
 
-add_executable(linearize samples/show-linearize.c)
-target_link_libraries(linearize dmr_c) 
+    add_executable(linearize samples/show-linearize.c)
+    target_link_libraries(linearize dmr_c) 
+
+    if (LLVM_JIT)
+        add_executable(sparse-llvm llvm-backend/llvmbackend.c)
+        target_link_libraries(sparse-llvm dmr_c) 
+    elseif (NANO_JIT)
+        add_executable(sparse-nanojit nanojit-backend/nanobackend.c)
+        target_link_libraries(sparse-nanojit dmr_c)
+
+        add_executable(test-nanojit nanojit-backend/testnanobackend.c)
+        target_link_libraries(test-nanojit dmr_c)   
+    endif()
+
+endif()
 
 add_executable(showparsetree samples/show-parsetree.c)
 target_link_libraries(showparsetree dmr_c) 
 
 add_executable(showsymbols samples/show-symbols.c)
 target_link_libraries(showsymbols dmr_c) 
-
-if (LLVM_JIT)
-    add_executable(sparse-llvm llvm-backend/llvmbackend.c)
-    target_link_libraries(sparse-llvm dmr_c) 
-elseif (NANO_JIT)
-    add_executable(sparse-nanojit nanojit-backend/nanobackend.c)
-    target_link_libraries(sparse-nanojit dmr_c)
-
-    add_executable(test-nanojit nanojit-backend/testnanobackend.c)
-    target_link_libraries(test-nanojit dmr_c)	
-endif()
 
 install(FILES ${DIST_LIB_H}
         DESTINATION include/dmr_c)

@@ -1,6 +1,6 @@
 find_path(NANOJITEXTRA_INCLUDE_DIR nanojitextra.h
   PATHS
-  c:/ravi/include/nanojit
+  c:/Software/dmrc/include/nanojit
   ~/ravi/include/nanojit
   ~/software/nanojit/include/nanojit
   NO_DEFAULT_PATH
@@ -9,7 +9,7 @@ find_path(NANOJITEXTRA_INCLUDE_DIR nanojitextra.h
 find_library(NANOJITEXTRA_LIBRARY
   NAMES nanojitextra libnanojitextra libnanojitextra.dylib
   PATHS
-  c:/ravi/lib
+  c:/Software/dmrc/lib
   ~/ravi/lib
   ~/software/nanojit/lib
 )

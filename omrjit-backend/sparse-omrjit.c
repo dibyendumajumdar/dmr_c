@@ -309,11 +309,10 @@ static JIT_Type check_supported_argtype(struct dmr_C *C, struct symbol *sym)
 			return JIT_Int32;
 		case 64:
 			return JIT_Int64;
-		default: {
+		default: 
 			fprintf(stderr,
 				"Unsupported type in function argument\n");
 			return JIT_NoType;
-		}
 		}
 	} else {
 		// TODO assert float type
@@ -322,11 +321,10 @@ static JIT_Type check_supported_argtype(struct dmr_C *C, struct symbol *sym)
 			return JIT_Float;
 		case 64:
 			return JIT_Double;
-		default: {
+		default: 
 			fprintf(stderr,
 				"Unsupported type in function argument\n");
 			return JIT_NoType;
-		}
 		}
 	}
 	return 0;
@@ -341,6 +339,14 @@ static struct NanoType *check_supported_returntype(struct dmr_C *C,
 		return &BadType;
 	return type;
 }
+
+static int32_t instruction_size_in_bytes(struct dmr_C *C,
+	struct instruction *insn)
+{
+	return insn->size / C->target->bits_in_char;
+}
+
+
 
 #if 0
 
@@ -497,12 +503,6 @@ static NJXLInsRef build_cast(struct dmr_C *C, struct function *fn,
 		break;
 	}
 	return NULL;
-}
-
-static int32_t instruction_size_in_bytes(struct dmr_C *C,
-					 struct instruction *insn)
-{
-	return insn->size / C->target->bits_in_char;
 }
 
 static NJXLInsRef val_to_value(struct dmr_C *C, struct function *fn,
@@ -2107,6 +2107,8 @@ static bool JIT_ILBuilderImpl(JIT_ILInjectorRef injector, void *userdata)
 
 			JIT_NodeRef ptr =
 			    NJX_alloca(fn, instruction_size_in_bytes(C, insn));
+			if (!ptr)
+				goto Efailed;
 
 			// Unlike the Sparse LLVM version we
 			// save the pointer here and perform the load
@@ -2136,7 +2138,7 @@ static bool JIT_ILBuilderImpl(JIT_ILInjectorRef injector, void *userdata)
 			    dmrC_is_static(pseudo->sym) ||
 			    dmrC_is_toplevel(pseudo->sym))
 				continue;
-			if (!get_sym_value(C, fn, pseudo, false))
+			//if (!get_sym_value(C, fn, pseudo, false))
 				goto Efailed;
 		}
 	}

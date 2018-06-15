@@ -36,34 +36,19 @@
 #include <port.h>
 #include <symbol.h>
 
-#if 0
-
-/*
- * The maximum number of jumps we can handle in a single
- * function. This is just a memory allocation issue.
- */
-#define MAX_JMP_INSTRUCTIONS 100
-#define MAX_LOCAL_VARS 255
-
-struct jmp_target {
-	struct basic_block *bb;
-	NJXLInsRef jmp_instruction;
-};
-
-DECLARE_PTR_LIST(jmp_target_list, struct jmp_target);
-DECLARE_PTR_LIST(NJXLIns_list, struct NJXLIns);
-
 enum NanoTypeKind {
 	RT_UNSUPPORTED = 0,
 	RT_VOID = 1,
 	RT_INT = 2,
-	RT_INT32 = 3,
-	RT_INT64 = 4,
-	RT_FLOAT = 5,
-	RT_DOUBLE = 6,
-	RT_PTR = 7,
-	RT_AGGREGATE = 8,
-	RT_FUNCTION = 9,
+	RT_INT8 = 3,
+	RT_INT16 = 4,
+	RT_INT32 = 5,
+	RT_INT64 = 6,
+	RT_FLOAT = 7,
+	RT_DOUBLE = 8,
+	RT_PTR = 9,
+	RT_AGGREGATE = 10,
+	RT_FUNCTION = 11
 };
 
 struct NanoType {
@@ -74,6 +59,10 @@ struct NanoType {
 
 static struct NanoType VoidType = {
     .type = RT_VOID, .return_type = NULL, .bit_size = 0};
+static struct NanoType Int8Type = {
+    .type = RT_INT8, .return_type = NULL, .bit_size = sizeof(int8_t) * 8};
+static struct NanoType Int16Type = {
+    .type = RT_INT16, .return_type = NULL, .bit_size = sizeof(int16_t) * 8};
 static struct NanoType Int32Type = {
     .type = RT_INT32, .return_type = NULL, .bit_size = sizeof(int32_t) * 8};
 static struct NanoType Int64Type = {
@@ -88,57 +77,17 @@ static struct NanoType BadType = {
     .type = RT_UNSUPPORTED, .return_type = NULL, .bit_size = 0};
 
 struct function {
-	NJXFunctionBuilderRef builder;
-	NJXContextRef context;
+	struct dmr_C *C;
+	JIT_ILInjectorRef injector;
+	JIT_FunctionBuilderRef builder;
+	JIT_ContextRef context;
+	struct entrypoint *ep;
 	struct allocator type_allocator;
 	struct NanoType *return_type;
-	struct jmp_target_list *jumps_list;
-	struct NJXLIns_list *local_vars_list; // We need a list of locals to be
-					      // able to set liveness
-	struct allocator jmp_target_allocator;
 };
 
-/*
- * We need to note any jump instructions we get as we do not yet have the label
- * instruction to set the target of the jump. The labels are created as each
- * basic block is processed. At the end of code generation, the resolve_jump()
- * function below is called to set the target for each jump.
- */
-static bool add_jump_instruction(struct dmr_C *C, struct function *fn,
-				 struct basic_block *bb, NJXLInsRef ins)
-{
-	assert(ins);
-	struct jmp_target *jmp =
-	    dmrC_allocator_allocate(&fn->jmp_target_allocator, 0);
-	jmp->bb = bb;
-	jmp->jmp_instruction = ins;
-	ptrlist_add((struct ptr_list **) &fn->jumps_list, jmp, &C->ptrlist_allocator);
-	return true;
-}
-
-static bool resolve_jumps(struct function *fn)
-{
-	struct jmp_target *jmp;
-
-	FOR_EACH_PTR(fn->jumps_list, jmp)
-	{
-		NJXLInsRef target = jmp->bb->priv;
-		if (!target)
-			return false;
-		NJXLInsRef insn = jmp->jmp_instruction;
-		assert(insn);
-		NJX_set_jmp_target(insn, target);
-	}
-	END_FOR_EACH_PTR(jmp);
-	return true;
-}
-
-static bool add_local_var(struct dmr_C *C, struct function *fn, NJXLInsRef ins)
-{
-	assert(ins);
-	ptrlist_add((struct ptr_list **)&fn->local_vars_list, ins, &C->ptrlist_allocator);
-	return true;
-}
+/* Arbitrary limit ... FIXME */
+#define JIT_MaxArgs 16
 
 static struct NanoType *alloc_nanotype(struct function *fn,
 				       enum NanoTypeKind kind,
@@ -156,6 +105,10 @@ static struct NanoType *int_type_by_size(struct function *fn, int size)
 	switch (size) {
 	case -1:
 		return NULL;
+	case 8:
+		return &Int8Type;
+	case 16:
+		return &Int16Type;
 	case 32:
 		return &Int32Type;
 	case 64:
@@ -184,6 +137,10 @@ static struct NanoType *sym_basetype_type(struct dmr_C *C, struct function *fn,
 		switch (sym->bit_size) {
 		case -1:
 			return &VoidType;
+		case 8:
+			return &Int8Type;
+		case 16:
+			return &Int16Type;
 		case 32:
 			return &Int32Type;
 		case 64:
@@ -325,6 +282,10 @@ static struct NanoType *insn_symbol_type(struct dmr_C *C, struct function *fn,
 		return get_symnode_or_basetype(C, fn, insn->type);
 	}
 	switch (insn->size) {
+	case 8:
+		return &Int8Type;
+	case 16:
+		return &Int16Type;
 	case 32:
 		return &Int32Type;
 	case 64:
@@ -334,19 +295,40 @@ static struct NanoType *insn_symbol_type(struct dmr_C *C, struct function *fn,
 	}
 }
 
-static enum NJXValueKind check_supported_argtype(struct dmr_C *C,
-						 struct symbol *sym)
+static JIT_Type check_supported_argtype(struct dmr_C *C, struct symbol *sym)
 {
 	if (dmrC_is_ptr_type(sym))
-		return NJXValueKind_P;
+		return JIT_Address;
 	if (dmrC_is_int_type(C->S, sym)) {
-		if (sym->bit_size == C->target->bits_in_pointer)
-			return NJXValueKind_Q;
-		else if (sym->bit_size == C->target->bits_in_int)
-			return NJXValueKind_I;
+		switch (sym->bit_size) {
+		case 8:
+			return JIT_Int8;
+		case 16:
+			return JIT_Int16;
+		case 32:
+			return JIT_Int32;
+		case 64:
+			return JIT_Int64;
+		default: {
+			fprintf(stderr,
+				"Unsupported type in function argument\n");
+			return JIT_NoType;
+		}
+		}
+	} else {
+		// TODO assert float type
+		switch (sym->bit_size) {
+		case 32:
+			return JIT_Float;
+		case 64:
+			return JIT_Double;
+		default: {
+			fprintf(stderr,
+				"Unsupported type in function argument\n");
+			return JIT_NoType;
+		}
+		}
 	}
-	fprintf(stderr, "Unsupported type in function argument, only pointers "
-			"and 64-bit integers are supported\n");
 	return 0;
 }
 
@@ -358,6 +340,66 @@ static struct NanoType *check_supported_returntype(struct dmr_C *C,
 	    type->type == RT_VOID)
 		return &BadType;
 	return type;
+}
+
+#if 0
+
+/*
+ * The maximum number of jumps we can handle in a single
+ * function. This is just a memory allocation issue.
+ */
+#define MAX_JMP_INSTRUCTIONS 100
+#define MAX_LOCAL_VARS 255
+
+struct jmp_target {
+	struct basic_block *bb;
+	NJXLInsRef jmp_instruction;
+};
+
+DECLARE_PTR_LIST(jmp_target_list, struct jmp_target);
+DECLARE_PTR_LIST(NJXLIns_list, struct NJXLIns);
+
+
+/*
+ * We need to note any jump instructions we get as we do not yet have the label
+ * instruction to set the target of the jump. The labels are created as each
+ * basic block is processed. At the end of code generation, the resolve_jump()
+ * function below is called to set the target for each jump.
+ */
+static bool add_jump_instruction(struct dmr_C *C, struct function *fn,
+				 struct basic_block *bb, NJXLInsRef ins)
+{
+	assert(ins);
+	struct jmp_target *jmp =
+	    dmrC_allocator_allocate(&fn->jmp_target_allocator, 0);
+	jmp->bb = bb;
+	jmp->jmp_instruction = ins;
+	ptrlist_add((struct ptr_list **) &fn->jumps_list, jmp, &C->ptrlist_allocator);
+	return true;
+}
+
+static bool resolve_jumps(struct function *fn)
+{
+	struct jmp_target *jmp;
+
+	FOR_EACH_PTR(fn->jumps_list, jmp)
+	{
+		NJXLInsRef target = jmp->bb->priv;
+		if (!target)
+			return false;
+		NJXLInsRef insn = jmp->jmp_instruction;
+		assert(insn);
+		NJX_set_jmp_target(insn, target);
+	}
+	END_FOR_EACH_PTR(jmp);
+	return true;
+}
+
+static bool add_local_var(struct dmr_C *C, struct function *fn, NJXLInsRef ins)
+{
+	assert(ins);
+	ptrlist_add((struct ptr_list **)&fn->local_vars_list, ins, &C->ptrlist_allocator);
+	return true;
 }
 
 static NJXLInsRef truncate_intvalue(struct dmr_C *C, struct function *fn,
@@ -1984,10 +2026,13 @@ static int output_insn(struct dmr_C *C, struct function *fn,
 	return v != NULL;
 }
 
+#endif
+
 /* return 1 on success, 0 on failure */
 static int output_bb(struct dmr_C *C, struct function *fn,
 		     struct basic_block *bb)
 {
+#if 0
 	struct instruction *insn;
 
 	bb->priv = NJX_add_label(fn->builder);
@@ -2005,42 +2050,127 @@ static int output_bb(struct dmr_C *C, struct function *fn,
 	END_FOR_EACH_PTR(insn);
 
 	return 1;
+#endif
+	return 0;
 }
 
-static enum NJXValueKind map_nanotype(struct NanoType *type)
+static JIT_Type map_nanotype(struct NanoType *type)
 {
 	switch (type->type) {
 	case RT_DOUBLE:
-		return NJXValueKind_D;
+		return JIT_Double;
 	case RT_FLOAT:
-		return NJXValueKind_F;
+		return JIT_Float;
+	case RT_INT8:
+		return JIT_Int8;
+	case RT_INT16:
+		return JIT_Int16;
 	case RT_INT32:
-		return NJXValueKind_I;
+		return JIT_Int32;
 	case RT_INT64:
-		return NJXValueKind_Q;
+		return JIT_Int64;
 	case RT_PTR:
-		return NJXValueKind_P;
+		return JIT_Address;
 	default:
 		return 0;
 	}
 }
 
-static bool output_fn(struct dmr_C *C, NJXContextRef module,
+static JIT_NodeRef NJX_alloca(struct function *function, int size)
+{
+	return NULL;
+}
+
+static bool JIT_ILBuilderImpl(JIT_ILInjectorRef injector, void *userdata)
+{
+	struct function *fn = (struct function *)userdata;
+	struct entrypoint *ep = fn->ep;
+	struct dmr_C *C = fn->C;
+	struct basic_block *bb;
+	pseudo_t pseudo;
+
+	fn->injector = injector;
+
+	unsigned int bbnr = 0;
+	int num_bbs = ptrlist_size(ep->bbs);
+	JIT_CreateBlocks(fn->injector, num_bbs);
+	/* create the BBs */
+	FOR_EACH_PTR(ep->bbs, bb)
+	{
+		struct instruction *insn;
+		/* allocate alloca for each phi */
+		FOR_EACH_PTR(bb->insns, insn)
+		{
+			if (!insn->bb || insn->opcode != OP_PHI)
+				continue;
+			/* insert alloca into entry block */
+
+			JIT_NodeRef ptr =
+			    NJX_alloca(fn, instruction_size_in_bytes(C, insn));
+
+			// Unlike the Sparse LLVM version we
+			// save the pointer here and perform the load
+			// when we encounter the PHI instruction
+			// The LLVM version generates the Load instruction
+			// but doesn't insert it into the IR at this point.
+			// But in Nanojit it seems we cannot do that - i.e.
+			// the instruction gets inserted into the IR stream
+			insn->target->priv2 = ptr;
+			insn->target->priv = NULL;
+		}
+		END_FOR_EACH_PTR(insn);
+		/* The bb->nr field is not used by the
+		frontend anymore so we can use it to
+		decide which the order of basic blocks. This
+		is used to decide when to emit liveness instructions
+		*/
+		bb->nr = bbnr++;
+	}
+	END_FOR_EACH_PTR(bb);
+
+	/* Try to do allocas for all the symbols up front */
+	FOR_EACH_PTR(ep->accesses, pseudo)
+	{
+		if (pseudo->type == PSEUDO_SYM) {
+			if (dmrC_is_extern(pseudo->sym) ||
+			    dmrC_is_static(pseudo->sym) ||
+			    dmrC_is_toplevel(pseudo->sym))
+				continue;
+			if (!get_sym_value(C, fn, pseudo, false))
+				goto Efailed;
+		}
+	}
+	END_FOR_EACH_PTR(arg);
+
+	FOR_EACH_PTR(ep->bbs, bb)
+	{
+		if (!output_bb(C, fn, bb)) {
+			goto Efailed;
+		}
+	}
+	END_FOR_EACH_PTR(bb);
+	return true;
+
+Efailed:
+	return false;
+}
+
+static bool output_fn(struct dmr_C *C, JIT_ContextRef module,
 		      struct entrypoint *ep)
 {
+	bool success = false;
 	struct symbol *sym = ep->name;
 	struct symbol *base_type = sym->ctype.base_type;
 	struct symbol *ret_type = sym->ctype.base_type->ctype.base_type;
 	struct function function;
-	struct basic_block *bb;
-	struct symbol *arg;
-	pseudo_t pseudo;
 	const char *name;
+	struct symbol *arg;
 	int nr_args = 0;
-	bool success = false;
 
 	memset(&function, 0, sizeof function);
+	function.C = C;
 	function.context = module;
+	function.ep = ep;
 	if (base_type->variadic) {
 		fprintf(stderr, "Variadic functions are not supported\n");
 		return false;
@@ -2049,22 +2179,19 @@ static bool output_fn(struct dmr_C *C, NJXContextRef module,
 	dmrC_allocator_init(&function.type_allocator, "nanotypes",
 			    sizeof(struct NanoType),
 			    __alignof__(struct NanoType), CHUNK);
-	dmrC_allocator_init(&function.jmp_target_allocator, "jump targets",
-			    sizeof(struct jmp_target),
-			    __alignof__(struct jmp_target), CHUNK);
 
-	enum NJXValueKind argtypes[NJXMaxArgs];
+	JIT_Type argtypes[JIT_MaxArgs];
 
 	FOR_EACH_PTR(base_type->arguments, arg)
 	{
 		struct symbol *arg_base_type = arg->ctype.base_type;
-		if (nr_args >= NJXMaxArgs) {
+		if (nr_args >= JIT_MaxArgs) {
 			fprintf(stderr, "Only upto %d arguments supported\n",
-				NJXMaxArgs);
+				JIT_MaxArgs);
 			goto Ereturn;
 		}
 		argtypes[nr_args] = check_supported_argtype(C, arg_base_type);
-		if (!argtypes[nr_args])
+		if (argtypes[nr_args] == JIT_NoType) // Unsupported
 			goto Ereturn;
 		nr_args++;
 	}
@@ -2081,93 +2208,23 @@ static bool output_fn(struct dmr_C *C, NJXContextRef module,
 		goto Ereturn;
 	}
 
-	enum NJXValueKind freturn = map_nanotype(function.return_type);
+	JIT_Type freturn = map_nanotype(function.return_type);
 
-	function.builder = NJX_create_function_builder(module, name, freturn,
-						       argtypes, nr_args, true);
+	function.builder =
+	    JIT_CreateFunctionBuilder(module, name, freturn, nr_args, argtypes,
+				      JIT_ILBuilderImpl, &function);
 
-	unsigned int bbnr = 0;
-	/* create the BBs */
-	FOR_EACH_PTR(ep->bbs, bb)
-	{
-		struct instruction *insn;
-		/* allocate alloca for each phi */
-		FOR_EACH_PTR(bb->insns, insn)
-		{
-			if (!insn->bb || insn->opcode != OP_PHI)
-				continue;
-			/* insert alloca into entry block */
-
-			NJXLInsRef ptr =
-			    NJX_alloca(function.builder,
-				       instruction_size_in_bytes(C, insn));
-			/* add to the list of vars to be given a live
-			 * instruction */
-			add_local_var(C, &function, ptr);
-
-			// Unlike the Sparse LLVM version we
-			// save the pointer here and perform the load
-			// when we encounter the PHI instruction
-			// The LLVM version generates the Load instruction
-			// but doesn't insert it into the IR at this point.
-			// But in Nanojit it seems we cannot do that - i.e.
-			// the instruction gets inserted into the IR stream
-			insn->target->priv2 = ptr;
-			insn->target->priv = NULL;
-		}
-		END_FOR_EACH_PTR(insn);
-		/* The bb->nr field is not used by the
-		   frontend anymore so we can use it to
-		   decide which the order of basic blocks. This
-		   is used to decide when to emit liveness instructions
-		*/
-		bb->nr = bbnr++;
-	}
-	END_FOR_EACH_PTR(bb);
-
-	/* Try to do allocas for all the symbols up front */
-	FOR_EACH_PTR(ep->accesses, pseudo)
-	{
-		if (pseudo->type == PSEUDO_SYM) {
-			if (dmrC_is_extern(pseudo->sym) ||
-			    dmrC_is_static(pseudo->sym) ||
-			    dmrC_is_toplevel(pseudo->sym))
-				continue;
-			if (!get_sym_value(C, &function, pseudo, false))
-				goto Efailed;
-		}
-	}
-	END_FOR_EACH_PTR(arg);
-
-	FOR_EACH_PTR(ep->bbs, bb)
-	{
-		if (!output_bb(C, &function, bb)) {
-			goto Efailed;
-		}
-	}
-	END_FOR_EACH_PTR(bb);
-
-	output_liveness_localvars(C, &function);
-	if (resolve_jumps(&function))
+	void *p = JIT_Compile(function.builder);
+	if (p)
 		success = true;
 
-	if (success) {
-		void *p = NJX_finalize(function.builder);
-		if (!p)
-			success = false;
-	}
-
-Efailed:
-	NJX_destroy_function_builder(function.builder);
+	JIT_DestroyFunctionBuilder(function.builder);
 
 Ereturn:
 	dmrC_allocator_destroy(&function.type_allocator);
-	dmrC_allocator_destroy(&function.jmp_target_allocator);
 
 	return success;
 }
-
-#endif
 
 static int is_prototype(struct symbol *sym)
 {
@@ -2193,7 +2250,7 @@ static int compile(struct dmr_C *C, JIT_ContextRef module,
 
 		ep = dmrC_linearize_symbol(C, sym);
 		if (ep) {
-			//if (!output_fn(C, module, ep))
+			if (!output_fn(C, module, ep))
 				return 0;
 		} else {
 			fprintf(stderr, "Global data is not supported\n");
@@ -2205,8 +2262,8 @@ static int compile(struct dmr_C *C, JIT_ContextRef module,
 	return 1;
 }
 
-bool dmrC_omrcompile(int argc, char **argv, JIT_ContextRef context,
-		      const char *inputbuffer)
+bool dmrC_omrcompile(int argc, char **argv, JIT_ContextRef module,
+		     const char *inputbuffer)
 {
 	struct string_list *filelist = NULL;
 	struct symbol_list *symlist;

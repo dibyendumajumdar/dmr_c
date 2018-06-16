@@ -14,5 +14,14 @@ find_library(NJ_LIBRARY
   ~/software/omr/lib
 )
 
+find_library(JITBUILDER_LIBRARY
+  NAMES jitbuilder 
+  PATHS
+  c:/Software/omr/lib
+  ~/omr/lib
+  ~/software/omr/lib
+)
+
+
 set( NJ_INCLUDE_DIRS "${NJ_INCLUDE_DIR}" )
-set( NJ_LIBRARIES "${NJ_LIBRARY}" )
+set( NJ_LIBRARIES "${NJ_LIBRARY};${JITBUILDER_LIBRARY}" )

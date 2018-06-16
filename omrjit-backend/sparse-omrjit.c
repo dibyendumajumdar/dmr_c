@@ -451,6 +451,8 @@ static JIT_SymbolRef build_local(struct dmr_C *C, struct function *fn,
 		}
 		JIT_SymbolRef result = NJX_alloca(
 			fn, type, type->bit_size / C->target->bits_in_char);
+		JIT_Type t = JIT_GetSymbolType(result);
+		printf("Created local %s of type %d\n", name, t);
 		sym->priv = result;
 		return result;
 	}
@@ -609,6 +611,16 @@ static JIT_NodeRef val_to_value(struct dmr_C *C, struct function *fn,
 	return NULL;
 }
 
+static JIT_NodeRef load_symbolref(struct function *fn, struct symbol *sym, JIT_SymbolRef jitsym) {
+	if (JIT_GetSymbolType(jitsym) != JIT_Address)
+		return JIT_LoadTemporary(fn->injector, sym);
+	struct NanoType *type = get_symnode_type(fn->C, fn, sym);
+	JIT_Type loadtype = map_nanotype(type);
+	if (loadtype == JIT_NoType)
+		return NULL;
+	return JIT_ArrayLoad(fn->injector, JIT_LoadAddress(fn->injector, jitsym), JIT_ConstInt32(0), loadtype);
+}
+
 static JIT_NodeRef pseudo_to_value(struct dmr_C *C, struct function *fn,
 	struct symbol *ctype, pseudo_t pseudo)
 {
@@ -651,6 +663,8 @@ static JIT_NodeRef build_cast(struct dmr_C *C, struct function *fn,
 	JIT_Type target_type = map_nanotype(dtype);
 	if (target_type == JIT_NoType)
 		return NULL;
+	if (JIT_GetNodeType(val) == target_type)
+		return val;
 	return JIT_ConvertTo(fn->injector, val, target_type, unsigned_cast);
 }
 
@@ -666,6 +680,7 @@ static JIT_NodeRef output_op_phi(struct dmr_C *C, struct function *fn,
 	// early on and inserts it into the IR stream here, we
 	// create the Load instruction here.
 	JIT_NodeRef load = JIT_LoadTemporary(fn->injector, ptr);
+	JIT_GenerateTreeTop(fn->injector, load);
 	insn->target->priv = load;
 	return load;
 }
@@ -685,9 +700,10 @@ static JIT_NodeRef output_op_load(struct dmr_C *C, struct function *fn,
 	JIT_Type target_type = map_nanotype(type);
 	if (target_type == JIT_NoType)
 		return NULL;
-	JIT_NodeRef value = JIT_ArrayLoad(fn->injector, ptr, index, target_type);
-	insn->target->priv = value;
-	return value;
+	JIT_NodeRef load = JIT_ArrayLoad(fn->injector, ptr, index, target_type);
+	JIT_GenerateTreeTop(fn->injector, load);
+	insn->target->priv = load;
+	return load;
 }
 
 static JIT_NodeRef output_op_store(struct dmr_C *C, struct function *fn,
@@ -1867,6 +1883,9 @@ static int output_bb(struct dmr_C *C, struct function *fn,
 	{
 		if (!insn->bb)
 			continue;
+
+		fprintf(stderr, "Instruction %s\n",
+			dmrC_show_instruction(C, insn));
 
 		if (!output_insn(C, fn, insn)) {
 			dmrC_sparse_error(C, insn->pos, "failed to output %s\n",

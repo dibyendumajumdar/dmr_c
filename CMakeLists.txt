@@ -288,6 +288,9 @@ if (NOT PARSER_ONLY)
 
         add_executable(test-nanojit nanojit-backend/testnanobackend.c)
         target_link_libraries(test-nanojit dmr_c)   
+    elseif (OMR_JIT)
+        add_executable(test-omrjit omrjit-backend/testomrbackend.c)
+        target_link_libraries(test-omrjit dmr_c)   
     endif()
 
 endif()

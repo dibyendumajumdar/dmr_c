@@ -346,67 +346,897 @@ static int32_t instruction_size_in_bytes(struct dmr_C *C,
 	return insn->size / C->target->bits_in_char;
 }
 
+static JIT_Type map_nanotype(struct NanoType *type)
+{
+	switch (type->type) {
+	case RT_DOUBLE:
+		return JIT_Double;
+	case RT_FLOAT:
+		return JIT_Float;
+	case RT_INT8:
+		return JIT_Int8;
+	case RT_INT16:
+		return JIT_Int16;
+	case RT_INT32:
+		return JIT_Int32;
+	case RT_INT64:
+		return JIT_Int64;
+	case RT_PTR:
+		return JIT_Address;
+	default:
+		return 0;
+	}
+}
 
+static JIT_SymbolRef NJX_alloca(struct function *fn, struct NanoType *type, int32_t size)
+{
+	JIT_Type jit_type = map_nanotype(type);
+	if (jit_type != JIT_NoType)
+		return JIT_CreateTemporary(fn->injector, jit_type);
+	if (size <= 0)
+		return NULL;
+	return JIT_CreateLocalByteArray(fn->injector, (uint32_t) size);
+}
+
+static JIT_NodeRef constant_value(struct dmr_C *C, struct function *fn,
+	unsigned long long val, struct NanoType *dtype)
+{
+	JIT_NodeRef result = NULL;
+
+	if (dtype->type == RT_INT8) {
+		result = JIT_ConstInt8((int8_t)val);
+	}
+	else if (dtype->type == RT_INT16) {
+		result = JIT_ConstInt16((int16_t)val);
+	}
+	else if (dtype->type == RT_INT || dtype->type == RT_INT32) {
+		result = JIT_ConstInt32((int32_t)val);
+	}
+	else if (dtype->type == RT_INT64) {
+		result = JIT_ConstInt64(val);
+	}
+	else if (dtype->type == RT_PTR) {
+		result = JIT_ConstAddress((void *)val);
+	}
+	else if (dtype->type == RT_DOUBLE) {
+		result = JIT_ConstDouble((double)(long long)val);
+	}
+	else if (dtype->type == RT_FLOAT) {
+		result = JIT_ConstFloat((float)(long long)val);
+	}
+	else {
+		fprintf(stderr, "unsupported pseudo value kind %d\n",
+			dtype->type);
+		return NULL;
+	}
+	return result;
+}
+
+static JIT_NodeRef constant_fvalue(struct dmr_C *C, struct function *fn,
+	double val, struct NanoType *dtype)
+{
+	JIT_NodeRef result = NULL;
+
+	if (dtype->type == RT_DOUBLE) {
+		result = JIT_ConstDouble(val);
+	}
+	else if (dtype->type == RT_FLOAT) {
+		result = JIT_ConstFloat((float)val);
+	}
+	else {
+		fprintf(stderr, "unsupported pseudo value kind %d\n",
+			dtype->type);
+		return NULL;
+	}
+	return result;
+}
+
+/*
+* We do not support globals or aggregate locals with initializers
+*/
+static JIT_SymbolRef build_local(struct dmr_C *C, struct function *fn,
+	struct symbol *sym)
+{
+	const char *name = dmrC_show_ident(C, sym->ident);
+	struct NanoType *type = get_symnode_type(C, fn, sym);
+	char localname[256] = { 0 };
+	snprintf(localname, sizeof localname, "%s_%p.", name, sym);
+	if (dmrC_is_static(sym) || dmrC_is_extern(sym) ||
+		dmrC_is_toplevel(sym)) {
+		return NULL;
+	}
+	else {
+		if (sym->initialized && is_aggregate_type(sym)) {
+			return NULL;
+		}
+		JIT_SymbolRef result = NJX_alloca(
+			fn, type, type->bit_size / C->target->bits_in_char);
+		sym->priv = result;
+		return result;
+	}
+}
+
+static JIT_SymbolRef get_sym_value(struct dmr_C *C, struct function *fn,
+	pseudo_t pseudo, bool do_init)
+{
+	JIT_SymbolRef result = NULL;
+	struct symbol *sym = pseudo->sym;
+	struct expression *expr;
+
+	result = (JIT_SymbolRef)sym->priv;
+	if (result)
+		return result;
+
+	assert(sym->bb_target == NULL);
+
+	expr = sym->initializer;
+	if (expr &&
+		(!sym->ident || (sym->ident && (expr->type == EXPR_VALUE ||
+			expr->type == EXPR_FVALUE)))) {
+		switch (expr->type) {
+		case EXPR_STRING: {
+			dmrC_sparse_error(
+				C, expr->pos,
+				"unsupported string reference in initializer\n");
+			dmrC_show_expression(C, expr);
+			return NULL;
+			break;
+		}
+		case EXPR_SYMBOL: {
+			dmrC_sparse_error(
+				C, expr->pos,
+				"unresolved symbol reference in initializer\n");
+			dmrC_show_expression(C, expr);
+			return NULL;
+			break;
+		}
+		case EXPR_VALUE: {
+			if (dmrC_is_static(sym)) {
+				dmrC_sparse_error(
+					C, expr->pos,
+					"unsupported symbol reference\n");
+				dmrC_show_expression(C, expr);
+				return NULL;
+			}
+			struct NanoType *symtype = get_symnode_type(C, fn, sym);
+			if (symtype == NULL) {
+				dmrC_sparse_error(C, expr->pos,
+					"invalid symbol type\n");
+				dmrC_show_expression(C, expr);
+				return NULL;
+			}
+			result = build_local(C, fn, sym);
+			if (!result)
+				return result;
+			if (do_init) {
+				JIT_NodeRef value =
+					constant_value(C, fn, expr->value, symtype);
+				JIT_StoreToTemporary(fn->injector, result, value);
+			}
+			sym->priv = result;
+			break;
+		}
+		case EXPR_FVALUE: {
+			if (dmrC_is_static(sym)) {
+				dmrC_sparse_error(
+					C, expr->pos,
+					"unsupported symbol reference\n");
+				dmrC_show_expression(C, expr);
+				return NULL;
+			}
+			struct NanoType *symtype = get_symnode_type(C, fn, sym);
+			if (symtype == NULL) {
+				dmrC_sparse_error(C, expr->pos,
+					"invalid symbol type\n");
+				dmrC_show_expression(C, expr);
+				return NULL;
+			}
+			result = build_local(C, fn, sym);
+			if (!result)
+				return result;
+			if (do_init) {
+				JIT_NodeRef value = constant_fvalue(
+					C, fn, expr->fvalue, symtype);
+				JIT_StoreToTemporary(fn->injector, result, value);
+			}
+			sym->priv = result;
+			break;
+		}
+		default:
+			dmrC_sparse_error(
+				C, expr->pos,
+				"unsupported expr type in initializer: %d\n",
+				expr->type);
+			dmrC_show_expression(C, expr);
+			return NULL;
+		}
+	}
+	else {
+		const char *name = dmrC_show_ident(C, sym->ident);
+		struct NanoType *type = get_symnode_type(C, fn, sym);
+		if (type->type == RT_FUNCTION) {
+			dmrC_sparse_error(
+				C, sym->pos,
+				"unsupported symbol reference for '%s'\n", name);
+			dmrC_debug_symbol(C, sym);
+			return NULL;
+		}
+		else if (dmrC_is_extern(sym) || dmrC_is_toplevel(sym)) {
+			dmrC_sparse_error(
+				C, sym->pos,
+				"unsupported symbol reference for '%s'\n", name);
+			dmrC_debug_symbol(C, sym);
+			return NULL;
+		}
+		else {
+			if (dmrC_is_static(sym)) {
+				dmrC_sparse_error(
+					C, sym->pos,
+					"unsupported symbol reference for '%s'\n",
+					name);
+				dmrC_debug_symbol(C, sym);
+				return NULL;
+			}
+			if (dmrC_is_static(sym) && sym->initializer) {
+				dmrC_sparse_error(C, sym->initializer->pos,
+					"unsupported initializer for "
+					"local static variable\n");
+				dmrC_show_expression(C, sym->initializer);
+				return NULL;
+			}
+			result = build_local(C, fn, sym);
+			if (!result)
+				return result;
+			sym->priv = result;
+		}
+	}
+	return result;
+}
+
+static JIT_NodeRef val_to_value(struct dmr_C *C, struct function *fn,
+	long long value, struct symbol *ctype)
+{
+	switch (ctype->bit_size) {
+	case 8:
+		return JIT_ConstInt8((int8_t)value);
+	case 16:
+		return JIT_ConstInt16((int16_t)value);
+	case 32:
+		return JIT_ConstInt32((int32_t)value);
+	case 64:
+		return JIT_ConstInt64((int64_t)value);
+	}
+	return NULL;
+}
+
+static JIT_NodeRef pseudo_to_value(struct dmr_C *C, struct function *fn,
+	struct symbol *ctype, pseudo_t pseudo)
+{
+	JIT_NodeRef result = NULL;
+
+	switch (pseudo->type) {
+	case PSEUDO_REG:
+		result = pseudo->priv;
+		break;
+	case PSEUDO_SYM: {
+		JIT_SymbolRef sym = get_sym_value(C, fn, pseudo, true);
+		if (!sym)
+			return NULL;
+		return JIT_LoadTemporary(fn->injector, sym);
+	}
+	case PSEUDO_VAL:
+		result = val_to_value(C, fn, pseudo->value, ctype);
+		break;
+	case PSEUDO_ARG:
+		result = JIT_LoadParameter(fn->injector, pseudo->nr - 1);
+		break;
+	case PSEUDO_PHI:
+		result = pseudo->priv;
+		break;
+	case PSEUDO_VOID:
+		result = NULL;
+		break;
+	}
+	if (!result) {
+		fprintf(stderr, "error: no result for pseudo\n");
+		return NULL;
+	}
+	return result;
+}
+
+static JIT_NodeRef build_cast(struct dmr_C *C, struct function *fn,
+	JIT_NodeRef val, struct NanoType *dtype,
+	int unsigned_cast)
+{
+	JIT_Type target_type = map_nanotype(dtype);
+	if (target_type == JIT_NoType)
+		return NULL;
+	return JIT_ConvertTo(fn->injector, val, target_type, unsigned_cast);
+}
+
+static JIT_NodeRef output_op_phi(struct dmr_C *C, struct function *fn,
+	struct instruction *insn)
+{
+	JIT_SymbolRef ptr = insn->target->priv2;
+
+	if (!ptr)
+		return NULL;
+
+	// Unlike LLVM version which creates the Load instruction
+	// early on and inserts it into the IR stream here, we
+	// create the Load instruction here.
+	JIT_NodeRef load = JIT_LoadTemporary(fn->injector, ptr);
+	insn->target->priv = load;
+	return load;
+}
+
+static JIT_NodeRef output_op_load(struct dmr_C *C, struct function *fn,
+	struct instruction *insn)
+{
+	JIT_NodeRef ptr = pseudo_to_value(C, fn, insn->type, insn->src);
+
+	if (!ptr)
+		return NULL;
+
+	JIT_NodeRef index = JIT_ConstInt32((int)insn->offset);
+	struct NanoType *type = insn_symbol_type(C, fn, insn);
+	if (type == NULL)
+		return NULL;
+	JIT_Type target_type = map_nanotype(type);
+	if (target_type == JIT_NoType)
+		return NULL;
+	JIT_NodeRef value = JIT_ArrayLoad(fn->injector, ptr, index, target_type);
+	insn->target->priv = value;
+	return value;
+}
+
+static JIT_NodeRef output_op_store(struct dmr_C *C, struct function *fn,
+	struct instruction *insn)
+{
+	JIT_NodeRef ptr, target_in;
+	int32_t off;
+
+	/* int type large enough to hold a pointer */
+	off = (int32_t)insn->offset;
+
+	if (is_aggregate_type(insn->type)) {
+		dmrC_sparse_error(C, insn->pos,
+			"store to aggregate type is "
+			"not yet supported, failure at "
+			"insn %s\n",
+			dmrC_show_instruction(C, insn));
+		return NULL;
+	}
+
+	ptr = pseudo_to_value(C, fn, insn->type, insn->src);
+	if (!ptr)
+		return NULL;
+	ptr = build_cast(C, fn, ptr, &PtrType, 0);
+
+	target_in = pseudo_to_value(C, fn, insn->type, insn->target);
+	if (!target_in)
+		return NULL;
+
+	JIT_NodeRef index = JIT_ConstInt32((int)insn->offset);
+	JIT_ArrayStore(fn->injector, ptr, index, target_in);
+	return ptr;
+}
+
+static JIT_NodeRef output_op_phisrc(struct dmr_C *C, struct function *fn,
+	struct instruction *insn)
+{
+	JIT_NodeRef v;
+	struct instruction *phi;
+
+	assert(insn->target->priv == NULL);
+
+	/* target = src */
+	v = pseudo_to_value(C, fn, insn->type, insn->phi_src);
+	if (!v)
+		return NULL;
+
+	FOR_EACH_PTR(insn->phi_users, phi)
+	{
+		JIT_SymbolRef ptr;
+
+		assert(phi->opcode == OP_PHI);
+		/* phi must be load from alloca */
+		ptr = phi->target->priv2;
+		if (!ptr)
+			return NULL;
+		JIT_StoreToTemporary(fn->injector, ptr, v);
+	}
+	END_FOR_EACH_PTR(phi);
+	return v;
+}
+
+/**
+* Convert the pseudo to a case_value, and cast it to the expected type of the
+* instruction. If ptrtoint is true then convert pointer values to integers.
+*/
+static JIT_NodeRef get_operand(struct dmr_C *C, struct function *fn,
+	struct symbol *ctype, pseudo_t pseudo,
+	bool ptrtoint, bool unsigned_cast)
+{
+	JIT_NodeRef target;
+
+	struct NanoType *instruction_type =
+		get_symnode_or_basetype(C, fn, ctype);
+	if (instruction_type == NULL)
+		return NULL;
+	target = pseudo_to_value(C, fn, ctype, pseudo);
+	if (!target)
+		return NULL;
+	if (ptrtoint && dmrC_is_ptr_type(ctype))
+		target = build_cast(C, fn, target, instruction_type, 0);
+	else
+		target =
+		build_cast(C, fn, target, instruction_type, unsigned_cast);
+	return target;
+}
+
+static struct symbol *pseudo_type(struct dmr_C *C, pseudo_t pseudo)
+{
+	switch (pseudo->type) {
+	case PSEUDO_SYM:
+	case PSEUDO_ARG:
+		return pseudo->sym;
+	case PSEUDO_REG:
+	case PSEUDO_PHI:
+		return pseudo->def->type;
+	case PSEUDO_VAL:
+		return C->target->size_t_ctype;
+	case PSEUDO_VOID:
+	default:
+		return &C->S->void_ctype;
+	}
+}
+
+static JIT_NodeRef output_op_cbr(struct dmr_C *C, struct function *fn,
+	struct instruction *br)
+{
+	JIT_NodeRef value = pseudo_to_value(C, fn, br->type, br->cond);
+	if (!value)
+		return NULL;
+	JIT_BlockRef true_block = JIT_GetBlock(fn->injector, br->bb_true->nr);
+	JIT_BlockRef false_block = JIT_GetBlock(fn->injector, br->bb_false->nr);
+	JIT_NodeRef if_node = JIT_IfNotZeroValue(fn->injector, value, true_block);
+	JIT_Goto(fn->injector, false_block);
+	return if_node;
+}
+
+static JIT_NodeRef output_op_compare(struct dmr_C *C, struct function *fn,
+	struct instruction *insn)
+{
+	JIT_NodeRef lhs, rhs, target = NULL;
+
+	if (insn->src1->type == PSEUDO_VAL)
+		lhs = val_to_value(C, fn, insn->src1->value,
+			pseudo_type(C, insn->src2));
+	else
+		lhs = pseudo_to_value(C, fn, insn->type, insn->src1);
+	if (!lhs)
+		return NULL;
+	if (insn->src2->type == PSEUDO_VAL)
+		rhs = val_to_value(C, fn, insn->src2->value,
+			pseudo_type(C, insn->src1));
+	else
+		rhs = pseudo_to_value(C, fn, insn->type, insn->src2);
+	if (!rhs)
+		return NULL;
+
+	struct NanoType *dst_type = insn_symbol_type(C, fn, insn);
+	if (!dst_type)
+		return NULL;
+
+	JIT_Type op_type = JIT_GetNodeType(lhs);
+
+	switch (insn->opcode) {
+	case OP_SET_LT:
+		if (op_type == JIT_Double)
+			target = JIT_CreateNode2C(OP_dcmplt, lhs, rhs);
+		else if (op_type == JIT_Float)
+			target = JIT_CreateNode2C( OP_fcmplt, lhs, rhs);
+		else if (op_type == JIT_Int64)
+			target = JIT_CreateNode2C( OP_lcmplt, lhs, rhs);
+		else if (op_type == JIT_Int32)
+			target = JIT_CreateNode2C( OP_icmplt, lhs, rhs);
+		else if (op_type == JIT_Int16)
+			target = JIT_CreateNode2C( OP_scmplt, lhs, rhs);
+		else if (op_type == JIT_Int8)
+			target = JIT_CreateNode2C( OP_bcmplt, lhs, rhs);
+		else if (op_type == JIT_Address)
+			target = JIT_CreateNode2C( OP_acmplt, lhs, rhs);
+		break;
+	case OP_SET_B:
+		if (op_type == JIT_Double)
+			target = JIT_CreateNode2C( OP_dcmplt, lhs, rhs);
+		else if (op_type == JIT_Float)
+			target = JIT_CreateNode2C( OP_fcmplt, lhs, rhs);
+		else if (op_type == JIT_Int64)
+			target = JIT_CreateNode2C( OP_lucmplt, lhs, rhs);
+		else if (op_type == JIT_Int32)
+			target = JIT_CreateNode2C( OP_iucmplt, lhs, rhs);
+		else if (op_type == JIT_Int16)
+			target = JIT_CreateNode2C( OP_sucmplt, lhs, rhs);
+		else if (op_type == JIT_Int8)
+			target = JIT_CreateNode2C( OP_bucmplt, lhs, rhs);
+		else if (op_type == JIT_Address)
+			target = JIT_CreateNode2C( OP_acmplt, lhs, rhs);
+		break;
+	case OP_SET_LE:
+		if (op_type == JIT_Double)
+			target = JIT_CreateNode2C( OP_dcmple, lhs, rhs);
+		else if (op_type == JIT_Float)
+			target = JIT_CreateNode2C( OP_fcmple, lhs, rhs);
+		else if (op_type == JIT_Int64)
+			target = JIT_CreateNode2C( OP_lcmple, lhs, rhs);
+		else if (op_type == JIT_Int32)
+			target = JIT_CreateNode2C( OP_icmple, lhs, rhs);
+		else if (op_type == JIT_Int16)
+			target = JIT_CreateNode2C( OP_scmple, lhs, rhs);
+		else if (op_type == JIT_Int8)
+			target = JIT_CreateNode2C( OP_bcmple, lhs, rhs);
+		else if (op_type == JIT_Address)
+			target = JIT_CreateNode2C( OP_acmple, lhs, rhs);
+		break;
+	case OP_SET_BE:
+		if (op_type == JIT_Double)
+			target = JIT_CreateNode2C( OP_dcmple, lhs, rhs);
+		else if (op_type == JIT_Int64)
+			target = JIT_CreateNode2C( OP_fcmple, lhs, rhs);
+		else if (op_type == JIT_Int64)
+			target = JIT_CreateNode2C( OP_lucmple, lhs, rhs);
+		else if (op_type == JIT_Int32)
+			target = JIT_CreateNode2C( OP_iucmple, lhs, rhs);
+		else if (op_type == JIT_Int16)
+			target = JIT_CreateNode2C( OP_sucmple, lhs, rhs);
+		else if (op_type == JIT_Int8)
+			target = JIT_CreateNode2C( OP_bucmple, lhs, rhs);
+		else if (op_type == JIT_Address)
+			target = JIT_CreateNode2C( OP_acmple, lhs, rhs);
+		break;
+	case OP_SET_GT:
+		if (op_type == JIT_Double)
+			target = JIT_CreateNode2C( OP_dcmpgt, lhs, rhs);
+		else if (op_type == JIT_Float)
+			target = JIT_CreateNode2C( OP_fcmpgt, lhs, rhs);
+		else if (op_type == JIT_Int64)
+			target = JIT_CreateNode2C( OP_lcmpgt, lhs, rhs);
+		else if (op_type == JIT_Int32)
+			target = JIT_CreateNode2C( OP_icmpgt, lhs, rhs);
+		else if (op_type == JIT_Int16)
+			target = JIT_CreateNode2C( OP_scmpgt, lhs, rhs);
+		else if (op_type == JIT_Int8)
+			target = JIT_CreateNode2C( OP_bcmpgt, lhs, rhs);
+		else if (op_type == JIT_Address)
+			target = JIT_CreateNode2C( OP_acmpgt, lhs, rhs);
+		break;
+	case OP_SET_A:
+		if (op_type == JIT_Double)
+			target = JIT_CreateNode2C( OP_dcmpgt, lhs, rhs);
+		else if (op_type == JIT_Float)
+			target = JIT_CreateNode2C( OP_fcmpgt, lhs, rhs);
+		else if (op_type == JIT_Int64)
+			target = JIT_CreateNode2C( OP_lucmpgt, lhs, rhs);
+		else if (op_type == JIT_Int32)
+			target = JIT_CreateNode2C( OP_iucmpgt, lhs, rhs);
+		else if (op_type == JIT_Int16)
+			target = JIT_CreateNode2C( OP_sucmpgt, lhs, rhs);
+		else if (op_type == JIT_Int8)
+			target = JIT_CreateNode2C( OP_bucmpgt, lhs, rhs);
+		else if (op_type == JIT_Address)
+			target = JIT_CreateNode2C( OP_acmpgt, lhs, rhs);
+		break;
+	case OP_SET_GE:
+		if (op_type == JIT_Double)
+			target = JIT_CreateNode2C( OP_dcmpge, lhs, rhs);
+		else if (op_type == JIT_Float)
+			target = JIT_CreateNode2C( OP_fcmpge, lhs, rhs);
+		else if (op_type == JIT_Int64)
+			target = JIT_CreateNode2C( OP_lcmpge, lhs, rhs);
+		else if (op_type == JIT_Int32)
+			target = JIT_CreateNode2C( OP_icmpge, lhs, rhs);
+		else if (op_type == JIT_Int16)
+			target = JIT_CreateNode2C( OP_scmpge, lhs, rhs);
+		else if (op_type == JIT_Int8)
+			target = JIT_CreateNode2C( OP_bcmpge, lhs, rhs);
+		else if (op_type == JIT_Address)
+			target = JIT_CreateNode2C( OP_acmpge, lhs, rhs);
+		break;
+	case OP_SET_AE:
+		if (op_type == JIT_Double)
+			target = JIT_CreateNode2C( OP_dcmpge, lhs, rhs);
+		else if (op_type == JIT_Int64)
+			target = JIT_CreateNode2C( OP_fcmpge, lhs, rhs);
+		else if (op_type == JIT_Int64)
+			target = JIT_CreateNode2C( OP_lucmpge, lhs, rhs);
+		else if (op_type == JIT_Int32)
+			target = JIT_CreateNode2C( OP_iucmpge, lhs, rhs);
+		else if (op_type == JIT_Int16)
+			target = JIT_CreateNode2C( OP_sucmpge, lhs, rhs);
+		else if (op_type == JIT_Int8)
+			target = JIT_CreateNode2C( OP_bucmpge, lhs, rhs);
+		else if (op_type == JIT_Address)
+			target = JIT_CreateNode2C( OP_acmpge, lhs, rhs);
+		break;
+	case OP_SET_EQ:
+		if (op_type == JIT_Double)
+			target = JIT_CreateNode2C( OP_dcmpeq, lhs, rhs);
+		else if (op_type == JIT_Float)
+			target = JIT_CreateNode2C( OP_fcmpeq, lhs, rhs);
+		else if (op_type == JIT_Int64)
+			target = JIT_CreateNode2C( OP_lcmpeq, lhs, rhs);
+		else if (op_type == JIT_Int32)
+			target = JIT_CreateNode2C( OP_icmpeq, lhs, rhs);
+		else if (op_type == JIT_Int16)
+			target = JIT_CreateNode2C( OP_scmpeq, lhs, rhs);
+		else if (op_type == JIT_Int8)
+			target = JIT_CreateNode2C( OP_bcmpeq, lhs, rhs);
+		else if (op_type == JIT_Address)
+			target = JIT_CreateNode2C( OP_acmpeq, lhs, rhs);
+	case OP_SET_NE:
+		if (op_type == JIT_Double)
+			target = JIT_CreateNode2C( OP_dcmpne, lhs, rhs);
+		else if (op_type == JIT_Float)
+			target = JIT_CreateNode2C( OP_fcmpne, lhs, rhs);
+		else if (op_type == JIT_Int64)
+			target = JIT_CreateNode2C( OP_lcmpne, lhs, rhs);
+		else if (op_type == JIT_Int32)
+			target = JIT_CreateNode2C( OP_icmpne, lhs, rhs);
+		else if (op_type == JIT_Int16)
+			target = JIT_CreateNode2C( OP_scmpne, lhs, rhs);
+		else if (op_type == JIT_Int8)
+			target = JIT_CreateNode2C( OP_bcmpne, lhs, rhs);
+		else if (op_type == JIT_Address)
+			target = JIT_CreateNode2C( OP_acmpne, lhs, rhs);
+		break;
+	default:
+		break;
+	}
+
+	insn->target->priv = target;
+	return target;
+}
+
+static JIT_NodeRef output_op_binary(struct dmr_C *C, struct function *fn,
+	struct instruction *insn)
+{
+	JIT_NodeRef lhs, rhs, target = NULL;
+
+	// TODO is this enough or do we need special unsigned opcodes?
+	bool unsigned_op = insn->opcode == OP_MULU || insn->opcode == OP_DIVU ||
+		insn->opcode == OP_MODU;
+
+	lhs = get_operand(C, fn, insn->type, insn->src1, 1, unsigned_op);
+	if (!lhs)
+		return NULL;
+
+	rhs = get_operand(C, fn, insn->type, insn->src2, 1, unsigned_op);
+	if (!rhs)
+		return NULL;
+
+	switch (insn->opcode) {
+		/* Binary */
+	case OP_ADD:
+		switch (insn->size) {
+		case 64:
+			if (dmrC_is_float_type(C->S, insn->type))
+				target = JIT_CreateNode2C( OP_dadd, lhs, rhs);
+			else
+				target = JIT_CreateNode2C( OP_ladd, lhs, rhs);
+			break;
+		case 32:
+			if (dmrC_is_float_type(C->S, insn->type))
+				target = JIT_CreateNode2C( OP_fadd, lhs, rhs);
+			else
+				target = JIT_CreateNode2C( OP_iadd, lhs, rhs);
+			break;
+		}
+		break;
+	case OP_SUB:
+		switch (insn->size) {
+		case 64:
+			if (dmrC_is_float_type(C->S, insn->type))
+				target = JIT_CreateNode2C( OP_dsub, lhs, rhs);
+			else
+				target = JIT_CreateNode2C( OP_lsub, lhs, rhs);
+			break;
+		case 32:
+			if (dmrC_is_float_type(C->S, insn->type))
+				target = JIT_CreateNode2C( OP_fsub, lhs, rhs);
+			else
+				target = JIT_CreateNode2C( OP_isub, lhs, rhs);
+			break;
+		}
+		break;
+	case OP_MULU:
+		switch (insn->size) {
+		case 64:
+			if (dmrC_is_float_type(C->S, insn->type))
+				target = JIT_CreateNode2C( OP_dmul, lhs, rhs);
+			else
+				target = JIT_CreateNode2C( OP_lumulh, lhs, rhs);
+			break;
+		case 32:
+			if (dmrC_is_float_type(C->S, insn->type))
+				target = JIT_CreateNode2C( OP_fmul, lhs, rhs);
+			else
+				target = JIT_CreateNode2C( OP_iumul, lhs, rhs);
+			break;
+		}
+		break;
+	case OP_MULS:
+		switch (insn->size) {
+		case 64:
+			target = JIT_CreateNode2C( OP_lmul, lhs, rhs);
+			break;
+		case 32:
+			target = JIT_CreateNode2C( OP_imul, lhs, rhs);
+			break;
+		}
+		break;
+	case OP_DIVU:
+		switch (insn->size) {
+		case 64:
+			if (dmrC_is_float_type(C->S, insn->type))
+				target = JIT_CreateNode2C( OP_ddiv, lhs, rhs);
+			else
+				target = JIT_CreateNode2C( OP_ludiv, lhs, rhs);
+			break;
+		case 32:
+			if (dmrC_is_float_type(C->S, insn->type))
+				target = JIT_CreateNode2C( OP_fdiv, lhs, rhs);
+			else
+				target = JIT_CreateNode2C( OP_iudiv, lhs, rhs);
+			break;
+		}
+		break;
+	case OP_DIVS:
+		switch (insn->size) {
+		case 64:
+			target = JIT_CreateNode2C( OP_ldiv, lhs, rhs);
+			break;
+		case 32:
+			target = JIT_CreateNode2C( OP_idiv, lhs, rhs);
+			break;
+		}
+		break;
+
+	case OP_MODS:
+	case OP_MODU:
+		assert(!dmrC_is_float_type(C->S, insn->type));
+		switch (insn->size) {
+		case 64:
+			target = JIT_CreateNode2C( OP_lrem, lhs, rhs);
+			break;
+		case 32:
+			target = JIT_CreateNode2C( OP_irem, lhs, rhs);
+			break;
+		}
+		break;
+	case OP_SHL:
+		assert(!dmrC_is_float_type(C->S, insn->type));
+		switch (insn->size) {
+		case 64:
+			target = JIT_CreateNode2C( OP_lshl, lhs, rhs);
+			break;
+		case 32:
+			target = JIT_CreateNode2C( OP_ishl, lhs, rhs);
+			break;
+		}
+		break;
+	case OP_LSR:
+		assert(!dmrC_is_float_type(C->S, insn->type));
+		switch (insn->size) {
+		case 64:
+			target = JIT_CreateNode2C( OP_lshr, lhs, rhs);
+			break;
+		case 32:
+			target = JIT_CreateNode2C( OP_ishr, lhs, rhs);
+			break;
+		}
+		break;
+	case OP_ASR:
+		assert(!dmrC_is_float_type(C->S, insn->type));
+		switch (insn->size) {
+		case 64:
+			target = JIT_CreateNode2C( OP_lshr, lhs, rhs);
+			break;
+		case 32:
+			target = JIT_CreateNode2C( OP_ishr, lhs, rhs);
+			break;
+		}
+		break;
+
+		/* Logical */
+	case OP_AND:
+		assert(!dmrC_is_float_type(C->S, insn->type));
+		switch (insn->size) {
+		case 64:
+			target = JIT_CreateNode2C( OP_land, lhs, rhs);
+			break;
+		case 32:
+			target = JIT_CreateNode2C( OP_iand, lhs, rhs);
+			break;
+		}
+		break;
+	case OP_OR:
+		assert(!dmrC_is_float_type(C->S, insn->type));
+		switch (insn->size) {
+		case 64:
+			target = JIT_CreateNode2C( OP_lor, lhs, rhs);
+			break;
+		case 32:
+			target = JIT_CreateNode2C( OP_ior, lhs, rhs);
+			break;
+		}
+		break;
+	case OP_XOR:
+		assert(!dmrC_is_float_type(C->S, insn->type));
+		switch (insn->size) {
+		case 64:
+			target = JIT_CreateNode2C( OP_lxor, lhs, rhs);
+			break;
+		case 32:
+			target = JIT_CreateNode2C( OP_ixor, lhs, rhs);
+			break;
+		}
+		break;
+	case OP_AND_BOOL: {
+		//NJXLInsRef lhs_nz, rhs_nz;
+		//struct NanoType *dst_type;
+
+		//lhs_nz = is_neq_zero(C, fn, lhs);
+		//rhs_nz = is_neq_zero(C, fn, rhs);
+		//switch (insn->size) {
+		//case 64:
+		//	target = NJX_andq(fn->builder, lhs_nz, rhs_nz);
+		//	break;
+		//case 1:
+		//case 32:
+		//	target = NJX_andi(fn->builder, lhs_nz, rhs_nz);
+		//	break;
+		//}
+		//if (!target)
+		//	return NULL;
+		//dst_type = insn_symbol_type(C, fn, insn);
+		//if (!dst_type)
+		//	return NULL;
+		//target = build_cast(C, fn, target, dst_type, 1);
+		break;
+	}
+	case OP_OR_BOOL: {
+		//NJXLInsRef lhs_nz, rhs_nz;
+		//struct NanoType *dst_type;
+
+		//lhs_nz = is_neq_zero(C, fn, lhs);
+		//rhs_nz = is_neq_zero(C, fn, rhs);
+		//switch (insn->size) {
+		//case 64:
+		//	target = NJX_orq(fn->builder, lhs_nz, rhs_nz);
+		//	break;
+		//case 1:
+		//case 32:
+		//	target = NJX_ori(fn->builder, lhs_nz, rhs_nz);
+		//	break;
+		//}
+		//if (!target)
+		//	return NULL;
+		//dst_type = insn_symbol_type(C, fn, insn);
+		//if (!dst_type)
+		//	return NULL;
+		//target = build_cast(C, fn, target, dst_type, 1);
+		break;
+	}
+	}
+	insn->target->priv = target;
+
+	return target;
+}
 
 #if 0
 
-/*
- * The maximum number of jumps we can handle in a single
- * function. This is just a memory allocation issue.
- */
-#define MAX_JMP_INSTRUCTIONS 100
-#define MAX_LOCAL_VARS 255
-
-struct jmp_target {
-	struct basic_block *bb;
-	NJXLInsRef jmp_instruction;
-};
-
-DECLARE_PTR_LIST(jmp_target_list, struct jmp_target);
-DECLARE_PTR_LIST(NJXLIns_list, struct NJXLIns);
-
-
-/*
- * We need to note any jump instructions we get as we do not yet have the label
- * instruction to set the target of the jump. The labels are created as each
- * basic block is processed. At the end of code generation, the resolve_jump()
- * function below is called to set the target for each jump.
- */
-static bool add_jump_instruction(struct dmr_C *C, struct function *fn,
-				 struct basic_block *bb, NJXLInsRef ins)
-{
-	assert(ins);
-	struct jmp_target *jmp =
-	    dmrC_allocator_allocate(&fn->jmp_target_allocator, 0);
-	jmp->bb = bb;
-	jmp->jmp_instruction = ins;
-	ptrlist_add((struct ptr_list **) &fn->jumps_list, jmp, &C->ptrlist_allocator);
-	return true;
-}
-
-static bool resolve_jumps(struct function *fn)
-{
-	struct jmp_target *jmp;
-
-	FOR_EACH_PTR(fn->jumps_list, jmp)
-	{
-		NJXLInsRef target = jmp->bb->priv;
-		if (!target)
-			return false;
-		NJXLInsRef insn = jmp->jmp_instruction;
-		assert(insn);
-		NJX_set_jmp_target(insn, target);
-	}
-	END_FOR_EACH_PTR(jmp);
-	return true;
-}
-
-static bool add_local_var(struct dmr_C *C, struct function *fn, NJXLInsRef ins)
-{
-	assert(ins);
-	ptrlist_add((struct ptr_list **)&fn->local_vars_list, ins, &C->ptrlist_allocator);
-	return true;
-}
 
 static NJXLInsRef truncate_intvalue(struct dmr_C *C, struct function *fn,
 				    NJXLInsRef val, struct NanoType *dtype,
@@ -427,419 +1257,6 @@ static NJXLInsRef truncate_intvalue(struct dmr_C *C, struct function *fn,
 	}
 }
 
-static NJXLInsRef build_cast(struct dmr_C *C, struct function *fn,
-			     NJXLInsRef val, struct NanoType *dtype,
-			     int unsigned_cast)
-{
-	switch (dtype->type) {
-	case RT_INT:
-		return truncate_intvalue(C, fn, val, dtype, unsigned_cast);
-
-	case RT_INT32:
-		if (NJX_is_q(val)) {
-			return NJX_q2i(fn->builder, val);
-		} else if (NJX_is_f(val)) {
-			return NJX_f2i(fn->builder, val);
-		} else if (NJX_is_d(val)) {
-			return NJX_d2i(fn->builder, val);
-		} else if (NJX_is_i(val)) {
-			return val;
-		}
-		break;
-
-	case RT_INT64:
-		if (NJX_is_i(val)) {
-			if (unsigned_cast)
-				return NJX_ui2uq(fn->builder, val);
-			else
-				return NJX_i2q(fn->builder, val);
-		} else if (NJX_is_f(val)) {
-			if (unsigned_cast)
-				return NJX_ui2uq(fn->builder,
-						 NJX_f2i(fn->builder, val));
-			else
-				return NJX_i2q(fn->builder,
-					       NJX_f2i(fn->builder, val));
-		} else if (NJX_is_d(val)) {
-			return NJX_d2q(fn->builder, val);
-		} else if (NJX_is_q(val)) {
-			return val;
-		}
-		break;
-
-	case RT_PTR:
-		if (NJX_is_i(val)) {
-			return NJX_i2q(fn->builder, val);
-		} else if (NJX_is_q(val)) {
-			return val;
-		} else {
-			return NULL;
-		}
-		break;
-
-	case RT_FLOAT:
-		if (NJX_is_i(val)) {
-			return NJX_i2f(fn->builder, val);
-		} else if (NJX_is_q(val)) {
-			return NJX_d2f(fn->builder, NJX_q2d(fn->builder, val));
-		} else if (NJX_is_d(val)) {
-			return NJX_d2f(fn->builder, val);
-		} else if (NJX_is_f(val))
-			return val;
-		break;
-
-	case RT_DOUBLE:
-		if (NJX_is_i(val)) {
-			return NJX_i2d(fn->builder, val);
-		} else if (NJX_is_q(val)) {
-			return NJX_q2d(fn->builder, val);
-		} else if (NJX_is_f(val)) {
-			return NJX_f2d(fn->builder, val);
-		} else if (NJX_is_d(val)) {
-			return val;
-		}
-		break;
-	default:
-		break;
-	}
-	return NULL;
-}
-
-static NJXLInsRef val_to_value(struct dmr_C *C, struct function *fn,
-			       long long value, struct symbol *ctype)
-{
-	switch (ctype->bit_size) {
-	case 8:
-	case 16:
-	case 32:
-		return NJX_immi(fn->builder, (int)value);
-	case 64:
-		return NJX_immq(fn->builder, value);
-	}
-	return NULL;
-}
-
-/*
- * We do not support globals or aggregate locals with initializers
- */
-static NJXLInsRef build_local(struct dmr_C *C, struct function *fn,
-			      struct symbol *sym)
-{
-	const char *name = dmrC_show_ident(C, sym->ident);
-	struct NanoType *type = get_symnode_type(C, fn, sym);
-	char localname[256] = {0};
-	snprintf(localname, sizeof localname, "%s_%p.", name, sym);
-	if (dmrC_is_static(sym) || dmrC_is_extern(sym) ||
-	    dmrC_is_toplevel(sym)) {
-		return NULL;
-	} else {
-		if (sym->initialized && is_aggregate_type(sym)) {
-			return NULL;
-		}
-		NJXLInsRef result = NJX_alloca(
-		    fn->builder, type->bit_size / C->target->bits_in_char);
-		add_local_var(C, fn, result);
-		sym->priv = result;
-		return result;
-	}
-}
-
-static NJXLInsRef constant_value(struct dmr_C *C, struct function *fn,
-				 unsigned long long val, struct NanoType *dtype)
-{
-	NJXLInsRef result = NULL;
-
-	if (dtype->type == RT_INT || dtype->type == RT_INT32) {
-		result = NJX_immi(fn->builder, (int)val);
-	} else if (dtype->type == RT_INT64 || dtype->type == RT_PTR) {
-		result = NJX_immq(fn->builder, val);
-	} else if (dtype->type == RT_DOUBLE) {
-		result = NJX_immd(fn->builder, (double)(long long)val);
-	} else if (dtype->type == RT_FLOAT) {
-		result = NJX_immf(fn->builder, (float)(long long)val);
-	} else {
-		fprintf(stderr, "unsupported pseudo value kind %d\n",
-			dtype->type);
-		return NULL;
-	}
-	return result;
-}
-
-static NJXLInsRef constant_fvalue(struct dmr_C *C, struct function *fn,
-				  double val, struct NanoType *dtype)
-{
-	NJXLInsRef result = NULL;
-
-	if (dtype->type == RT_DOUBLE) {
-		result = NJX_immd(fn->builder, val);
-	} else if (dtype->type == RT_FLOAT) {
-		result = NJX_immf(fn->builder, (float)val);
-	} else {
-		fprintf(stderr, "unsupported pseudo value kind %d\n",
-			dtype->type);
-		return NULL;
-	}
-	return result;
-}
-
-static NJXLInsRef build_store(struct dmr_C *C, struct function *fn,
-			      NJXLInsRef v, NJXLInsRef ptr,
-			      struct NanoType *type)
-{
-	switch (type->type) {
-	case RT_INT32:
-	case RT_INT:
-		return NJX_store_i(fn->builder, v, ptr, 0);
-	case RT_FLOAT:
-		return NJX_store_f(fn->builder, v, ptr, 0);
-	case RT_DOUBLE:
-		return NJX_store_d(fn->builder, v, ptr, 0);
-	case RT_INT64:
-	case RT_PTR:
-		return NJX_store_q(fn->builder, v, ptr, 0);
-	default:
-		return NULL;
-	}
-}
-
-static NJXLInsRef get_sym_value(struct dmr_C *C, struct function *fn,
-				pseudo_t pseudo, bool do_init)
-{
-	NJXLInsRef result = NULL;
-	struct symbol *sym = pseudo->sym;
-	struct expression *expr;
-
-	result = (NJXLInsRef)sym->priv;
-	if (result)
-		return result;
-
-	assert(sym->bb_target == NULL);
-
-	expr = sym->initializer;
-	if (expr &&
-	    (!sym->ident || (sym->ident && (expr->type == EXPR_VALUE ||
-					    expr->type == EXPR_FVALUE)))) {
-		switch (expr->type) {
-		case EXPR_STRING: {
-			dmrC_sparse_error(
-			    C, expr->pos,
-			    "unsupported string reference in initializer\n");
-			dmrC_show_expression(C, expr);
-			return NULL;
-			break;
-		}
-		case EXPR_SYMBOL: {
-			dmrC_sparse_error(
-			    C, expr->pos,
-			    "unresolved symbol reference in initializer\n");
-			dmrC_show_expression(C, expr);
-			return NULL;
-			break;
-		}
-		case EXPR_VALUE: {
-			if (dmrC_is_static(sym)) {
-				dmrC_sparse_error(
-				    C, expr->pos,
-				    "unsupported symbol reference\n");
-				dmrC_show_expression(C, expr);
-				return NULL;
-			}
-			struct NanoType *symtype = get_symnode_type(C, fn, sym);
-			if (symtype == NULL) {
-				dmrC_sparse_error(C, expr->pos,
-						  "invalid symbol type\n");
-				dmrC_show_expression(C, expr);
-				return NULL;
-			}
-			result = build_local(C, fn, sym);
-			if (!result)
-				return result;
-			if (do_init) {
-				NJXLInsRef value =
-				    constant_value(C, fn, expr->value, symtype);
-				build_store(C, fn, value, result, symtype);
-			}
-			sym->priv = result;
-			break;
-		}
-		case EXPR_FVALUE: {
-			if (dmrC_is_static(sym)) {
-				dmrC_sparse_error(
-				    C, expr->pos,
-				    "unsupported symbol reference\n");
-				dmrC_show_expression(C, expr);
-				return NULL;
-			}
-			struct NanoType *symtype = get_symnode_type(C, fn, sym);
-			if (symtype == NULL) {
-				dmrC_sparse_error(C, expr->pos,
-						  "invalid symbol type\n");
-				dmrC_show_expression(C, expr);
-				return NULL;
-			}
-			result = build_local(C, fn, sym);
-			if (!result)
-				return result;
-			if (do_init) {
-				NJXLInsRef value = constant_fvalue(
-				    C, fn, expr->fvalue, symtype);
-				build_store(C, fn, value, result, symtype);
-			}
-			sym->priv = result;
-			break;
-		}
-		default:
-			dmrC_sparse_error(
-			    C, expr->pos,
-			    "unsupported expr type in initializer: %d\n",
-			    expr->type);
-			dmrC_show_expression(C, expr);
-			return NULL;
-		}
-	} else {
-		const char *name = dmrC_show_ident(C, sym->ident);
-		struct NanoType *type = get_symnode_type(C, fn, sym);
-		if (type->type == RT_FUNCTION) {
-			dmrC_sparse_error(
-			    C, sym->pos,
-			    "unsupported symbol reference for '%s'\n", name);
-			dmrC_debug_symbol(C, sym);
-			return NULL;
-		} else if (dmrC_is_extern(sym) || dmrC_is_toplevel(sym)) {
-			dmrC_sparse_error(
-			    C, sym->pos,
-			    "unsupported symbol reference for '%s'\n", name);
-			dmrC_debug_symbol(C, sym);
-			return NULL;
-		} else {
-			if (dmrC_is_static(sym)) {
-				dmrC_sparse_error(
-				    C, sym->pos,
-				    "unsupported symbol reference for '%s'\n",
-				    name);
-				dmrC_debug_symbol(C, sym);
-				return NULL;
-			}
-			if (dmrC_is_static(sym) && sym->initializer) {
-				dmrC_sparse_error(C, sym->initializer->pos,
-						  "unsupported initializer for "
-						  "local static variable\n");
-				dmrC_show_expression(C, sym->initializer);
-				return NULL;
-			}
-			result = build_local(C, fn, sym);
-			if (!result)
-				return result;
-			sym->priv = result;
-		}
-	}
-	return result;
-}
-
-static NJXLInsRef pseudo_to_value(struct dmr_C *C, struct function *fn,
-				  struct symbol *ctype, pseudo_t pseudo)
-{
-	NJXLInsRef result = NULL;
-
-	switch (pseudo->type) {
-	case PSEUDO_REG:
-		result = pseudo->priv;
-		break;
-	case PSEUDO_SYM:
-		result = get_sym_value(C, fn, pseudo, true);
-		break;
-	case PSEUDO_VAL:
-		result = val_to_value(C, fn, pseudo->value, ctype);
-		break;
-	case PSEUDO_ARG:
-		result = NJX_get_parameter(fn->builder, pseudo->nr - 1);
-		break;
-	case PSEUDO_PHI:
-		result = pseudo->priv;
-		break;
-	case PSEUDO_VOID:
-		result = NULL;
-		break;
-	}
-	if (!result) {
-		fprintf(stderr, "error: no result for pseudo\n");
-		return NULL;
-	}
-	return result;
-}
-
-static NJXLInsRef output_op_phi(struct dmr_C *C, struct function *fn,
-				struct instruction *insn)
-{
-	NJXLInsRef ptr = insn->target->priv2;
-
-	if (!ptr)
-		return NULL;
-
-	// Unlike LLVM version which creates the Load instruction
-	// early on and inserts it into the IR stream here, we
-	// create the Load instruction here.
-	NJXLInsRef load = NULL;
-	switch (insn->size) {
-	case 8:
-		// TODO do we need to do unsigned here?
-		// load = NJX_load_c2i(fn->builder, ptr, 0);
-		load = NJX_load_uc2ui(fn->builder, ptr, 0);
-		break;
-	case 16:
-		// TODO do we need to do unsigned here?
-		// load = NJX_load_s2i(fn->builder, ptr, 0);
-		load = NJX_load_us2ui(fn->builder, ptr, 0);
-		break;
-	case 32:
-		if (dmrC_is_float_type(C->S, insn->type))
-			load = NJX_load_f(fn->builder, ptr, 0);
-		else
-			load = NJX_load_i(fn->builder, ptr, 0);
-		break;
-	case 64:
-		if (dmrC_is_float_type(C->S, insn->type))
-			load = NJX_load_d(fn->builder, ptr, 0);
-		else
-			load = NJX_load_q(fn->builder, ptr, 0);
-		break;
-	}
-	insn->target->priv = load;
-	return load;
-}
-
-static NJXLInsRef output_op_load(struct dmr_C *C, struct function *fn,
-				 struct instruction *insn)
-{
-	NJXLInsRef ptr = pseudo_to_value(C, fn, insn->type, insn->src);
-
-	if (!ptr)
-		return NULL;
-
-	NJXLInsRef value = NULL;
-	switch (insn->size) {
-	case 8:
-		value = NJX_load_c2i(fn->builder, ptr, (int)insn->offset);
-		break;
-	case 16:
-		value = NJX_load_s2i(fn->builder, ptr, (int)insn->offset);
-		break;
-	case 32:
-		if (dmrC_is_float_type(C->S, insn->type))
-			value = NJX_load_f(fn->builder, ptr, (int)insn->offset);
-		else
-			value = NJX_load_i(fn->builder, ptr, (int)insn->offset);
-		break;
-	case 64:
-		if (dmrC_is_float_type(C->S, insn->type))
-			value = NJX_load_d(fn->builder, ptr, (int)insn->offset);
-		else
-			value = NJX_load_q(fn->builder, ptr, (int)insn->offset);
-		break;
-	}
-	insn->target->priv = value;
-	return value;
-}
 
 static struct symbol *get_function_basetype(struct symbol *type)
 {
@@ -944,97 +1361,6 @@ static NJXLInsRef output_op_call(struct dmr_C *C, struct function *fn,
 	return target;
 }
 
-static NJXLInsRef output_op_phisrc(struct dmr_C *C, struct function *fn,
-				   struct instruction *insn)
-{
-	NJXLInsRef v;
-	struct instruction *phi;
-
-	assert(insn->target->priv == NULL);
-
-	/* target = src */
-	v = pseudo_to_value(C, fn, insn->type, insn->phi_src);
-	if (!v)
-		return NULL;
-
-	FOR_EACH_PTR(insn->phi_users, phi)
-	{
-		NJXLInsRef ptr;
-
-		assert(phi->opcode == OP_PHI);
-		/* phi must be load from alloca */
-		ptr = phi->target->priv2;
-		if (!ptr)
-			return NULL;
-
-		switch (phi->size) {
-		case 8:
-			NJX_store_i2c(fn->builder, v, ptr, 0);
-			break;
-		case 16:
-			NJX_store_i2s(fn->builder, v, ptr, 0);
-			break;
-		case 32:
-			if (dmrC_is_float_type(C->S, insn->type))
-				NJX_store_f(fn->builder, v, ptr, 0);
-			else
-				NJX_store_i(fn->builder, v, ptr, 0);
-			break;
-		case 64:
-			if (dmrC_is_float_type(C->S, insn->type))
-				NJX_store_d(fn->builder, v, ptr, 0);
-			else
-				NJX_store_q(fn->builder, v, ptr, 0);
-			break;
-		default:
-			return NULL;
-		}
-	}
-	END_FOR_EACH_PTR(phi);
-	return v;
-}
-
-/**
- * Convert the pseudo to a case_value, and cast it to the expected type of the
- * instruction. If ptrtoint is true then convert pointer values to integers.
- */
-static NJXLInsRef get_operand(struct dmr_C *C, struct function *fn,
-			      struct symbol *ctype, pseudo_t pseudo,
-			      bool ptrtoint, bool unsigned_cast)
-{
-	NJXLInsRef target;
-
-	struct NanoType *instruction_type =
-	    get_symnode_or_basetype(C, fn, ctype);
-	if (instruction_type == NULL)
-		return NULL;
-	target = pseudo_to_value(C, fn, ctype, pseudo);
-	if (!target)
-		return NULL;
-	if (ptrtoint && dmrC_is_ptr_type(ctype))
-		target = build_cast(C, fn, target, instruction_type, 0);
-	else
-		target =
-		    build_cast(C, fn, target, instruction_type, unsigned_cast);
-	return target;
-}
-
-static struct symbol *pseudo_type(struct dmr_C *C, pseudo_t pseudo)
-{
-	switch (pseudo->type) {
-	case PSEUDO_SYM:
-	case PSEUDO_ARG:
-		return pseudo->sym;
-	case PSEUDO_REG:
-	case PSEUDO_PHI:
-		return pseudo->def->type;
-	case PSEUDO_VAL:
-		return C->target->size_t_ctype;
-	case PSEUDO_VOID:
-	default:
-		return &C->S->void_ctype;
-	}
-}
 
 static NJXLInsRef is_eq_zero(struct dmr_C *C, struct function *fn,
 			     NJXLInsRef value)
@@ -1063,367 +1389,7 @@ static NJXLInsRef is_neq_zero(struct dmr_C *C, struct function *fn,
 	return is_eq_zero(C, fn, cond);
 }
 
-static NJXLInsRef output_op_compare(struct dmr_C *C, struct function *fn,
-				    struct instruction *insn)
-{
-	NJXLInsRef lhs, rhs, target = NULL;
 
-	if (insn->src1->type == PSEUDO_VAL)
-		lhs = val_to_value(C, fn, insn->src1->value,
-				   pseudo_type(C, insn->src2));
-	else
-		lhs = pseudo_to_value(C, fn, insn->type, insn->src1);
-	if (!lhs)
-		return NULL;
-	if (insn->src2->type == PSEUDO_VAL)
-		rhs = val_to_value(C, fn, insn->src2->value,
-				   pseudo_type(C, insn->src1));
-	else
-		rhs = pseudo_to_value(C, fn, insn->type, insn->src2);
-	if (!rhs)
-		return NULL;
-
-	struct NanoType *dst_type = insn_symbol_type(C, fn, insn);
-	if (!dst_type)
-		return NULL;
-
-	switch (insn->opcode) {
-	case OP_SET_LT:
-		if (NJX_is_d(lhs))
-			target = NJX_ltd(fn->builder, lhs, rhs);
-		else if (NJX_is_f(lhs))
-			target = NJX_ltf(fn->builder, lhs, rhs);
-		else if (NJX_is_q(lhs))
-			target = NJX_ltq(fn->builder, lhs, rhs);
-		else if (NJX_is_i(lhs))
-			target = NJX_lti(fn->builder, lhs, rhs);
-		break;
-	case OP_SET_B:
-		if (NJX_is_d(lhs))
-			target = NJX_ltd(fn->builder, lhs, rhs);
-		else if (NJX_is_f(lhs))
-			target = NJX_ltf(fn->builder, lhs, rhs);
-		else if (NJX_is_q(lhs))
-			target = NJX_ltuq(fn->builder, lhs, rhs);
-		else if (NJX_is_i(lhs))
-			target = NJX_ltui(fn->builder, lhs, rhs);
-		break;
-	case OP_SET_LE:
-		if (NJX_is_d(lhs))
-			target = NJX_led(fn->builder, lhs, rhs);
-		else if (NJX_is_f(lhs))
-			target = NJX_lef(fn->builder, lhs, rhs);
-		else if (NJX_is_q(lhs))
-			target = NJX_leq(fn->builder, lhs, rhs);
-		else if (NJX_is_i(lhs))
-			target = NJX_lei(fn->builder, lhs, rhs);
-		break;
-	case OP_SET_BE:
-		if (NJX_is_d(lhs))
-			target = NJX_led(fn->builder, lhs, rhs);
-		else if (NJX_is_f(lhs))
-			target = NJX_lef(fn->builder, lhs, rhs);
-		else if (NJX_is_q(lhs))
-			target = NJX_leuq(fn->builder, lhs, rhs);
-		else if (NJX_is_i(lhs))
-			target = NJX_leui(fn->builder, lhs, rhs);
-		break;
-	case OP_SET_GT:
-		if (NJX_is_d(lhs))
-			target = NJX_gtd(fn->builder, lhs, rhs);
-		else if (NJX_is_f(lhs))
-			target = NJX_gtf(fn->builder, lhs, rhs);
-		else if (NJX_is_q(lhs))
-			target = NJX_gtq(fn->builder, lhs, rhs);
-		else if (NJX_is_i(lhs))
-			target = NJX_gti(fn->builder, lhs, rhs);
-		break;
-	case OP_SET_A:
-		if (NJX_is_d(lhs))
-			target = NJX_gtd(fn->builder, lhs, rhs);
-		else if (NJX_is_f(lhs))
-			target = NJX_gtf(fn->builder, lhs, rhs);
-		else if (NJX_is_q(lhs))
-			target = NJX_gtuq(fn->builder, lhs, rhs);
-		else if (NJX_is_i(lhs))
-			target = NJX_gtui(fn->builder, lhs, rhs);
-		break;
-	case OP_SET_GE:
-		if (NJX_is_d(lhs))
-			target = NJX_ged(fn->builder, lhs, rhs);
-		else if (NJX_is_f(lhs))
-			target = NJX_gef(fn->builder, lhs, rhs);
-		else if (NJX_is_q(lhs))
-			target = NJX_geq(fn->builder, lhs, rhs);
-		else if (NJX_is_i(lhs))
-			target = NJX_gei(fn->builder, lhs, rhs);
-		break;
-	case OP_SET_AE:
-		if (NJX_is_d(lhs))
-			target = NJX_ged(fn->builder, lhs, rhs);
-		else if (NJX_is_f(lhs))
-			target = NJX_gef(fn->builder, lhs, rhs);
-		else if (NJX_is_q(lhs))
-			target = NJX_geuq(fn->builder, lhs, rhs);
-		else if (NJX_is_i(lhs))
-			target = NJX_geui(fn->builder, lhs, rhs);
-		break;
-	case OP_SET_EQ:
-	case OP_SET_NE:
-		if (NJX_is_d(lhs))
-			target = NJX_eqd(fn->builder, lhs, rhs);
-		else if (NJX_is_f(lhs))
-			target = NJX_eqf(fn->builder, lhs, rhs);
-		else if (NJX_is_q(lhs))
-			target = NJX_eqq(fn->builder, lhs, rhs);
-		else if (NJX_is_i(lhs))
-			target = NJX_eqi(fn->builder, lhs, rhs);
-		if (insn->opcode == OP_SET_NE && target)
-			target = is_eq_zero(C, fn, target);
-		break;
-	default:
-		break;
-	}
-
-	insn->target->priv = target;
-	return target;
-}
-
-static NJXLInsRef output_op_binary(struct dmr_C *C, struct function *fn,
-				   struct instruction *insn)
-{
-	NJXLInsRef lhs, rhs, target = NULL;
-
-	// TODO is this enough or do we need special unsigned opcodes?
-	bool unsigned_op = insn->opcode == OP_MULU || insn->opcode == OP_DIVU ||
-			   insn->opcode == OP_MODU;
-
-	lhs = get_operand(C, fn, insn->type, insn->src1, 1, unsigned_op);
-	if (!lhs)
-		return NULL;
-
-	rhs = get_operand(C, fn, insn->type, insn->src2, 1, unsigned_op);
-	if (!rhs)
-		return NULL;
-
-	switch (insn->opcode) {
-	/* Binary */
-	case OP_ADD:
-		switch (insn->size) {
-		case 64:
-			if (dmrC_is_float_type(C->S, insn->type))
-				target = NJX_addd(fn->builder, lhs, rhs);
-			else
-				target = NJX_addq(fn->builder, lhs, rhs);
-			break;
-		case 32:
-			if (dmrC_is_float_type(C->S, insn->type))
-				target = NJX_addf(fn->builder, lhs, rhs);
-			else
-				target = NJX_addi(fn->builder, lhs, rhs);
-			break;
-		}
-		break;
-	case OP_SUB:
-		switch (insn->size) {
-		case 64:
-			if (dmrC_is_float_type(C->S, insn->type))
-				target = NJX_subd(fn->builder, lhs, rhs);
-			else
-				target = NJX_subq(fn->builder, lhs, rhs);
-			break;
-		case 32:
-			if (dmrC_is_float_type(C->S, insn->type))
-				target = NJX_subf(fn->builder, lhs, rhs);
-			else
-				target = NJX_subi(fn->builder, lhs, rhs);
-			break;
-		}
-		break;
-	case OP_MULU:
-		switch (insn->size) {
-		case 64:
-			if (dmrC_is_float_type(C->S, insn->type))
-				target = NJX_muld(fn->builder, lhs, rhs);
-			else
-				target = NJX_mulq(fn->builder, lhs, rhs);
-			break;
-		case 32:
-			if (dmrC_is_float_type(C->S, insn->type))
-				target = NJX_mulf(fn->builder, lhs, rhs);
-			else
-				target = NJX_muli(fn->builder, lhs, rhs);
-			break;
-		}
-		break;
-	case OP_MULS:
-		switch (insn->size) {
-		case 64:
-			target = NJX_mulq(fn->builder, lhs, rhs);
-			break;
-		case 32:
-			target = NJX_muli(fn->builder, lhs, rhs);
-			break;
-		}
-		break;
-	case OP_DIVU:
-		switch (insn->size) {
-		case 64:
-			if (dmrC_is_float_type(C->S, insn->type))
-				target = NJX_divd(fn->builder, lhs, rhs);
-			else
-				target = NJX_divq(fn->builder, lhs, rhs);
-			break;
-		case 32:
-			if (dmrC_is_float_type(C->S, insn->type))
-				target = NJX_divf(fn->builder, lhs, rhs);
-			else
-				target = NJX_divi(fn->builder, lhs, rhs);
-			break;
-		}
-		break;
-	case OP_DIVS:
-		switch (insn->size) {
-		case 64:
-			target = NJX_divq(fn->builder, lhs, rhs);
-			break;
-		case 32:
-			target = NJX_divi(fn->builder, lhs, rhs);
-			break;
-		}
-		break;
-
-	case OP_MODS:
-	case OP_MODU:
-		assert(!dmrC_is_float_type(C->S, insn->type));
-		switch (insn->size) {
-		case 64:
-			target = NJX_modq(fn->builder, lhs, rhs);
-			break;
-		case 32:
-			target = NJX_modi(fn->builder, lhs, rhs);
-			break;
-		}
-		break;
-	case OP_SHL:
-		assert(!dmrC_is_float_type(C->S, insn->type));
-		switch (insn->size) {
-		case 64:
-			target = NJX_lshq(fn->builder, lhs, rhs);
-			break;
-		case 32:
-			target = NJX_lshi(fn->builder, lhs, rhs);
-			break;
-		}
-		break;
-	case OP_LSR:
-		assert(!dmrC_is_float_type(C->S, insn->type));
-		switch (insn->size) {
-		case 64:
-			target = NJX_rshuq(fn->builder, lhs, rhs);
-			break;
-		case 32:
-			target = NJX_rshui(fn->builder, lhs, rhs);
-			break;
-		}
-		break;
-	case OP_ASR:
-		assert(!dmrC_is_float_type(C->S, insn->type));
-		switch (insn->size) {
-		case 64:
-			target = NJX_rshq(fn->builder, lhs, rhs);
-			break;
-		case 32:
-			target = NJX_rshi(fn->builder, lhs, rhs);
-			break;
-		}
-		break;
-
-	/* Logical */
-	case OP_AND:
-		assert(!dmrC_is_float_type(C->S, insn->type));
-		switch (insn->size) {
-		case 64:
-			target = NJX_andq(fn->builder, lhs, rhs);
-			break;
-		case 32:
-			target = NJX_andi(fn->builder, lhs, rhs);
-			break;
-		}
-		break;
-	case OP_OR:
-		assert(!dmrC_is_float_type(C->S, insn->type));
-		switch (insn->size) {
-		case 64:
-			target = NJX_orq(fn->builder, lhs, rhs);
-			break;
-		case 32:
-			target = NJX_ori(fn->builder, lhs, rhs);
-			break;
-		}
-		break;
-	case OP_XOR:
-		assert(!dmrC_is_float_type(C->S, insn->type));
-		switch (insn->size) {
-		case 64:
-			target = NJX_xorq(fn->builder, lhs, rhs);
-			break;
-		case 32:
-			target = NJX_xori(fn->builder, lhs, rhs);
-			break;
-		}
-		break;
-	case OP_AND_BOOL: {
-		NJXLInsRef lhs_nz, rhs_nz;
-		struct NanoType *dst_type;
-
-		lhs_nz = is_neq_zero(C, fn, lhs);
-		rhs_nz = is_neq_zero(C, fn, rhs);
-		switch (insn->size) {
-		case 64:
-			target = NJX_andq(fn->builder, lhs_nz, rhs_nz);
-			break;
-		case 1:
-		case 32:
-			target = NJX_andi(fn->builder, lhs_nz, rhs_nz);
-			break;
-		}
-		if (!target)
-			return NULL;
-		dst_type = insn_symbol_type(C, fn, insn);
-		if (!dst_type)
-			return NULL;
-		target = build_cast(C, fn, target, dst_type, 1);
-		break;
-	}
-	case OP_OR_BOOL: {
-		NJXLInsRef lhs_nz, rhs_nz;
-		struct NanoType *dst_type;
-
-		lhs_nz = is_neq_zero(C, fn, lhs);
-		rhs_nz = is_neq_zero(C, fn, rhs);
-		switch (insn->size) {
-		case 64:
-			target = NJX_orq(fn->builder, lhs_nz, rhs_nz);
-			break;
-		case 1:
-		case 32:
-			target = NJX_ori(fn->builder, lhs_nz, rhs_nz);
-			break;
-		}
-		if (!target)
-			return NULL;
-		dst_type = insn_symbol_type(C, fn, insn);
-		if (!dst_type)
-			return NULL;
-		target = build_cast(C, fn, target, dst_type, 1);
-		break;
-	}
-	}
-	insn->target->priv = target;
-
-	return target;
-}
 
 static NJXLInsRef output_op_setval(struct dmr_C *C, struct function *fn,
 				   struct instruction *insn)
@@ -1533,78 +1499,7 @@ static NJXLInsRef output_op_neg(struct dmr_C *C, struct function *fn,
 	return target;
 }
 
-static NJXLInsRef output_op_store(struct dmr_C *C, struct function *fn,
-				  struct instruction *insn)
-{
-	NJXLInsRef ptr, target_in;
-	int32_t off;
 
-	/* int type large enough to hold a pointer */
-	off = (int32_t)insn->offset;
-
-	if (is_aggregate_type(insn->type)) {
-		dmrC_sparse_error(C, insn->pos,
-				  "store to aggregate type is "
-				  "not yet supported, failure at "
-				  "insn %s\n",
-				  dmrC_show_instruction(C, insn));
-		return NULL;
-	}
-
-	ptr = pseudo_to_value(C, fn, insn->type, insn->src);
-	if (!ptr)
-		return NULL;
-	ptr = build_cast(C, fn, ptr, &PtrType, 0);
-
-	target_in = pseudo_to_value(C, fn, insn->type, insn->target);
-	if (!target_in)
-		return NULL;
-
-	NJXLInsRef value = NULL;
-	switch (insn->size) {
-	case 8:
-		value = NJX_store_i2c(fn->builder, target_in, ptr, off);
-		break;
-	case 16:
-		value = NJX_store_i2s(fn->builder, target_in, ptr, off);
-		break;
-	case 32:
-		if (NJX_is_f(target_in))
-			value = NJX_store_f(fn->builder, target_in, ptr, off);
-		else
-			value = NJX_store_i(fn->builder, target_in, ptr, off);
-		break;
-	case 64:
-		if (NJX_is_d(target_in))
-			value = NJX_store_d(fn->builder, target_in, ptr, off);
-		else
-			value = NJX_store_q(fn->builder, target_in, ptr, off);
-		break;
-	}
-	return value;
-}
-
-/*
- * Add liveness data to help Nanojit's
- * register allocator, which does a scan of the Nanojit instructions
- * from bottom up and can miss the fact that some registers and stack slots are
- * needed.
- */
-static void output_liveness(struct dmr_C *C, struct function *fn,
-			    struct basic_block *bb)
-{
-	// Right this is not needed it appears as the registers are not
-	// shared across basic blocks other than parameters
-}
-
-static void output_liveness_localvars(struct dmr_C *C, struct function *fn)
-{
-	// Mark stack slots arising from
-	// local var declarations
-	NJXLInsRef ptr;
-	FOR_EACH_PTR(fn->local_vars_list, ptr) { NJX_liveq(fn->builder, ptr); }
-	END_FOR_EACH_PTR(ptr);
-}
 
 /*
  * For now we emit a switch statement as if it is a bunch
@@ -1688,54 +1583,7 @@ static NJXLInsRef output_op_switch(struct dmr_C *C, struct function *fn,
 	return switch_value;
 }
 
-static NJXLInsRef output_op_cbr(struct dmr_C *C, struct function *fn,
-				struct instruction *br)
-{
-	NJXLInsRef value = pseudo_to_value(C, fn, br->type, br->cond);
-	if (!value)
-		return NULL;
-	NJXLInsRef cond = is_eq_zero(C, fn, value);
-	if (cond == NULL)
-		return NULL;
-	// Mark phi allocas needed by destination BB as live
-	// we should only output if bb_false precedes current bb
-	if (br->bb->nr > br->bb_false->nr)
-		output_liveness(C, fn, br->bb_false);
-	// As we tested for the value being zero above,
-	// then if this is true, the condition is false, so
-	// we must take the false branch
-	NJXLInsRef br1 =
-	    NJX_cbr_true(fn->builder, cond, NULL); // br->bb_false->priv
-	add_jump_instruction(C, fn, br->bb_false, br1);
-	// Mark phi allocas needed by destination BB as live
-	// we should only output if bb_false precedes current bb
-	if (br->bb->nr > br->bb_true->nr)
-		output_liveness(C, fn, br->bb_true);
-	// If condition is not zero then
-	// we take the true branch.
-	NJXLInsRef br2 =
-	    NJX_cbr_false(fn->builder, cond, NULL); // br->bb_true->priv
 
-	// It appears that NanoJIT may decide jump isn't
-	// necessary
-	if (br2) {
-		add_jump_instruction(C, fn, br->bb_true, br2);
-	}
-	return br1;
-}
-
-static NJXLInsRef output_op_br(struct dmr_C *C, struct function *fn,
-			       struct instruction *br)
-{
-	// Mark registers needed by destination BB as live
-	// we should only output if bb_true precedes
-	// current bb
-	if (br->bb->nr > br->bb_true->nr)
-		output_liveness(C, fn, br->bb_true);
-	NJXLInsRef br1 = NJX_br(fn->builder, NULL);
-	add_jump_instruction(C, fn, br->bb_true, br1);
-	return br1;
-}
 
 static NJXLInsRef output_op_sel(struct dmr_C *C, struct function *fn,
 				struct instruction *insn)
@@ -1761,30 +1609,6 @@ static NJXLInsRef output_op_sel(struct dmr_C *C, struct function *fn,
 
 	insn->target->priv = target;
 	return target;
-}
-
-static NJXLInsRef output_op_ret(struct dmr_C *C, struct function *fn,
-				struct instruction *insn)
-{
-	pseudo_t pseudo = insn->src;
-
-	if (pseudo && pseudo != VOID_PSEUDO(C)) {
-		NJXLInsRef result = pseudo_to_value(C, fn, insn->type, pseudo);
-		if (!result)
-			return NULL;
-		if (NJX_is_i(result))
-			return NJX_reti(fn->builder, result);
-		else if (NJX_is_q(result))
-			return NJX_retq(fn->builder, result);
-		else if (NJX_is_f(result))
-			return NJX_retf(fn->builder, result);
-		else if (NJX_is_d(result))
-			return NJX_retd(fn->builder, result);
-		else
-			return NULL;
-	} else
-		// TODO How to support void return in NanoJIT is not clear
-		return NULL;
 }
 
 static NJXLInsRef output_op_ptrcast(struct dmr_C *C, struct function *fn,
@@ -1867,57 +1691,66 @@ static NJXLInsRef output_op_fpcast(struct dmr_C *C, struct function *fn,
 	return target;
 }
 
-const char *make_comment(struct dmr_C *C, struct instruction *insn)
+#endif
+
+static JIT_NodeRef output_op_ret(struct dmr_C *C, struct function *fn,
+	struct instruction *insn)
 {
-	const char *comment = dmrC_show_instruction(C, insn);
-	char *copy =
-	    dmrC_allocator_allocate(&C->byte_allocator, strlen(comment) + 1);
-	strcpy(copy, comment);
-	return copy;
+	pseudo_t pseudo = insn->src;
+
+	if (pseudo && pseudo != VOID_PSEUDO(C)) {
+		JIT_NodeRef result = pseudo_to_value(C, fn, insn->type, pseudo);
+		if (!result)
+			return NULL;
+		return JIT_ReturnValue(fn->injector, result);
+	}
+	else
+		return JIT_ReturnNoValue(fn->injector);
+}
+
+static JIT_NodeRef output_op_br(struct dmr_C *C, struct function *fn,
+	struct instruction *br)
+{
+	JIT_BlockRef target_block = JIT_GetBlock(fn->injector, br->bb->nr);
+	return JIT_Goto(fn->injector, target_block);
 }
 
 /* return 1 on success, 0 on failure */
 static int output_insn(struct dmr_C *C, struct function *fn,
 		       struct instruction *insn)
 {
-	NJXLInsRef v = NULL;
+	JIT_NodeRef v = NULL;
 	switch (insn->opcode) {
 	case OP_RET:
-		NJX_comment(fn->builder, make_comment(C, insn));
 		v = output_op_ret(C, fn, insn);
 		break;
 	case OP_BR:
-		NJX_comment(fn->builder, make_comment(C, insn));
 		v = output_op_br(C, fn, insn);
 		break;
 	case OP_CBR:
-		NJX_comment(fn->builder, make_comment(C, insn));
 		v = output_op_cbr(C, fn, insn);
 		break;
 	case OP_PHISOURCE:
-		NJX_comment(fn->builder, make_comment(C, insn));
 		v = output_op_phisrc(C, fn, insn);
 		break;
 	case OP_PHI:
-		NJX_comment(fn->builder, make_comment(C, insn));
 		v = output_op_phi(C, fn, insn);
 		break;
 	case OP_LOAD:
-		NJX_comment(fn->builder, make_comment(C, insn));
 		v = output_op_load(C, fn, insn);
 		break;
 	case OP_SYMADDR:
-		NJX_comment(fn->builder, make_comment(C, insn));
-		v = output_op_symaddr(C, fn, insn);
+		//v = output_op_symaddr(C, fn, insn);
+		return 0;
 		break;
 	case OP_SETVAL:
-		NJX_comment(fn->builder, make_comment(C, insn));
-		v = output_op_setval(C, fn, insn);
+		//v = output_op_setval(C, fn, insn);
+		return 0;
 		break;
 
 	case OP_SWITCH:
-		NJX_comment(fn->builder, make_comment(C, insn));
-		v = output_op_switch(C, fn, insn);
+		//v = output_op_switch(C, fn, insn);
+		return 0;
 		break;
 
 	case OP_COMPUTEDGOTO:
@@ -1929,7 +1762,6 @@ static int output_insn(struct dmr_C *C, struct function *fn,
 		return 0;
 
 	case OP_STORE:
-		NJX_comment(fn->builder, make_comment(C, insn));
 		v = output_op_store(C, fn, insn);
 		break;
 
@@ -1937,24 +1769,24 @@ static int output_insn(struct dmr_C *C, struct function *fn,
 		return 0;
 
 	case OP_CALL:
-		NJX_comment(fn->builder, make_comment(C, insn));
-		v = output_op_call(C, fn, insn);
+		//v = output_op_call(C, fn, insn);
+		return 0;
 		break;
 	case OP_CAST:
-		NJX_comment(fn->builder, make_comment(C, insn));
-		v = output_op_cast(C, fn, insn, true);
+		//v = output_op_cast(C, fn, insn, true);
+		return 0;
 		break;
 	case OP_SCAST:
-		NJX_comment(fn->builder, make_comment(C, insn));
-		v = output_op_cast(C, fn, insn, false);
+		//v = output_op_cast(C, fn, insn, false);
+		return 0;
 		break;
 	case OP_FPCAST:
-		NJX_comment(fn->builder, make_comment(C, insn));
-		v = output_op_fpcast(C, fn, insn);
+		//v = output_op_fpcast(C, fn, insn);
+		return 0;
 		break;
 	case OP_PTRCAST:
-		NJX_comment(fn->builder, make_comment(C, insn));
-		v = output_op_ptrcast(C, fn, insn);
+		//v = output_op_ptrcast(C, fn, insn);
+		return 0;
 		break;
 
 	case OP_ADD:
@@ -1973,7 +1805,6 @@ static int output_insn(struct dmr_C *C, struct function *fn,
 	case OP_XOR:
 	case OP_AND_BOOL:
 	case OP_OR_BOOL:
-		NJX_comment(fn->builder, make_comment(C, insn));
 		v = output_op_binary(C, fn, insn);
 		break;
 
@@ -1987,26 +1818,25 @@ static int output_insn(struct dmr_C *C, struct function *fn,
 	case OP_SET_A:
 	case OP_SET_BE:
 	case OP_SET_AE:
-		NJX_comment(fn->builder, make_comment(C, insn));
 		v = output_op_compare(C, fn, insn);
 		break;
 
 	case OP_SEL:
-		NJX_comment(fn->builder, make_comment(C, insn));
-		v = output_op_sel(C, fn, insn);
+		//v = output_op_sel(C, fn, insn);
+		return 0;
 		break;
 
 	case OP_SLICE:
 		return 0;
 
 	case OP_NOT:
-		NJX_comment(fn->builder, make_comment(C, insn));
-		v = output_op_not(C, fn, insn);
+		//v = output_op_not(C, fn, insn);
+		return 0;
 		break;
 
 	case OP_NEG:
-		NJX_comment(fn->builder, make_comment(C, insn));
-		v = output_op_neg(C, fn, insn);
+		//v = output_op_neg(C, fn, insn);
+		return 0;
 		break;
 
 	case OP_CONTEXT:
@@ -2026,16 +1856,13 @@ static int output_insn(struct dmr_C *C, struct function *fn,
 	return v != NULL;
 }
 
-#endif
-
 /* return 1 on success, 0 on failure */
 static int output_bb(struct dmr_C *C, struct function *fn,
 		     struct basic_block *bb)
 {
-#if 0
 	struct instruction *insn;
 
-	bb->priv = NJX_add_label(fn->builder);
+	JIT_SetCurrentBlock(fn->injector, bb->nr);
 	FOR_EACH_PTR(bb->insns, insn)
 	{
 		if (!insn->bb)
@@ -2050,36 +1877,8 @@ static int output_bb(struct dmr_C *C, struct function *fn,
 	END_FOR_EACH_PTR(insn);
 
 	return 1;
-#endif
-	return 0;
 }
 
-static JIT_Type map_nanotype(struct NanoType *type)
-{
-	switch (type->type) {
-	case RT_DOUBLE:
-		return JIT_Double;
-	case RT_FLOAT:
-		return JIT_Float;
-	case RT_INT8:
-		return JIT_Int8;
-	case RT_INT16:
-		return JIT_Int16;
-	case RT_INT32:
-		return JIT_Int32;
-	case RT_INT64:
-		return JIT_Int64;
-	case RT_PTR:
-		return JIT_Address;
-	default:
-		return 0;
-	}
-}
-
-static JIT_NodeRef NJX_alloca(struct function *function, int size)
-{
-	return NULL;
-}
 
 static bool JIT_ILBuilderImpl(JIT_ILInjectorRef injector, void *userdata)
 {
@@ -2105,8 +1904,8 @@ static bool JIT_ILBuilderImpl(JIT_ILInjectorRef injector, void *userdata)
 				continue;
 			/* insert alloca into entry block */
 
-			JIT_NodeRef ptr =
-			    NJX_alloca(fn, instruction_size_in_bytes(C, insn));
+			JIT_SymbolRef ptr =
+			    NJX_alloca(fn, insn_symbol_type(fn->C, fn, insn), instruction_size_in_bytes(fn->C, insn));
 			if (!ptr)
 				goto Efailed;
 
@@ -2123,8 +1922,7 @@ static bool JIT_ILBuilderImpl(JIT_ILInjectorRef injector, void *userdata)
 		END_FOR_EACH_PTR(insn);
 		/* The bb->nr field is not used by the
 		frontend anymore so we can use it to
-		decide which the order of basic blocks. This
-		is used to decide when to emit liveness instructions
+		decide which the order of basic blocks. 
 		*/
 		bb->nr = bbnr++;
 	}
@@ -2138,7 +1936,7 @@ static bool JIT_ILBuilderImpl(JIT_ILInjectorRef injector, void *userdata)
 			    dmrC_is_static(pseudo->sym) ||
 			    dmrC_is_toplevel(pseudo->sym))
 				continue;
-			//if (!get_sym_value(C, fn, pseudo, false))
+			if (!get_sym_value(C, fn, pseudo, false))
 				goto Efailed;
 		}
 	}
@@ -2182,7 +1980,7 @@ static bool output_fn(struct dmr_C *C, JIT_ContextRef module,
 			    sizeof(struct NanoType),
 			    __alignof__(struct NanoType), CHUNK);
 
-	JIT_Type argtypes[JIT_MaxArgs];
+	JIT_FunctionParameter argtypes[JIT_MaxArgs];
 
 	FOR_EACH_PTR(base_type->arguments, arg)
 	{
@@ -2192,8 +1990,9 @@ static bool output_fn(struct dmr_C *C, JIT_ContextRef module,
 				JIT_MaxArgs);
 			goto Ereturn;
 		}
-		argtypes[nr_args] = check_supported_argtype(C, arg_base_type);
-		if (argtypes[nr_args] == JIT_NoType) // Unsupported
+		argtypes[nr_args].name = "";
+		argtypes[nr_args].type = check_supported_argtype(C, arg_base_type);
+		if (argtypes[nr_args].type == JIT_NoType) // Unsupported
 			goto Ereturn;
 		nr_args++;
 	}

@@ -864,12 +864,27 @@ static JIT_NodeRef output_op_cbr(struct dmr_C *C, struct function *fn,
 	JIT_NodeRef value = pseudo_to_value(C, fn, br->type, br->cond);
 	if (!value)
 		return NULL;
+	// JIT_GenerateTreeTop(fn->injector, value);
 	JIT_BlockRef true_block = JIT_GetBlock(fn->injector, br->bb_true->nr);
 	JIT_BlockRef false_block = JIT_GetBlock(fn->injector, br->bb_false->nr);
 	JIT_NodeRef if_node =
 	    JIT_IfNotZeroValue(fn->injector, value, true_block);
-	JIT_NodeRef else_node =
-	    JIT_IfZeroValue(fn->injector, value, false_block);
+	// OMR expects the code to fall through to next block here
+	// which is assumed to be the false block I think
+	// But we want to handle false block explicitly
+	// During the initial scan we already accounted for extra block here
+	int fallthrough_blocknum =
+	    br->bb->nr + 1; // Next block is meant to be a fallthrough block
+	JIT_BlockRef fallthrough_block =
+	    JIT_GetBlock(fn->injector, fallthrough_blocknum);
+	// Add an edge from current block to fallthrough block
+	JIT_CFGAddEdge(fn->injector,
+		       JIT_BlockAsCFGNode(JIT_GetCurrentBlock(fn->injector)),
+		       JIT_BlockAsCFGNode(fallthrough_block));
+	// Switch to fallthrough block
+	JIT_SetCurrentBlock(fn->injector, fallthrough_blocknum);
+	// In the fallthrough block we only need a goto
+	JIT_NodeRef goto_node = JIT_Goto(fn->injector, false_block);
 	return if_node;
 }
 
@@ -1967,8 +1982,34 @@ static bool JIT_ILBuilderImpl(JIT_ILInjectorRef injector, void *userdata)
 	fn->injector = injector;
 
 	unsigned int bbnr = 0;
-	int num_bbs = ptrlist_size(ep->bbs);
-	JIT_CreateBlocks(fn->injector, num_bbs);
+	/* create the BBs */
+	FOR_EACH_PTR(ep->bbs, bb)
+	{
+		bool saw_cbr = false;
+		struct instruction *insn;
+		/* allocate alloca for each phi */
+		FOR_EACH_PTR(bb->insns, insn)
+		{
+			if (!insn->bb || insn->opcode != OP_CBR)
+				continue;
+			saw_cbr = true;
+			break;
+		}
+		END_FOR_EACH_PTR(insn);
+		/* The bb->nr field is not used by the
+		frontend anymore so we can use it to
+		decide which the order of basic blocks.
+		*/
+		bb->nr = bbnr++;
+		if (saw_cbr)
+			bbnr++; /* Allow an extra block here because of the way
+				   OMR does conditional branching */
+	}
+	END_FOR_EACH_PTR(bb);
+
+	/* Number of basic blocks we need - complicated by how OMRJIT handles
+	 * branching */
+	JIT_CreateBlocks(fn->injector, bbnr);
 	/* create the BBs */
 	FOR_EACH_PTR(ep->bbs, bb)
 	{
@@ -1997,11 +2038,6 @@ static bool JIT_ILBuilderImpl(JIT_ILInjectorRef injector, void *userdata)
 			insn->target->priv = NULL;
 		}
 		END_FOR_EACH_PTR(insn);
-		/* The bb->nr field is not used by the
-		frontend anymore so we can use it to
-		decide which the order of basic blocks.
-		*/
-		bb->nr = bbnr++;
 	}
 	END_FOR_EACH_PTR(bb);
 

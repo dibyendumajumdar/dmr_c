@@ -1757,12 +1757,14 @@ static pseudo_t linearize_compound_statement(struct dmr_C *C, struct entrypoint 
 
 		if (!phi_node)
 			return pseudo;
-
+#if 0
+		/* https://github.com/lucvoo/sparse/commit/1609176c9 */
 		if (dmrC_pseudo_list_size(phi_node->phi_list)==1) {
 			pseudo = dmrC_first_pseudo(phi_node->phi_list);
 			assert(pseudo->type == PSEUDO_PHI);
 			return pseudo->def->src1;
 		}
+#endif
 		return phi_node->target;
 	}
 

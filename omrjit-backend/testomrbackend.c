@@ -114,7 +114,6 @@ static int test3(int argc, char **argv)
 	return rc;
 }
 
-#if 0
 
 int test4(int argc, char **argv)
 {
@@ -138,13 +137,13 @@ int test4(int argc, char **argv)
 			   "}"
 			   "}\n";
 
-	NJXContextRef module = NJX_create_context(true);
+	JIT_ContextRef module = JIT_CreateContext();
 	int rc = 0;
-	if (!dmrC_nanocompile(argc, argv, module, code))
+	if (!dmrC_omrcompile(argc, argv, module, code))
 		rc = 1;
 	int (*fp)(int, int) = NULL;
 	if (rc == 0) {
-		fp = NJX_get_function_by_name(module, "doif");
+		fp = JIT_GetFunction(module, "doif");
 		if (!fp)
 			rc = 1;
 	}
@@ -158,10 +157,11 @@ int test4(int argc, char **argv)
 		if (rc == 0 && fp(3, 3) != 0)
 			rc = 1;
 	}
-	NJX_destroy_context(module);
+	JIT_DestroyContext(module);
 	return rc;
 }
 
+#if 0 
 int test5(int argc, char **argv)
 {
 	const char *code = "struct S { "
@@ -195,13 +195,13 @@ int test5(int argc, char **argv)
 			   "foo(&a, &b); "
 			   "return a + (int)b; "
 			   "}\n";
-	NJXContextRef module = NJX_create_context(true);
+	JIT_ContextRef module = JIT_CreateContext();
 	int rc = 0;
-	if (!dmrC_nanocompile(argc, argv, module, code))
+	if (!dmrC_omrcompile(argc, argv, module, code))
 		rc = 1;
 	int (*fp)(void) = NULL;
 	if (rc == 0) {
-		fp = NJX_get_function_by_name(module, "simplelocals");
+		fp = JIT_GetFunction(module, "simplelocals");
 		if (!fp)
 			rc = 1;
 	}
@@ -210,7 +210,7 @@ int test5(int argc, char **argv)
 			rc = 1;
 	}
 	if (rc == 0) {
-		fp = NJX_get_function_by_name(module, "getage");
+		fp = JIT_GetFunction(module, "getage");
 		if (!fp)
 			rc = 1;
 	}
@@ -218,7 +218,7 @@ int test5(int argc, char **argv)
 		if (fp() != 99)
 			rc = 1;
 	}
-	NJX_destroy_context(module);
+	JIT_DestroyContext(module);
 	return rc;
 }
 
@@ -332,7 +332,7 @@ int main(int argc, char **argv)
 	rc += test1(argc, argv);
 	rc += test2(argc, argv);
 	rc += test3(argc, argv);
-	//rc += test4(argc, argv);
+	rc += test4(argc, argv);
 	//rc += test5(argc, argv);
 	//rc += test6(argc, argv);
 	//rc += test7(argc, argv);

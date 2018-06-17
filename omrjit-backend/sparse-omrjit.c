@@ -36,7 +36,29 @@
 #include <port.h>
 #include <symbol.h>
 
-enum NanoTypeKind {
+/*
+
+Some Implementation Notes
+=========================
+
+1. Local variables are modelled as byte strings - the load/store ops
+   take care of extracting / storing the right type of value
+
+2. The rest are all scalar values
+
+3. We use stack variables to simulate phi (load) and phisrc (store) op codes.
+   These are also created as byte arrays but typically these are always 
+   scalars - I tried using the OMR Temporary var type but this created confusion
+   when trying to load/store values correctly
+
+4. We create the blocks at the beginning based upon the blocks in
+   Sparse IR - but we have to add an extra block for every CBR instruction
+   as conditional branches in OMR fall through to the next block
+
+*/
+
+
+enum OMRTypeKind {
 	RT_UNSUPPORTED = 0,
 	RT_VOID = 1,
 	RT_INT = 2,
@@ -51,29 +73,29 @@ enum NanoTypeKind {
 	RT_FUNCTION = 11
 };
 
-struct NanoType {
-	enum NanoTypeKind type;
-	struct NanoType *return_type;
+struct OMRType {
+	enum OMRTypeKind type;
+	struct OMRType *return_type;
 	uint32_t bit_size;
 };
 
-static struct NanoType VoidType = {
+static struct OMRType VoidType = {
     .type = RT_VOID, .return_type = NULL, .bit_size = 0};
-static struct NanoType Int8Type = {
+static struct OMRType Int8Type = {
     .type = RT_INT8, .return_type = NULL, .bit_size = sizeof(int8_t) * 8};
-static struct NanoType Int16Type = {
+static struct OMRType Int16Type = {
     .type = RT_INT16, .return_type = NULL, .bit_size = sizeof(int16_t) * 8};
-static struct NanoType Int32Type = {
+static struct OMRType Int32Type = {
     .type = RT_INT32, .return_type = NULL, .bit_size = sizeof(int32_t) * 8};
-static struct NanoType Int64Type = {
+static struct OMRType Int64Type = {
     .type = RT_INT64, .return_type = NULL, .bit_size = sizeof(int64_t) * 8};
-static struct NanoType FloatType = {
+static struct OMRType FloatType = {
     .type = RT_FLOAT, .return_type = NULL, .bit_size = sizeof(float) * 8};
-static struct NanoType DoubleType = {
+static struct OMRType DoubleType = {
     .type = RT_DOUBLE, .return_type = NULL, .bit_size = sizeof(double) * 8};
-static struct NanoType PtrType = {
+static struct OMRType PtrType = {
     .type = RT_PTR, .return_type = NULL, .bit_size = sizeof(void *) * 8};
-static struct NanoType BadType = {
+static struct OMRType BadType = {
     .type = RT_UNSUPPORTED, .return_type = NULL, .bit_size = 0};
 
 struct function {
@@ -83,24 +105,24 @@ struct function {
 	JIT_ContextRef context;
 	struct entrypoint *ep;
 	struct allocator type_allocator;
-	struct NanoType *return_type;
+	struct OMRType *return_type;
 };
 
 /* Arbitrary limit ... FIXME */
 #define JIT_MaxArgs 16
 
-static struct NanoType *alloc_nanotype(struct function *fn,
-				       enum NanoTypeKind kind,
+static struct OMRType *alloc_OMRtype(struct function *fn,
+				       enum OMRTypeKind kind,
 				       unsigned int bit_size)
 {
-	struct NanoType *type = dmrC_allocator_allocate(&fn->type_allocator, 0);
+	struct OMRType *type = dmrC_allocator_allocate(&fn->type_allocator, 0);
 	type->type = kind;
 	type->bit_size = bit_size;
 	type->return_type = NULL;
 	return type;
 }
 
-static struct NanoType *int_type_by_size(struct function *fn, int size)
+static struct OMRType *int_type_by_size(struct function *fn, int size)
 {
 	switch (size) {
 	case -1:
@@ -114,11 +136,11 @@ static struct NanoType *int_type_by_size(struct function *fn, int size)
 	case 64:
 		return &Int64Type;
 	default:
-		return alloc_nanotype(fn, RT_INT, size);
+		return alloc_OMRtype(fn, RT_INT, size);
 	}
 }
 
-static struct NanoType *sym_basetype_type(struct dmr_C *C, struct function *fn,
+static struct OMRType *sym_basetype_type(struct dmr_C *C, struct function *fn,
 					  struct symbol *sym,
 					  struct symbol *sym_node)
 {
@@ -146,7 +168,7 @@ static struct NanoType *sym_basetype_type(struct dmr_C *C, struct function *fn,
 		case 64:
 			return &Int64Type;
 		default:
-			return alloc_nanotype(fn, RT_INT, sym->bit_size);
+			return alloc_OMRtype(fn, RT_INT, sym->bit_size);
 		}
 	}
 }
@@ -165,50 +187,50 @@ static int is_aggregate_type(struct symbol *sym)
 	}
 }
 
-static struct NanoType *type_to_nanotype(struct dmr_C *C, struct function *fn,
+static struct OMRType *type_to_OMRtype(struct dmr_C *C, struct function *fn,
 					 struct symbol *sym,
 					 struct symbol *sym_node);
 
-static struct NanoType *get_symnode_type(struct dmr_C *C, struct function *fn,
+static struct OMRType *get_symnode_type(struct dmr_C *C, struct function *fn,
 					 struct symbol *sym)
 {
 	assert(sym->type == SYM_NODE);
-	return type_to_nanotype(C, fn, sym->ctype.base_type, sym);
+	return type_to_OMRtype(C, fn, sym->ctype.base_type, sym);
 }
 
-static struct NanoType *get_symnode_or_basetype(struct dmr_C *C,
+static struct OMRType *get_symnode_or_basetype(struct dmr_C *C,
 						struct function *fn,
 						struct symbol *sym)
 {
 	if (sym->type == SYM_NODE) {
 		assert(sym->ctype.base_type->type != SYM_NODE);
-		return type_to_nanotype(C, fn, sym->ctype.base_type, sym);
+		return type_to_OMRtype(C, fn, sym->ctype.base_type, sym);
 	}
-	return type_to_nanotype(C, fn, sym, NULL);
+	return type_to_OMRtype(C, fn, sym, NULL);
 }
 
-static struct NanoType *func_return_type(struct dmr_C *C, struct function *fn,
+static struct OMRType *func_return_type(struct dmr_C *C, struct function *fn,
 					 struct symbol *sym,
 					 struct symbol *sym_node)
 {
-	return type_to_nanotype(C, fn, sym->ctype.base_type, sym_node);
+	return type_to_OMRtype(C, fn, sym->ctype.base_type, sym_node);
 }
 
-static struct NanoType *sym_func_type(struct dmr_C *C, struct function *fn,
+static struct OMRType *sym_func_type(struct dmr_C *C, struct function *fn,
 				      struct symbol *sym,
 				      struct symbol *sym_node)
 {
-	struct NanoType *ret_type;
+	struct OMRType *ret_type;
 
 	// TODO we probably need a better way to encode function type
 
 	ret_type = func_return_type(C, fn, sym, sym_node);
-	struct NanoType *type = alloc_nanotype(fn, RT_FUNCTION, 0);
+	struct OMRType *type = alloc_OMRtype(fn, RT_FUNCTION, 0);
 	type->return_type = ret_type;
 	return type;
 }
 
-static struct NanoType *sym_array_type(struct dmr_C *C, struct function *fn,
+static struct OMRType *sym_array_type(struct dmr_C *C, struct function *fn,
 				       struct symbol *sym,
 				       struct symbol *sym_node)
 {
@@ -225,10 +247,10 @@ static struct NanoType *sym_array_type(struct dmr_C *C, struct function *fn,
 		fprintf(stderr, "array size can not be determined\n");
 		return &BadType;
 	}
-	return alloc_nanotype(fn, RT_AGGREGATE, array_bit_size);
+	return alloc_OMRtype(fn, RT_AGGREGATE, array_bit_size);
 }
 
-static struct NanoType *sym_struct_type(struct dmr_C *C, struct function *fn,
+static struct OMRType *sym_struct_type(struct dmr_C *C, struct function *fn,
 					struct symbol *sym,
 					struct symbol *sym_node)
 {
@@ -236,17 +258,17 @@ static struct NanoType *sym_struct_type(struct dmr_C *C, struct function *fn,
 	if (sym->bit_size > 0 && sym->bit_size != -1) {
 		bit_size = sym->bit_size;
 	}
-	return alloc_nanotype(fn, RT_AGGREGATE, bit_size);
+	return alloc_OMRtype(fn, RT_AGGREGATE, bit_size);
 }
 
-static struct NanoType *sym_ptr_type(struct dmr_C *C, struct function *fn,
+static struct OMRType *sym_ptr_type(struct dmr_C *C, struct function *fn,
 				     struct symbol *sym,
 				     struct symbol *sym_node)
 {
 	return &PtrType;
 }
 
-static struct NanoType *type_to_nanotype(struct dmr_C *C, struct function *fn,
+static struct OMRType *type_to_OMRtype(struct dmr_C *C, struct function *fn,
 					 struct symbol *sym,
 					 struct symbol *sym_node)
 {
@@ -254,11 +276,11 @@ static struct NanoType *type_to_nanotype(struct dmr_C *C, struct function *fn,
 	assert(sym_node == NULL || sym_node->type == SYM_NODE);
 	switch (sym->type) {
 	case SYM_BITFIELD: {
-		return alloc_nanotype(fn, RT_INT, sym->bit_size);
+		return alloc_OMRtype(fn, RT_INT, sym->bit_size);
 	}
 	case SYM_RESTRICT:
 	case SYM_ENUM:
-		return type_to_nanotype(C, fn, sym->ctype.base_type, sym_node);
+		return type_to_OMRtype(C, fn, sym->ctype.base_type, sym_node);
 	case SYM_BASETYPE:
 		return sym_basetype_type(C, fn, sym, sym_node);
 	case SYM_PTR:
@@ -275,7 +297,7 @@ static struct NanoType *type_to_nanotype(struct dmr_C *C, struct function *fn,
 	}
 }
 
-static struct NanoType *insn_symbol_type(struct dmr_C *C, struct function *fn,
+static struct OMRType *insn_symbol_type(struct dmr_C *C, struct function *fn,
 					 struct instruction *insn)
 {
 	if (insn->type) {
@@ -291,7 +313,7 @@ static struct NanoType *insn_symbol_type(struct dmr_C *C, struct function *fn,
 	case 64:
 		return &Int64Type;
 	default:
-		return alloc_nanotype(fn, RT_INT, insn->size);
+		return alloc_OMRtype(fn, RT_INT, insn->size);
 	}
 }
 
@@ -330,8 +352,8 @@ static JIT_Type check_supported_argtype(struct dmr_C *C, struct symbol *sym)
 	return 0;
 }
 
-static struct NanoType *check_supported_returntype(struct dmr_C *C,
-						   struct NanoType *type)
+static struct OMRType *check_supported_returntype(struct dmr_C *C,
+						   struct OMRType *type)
 {
 	if (type->type == RT_AGGREGATE || type->type == RT_FUNCTION ||
 	    type->type == RT_INT || type->type == RT_UNSUPPORTED ||
@@ -346,7 +368,7 @@ static int32_t instruction_size_in_bytes(struct dmr_C *C,
 	return insn->size / C->target->bits_in_char;
 }
 
-static JIT_Type map_nanotype(struct NanoType *type)
+static JIT_Type map_OMRtype(struct OMRType *type)
 {
 	switch (type->type) {
 	case RT_DOUBLE:
@@ -368,15 +390,19 @@ static JIT_Type map_nanotype(struct NanoType *type)
 	}
 }
 
-static JIT_SymbolRef NJX_alloca(struct function *fn, struct NanoType *type,
+static JIT_SymbolRef OMR_alloca(struct function *fn, struct OMRType *type,
 				int32_t size)
 {
+	// In OMR there is no explicit alloca IL I believe
+	// Instead we create a local symbol of appropriate size
+	// We treat all locals as byte arrays - the load/store 
+	// is done at specific offsets as required
 	return JIT_CreateLocalByteArray(fn->injector, (uint32_t)size);
 }
 
 static JIT_NodeRef constant_value(struct dmr_C *C, struct function *fn,
 				  unsigned long long val,
-				  struct NanoType *dtype)
+				  struct OMRType *dtype)
 {
 	JIT_NodeRef result = NULL;
 
@@ -403,7 +429,7 @@ static JIT_NodeRef constant_value(struct dmr_C *C, struct function *fn,
 }
 
 static JIT_NodeRef constant_fvalue(struct dmr_C *C, struct function *fn,
-				   double val, struct NanoType *dtype)
+				   double val, struct OMRType *dtype)
 {
 	JIT_NodeRef result = NULL;
 
@@ -426,7 +452,7 @@ static JIT_SymbolRef build_local(struct dmr_C *C, struct function *fn,
 				 struct symbol *sym)
 {
 	const char *name = dmrC_show_ident(C, sym->ident);
-	struct NanoType *type = get_symnode_type(C, fn, sym);
+	struct OMRType *type = get_symnode_type(C, fn, sym);
 	char localname[256] = {0};
 	snprintf(localname, sizeof localname, "%s_%p.", name, sym);
 	if (dmrC_is_static(sym) || dmrC_is_extern(sym) ||
@@ -436,19 +462,17 @@ static JIT_SymbolRef build_local(struct dmr_C *C, struct function *fn,
 		if (sym->initialized && is_aggregate_type(sym)) {
 			return NULL;
 		}
-		JIT_SymbolRef result = NJX_alloca(
+		JIT_SymbolRef result = OMR_alloca(
 		    fn, type, type->bit_size / C->target->bits_in_char);
-		JIT_Type t = JIT_GetSymbolType(result);
-		printf("Created local %s of type %d\n", name, t);
 		sym->priv = result;
 		return result;
 	}
 }
 
 static void build_store(struct dmr_C *C, struct function *fn, JIT_NodeRef v,
-			JIT_SymbolRef ptr)
+			JIT_SymbolRef symbol)
 {
-	JIT_ArrayStore(fn->injector, JIT_LoadAddress(fn->injector, ptr),
+	JIT_ArrayStore(fn->injector, JIT_LoadAddress(fn->injector, symbol),
 		       JIT_ConstInt64(0), v);
 }
 
@@ -494,7 +518,7 @@ static JIT_SymbolRef get_sym_value(struct dmr_C *C, struct function *fn,
 				dmrC_show_expression(C, expr);
 				return NULL;
 			}
-			struct NanoType *symtype = get_symnode_type(C, fn, sym);
+			struct OMRType *symtype = get_symnode_type(C, fn, sym);
 			if (symtype == NULL) {
 				dmrC_sparse_error(C, expr->pos,
 						  "invalid symbol type\n");
@@ -520,7 +544,7 @@ static JIT_SymbolRef get_sym_value(struct dmr_C *C, struct function *fn,
 				dmrC_show_expression(C, expr);
 				return NULL;
 			}
-			struct NanoType *symtype = get_symnode_type(C, fn, sym);
+			struct OMRType *symtype = get_symnode_type(C, fn, sym);
 			if (symtype == NULL) {
 				dmrC_sparse_error(C, expr->pos,
 						  "invalid symbol type\n");
@@ -548,7 +572,7 @@ static JIT_SymbolRef get_sym_value(struct dmr_C *C, struct function *fn,
 		}
 	} else {
 		const char *name = dmrC_show_ident(C, sym->ident);
-		struct NanoType *type = get_symnode_type(C, fn, sym);
+		struct OMRType *type = get_symnode_type(C, fn, sym);
 		if (type->type == RT_FUNCTION) {
 			dmrC_sparse_error(
 			    C, sym->pos,
@@ -638,10 +662,10 @@ static JIT_NodeRef pseudo_to_value(struct dmr_C *C, struct function *fn,
 }
 
 static JIT_NodeRef build_cast(struct dmr_C *C, struct function *fn,
-			      JIT_NodeRef val, struct NanoType *dtype,
+			      JIT_NodeRef val, struct OMRType *dtype,
 			      int unsigned_cast)
 {
-	JIT_Type target_type = map_nanotype(dtype);
+	JIT_Type target_type = map_OMRtype(dtype);
 	if (target_type == JIT_NoType)
 		return NULL;
 	if (JIT_GetNodeType(val) == target_type)
@@ -826,7 +850,7 @@ static JIT_NodeRef get_operand(struct dmr_C *C, struct function *fn,
 {
 	JIT_NodeRef target;
 
-	struct NanoType *instruction_type =
+	struct OMRType *instruction_type =
 	    get_symnode_or_basetype(C, fn, ctype);
 	if (instruction_type == NULL)
 		return NULL;
@@ -870,7 +894,7 @@ static JIT_NodeRef output_op_cbr(struct dmr_C *C, struct function *fn,
 	JIT_NodeRef if_node =
 	    JIT_IfNotZeroValue(fn->injector, value, true_block);
 	// OMR expects the code to fall through to next block here
-	// which is assumed to be the false block I think
+	// which is assumed to be the else block
 	// But we want to handle false block explicitly
 	// During the initial scan we already accounted for extra block here
 	int fallthrough_blocknum =
@@ -908,7 +932,7 @@ static JIT_NodeRef output_op_compare(struct dmr_C *C, struct function *fn,
 	if (!rhs)
 		return NULL;
 
-	struct NanoType *dst_type = insn_symbol_type(C, fn, insn);
+	struct OMRType *dst_type = insn_symbol_type(C, fn, insn);
 	if (!dst_type)
 		return NULL;
 
@@ -1131,6 +1155,7 @@ static JIT_NodeRef output_op_binary(struct dmr_C *C, struct function *fn,
 		case 64:
 			if (dmrC_is_float_type(C->S, insn->type))
 				target = JIT_CreateNode2C(OP_dsub, lhs, rhs);
+			// FIXME handle pointer substractions
 			else
 				target = JIT_CreateNode2C(OP_lsub, lhs, rhs);
 			break;
@@ -1277,7 +1302,7 @@ static JIT_NodeRef output_op_binary(struct dmr_C *C, struct function *fn,
 		break;
 	case OP_AND_BOOL: {
 		// NJXLInsRef lhs_nz, rhs_nz;
-		// struct NanoType *dst_type;
+		// struct OMRType *dst_type;
 
 		// lhs_nz = is_neq_zero(C, fn, lhs);
 		// rhs_nz = is_neq_zero(C, fn, rhs);
@@ -1300,7 +1325,7 @@ static JIT_NodeRef output_op_binary(struct dmr_C *C, struct function *fn,
 	}
 	case OP_OR_BOOL: {
 		// NJXLInsRef lhs_nz, rhs_nz;
-		// struct NanoType *dst_type;
+		// struct OMRType *dst_type;
 
 		// lhs_nz = is_neq_zero(C, fn, lhs);
 		// rhs_nz = is_neq_zero(C, fn, rhs);
@@ -1331,7 +1356,7 @@ static JIT_NodeRef output_op_binary(struct dmr_C *C, struct function *fn,
 
 
 static NJXLInsRef truncate_intvalue(struct dmr_C *C, struct function *fn,
-				    NJXLInsRef val, struct NanoType *dtype,
+				    NJXLInsRef val, struct OMRType *dtype,
 				    int unsigned_cast)
 {
 	if (NJX_is_q(val) && dtype->bit_size <= 64) {
@@ -1384,7 +1409,7 @@ static NJXLInsRef output_op_call(struct dmr_C *C, struct function *fn,
 			if (atype)
 				value = val_to_value(C, fn, arg->value, atype);
 			else {
-				struct NanoType *type = int_type_by_size(fn, arg->size);
+				struct OMRType *type = int_type_by_size(fn, arg->size);
 				if (!type) {
 					dmrC_sparse_error(C, insn->pos, "pseudo value argument[%d] = %lld has invalid size %d\n", i + 1, arg->value, arg->size);
 				}
@@ -1399,7 +1424,7 @@ static NJXLInsRef output_op_call(struct dmr_C *C, struct function *fn,
 		if (!value)
 			return NULL;
 		if (atype) {
-			struct NanoType *argtype =
+			struct OMRType *argtype =
 			    get_symnode_type(C, fn, atype);
 			if (!argtype)
 				return NULL;
@@ -1417,7 +1442,7 @@ static NJXLInsRef output_op_call(struct dmr_C *C, struct function *fn,
 
 	struct symbol *sym = insn->func->sym;
 	const char *name = dmrC_show_ident(C, sym->ident);
-	struct NanoType *type = get_symnode_type(C, fn, sym);
+	struct OMRType *type = get_symnode_type(C, fn, sym);
 	if (type->type != RT_FUNCTION) {
 		return NULL;
 	}
@@ -1487,7 +1512,7 @@ static NJXLInsRef output_op_setval(struct dmr_C *C, struct function *fn,
 				   struct instruction *insn)
 {
 	struct expression *expr = insn->val;
-	struct NanoType *const_type;
+	struct OMRType *const_type;
 	NJXLInsRef target = NULL;
 
 	if (!expr)
@@ -1518,7 +1543,7 @@ static NJXLInsRef output_op_symaddr(struct dmr_C *C, struct function *fn,
 				    struct instruction *insn)
 {
 	NJXLInsRef res, src;
-	struct NanoType *dtype;
+	struct OMRType *dtype;
 
 	src = pseudo_to_value(C, fn, insn->type, insn->symbol);
 	if (!src)
@@ -1595,7 +1620,7 @@ static NJXLInsRef output_op_neg(struct dmr_C *C, struct function *fn,
 
 /*
  * For now we emit a switch statement as if it is a bunch
- * of if/elseif/else branches. NanoJIT supports a simple jump table
+ * of if/elseif/else branches. OMRJIT supports a simple jump table
  * instruction but this is not yet used as a) it requires case values
  * to be consecutive, starting from 0, and b) default case has to
  * be handled separately. In future we should emit a jump table when
@@ -1631,7 +1656,7 @@ static NJXLInsRef output_op_switch(struct dmr_C *C, struct function *fn,
 			 * For each case case_value emit
 			 * if (switch_value == case_value) goto case_block;
 			 */
-			struct NanoType *symtype =
+			struct OMRType *symtype =
 			    get_symnode_or_basetype(C, fn, insn->type);
 			NJXLInsRef case_value =
 			    constant_value(C, fn, val, symtype);
@@ -1651,7 +1676,7 @@ static NJXLInsRef output_op_switch(struct dmr_C *C, struct function *fn,
 				output_liveness(C, fn, jmp->target);
 			NJXLInsRef br1 = NJX_cbr_true(fn->builder, cond,
 						      NULL); // jmp->target
-			// It appears that NanoJIT may decide jump isn't
+			// It appears that OMRJIT may decide jump isn't
 			// necessary
 			if (br1 != NULL) {
 				add_jump_instruction(C, fn, jmp->target, br1);
@@ -1708,7 +1733,7 @@ static NJXLInsRef output_op_fpcast(struct dmr_C *C, struct function *fn,
 				   struct instruction *insn)
 {
 	NJXLInsRef src, target;
-	struct NanoType *dtype;
+	struct OMRType *dtype;
 	struct symbol *otype = insn->orig_type;
 
 	src = insn->src->priv;
@@ -1733,7 +1758,7 @@ static JIT_NodeRef output_op_ptrcast(struct dmr_C *C, struct function *fn,
 				     struct instruction *insn)
 {
 	JIT_NodeRef src, target;
-	struct NanoType *dtype;
+	struct OMRType *dtype;
 	struct symbol *otype = insn->orig_type;
 
 	assert(dmrC_is_ptr_type(insn->type));
@@ -1758,7 +1783,7 @@ static JIT_NodeRef output_op_cast(struct dmr_C *C, struct function *fn,
 				  struct instruction *insn, bool unsignedcast)
 {
 	JIT_NodeRef src, target;
-	struct NanoType *dtype;
+	struct OMRType *dtype;
 	struct symbol *otype = insn->orig_type;
 
 	if (dmrC_is_ptr_type(insn->type)) {
@@ -1769,7 +1794,7 @@ static JIT_NodeRef output_op_cast(struct dmr_C *C, struct function *fn,
 	if (!src)
 		src = pseudo_to_value(C, fn, insn->type, insn->src);
 	if (dmrC_is_int_type(C->S, otype)) {
-		struct NanoType *stype = get_symnode_or_basetype(C, fn, otype);
+		struct OMRType *stype = get_symnode_or_basetype(C, fn, otype);
 		src = build_cast(C, fn, src, stype, unsignedcast);
 	}
 	if (!src)
@@ -1957,8 +1982,9 @@ static int output_bb(struct dmr_C *C, struct function *fn,
 		if (!insn->bb)
 			continue;
 
-		fprintf(stderr, "Instruction %s\n",
-			dmrC_show_instruction(C, insn));
+		// Useful for debugging
+		//fprintf(stderr, "Instruction %s\n",
+		//	dmrC_show_instruction(C, insn));
 
 		if (!output_insn(C, fn, insn)) {
 			dmrC_sparse_error(C, insn->pos, "failed to output %s\n",
@@ -2003,7 +2029,7 @@ static bool JIT_ILBuilderImpl(JIT_ILInjectorRef injector, void *userdata)
 		bb->nr = bbnr++;
 		if (saw_cbr)
 			bbnr++; /* Allow an extra block here because of the way
-				   OMR does conditional branching */
+				   OMR does conditional branching (see cbr gen) */
 	}
 	END_FOR_EACH_PTR(bb);
 
@@ -2022,7 +2048,7 @@ static bool JIT_ILBuilderImpl(JIT_ILInjectorRef injector, void *userdata)
 			/* insert alloca into entry block */
 
 			JIT_SymbolRef ptr =
-			    NJX_alloca(fn, insn_symbol_type(fn->C, fn, insn),
+			    OMR_alloca(fn, insn_symbol_type(fn->C, fn, insn),
 				       instruction_size_in_bytes(fn->C, insn));
 			if (!ptr)
 				goto Efailed;
@@ -2032,7 +2058,7 @@ static bool JIT_ILBuilderImpl(JIT_ILInjectorRef injector, void *userdata)
 			// when we encounter the PHI instruction
 			// The LLVM version generates the Load instruction
 			// but doesn't insert it into the IR at this point.
-			// But in Nanojit it seems we cannot do that - i.e.
+			// But in OMRjit it seems we cannot do that - i.e.
 			// the instruction gets inserted into the IR stream
 			insn->target->priv2 = ptr;
 			insn->target->priv = NULL;
@@ -2089,9 +2115,9 @@ static bool output_fn(struct dmr_C *C, JIT_ContextRef module,
 		return false;
 	}
 
-	dmrC_allocator_init(&function.type_allocator, "nanotypes",
-			    sizeof(struct NanoType),
-			    __alignof__(struct NanoType), CHUNK);
+	dmrC_allocator_init(&function.type_allocator, "OMRtypes",
+			    sizeof(struct OMRType),
+			    __alignof__(struct OMRType), CHUNK);
 
 	JIT_FunctionParameter argtypes[JIT_MaxArgs];
 
@@ -2114,8 +2140,8 @@ static bool output_fn(struct dmr_C *C, JIT_ContextRef module,
 
 	name = dmrC_show_ident(C, sym->ident);
 
-	struct NanoType *function_type =
-	    type_to_nanotype(C, &function, ret_type, NULL);
+	struct OMRType *function_type =
+	    type_to_OMRtype(C, &function, ret_type, NULL);
 	function.return_type = check_supported_returntype(C, function_type);
 	if (function.return_type == &BadType) {
 		fprintf(stderr, "Function '%s' has unsupported return type\n",
@@ -2123,7 +2149,7 @@ static bool output_fn(struct dmr_C *C, JIT_ContextRef module,
 		goto Ereturn;
 	}
 
-	JIT_Type freturn = map_nanotype(function.return_type);
+	JIT_Type freturn = map_OMRtype(function.return_type);
 
 	function.builder =
 	    JIT_CreateFunctionBuilder(module, name, freturn, nr_args, argtypes,
@@ -2185,9 +2211,7 @@ bool dmrC_omrcompile(int argc, char **argv, JIT_ContextRef module,
 	char *file;
 
 	struct dmr_C *C = new_dmr_C();
-	C->optimize = 0; /* Ideally we want to turn simplifications ON as
-			    NanoJIT does not optimize much, but for now this is
-			    OFF as matmul test fails */
+	C->optimize = 0; /* Sparse simplifications result in incorrect IR */
 	C->codegen = 1;  /* Disables macros related to vararg processing */
 
 	symlist = dmrC_sparse_initialize(C, argc, argv, &filelist);

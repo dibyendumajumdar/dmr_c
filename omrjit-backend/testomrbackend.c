@@ -4,8 +4,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#if 0
-
 static int test1(int argc, char **argv)
 {
 	const char *code = "long long sumq(long long len, long long *array) "
@@ -16,14 +14,14 @@ static int test1(int argc, char **argv)
 			   "n += array[i]; "
 			   "return n; "
 			   "}\n";
-	NJXContextRef module = NJX_create_context(true);
+	JIT_ContextRef module = JIT_CreateContext();
 
 	int rc = 0;
-	if (!dmrC_nanocompile(argc, argv, module, code))
+	if (!dmrC_omrcompile(argc, argv, module, code))
 		rc = 1;
 	long long (*fp)(long long, long long *) = NULL;
 	if (rc == 0) {
-		fp = NJX_get_function_by_name(module, "sumq");
+		fp = JIT_GetFunction(module, "sumq");
 		if (!fp)
 			rc = 1;
 	}
@@ -33,11 +31,9 @@ static int test1(int argc, char **argv)
 		if (result != (100 + 200 + 300 + 400 + 500))
 			rc = 1;
 	}
-	NJX_destroy_context(module);
+	JIT_DestroyContext(module);
 	return rc;
 }
-
-#endif
 
 static int test2(int argc, char **argv)
 {
@@ -69,7 +65,6 @@ static int test2(int argc, char **argv)
 	return rc;
 }
 
-#if 0
 static int test3(int argc, char **argv)
 {
 	const char *code = "struct mystruct { "
@@ -98,13 +93,13 @@ static int test3(int argc, char **argv)
 		char array[10];
 	};
 
-	NJXContextRef module = NJX_create_context(true);
+	JIT_ContextRef module = JIT_CreateContext();
 	int rc = 0;
-	if (!dmrC_nanocompile(argc, argv, module, code))
+	if (!dmrC_omrcompile(argc, argv, module, code))
 		rc = 1;
 	int (*fp)(struct mystruct *) = NULL;
 	if (rc == 0) {
-		fp = NJX_get_function_by_name(module, "storeint");
+		fp = JIT_GetFunction(module, "storeint");
 		if (!fp)
 			rc = 1;
 	}
@@ -115,9 +110,11 @@ static int test3(int argc, char **argv)
 		    T.a != 42 || T.b != 96 || T.d != 300.42)
 			rc = 1;
 	}
-	NJX_destroy_context(module);
+	JIT_DestroyContext(module);
 	return rc;
 }
+
+#if 0
 
 int test4(int argc, char **argv)
 {
@@ -332,9 +329,9 @@ static int test7(int argc, char **argv)
 int main(int argc, char **argv)
 {
 	int rc = 0;
-	//rc += test1(argc, argv);
+	rc += test1(argc, argv);
 	rc += test2(argc, argv);
-	//rc += test3(argc, argv);
+	rc += test3(argc, argv);
 	//rc += test4(argc, argv);
 	//rc += test5(argc, argv);
 	//rc += test6(argc, argv);

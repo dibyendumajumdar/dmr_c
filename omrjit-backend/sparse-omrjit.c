@@ -1352,6 +1352,57 @@ static JIT_NodeRef output_op_binary(struct dmr_C *C, struct function *fn,
 	return target;
 }
 
+static JIT_NodeRef output_op_setval(struct dmr_C *C, struct function *fn,
+	struct instruction *insn)
+{
+	struct expression *expr = insn->val;
+	struct OMRType *const_type;
+	JIT_NodeRef target = NULL;
+
+	if (!expr)
+		return NULL;
+
+	const_type = insn_symbol_type(C, fn, insn);
+	if (!const_type)
+		return NULL;
+
+	switch (expr->type) {
+	case EXPR_FVALUE:
+		target = constant_fvalue(C, fn, expr->fvalue, const_type);
+		break;
+	default:
+		dmrC_sparse_error(C, insn->pos,
+			"unsupported expression type %d in setval\n",
+			expr->type);
+		dmrC_show_expression(C, expr);
+		return NULL;
+	}
+
+	insn->target->priv = target;
+
+	return target;
+}
+
+static JIT_NodeRef output_op_symaddr(struct dmr_C *C, struct function *fn,
+	struct instruction *insn)
+{
+	JIT_NodeRef res, src;
+	struct OMRType *dtype;
+
+	src = pseudo_to_value(C, fn, insn->type, insn->symbol);
+	if (!src)
+		return NULL;
+
+	dtype = get_symnode_or_basetype(C, fn, insn->type);
+	if (!dtype)
+		return NULL;
+
+	res = build_cast(C, fn, src, dtype, 0);
+	insn->target->priv = res;
+
+	return res;
+}
+
 #if 0
 
 
@@ -1508,56 +1559,7 @@ static NJXLInsRef is_neq_zero(struct dmr_C *C, struct function *fn,
 
 
 
-static NJXLInsRef output_op_setval(struct dmr_C *C, struct function *fn,
-				   struct instruction *insn)
-{
-	struct expression *expr = insn->val;
-	struct OMRType *const_type;
-	NJXLInsRef target = NULL;
 
-	if (!expr)
-		return NULL;
-
-	const_type = insn_symbol_type(C, fn, insn);
-	if (!const_type)
-		return NULL;
-
-	switch (expr->type) {
-	case EXPR_FVALUE:
-		target = constant_fvalue(C, fn, expr->fvalue, const_type);
-		break;
-	default:
-		dmrC_sparse_error(C, insn->pos,
-				  "unsupported expression type %d in setval\n",
-				  expr->type);
-		dmrC_show_expression(C, expr);
-		return NULL;
-	}
-
-	insn->target->priv = target;
-
-	return target;
-}
-
-static NJXLInsRef output_op_symaddr(struct dmr_C *C, struct function *fn,
-				    struct instruction *insn)
-{
-	NJXLInsRef res, src;
-	struct OMRType *dtype;
-
-	src = pseudo_to_value(C, fn, insn->type, insn->symbol);
-	if (!src)
-		return NULL;
-
-	dtype = get_symnode_or_basetype(C, fn, insn->type);
-	if (!dtype)
-		return NULL;
-
-	res = build_cast(C, fn, src, dtype, 0);
-	insn->target->priv = res;
-
-	return res;
-}
 
 static NJXLInsRef output_op_not(struct dmr_C *C, struct function *fn,
 				struct instruction *insn)
@@ -1857,12 +1859,10 @@ static int output_insn(struct dmr_C *C, struct function *fn,
 		v = output_op_load(C, fn, insn);
 		break;
 	case OP_SYMADDR:
-		// v = output_op_symaddr(C, fn, insn);
-		return 0;
+		v = output_op_symaddr(C, fn, insn);
 		break;
 	case OP_SETVAL:
-		// v = output_op_setval(C, fn, insn);
-		return 0;
+		v = output_op_setval(C, fn, insn);
 		break;
 
 	case OP_SWITCH:

@@ -20,7 +20,7 @@ dmr_C is a fork of Sparse. The main changes are:
 * The code builds on Windows, Linux and Mac OSX. However there are platform specific limitations - see below for details.
 * The Sparse code generator for LLVM has had many fixes and is able to compile real programs. See details below for what works and what doesn't.
 * The NanoJIT code generator is now able to handle a reasonable subset of C, although it is not yet as well tested as the code generator targetting LLVM.
-* A new backend using [Eclipse OMR](https://github.com/dibyendumajumdar/nj) is beig [worked on](https://github.com/dibyendumajumdar/dmr_c/tree/master/omrjit-backend).
+* A new backend using [Eclipse OMR](https://github.com/dibyendumajumdar/nj) is being [worked on](https://github.com/dibyendumajumdar/dmr_c/tree/master/omrjit-backend).
 
 ## News
 * Jun-2018 - Started new backend JIT using [Eclipse OMR](https://github.com/dibyendumajumdar/nj)

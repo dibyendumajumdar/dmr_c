@@ -370,11 +370,6 @@ static JIT_Type map_nanotype(struct NanoType *type)
 
 static JIT_SymbolRef NJX_alloca(struct function *fn, struct NanoType *type, int32_t size)
 {
-	JIT_Type jit_type = map_nanotype(type);
-	if (jit_type != JIT_NoType)
-		return JIT_CreateTemporary(fn->injector, jit_type);
-	if (size <= 0)
-		return NULL;
 	return JIT_CreateLocalByteArray(fn->injector, (uint32_t) size);
 }
 
@@ -458,6 +453,12 @@ static JIT_SymbolRef build_local(struct dmr_C *C, struct function *fn,
 	}
 }
 
+static void build_store(struct dmr_C *C, struct function *fn,
+	JIT_NodeRef v, JIT_SymbolRef ptr)
+{
+	JIT_ArrayStore(fn->injector, JIT_LoadAddress(fn->injector, ptr), JIT_ConstInt64(0), v);
+}
+
 static JIT_SymbolRef get_sym_value(struct dmr_C *C, struct function *fn,
 	pseudo_t pseudo, bool do_init)
 {
@@ -513,7 +514,7 @@ static JIT_SymbolRef get_sym_value(struct dmr_C *C, struct function *fn,
 			if (do_init) {
 				JIT_NodeRef value =
 					constant_value(C, fn, expr->value, symtype);
-				JIT_StoreToTemporary(fn->injector, result, value);
+				build_store(C, fn, value, result);
 			}
 			sym->priv = result;
 			break;
@@ -539,7 +540,7 @@ static JIT_SymbolRef get_sym_value(struct dmr_C *C, struct function *fn,
 			if (do_init) {
 				JIT_NodeRef value = constant_fvalue(
 					C, fn, expr->fvalue, symtype);
-				JIT_StoreToTemporary(fn->injector, result, value);
+				build_store(C, fn, value, result);
 			}
 			sym->priv = result;
 			break;
@@ -611,16 +612,6 @@ static JIT_NodeRef val_to_value(struct dmr_C *C, struct function *fn,
 	return NULL;
 }
 
-static JIT_NodeRef load_symbolref(struct function *fn, struct symbol *sym, JIT_SymbolRef jitsym) {
-	if (JIT_GetSymbolType(jitsym) != JIT_Address)
-		return JIT_LoadTemporary(fn->injector, sym);
-	struct NanoType *type = get_symnode_type(fn->C, fn, sym);
-	JIT_Type loadtype = map_nanotype(type);
-	if (loadtype == JIT_NoType)
-		return NULL;
-	return JIT_ArrayLoad(fn->injector, JIT_LoadAddress(fn->injector, jitsym), JIT_ConstInt32(0), loadtype);
-}
-
 static JIT_NodeRef pseudo_to_value(struct dmr_C *C, struct function *fn,
 	struct symbol *ctype, pseudo_t pseudo)
 {
@@ -634,7 +625,7 @@ static JIT_NodeRef pseudo_to_value(struct dmr_C *C, struct function *fn,
 		JIT_SymbolRef sym = get_sym_value(C, fn, pseudo, true);
 		if (!sym)
 			return NULL;
-		return JIT_LoadTemporary(fn->injector, sym);
+		return JIT_LoadAddress(fn->injector, sym);
 	}
 	case PSEUDO_VAL:
 		result = val_to_value(C, fn, pseudo->value, ctype);
@@ -679,8 +670,35 @@ static JIT_NodeRef output_op_phi(struct dmr_C *C, struct function *fn,
 	// Unlike LLVM version which creates the Load instruction
 	// early on and inserts it into the IR stream here, we
 	// create the Load instruction here.
-	JIT_NodeRef load = JIT_LoadTemporary(fn->injector, ptr);
-	JIT_GenerateTreeTop(fn->injector, load);
+	JIT_NodeRef load = NULL;
+	switch (insn->size) {
+	case 8:
+		// TODO do we need to do unsigned here?
+		// load = NJX_load_c2i(fn->builder, ptr, 0);
+		load = JIT_ArrayLoad(fn->injector, JIT_LoadAddress(fn->injector, ptr), JIT_ConstInt64(0), JIT_Int8);
+		break;
+	case 16:
+		// TODO do we need to do unsigned here?
+		load = JIT_ArrayLoad(fn->injector, JIT_LoadAddress(fn->injector, ptr), JIT_ConstInt64(0), JIT_Int16);
+		break;
+	case 32:
+		if (dmrC_is_float_type(C->S, insn->type))
+			load = JIT_ArrayLoad(fn->injector, JIT_LoadAddress(fn->injector, ptr), JIT_ConstInt64(0), JIT_Float);
+		else
+			load = JIT_ArrayLoad(fn->injector, JIT_LoadAddress(fn->injector, ptr), JIT_ConstInt64(0), JIT_Int32);
+		break;
+	case 64:
+		if (dmrC_is_float_type(C->S, insn->type))
+			load = JIT_ArrayLoad(fn->injector, JIT_LoadAddress(fn->injector, ptr), JIT_ConstInt64(0), JIT_Double);
+		else if (dmrC_is_ptr_type(insn->type))
+			load = JIT_ArrayLoad(fn->injector, JIT_LoadAddress(fn->injector, ptr), JIT_ConstInt64(0), JIT_Address);
+		else
+			load = JIT_ArrayLoad(fn->injector, JIT_LoadAddress(fn->injector, ptr), JIT_ConstInt64(0), JIT_Int64);
+		break;
+	}
+	if (load == NULL)
+		return NULL;
+	//JIT_GenerateTreeTop(fn->injector, load);
 	insn->target->priv = load;
 	return load;
 }
@@ -692,16 +710,38 @@ static JIT_NodeRef output_op_load(struct dmr_C *C, struct function *fn,
 
 	if (!ptr)
 		return NULL;
+	if (JIT_GetNodeType(ptr) == JIT_Int64)
+		ptr = JIT_ConvertTo(fn->injector, ptr, JIT_Address, false);
 
-	JIT_NodeRef index = JIT_ConstInt32((int)insn->offset);
-	struct NanoType *type = insn_symbol_type(C, fn, insn);
-	if (type == NULL)
+	JIT_NodeRef index = JIT_ConstInt64((int64_t)insn->offset);
+	JIT_NodeRef load = NULL;
+	switch (insn->size) {
+	case 8:
+		// TODO do we need to do unsigned here?
+		load = JIT_ArrayLoad(fn->injector, ptr, index, JIT_Int8);
+		break;
+	case 16:
+		// TODO do we need to do unsigned here?
+		load = JIT_ArrayLoad(fn->injector, ptr, index, JIT_Int16);
+		break;
+	case 32:
+		if (dmrC_is_float_type(C->S, insn->type))
+			load = JIT_ArrayLoad(fn->injector, ptr, index, JIT_Float);
+		else
+			load = JIT_ArrayLoad(fn->injector, ptr, index, JIT_Int32);
+		break;
+	case 64:
+		if (dmrC_is_float_type(C->S, insn->type))
+			load = JIT_ArrayLoad(fn->injector, ptr, index, JIT_Double);
+		else if (dmrC_is_ptr_type(insn->type))
+			load = JIT_ArrayLoad(fn->injector, ptr, index, JIT_Address);
+		else
+			load = JIT_ArrayLoad(fn->injector, ptr, index, JIT_Int64);
+		break;
+	}
+	if (load == NULL)
 		return NULL;
-	JIT_Type target_type = map_nanotype(type);
-	if (target_type == JIT_NoType)
-		return NULL;
-	JIT_NodeRef load = JIT_ArrayLoad(fn->injector, ptr, index, target_type);
-	JIT_GenerateTreeTop(fn->injector, load);
+	//JIT_GenerateTreeTop(fn->injector, load);
 	insn->target->priv = load;
 	return load;
 }
@@ -733,7 +773,7 @@ static JIT_NodeRef output_op_store(struct dmr_C *C, struct function *fn,
 	if (!target_in)
 		return NULL;
 
-	JIT_NodeRef index = JIT_ConstInt32((int)insn->offset);
+	JIT_NodeRef index = JIT_ConstInt64((int64_t)insn->offset);
 	JIT_ArrayStore(fn->injector, ptr, index, target_in);
 	return ptr;
 }
@@ -760,7 +800,7 @@ static JIT_NodeRef output_op_phisrc(struct dmr_C *C, struct function *fn,
 		ptr = phi->target->priv2;
 		if (!ptr)
 			return NULL;
-		JIT_StoreToTemporary(fn->injector, ptr, v);
+		JIT_ArrayStore(fn->injector, JIT_LoadAddress(fn->injector, ptr), JIT_ConstInt64(0), v);
 	}
 	END_FOR_EACH_PTR(phi);
 	return v;
@@ -1627,10 +1667,36 @@ static NJXLInsRef output_op_sel(struct dmr_C *C, struct function *fn,
 	return target;
 }
 
-static NJXLInsRef output_op_ptrcast(struct dmr_C *C, struct function *fn,
-				    struct instruction *insn)
+
+static NJXLInsRef output_op_fpcast(struct dmr_C *C, struct function *fn,
+				   struct instruction *insn)
 {
 	NJXLInsRef src, target;
+	struct NanoType *dtype;
+	struct symbol *otype = insn->orig_type;
+
+	src = insn->src->priv;
+	if (!src)
+		src = pseudo_to_value(C, fn, insn->type, insn->src);
+	if (!src)
+		return NULL;
+
+	dtype = insn_symbol_type(C, fn, insn);
+	if (!dtype)
+		return NULL;
+
+	target = build_cast(C, fn, src, dtype, !dmrC_is_signed_type(otype));
+	insn->target->priv = target;
+
+	return target;
+}
+
+#endif
+
+static JIT_NodeRef output_op_ptrcast(struct dmr_C *C, struct function *fn,
+	struct instruction *insn)
+{
+	JIT_NodeRef src, target;
 	struct NanoType *dtype;
 	struct symbol *otype = insn->orig_type;
 
@@ -1652,10 +1718,10 @@ static NJXLInsRef output_op_ptrcast(struct dmr_C *C, struct function *fn,
 	return target;
 }
 
-static NJXLInsRef output_op_cast(struct dmr_C *C, struct function *fn,
-				 struct instruction *insn, bool unsignedcast)
+static JIT_NodeRef output_op_cast(struct dmr_C *C, struct function *fn,
+	struct instruction *insn, bool unsignedcast)
 {
-	NJXLInsRef src, target;
+	JIT_NodeRef src, target;
 	struct NanoType *dtype;
 	struct symbol *otype = insn->orig_type;
 
@@ -1684,31 +1750,6 @@ static NJXLInsRef output_op_cast(struct dmr_C *C, struct function *fn,
 	return target;
 }
 
-static NJXLInsRef output_op_fpcast(struct dmr_C *C, struct function *fn,
-				   struct instruction *insn)
-{
-	NJXLInsRef src, target;
-	struct NanoType *dtype;
-	struct symbol *otype = insn->orig_type;
-
-	src = insn->src->priv;
-	if (!src)
-		src = pseudo_to_value(C, fn, insn->type, insn->src);
-	if (!src)
-		return NULL;
-
-	dtype = insn_symbol_type(C, fn, insn);
-	if (!dtype)
-		return NULL;
-
-	target = build_cast(C, fn, src, dtype, !dmrC_is_signed_type(otype));
-	insn->target->priv = target;
-
-	return target;
-}
-
-#endif
-
 static JIT_NodeRef output_op_ret(struct dmr_C *C, struct function *fn,
 	struct instruction *insn)
 {
@@ -1727,7 +1768,7 @@ static JIT_NodeRef output_op_ret(struct dmr_C *C, struct function *fn,
 static JIT_NodeRef output_op_br(struct dmr_C *C, struct function *fn,
 	struct instruction *br)
 {
-	JIT_BlockRef target_block = JIT_GetBlock(fn->injector, br->bb->nr);
+	JIT_BlockRef target_block = JIT_GetBlock(fn->injector, br->bb_true->nr);
 	return JIT_Goto(fn->injector, target_block);
 }
 
@@ -1789,20 +1830,17 @@ static int output_insn(struct dmr_C *C, struct function *fn,
 		return 0;
 		break;
 	case OP_CAST:
-		//v = output_op_cast(C, fn, insn, true);
-		return 0;
+		v = output_op_cast(C, fn, insn, true);
 		break;
 	case OP_SCAST:
-		//v = output_op_cast(C, fn, insn, false);
-		return 0;
+		v = output_op_cast(C, fn, insn, false);
 		break;
 	case OP_FPCAST:
 		//v = output_op_fpcast(C, fn, insn);
 		return 0;
 		break;
 	case OP_PTRCAST:
-		//v = output_op_ptrcast(C, fn, insn);
-		return 0;
+		v = output_op_ptrcast(C, fn, insn);
 		break;
 
 	case OP_ADD:

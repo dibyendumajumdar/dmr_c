@@ -2007,13 +2007,18 @@ static bool JIT_ILBuilderImpl(JIT_ILInjectorRef injector, void *userdata)
 
 	fn->injector = injector;
 
+	/*
+	Count and number the basic blocks.
+	Whenever a basic block ends with CBR instruction we will
+	need an extra block in OMR so we count such blocks as 2.
+	The block numbers will be directly used to access corresponding
+	OMR blocks.
+	*/
 	unsigned int bbnr = 0;
-	/* create the BBs */
 	FOR_EACH_PTR(ep->bbs, bb)
 	{
 		bool saw_cbr = false;
 		struct instruction *insn;
-		/* allocate alloca for each phi */
 		FOR_EACH_PTR(bb->insns, insn)
 		{
 			if (!insn->bb || insn->opcode != OP_CBR)
@@ -2029,28 +2034,28 @@ static bool JIT_ILBuilderImpl(JIT_ILInjectorRef injector, void *userdata)
 		bb->nr = bbnr++;
 		if (saw_cbr)
 			bbnr++; /* Allow an extra block here because of the way
-				   OMR does conditional branching (see cbr gen) */
+				   OMR does conditional branching (see CBR codegen) */
 	}
 	END_FOR_EACH_PTR(bb);
 
 	/* Number of basic blocks we need - complicated by how OMRJIT handles
 	 * branching */
 	JIT_CreateBlocks(fn->injector, bbnr);
-	/* create the BBs */
+	/* At this point we are at block 0 */
 	FOR_EACH_PTR(ep->bbs, bb)
 	{
 		struct instruction *insn;
-		/* allocate alloca for each phi */
+		/* allocate stack storage for each phi */
 		FOR_EACH_PTR(bb->insns, insn)
 		{
 			if (!insn->bb || insn->opcode != OP_PHI)
 				continue;
+		
 			/* insert alloca into entry block */
-
-			JIT_SymbolRef ptr =
+			JIT_SymbolRef omr_symbol =
 			    OMR_alloca(fn, insn_symbol_type(fn->C, fn, insn),
 				       instruction_size_in_bytes(fn->C, insn));
-			if (!ptr)
+			if (!omr_symbol)
 				goto Efailed;
 
 			// Unlike the Sparse LLVM version we
@@ -2060,14 +2065,14 @@ static bool JIT_ILBuilderImpl(JIT_ILInjectorRef injector, void *userdata)
 			// but doesn't insert it into the IR at this point.
 			// But in OMRjit it seems we cannot do that - i.e.
 			// the instruction gets inserted into the IR stream
-			insn->target->priv2 = ptr;
+			insn->target->priv2 = omr_symbol;
 			insn->target->priv = NULL;
 		}
 		END_FOR_EACH_PTR(insn);
 	}
 	END_FOR_EACH_PTR(bb);
 
-	/* Try to do allocas for all the symbols up front */
+	/* Try to do allocas for all declared local symbols up front */
 	FOR_EACH_PTR(ep->accesses, pseudo)
 	{
 		if (pseudo->type == PSEUDO_SYM) {
@@ -2081,6 +2086,9 @@ static bool JIT_ILBuilderImpl(JIT_ILInjectorRef injector, void *userdata)
 	}
 	END_FOR_EACH_PTR(arg);
 
+	/*
+	Now generate IL for each block
+	*/
 	FOR_EACH_PTR(ep->bbs, bb)
 	{
 		if (!output_bb(C, fn, bb)) {
@@ -2119,7 +2127,7 @@ static bool output_fn(struct dmr_C *C, JIT_ContextRef module,
 			    sizeof(struct OMRType),
 			    __alignof__(struct OMRType), CHUNK);
 
-	JIT_FunctionParameter argtypes[JIT_MaxArgs];
+	JIT_Type argtypes[JIT_MaxArgs];
 
 	FOR_EACH_PTR(base_type->arguments, arg)
 	{
@@ -2129,10 +2137,9 @@ static bool output_fn(struct dmr_C *C, JIT_ContextRef module,
 				JIT_MaxArgs);
 			goto Ereturn;
 		}
-		argtypes[nr_args].name = "";
-		argtypes[nr_args].type =
+		argtypes[nr_args] =
 		    check_supported_argtype(C, arg_base_type);
-		if (argtypes[nr_args].type == JIT_NoType) // Unsupported
+		if (argtypes[nr_args] == JIT_NoType) // Unsupported
 			goto Ereturn;
 		nr_args++;
 	}

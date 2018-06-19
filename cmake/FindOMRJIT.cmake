@@ -6,16 +6,8 @@ find_path(NJ_INCLUDE_DIR nj_api.h
   NO_DEFAULT_PATH
 )
 
-find_library(NJ_LIBRARY
-  NAMES njapi 
-  PATHS
-  c:/Software/omr/lib
-  ~/omr/lib
-  ~/software/omr/lib
-)
-
 find_library(JITBUILDER_LIBRARY
-  NAMES jitbuilder 
+  NAMES jitbuilder libjitbuilder
   PATHS
   c:/Software/omr/lib
   ~/omr/lib
@@ -24,4 +16,4 @@ find_library(JITBUILDER_LIBRARY
 
 
 set( NJ_INCLUDE_DIRS "${NJ_INCLUDE_DIR}" )
-set( NJ_LIBRARIES "${NJ_LIBRARY};${JITBUILDER_LIBRARY}" )
+set( NJ_LIBRARIES "${JITBUILDER_LIBRARY}" )

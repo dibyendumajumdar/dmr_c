@@ -1425,6 +1425,7 @@ static NJXLInsRef truncate_intvalue(struct dmr_C *C, struct function *fn,
 	}
 }
 
+#endif
 
 static struct symbol *get_function_basetype(struct symbol *type)
 {
@@ -1434,22 +1435,22 @@ static struct symbol *get_function_basetype(struct symbol *type)
 	return type;
 }
 
-static NJXLInsRef output_op_call(struct dmr_C *C, struct function *fn,
+static JIT_NodeRef output_op_call(struct dmr_C *C, struct function *fn,
 				 struct instruction *insn)
 {
-	NJXLInsRef target;
+	JIT_NodeRef target;
 	int n_arg = 0, i;
 	struct pseudo *arg;
-	NJXLInsRef *args;
+	JIT_NodeRef *args;
 
 	n_arg = ptrlist_size((struct ptr_list *)insn->arguments);
-	args = alloca(n_arg * sizeof(NJXLInsRef));
+	args = alloca(n_arg * sizeof(JIT_NodeRef));
 	struct symbol *ftype = get_function_basetype(insn->fntype);
 
 	i = 0;
 	FOR_EACH_PTR(insn->arguments, arg)
 	{
-		NJXLInsRef value;
+		JIT_NodeRef value;
 		struct symbol *atype;
 
 		atype = dmrC_get_nth_symbol(ftype->arguments, i);
@@ -1497,38 +1498,12 @@ static NJXLInsRef output_op_call(struct dmr_C *C, struct function *fn,
 	if (type->type != RT_FUNCTION) {
 		return NULL;
 	}
-	switch (type->return_type->type) {
-	case RT_INT:
-	case RT_INT32:
-		target =
-		    NJX_calli(fn->builder, name, NJX_CALLABI_CDECL, i, args);
-		break;
-	case RT_DOUBLE:
-		target =
-		    NJX_calld(fn->builder, name, NJX_CALLABI_CDECL, i, args);
-		break;
-	case RT_FLOAT:
-		target =
-		    NJX_callf(fn->builder, name, NJX_CALLABI_CDECL, i, args);
-		break;
-	case RT_INT64:
-	case RT_PTR:
-		target =
-		    NJX_callq(fn->builder, name, NJX_CALLABI_CDECL, i, args);
-		break;
-	case RT_VOID:
-		target =
-		    NJX_callv(fn->builder, name, NJX_CALLABI_CDECL, i, args);
-		break;
-	default:
-		return NULL;
-	}
-
+	target = JIT_Call(fn->injector, name, i, args);
 	insn->target->priv = target;
 
 	return target;
 }
-
+#if 0
 
 static NJXLInsRef is_eq_zero(struct dmr_C *C, struct function *fn,
 			     NJXLInsRef value)
@@ -1886,8 +1861,7 @@ static int output_insn(struct dmr_C *C, struct function *fn,
 		return 0;
 
 	case OP_CALL:
-		// v = output_op_call(C, fn, insn);
-		return 0;
+		v = output_op_call(C, fn, insn);
 		break;
 	case OP_CAST:
 		v = output_op_cast(C, fn, insn, true);

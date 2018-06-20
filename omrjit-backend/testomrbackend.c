@@ -161,7 +161,6 @@ int test4(int argc, char **argv)
 	return rc;
 }
 
-#if 0 
 int test5(int argc, char **argv)
 {
 	const char *code = "struct S { "
@@ -221,6 +220,8 @@ int test5(int argc, char **argv)
 	JIT_DestroyContext(module);
 	return rc;
 }
+
+#if 0 
 
 static int test6(int argc, char **argv)
 {
@@ -333,7 +334,7 @@ int main(int argc, char **argv)
 	rc += test2(argc, argv);
 	rc += test3(argc, argv);
 	rc += test4(argc, argv);
-	//rc += test5(argc, argv);
+	rc += test5(argc, argv);
 	//rc += test6(argc, argv);
 	//rc += test7(argc, argv);
 	if (rc == 0)

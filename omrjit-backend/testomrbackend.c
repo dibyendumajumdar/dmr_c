@@ -286,6 +286,7 @@ static int test6(int argc, char **argv)
 	NJX_destroy_context(module);
 	return rc;
 }
+#endif
 
 static int test7(int argc, char **argv)
 {
@@ -301,12 +302,12 @@ static int test7(int argc, char **argv)
 			   "}";
 
 	int (*fp)(int v) = NULL;
-	NJXContextRef module = NJX_create_context(true);
+	JIT_ContextRef module = JIT_CreateContext();
 	int rc = 0;
-	if (!dmrC_nanocompile(argc, argv, module, code))
+	if (!dmrC_omrcompile(argc, argv, module, code))
 		rc = 1;
 	if (rc == 0) {
-		fp = NJX_get_function_by_name(module, "testswitch");
+		fp = JIT_GetFunction(module, "testswitch");
 		if (!fp)
 			rc = 1;
 	}
@@ -321,11 +322,10 @@ static int test7(int argc, char **argv)
 		if (rc == 0 && fp(2) != 7)
 			rc = 1;
 	}
-	NJX_destroy_context(module);
+	JIT_DestroyContext(module);
 	return rc;
 }
 
-#endif
 
 int main(int argc, char **argv)
 {
@@ -336,7 +336,7 @@ int main(int argc, char **argv)
 	rc += test4(argc, argv);
 	rc += test5(argc, argv);
 	//rc += test6(argc, argv);
-	//rc += test7(argc, argv);
+	rc += test7(argc, argv);
 	if (rc == 0)
 		printf("Test OK\n");
 	else

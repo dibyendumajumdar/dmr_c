@@ -1595,87 +1595,6 @@ static NJXLInsRef output_op_neg(struct dmr_C *C, struct function *fn,
 
 
 
-/*
- * For now we emit a switch statement as if it is a bunch
- * of if/elseif/else branches. OMRJIT supports a simple jump table
- * instruction but this is not yet used as a) it requires case values
- * to be consecutive, starting from 0, and b) default case has to
- * be handled separately. In future we should emit a jump table when
- * possible as the current approach penalises case values that appear
- * later.
- */
-static NJXLInsRef output_op_switch(struct dmr_C *C, struct function *fn,
-				   struct instruction *insn)
-{
-	NJXLInsRef switch_value;
-	struct basic_block *default_bb = NULL;
-	struct multijmp *jmp;
-	int n_jmp = 0;
-
-	FOR_EACH_PTR(insn->multijmp_list, jmp)
-	{
-		if (jmp->begin <= jmp->end) { /* case M..N */
-			n_jmp += (int)(jmp->end - jmp->begin) + 1;
-		} else /* default case */
-			default_bb = jmp->target;
-	}
-	END_FOR_EACH_PTR(jmp);
-
-	switch_value = pseudo_to_value(C, fn, insn->type, insn->target);
-	if (!switch_value)
-		return NULL;
-
-	FOR_EACH_PTR(insn->multijmp_list, jmp)
-	{
-		long long val;
-		for (val = jmp->begin; val <= jmp->end; val++) {
-			/*
-			 * For each case case_value emit
-			 * if (switch_value == case_value) goto case_block;
-			 */
-			struct OMRType *symtype =
-			    get_symnode_or_basetype(C, fn, insn->type);
-			NJXLInsRef case_value =
-			    constant_value(C, fn, val, symtype);
-			NJXLInsRef cond = NULL;
-			if (NJX_is_i(case_value)) {
-				cond = NJX_eqi(fn->builder, case_value,
-					       switch_value);
-			} else if (NJX_is_q(case_value)) {
-				cond = NJX_eqq(fn->builder, case_value,
-					       switch_value);
-			}
-			if (cond == NULL)
-				return NULL;
-			// Mark phi allocas needed by destination BB as live
-			// we should only output if dest bb precedes current bb
-			if (insn->bb->nr > jmp->target->nr)
-				output_liveness(C, fn, jmp->target);
-			NJXLInsRef br1 = NJX_cbr_true(fn->builder, cond,
-						      NULL); // jmp->target
-			// It appears that OMRJIT may decide jump isn't
-			// necessary
-			if (br1 != NULL) {
-				add_jump_instruction(C, fn, jmp->target, br1);
-			}
-		}
-	}
-	END_FOR_EACH_PTR(jmp);
-
-	if (default_bb) {
-		// Handle default case
-		// Mark registers needed by destination BB as live
-		// we should only output if dest bb precedes
-		// current bb
-		if (insn->bb->nr > default_bb->nr)
-			output_liveness(C, fn, default_bb);
-		NJXLInsRef default_br = NJX_br(fn->builder, NULL);
-		add_jump_instruction(C, fn, default_bb, default_br);
-	}
-	// We need to return some non NULL value
-	// So here we return the switch_value
-	return switch_value;
-}
 
 
 
@@ -1730,6 +1649,54 @@ static NJXLInsRef output_op_fpcast(struct dmr_C *C, struct function *fn,
 }
 
 #endif
+
+static JIT_NodeRef output_op_switch(struct dmr_C *C, struct function *fn,
+	struct instruction *insn)
+{
+	JIT_NodeRef switch_value;
+	struct basic_block *default_bb = NULL;
+	struct multijmp *jmp;
+	int n_jmp = 0;
+
+	FOR_EACH_PTR(insn->multijmp_list, jmp)
+	{
+		if (jmp->begin <= jmp->end) { /* case M..N */
+			n_jmp += (int)(jmp->end - jmp->begin) + 1;
+		}
+		else /* default case */
+			default_bb = jmp->target;
+	}
+	END_FOR_EACH_PTR(jmp);
+
+	if (!default_bb)
+		return NULL;
+
+	switch_value = pseudo_to_value(C, fn, insn->type, insn->target);
+	if (!switch_value)
+		return NULL;
+
+	int32_t *values = alloca(n_jmp * sizeof(int32_t));
+	JIT_BlockRef *blocks = alloca(n_jmp * sizeof(JIT_BlockRef));
+
+	int i = 0;
+	FOR_EACH_PTR(insn->multijmp_list, jmp)
+	{
+		long long val;
+		for (val = jmp->begin; val <= jmp->end; val++) {
+			if (val < INT_MIN || val > INT_MAX)
+				return NULL;
+
+			values[i] = (int32_t)val;
+			blocks[i] = JIT_GetBlock(fn->injector, jmp->target->nr);
+			i++;
+		}
+	}
+	END_FOR_EACH_PTR(jmp);
+
+	return JIT_Switch(fn->injector, switch_value, JIT_GetBlock(fn->injector, default_bb->nr),
+		n_jmp, blocks, values);
+}
+
 
 static JIT_NodeRef output_op_ptrcast(struct dmr_C *C, struct function *fn,
 				     struct instruction *insn)
@@ -1841,8 +1808,7 @@ static int output_insn(struct dmr_C *C, struct function *fn,
 		break;
 
 	case OP_SWITCH:
-		// v = output_op_switch(C, fn, insn);
-		return 0;
+		v = output_op_switch(C, fn, insn);
 		break;
 
 	case OP_COMPUTEDGOTO:

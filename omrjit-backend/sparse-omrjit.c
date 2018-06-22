@@ -1901,7 +1901,8 @@ static int output_insn(struct dmr_C *C, struct function *fn,
 
 	case OP_CALL:
 		v = output_op_call(C, fn, insn);
-		break;
+		return 1;
+		//break;
 	case OP_CAST:
 		v = output_op_cast(C, fn, insn, true);
 		break;

@@ -64,5 +64,9 @@ int TestNano(void)
   double v = m[n/2][n/2];
   printd(m[n/2][n/2]);
   mm_destroy(n, a); mm_destroy(n, b); mm_destroy(n, m);
-  return fabs(v-(-95.583583333300)) < 1e12 ? 0 : 1;
+  printd(v);
+  if (fabs(v-(-95.583583333300)) < 1e12) {
+    return 0;
+  }
+  return 1;
 }

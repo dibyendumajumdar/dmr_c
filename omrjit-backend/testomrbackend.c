@@ -221,8 +221,6 @@ int test5(int argc, char **argv)
 	return rc;
 }
 
-#if 0 
-
 static int test6(int argc, char **argv)
 {
 	const char *code = "struct S3 { "
@@ -259,12 +257,12 @@ static int test6(int argc, char **argv)
 	};
 	struct S3 s3;
 	int (*fp)(struct S3 * s3, int v) = NULL;
-	NJXContextRef module = NJX_create_context(true);
+	JIT_ContextRef module = JIT_CreateContext();
 	int rc = 0;
-	if (!dmrC_nanocompile(argc, argv, module, code))
+	if (!dmrC_omrcompile(argc, argv, module, code))
 		rc = 1;
 	if (rc == 0) {
-		fp = NJX_get_function_by_name(module, "sets3");
+		fp = JIT_GetFunction(module, "sets3");
 		if (!fp)
 			rc = 1;
 	}
@@ -283,10 +281,9 @@ static int test6(int argc, char **argv)
 		if (rc == 0 && s3.onebit != 1)
 			rc = 1;
 	}
-	NJX_destroy_context(module);
+	JIT_DestroyContext(module);
 	return rc;
 }
-#endif
 
 static int test7(int argc, char **argv)
 {
@@ -335,8 +332,8 @@ int main(int argc, char **argv)
 	rc += test3(argc, argv);
 	rc += test4(argc, argv);
 	rc += test5(argc, argv);
-	//rc += test6(argc, argv);
 	rc += test7(argc, argv);
+	rc += test6(argc, argv);
 	if (rc == 0)
 		printf("Test OK\n");
 	else

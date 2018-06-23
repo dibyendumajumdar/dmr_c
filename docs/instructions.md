@@ -160,14 +160,14 @@ They all follow the same signature:
 - .type: type of .target
 
 ### OP_CAST
-Cast to unsigned integer (and to void pointer).
-If target bit_size is smaller truncate
-If target bit_size is larger zero extend
+Cast to unsigned integer or to void pointer.
+- If target bit_size is smaller truncate
+- If target bit_size is larger zero extend
 
 ### OP_SCAST
 Cast to signed integer. 
-If target bit_size is smaller truncate
-If target bit_size is larger sign extend
+- If target bit_size is smaller truncate
+- If target bit_size is larger sign extend
 
 ### OP_FPCAST
 Cast to floating-point.

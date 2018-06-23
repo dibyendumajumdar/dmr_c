@@ -675,13 +675,13 @@ static JIT_NodeRef truncate_intvalue(struct dmr_C *C, struct function *fn,
 		if (dtype->bit_size == 64)
 			return val;
 		uint64_t mask = (1ULL << dtype->bit_size) - 1;
-		return JIT_CreateNode2C(OP_land, val, JIT_ConstInt64(mask));
+		return JIT_CreateNode2C(OP_land, val, JIT_ConstUInt64(mask));
 	}
 	else if (JIT_GetNodeType(val) == JIT_Int32 && dtype->bit_size <= 32) {
 		if (dtype->bit_size == 32)
 			return val;
 		uint32_t mask = (1U << dtype->bit_size) - 1;
-		return JIT_CreateNode2C(OP_iand, val, JIT_ConstInt32(mask));
+		return JIT_CreateNode2C(OP_iand, val, JIT_ConstUInt32(mask));
 	}
 	else {
 		return NULL;
@@ -692,6 +692,7 @@ static JIT_NodeRef build_cast(struct dmr_C *C, struct function *fn,
 			      JIT_NodeRef val, struct OMRType *dtype,
 			      int unsigned_cast)
 {
+#if 1
 	if (dtype->type == RT_INT)
 		return truncate_intvalue(C, fn, val, dtype, unsigned_cast);
 
@@ -701,7 +702,176 @@ static JIT_NodeRef build_cast(struct dmr_C *C, struct function *fn,
 	}
 	if (JIT_GetNodeType(val) == target_type)
 		return val;
+
 	return JIT_ConvertTo(fn->injector, val, target_type, unsigned_cast);
+#else
+	// Do it the way we do in nanojit backend
+	JIT_Type value_type = JIT_GetNodeType(val);
+	switch (dtype->type) {
+	case RT_INT:
+		return truncate_intvalue(C, fn, val, dtype, unsigned_cast);
+
+	case RT_INT8:
+		if (value_type == JIT_Int64) {
+			return JIT_CreateNode1C(OP_l2b, val);
+		}
+		else if (value_type == JIT_Float) {
+			return JIT_CreateNode1C(OP_f2b, val);
+		}
+		else if (value_type == JIT_Double) {
+			return JIT_CreateNode1C(OP_d2b, val);
+		}
+		else if (value_type == JIT_Address) {
+			return JIT_CreateNode1C(OP_a2b, val);
+		}
+		else if (value_type == JIT_Int8) {
+			return val;
+		}
+		else if (value_type == JIT_Int16) {
+			return JIT_CreateNode1C(OP_s2b, val);
+		}
+		else if (value_type == JIT_Int32) {
+			return JIT_CreateNode1C(OP_i2b, val);
+		}
+		break;
+
+	case RT_INT16:
+		if (value_type == JIT_Int64) {
+			return JIT_CreateNode1C(OP_l2s, val);
+		}
+		else if (value_type == JIT_Float) {
+			return JIT_CreateNode1C(OP_f2s, val);
+		}
+		else if (value_type == JIT_Double) {
+			return JIT_CreateNode1C(OP_d2s, val);
+		}
+		else if (value_type == JIT_Address) {
+			return JIT_CreateNode1C(OP_a2s, val);
+		}
+		else if (value_type == JIT_Int16) {
+			return val;
+		}
+		else if (value_type == JIT_Int8) {
+			return JIT_CreateNode1C(unsigned_cast ? OP_bu2s : OP_b2s, val);
+		}
+		else if (value_type == JIT_Int32) {
+			return JIT_CreateNode1C(OP_i2s, val);
+		}
+		break;
+
+	case RT_INT32:
+		if (value_type == JIT_Int64) {
+			return JIT_CreateNode1C(OP_l2i, val);
+		}
+		else if (value_type == JIT_Float) {
+			return JIT_CreateNode1C(unsigned_cast ? OP_f2iu : OP_f2i, val);
+		}
+		else if (value_type == JIT_Double) {
+			return JIT_CreateNode1C(unsigned_cast ? OP_d2iu : OP_d2i, val);
+		}
+		else if (value_type == JIT_Address) {
+			return JIT_CreateNode1C(OP_a2i, val);
+		}
+		else if (value_type == JIT_Int32) {
+			return val;
+		}
+		else if (value_type == JIT_Int16) {
+			return JIT_CreateNode1C(unsigned_cast ? OP_su2i : OP_s2i, val);
+		}
+		else if (value_type == JIT_Int8) {
+			return JIT_CreateNode1C(unsigned_cast ? OP_bu2i : OP_b2i, val);
+		}
+		break;
+
+	case RT_INT64:
+		if (value_type == JIT_Int8) {
+			return JIT_CreateNode1C(unsigned_cast ? OP_bu2l : OP_b2l, val);
+		}
+		else if (value_type == JIT_Int16) {
+			return JIT_CreateNode1C(unsigned_cast ? OP_su2l : OP_s2l, val);
+		}
+		else if (value_type == JIT_Int32) {
+			return JIT_CreateNode1C(unsigned_cast ? OP_iu2l : OP_i2l, val);
+		}
+		else if (value_type == JIT_Float) {
+			return JIT_CreateNode1C(unsigned_cast ? OP_f2lu : OP_f2l, val);
+		}
+		else if (value_type == JIT_Double) {
+			return JIT_CreateNode1C(unsigned_cast ? OP_d2lu : OP_d2l, val);
+		}
+		else if (value_type == JIT_Address) {
+			return JIT_CreateNode1C(OP_a2l, val);
+		}
+		else if (value_type == JIT_Int64) {
+			return val;
+		}
+		break;
+
+	case RT_PTR:
+		if (value_type == JIT_Int32) {
+			return JIT_CreateNode1C(unsigned_cast ? OP_iu2a : OP_i2a, val);
+		}
+		else if (value_type == JIT_Int64) {
+			return JIT_CreateNode1C(unsigned_cast ? OP_lu2a : OP_l2a, val);
+		}
+		else if (value_type == JIT_Int16) {
+			return JIT_CreateNode1C(unsigned_cast ? OP_su2a : OP_s2a, val);
+		}
+		else if (value_type == JIT_Int8) {
+			return JIT_CreateNode1C(unsigned_cast ? OP_bu2a : OP_b2a, val);
+		}
+		else if (value_type == JIT_Address) {
+			return val;
+		}
+		else {
+			return NULL;
+		}
+		break;
+
+	case RT_FLOAT:
+		if (value_type == JIT_Int32) {
+			return JIT_CreateNode1C(unsigned_cast ? OP_iu2f : OP_i2f, val);
+		}
+		else if (value_type == JIT_Int64) {
+			return JIT_CreateNode1C(unsigned_cast ? OP_lu2f : OP_l2f, val);
+		}
+		else if (value_type == JIT_Int16) {
+			return JIT_CreateNode1C(unsigned_cast ? OP_su2f : OP_s2f, val);
+		}
+		else if (value_type == JIT_Int8) {
+			return JIT_CreateNode1C(unsigned_cast ? OP_bu2f : OP_b2f, val);
+		}
+		else if (value_type == JIT_Double) {
+			return JIT_CreateNode1C(OP_d2f, val);
+		}
+		else if (value_type == JIT_Float)
+			return val;
+		break;
+
+	case RT_DOUBLE:
+		if (value_type == JIT_Int32) {
+			return JIT_CreateNode1C(unsigned_cast ? OP_iu2d : OP_i2d, val);
+		}
+		else if (value_type == JIT_Int64) {
+			return JIT_CreateNode1C(unsigned_cast ? OP_lu2d : OP_l2d, val);
+		}
+		else if (value_type == JIT_Int16) {
+			return JIT_CreateNode1C(unsigned_cast ? OP_su2d : OP_s2d, val);
+		}
+		else if (value_type == JIT_Int8) {
+			return JIT_CreateNode1C(unsigned_cast ? OP_bu2d : OP_b2d, val);
+		}
+		else if (value_type == JIT_Float) {
+			return JIT_CreateNode1C(OP_f2d, val);
+		}
+		else if (value_type == JIT_Double)
+			return val;
+		break;
+	default:
+		break;
+	}
+	return NULL;
+#endif
 }
 
 static JIT_NodeRef output_op_phi(struct dmr_C *C, struct function *fn,
@@ -2231,6 +2401,7 @@ bool dmrC_omrcompile(int argc, char **argv, JIT_ContextRef module,
 	struct dmr_C *C = new_dmr_C();
 	C->optimize = 0; /* Sparse simplifications result in incorrect IR */
 	C->codegen = 1;  /* Disables macros related to vararg processing */
+	C->Wdecl = 0;
 
 	symlist = dmrC_sparse_initialize(C, argc, argv, &filelist);
 

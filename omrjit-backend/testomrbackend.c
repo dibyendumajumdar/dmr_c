@@ -32,6 +32,7 @@ static int test1(int argc, char **argv)
 			rc = 1;
 	}
 	JIT_DestroyContext(module);
+	printf("Test1 %s\n", rc == 0 ? "Okay": "Failed");
 	return rc;
 }
 
@@ -62,6 +63,7 @@ static int test2(int argc, char **argv)
 			rc = 1;
 	}
 	JIT_DestroyContext(module);
+	printf("Test2 %s\n", rc == 0 ? "Okay": "Failed");
 	return rc;
 }
 
@@ -111,6 +113,7 @@ static int test3(int argc, char **argv)
 			rc = 1;
 	}
 	JIT_DestroyContext(module);
+	printf("Test3 %s\n", rc == 0 ? "Okay" : "Failed");
 	return rc;
 }
 
@@ -158,6 +161,7 @@ int test4(int argc, char **argv)
 			rc = 1;
 	}
 	JIT_DestroyContext(module);
+	printf("Test4 %s\n", rc == 0 ? "Okay" : "Failed");
 	return rc;
 }
 
@@ -212,12 +216,13 @@ int test5(int argc, char **argv)
 		fp = JIT_GetFunction(module, "getage");
 		if (!fp)
 			rc = 1;
-	}
+	} 
 	if (rc == 0 && fp) {
 		if (fp() != 99)
 			rc = 1;
 	}
 	JIT_DestroyContext(module);
+	printf("Test5 %s\n", rc == 0 ? "Okay" : "Failed");
 	return rc;
 }
 
@@ -246,7 +251,7 @@ static int test6(int argc, char **argv)
 			   "		rc = 2; "
 			   "	} "
 			   "	return rc; "
-			   "}";
+			   "}\n";
 
 	struct S3 {
 		int twobit : 2;
@@ -282,6 +287,7 @@ static int test6(int argc, char **argv)
 			rc = 1;
 	}
 	JIT_DestroyContext(module);
+	printf("Test6 %s\n", rc == 0 ? "Okay" : "Failed");
 	return rc;
 }
 
@@ -296,7 +302,7 @@ static int test7(int argc, char **argv)
 			   "	default: i++; break; "
 			   "	} "
 			   "	return i; "
-			   "}";
+			   "}\n";
 
 	int (*fp)(int v) = NULL;
 	JIT_ContextRef module = JIT_CreateContext();
@@ -320,9 +326,103 @@ static int test7(int argc, char **argv)
 			rc = 1;
 	}
 	JIT_DestroyContext(module);
+	printf("Test7 %s\n", rc == 0 ? "Okay" : "Failed");
 	return rc;
 }
 
+static int test8_cvtb2i(unsigned char s) { return s; }
+
+static int test8(int argc, char **argv)
+{
+	const char *code = "int cvtb2i(unsigned char s) { return s; }\n";
+	unsigned char input[] = { 'a', -1, -127 };
+
+	int(*fp)(unsigned char v) = NULL;
+	JIT_ContextRef module = JIT_CreateContext();
+	int rc = 0;
+	if (!dmrC_omrcompile(argc, argv, module, code))
+		rc = 1;
+	if (rc == 0) {
+		fp = JIT_GetFunction(module, "cvtb2i");
+		if (!fp)
+			rc = 1;
+	}
+	if (rc == 0 && fp) {
+		for (int i = 0; i < sizeof input/sizeof input[0]; i++) {
+			int rc1 = fp(input[i]);
+			//printf("Got %d expected %d\n", rc1, test8_cvtb2i(input[i]));
+			if (rc1 != test8_cvtb2i(input[i]))
+				rc = 1;
+		}
+	}
+	JIT_DestroyContext(module);
+	printf("Test8 %s\n", rc == 0 ? "Okay" : "Failed");
+	return rc;
+}
+
+static int test9_cvtb2i(char s) { return s; }
+
+static int test9(int argc, char **argv)
+{
+	const char *code = "int cvtb2i(char s) {return (int)s; }\n";
+	unsigned char input[] = { 'a', 128, 255 };
+
+	int(*fp)(char v) = NULL;
+	JIT_ContextRef module = JIT_CreateContext();
+	int rc = 0;
+	if (!dmrC_omrcompile(argc, argv, module, code))
+		rc = 1;
+	if (rc == 0) {
+		fp = JIT_GetFunction(module, "cvtb2i");
+		if (!fp)
+			rc = 1;
+	}
+	if (rc == 0 && fp) {
+		for (int i = 0; i < sizeof input / sizeof input[0]; i++) {
+			int rc1 = fp(input[i]);
+			//printf("Got %d expected %d\n", rc1, test9_cvtb2i(input[i]));
+			if (rc1 != test9_cvtb2i(input[i])) {
+				rc = 1;
+			}
+		}
+	}
+	JIT_DestroyContext(module);
+	printf("Test9 %s\n", rc == 0 ? "Okay" : "Failed");
+	return rc;
+}
+
+static int test10_not(int v) {
+	return ~v;
+}
+
+static int test10(int argc, char **argv)
+{
+	const char *code = "int not(int v) {return ~v; }";
+	int input[] = { 1, 0, 42, -84, 0xFF1011 };
+
+	int(*fp)(int v) = NULL;
+	JIT_ContextRef module = JIT_CreateContext();
+	int rc = 0;
+	if (!dmrC_omrcompile(argc, argv, module, code))
+		rc = 1;
+	if (rc == 0) {
+		fp = JIT_GetFunction(module, "not");
+		if (!fp)
+			rc = 1;
+	}
+	if (rc == 0 && fp) {
+		for (int i = 0; i < sizeof input / sizeof input[0]; i++) {
+			int rc1 = fp(input[i]);
+			//printf("Got %d expected %d\n", rc1, test10_not(input[i]));
+			if (rc1 != test10_not(input[i])) {
+				rc = 1;
+			}
+		}
+	}
+	JIT_DestroyContext(module);
+	printf("Test10 %s\n", rc == 0 ? "Okay" : "Failed");
+	return rc;
+}
 
 int main(int argc, char **argv)
 {
@@ -332,8 +432,11 @@ int main(int argc, char **argv)
 	rc += test3(argc, argv);
 	rc += test4(argc, argv);
 	rc += test5(argc, argv);
+	//rc += test6(argc, argv);
 	rc += test7(argc, argv);
-	rc += test6(argc, argv);
+	rc += test8(argc, argv);
+	rc += test9(argc, argv);
+	rc += test10(argc, argv);
 	if (rc == 0)
 		printf("Test OK\n");
 	else

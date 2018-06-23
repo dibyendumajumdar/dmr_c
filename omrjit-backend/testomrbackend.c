@@ -397,7 +397,7 @@ static int test10_not(int v) {
 
 static int test10(int argc, char **argv)
 {
-	const char *code = "int not(int v) {return ~v; }";
+	const char *code = "int not(int v) {return ~v; }\n";
 	int input[] = { 1, 0, 42, -84, 0xFF1011 };
 
 	int(*fp)(int v) = NULL;
@@ -424,6 +424,36 @@ static int test10(int argc, char **argv)
 	return rc;
 }
 
+static int test11(int argc, char **argv)
+{
+	const char *code = "int tern(int v) {return v > 0 ? 5 : 4; }\n";
+	int input[] = { 1, 0, 42, -84, 0xFF1011 };
+	int expected[] = { 5, 4, 5, 4, 5 };
+
+	int(*fp)(int v) = NULL;
+	JIT_ContextRef module = JIT_CreateContext();
+	int rc = 0;
+	if (!dmrC_omrcompile(argc, argv, module, code))
+		rc = 1;
+	if (rc == 0) {
+		fp = JIT_GetFunction(module, "tern");
+		if (!fp)
+			rc = 1;
+	}
+	if (rc == 0 && fp) {
+		for (int i = 0; i < sizeof input / sizeof input[0]; i++) {
+			int rc1 = fp(input[i]);
+			//printf("Got %d expected %d\n", rc1, test10_not(input[i]));
+			if (rc1 != expected[i]) {
+				rc = 1;
+			}
+		}
+	}
+	JIT_DestroyContext(module);
+	printf("Test11 %s\n", rc == 0 ? "Okay" : "Failed");
+	return rc;
+}
+
 int main(int argc, char **argv)
 {
 	int rc = 0;
@@ -437,6 +467,7 @@ int main(int argc, char **argv)
 	rc += test8(argc, argv);
 	rc += test9(argc, argv);
 	rc += test10(argc, argv);
+	rc += test11(argc, argv);
 	if (rc == 0)
 		printf("Test OK\n");
 	else

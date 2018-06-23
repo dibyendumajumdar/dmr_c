@@ -927,7 +927,7 @@ static JIT_NodeRef output_op_phi(struct dmr_C *C, struct function *fn,
 	}
 	if (load == NULL)
 		return NULL;
-	// JIT_GenerateTreeTop(fn->injector, load);
+	//JIT_GenerateTreeTop(fn->injector, load);
 	insn->target->priv = load;
 	return load;
 }
@@ -1838,20 +1838,16 @@ static JIT_NodeRef output_op_neg(struct dmr_C *C, struct function *fn,
 	return target;
 }
 
-
-
-#if 0
-
-
-static NJXLInsRef output_op_sel(struct dmr_C *C, struct function *fn,
+static JIT_NodeRef output_op_sel(struct dmr_C *C, struct function *fn,
 				struct instruction *insn)
 {
-	NJXLInsRef target, src1, src2, src3;
+	JIT_NodeRef target, src1, src2, src3;
 
 	src1 = pseudo_to_value(C, fn, insn->type, insn->src1);
 	if (!src1)
 		return NULL;
-	src1 = is_eq_zero(C, fn, src1);
+
+	src1 = is_neq_zero(C, fn, src1);
 	if (!src1)
 		return NULL;
 
@@ -1862,13 +1858,23 @@ static NJXLInsRef output_op_sel(struct dmr_C *C, struct function *fn,
 	if (!src3)
 		return NULL;
 
-	// As we compare to 0 above we have to flip the branches
-	target = NJX_choose(fn->builder, src1, src3, src2, true);
+	struct OMRType *insntype = insn_symbol_type(C, fn, insn);
+	JIT_Type target_type = map_OMRtype(insntype);
+	JIT_NodeOpCode op_code;
+	switch (target_type) {
+	case JIT_Int32: op_code = OP_iternary; break;
+	case JIT_Int64: op_code = OP_lternary; break;
+	case JIT_Int16: op_code = OP_sternary; break;
+	case JIT_Int8: op_code = OP_bternary; break;
+	default: 
+		// TODO error message
+		return NULL;
+	}
+	target = JIT_CreateNode3C(op_code, src1, src2, src3);
 
 	insn->target->priv = target;
 	return target;
 }
-#endif
 
 static JIT_NodeRef output_op_fpcast(struct dmr_C *C, struct function *fn,
 				   struct instruction *insn)
@@ -2119,8 +2125,7 @@ static int output_insn(struct dmr_C *C, struct function *fn,
 		break;
 
 	case OP_SEL:
-		// v = output_op_sel(C, fn, insn);
-		return 0;
+		v = output_op_sel(C, fn, insn);
 		break;
 
 	case OP_SLICE:

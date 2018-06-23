@@ -1611,16 +1611,16 @@ static JIT_NodeRef output_op_not(struct dmr_C *C, struct function *fn,
 
 	switch (insn->size) {
 	case 64:
-		target = JIT_CreateNode2C(OP_lxor, src, JIT_ConstInt64((int64_t)(uint64_t)~0LL));
+		target = JIT_CreateNode2C(OP_lxor, src, JIT_ConstInt64(0xFFFFFFFFFFFFFFFFLL));
 		break;
 	case 32:
-		target = JIT_CreateNode2C(OP_ixor, src, JIT_ConstInt32((int32_t)(uint32_t)~0));
+		target = JIT_CreateNode2C(OP_ixor, src, JIT_ConstInt32(0xFFFFFFFF));
 		break;
 	case 16:
-		target = JIT_CreateNode2C(OP_lxor, src, JIT_ConstInt16((int16_t)(uint16_t)~0));
+		target = JIT_CreateNode2C(OP_sxor, src, JIT_ConstInt16(0xFFFF));
 		break;
 	case 8:
-		target = JIT_CreateNode2C(OP_lxor, src, JIT_ConstInt8((int8_t)(uint8_t)~0));
+		target = JIT_CreateNode2C(OP_bxor, src, JIT_ConstInt8(0xFF));
 		break;
 	}
 	insn->target->priv = target;

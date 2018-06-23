@@ -397,13 +397,17 @@ static JIT_Type map_OMRtype(struct OMRType *type)
 }
 
 static JIT_SymbolRef OMR_alloca(struct function *fn, struct OMRType *type,
-				int32_t size)
+				int32_t size, bool reg)
 {
+	JIT_Type omr_type = map_OMRtype(type);
 	// In OMR there is no explicit alloca IL I believe
 	// Instead we create a local symbol of appropriate size
 	// We treat all locals as byte arrays - the load/store 
 	// is done at specific offsets as required
-	return JIT_CreateLocalByteArray(fn->injector, (uint32_t)size);
+	if (!reg || omr_type == JIT_Aggregate)
+		return JIT_CreateLocalByteArray(fn->injector, (uint32_t)size);
+	else
+		return JIT_CreateTemporary(fn->injector, omr_type);
 }
 
 static JIT_NodeRef constant_value(struct dmr_C *C, struct function *fn,
@@ -469,7 +473,7 @@ static JIT_SymbolRef build_local(struct dmr_C *C, struct function *fn,
 			return NULL;
 		}
 		JIT_SymbolRef result = OMR_alloca(
-		    fn, type, type->bit_size / C->target->bits_in_char);
+		    fn, type, type->bit_size / C->target->bits_in_char, false);
 		sym->priv = result;
 		return result;
 	}
@@ -2240,7 +2244,7 @@ static bool JIT_ILBuilderImpl(JIT_ILInjectorRef injector, void *userdata)
 			/* insert alloca into entry block */
 			JIT_SymbolRef omr_symbol =
 			    OMR_alloca(fn, insn_symbol_type(fn->C, fn, insn),
-				       instruction_size_in_bytes(fn->C, insn));
+				       instruction_size_in_bytes(fn->C, insn), true);
 			if (!omr_symbol)
 				goto Efailed;
 

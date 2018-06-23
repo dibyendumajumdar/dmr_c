@@ -209,7 +209,8 @@ int test5(int argc, char **argv)
 			rc = 1;
 	}
 	if (rc == 0 && fp) {
-		if (fp() != 84)
+		int rc1 = fp();
+		if (rc1 != 84)
 			rc = 1;
 	}
 	if (rc == 0) {

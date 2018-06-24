@@ -455,6 +455,55 @@ static int test11(int argc, char **argv)
 	return rc;
 }
 
+static int test12(int argc, char **argv)
+{
+	const char *code[] = 
+		{ 
+		"int cmpeq(int v) {return v == 4; }\n",
+		"int cmpeq2(int v) {return v == 4; }\n",
+		"int cmpne(int v) {return v != 4; }\n",
+		"int cmple(int v) {return v <= 4; }\n",
+		"int cmplt(int v) {return v < 4; }\n",
+		"int cmpge(int v) {return v >= 4; }\n",
+		"int cmpgt(int v) {return v > 4; }\n"
+		};
+	const char *names[] = {
+		"cmpeq",
+		"cmpeq2",
+		"cmpne",
+		"cmple",
+		"cmplt",
+		"cmpge",
+		"cmpgt"
+	};
+	int input[] = { 4, 3, 3, 5, 3, 3, 9 };
+	int expected[] = { 1, 0, 1, 0, 1, 0, 1 };
+
+	int(*fp)(int v) = NULL;
+	JIT_ContextRef module = JIT_CreateContext();
+	int rc = 0;
+	
+	for (int i = 0; i < sizeof input / sizeof input[0]; i++) {
+		if (!dmrC_omrcompile(argc, argv, module, code[i])) {
+			printf("Test12: %s failed to compile\n", names[i]);
+			rc = 1;
+			continue;
+		}
+		fp = JIT_GetFunction(module, names[i]);
+		if (rc == 0 && fp) {
+			int rc1 = fp(input[i]);
+			if (rc1 != expected[i]) {
+				printf("Test12: %s failed: Got %d expected %d\n", names[i], rc1, expected[i]);
+				rc = 1;
+			}
+		}
+	}
+	JIT_DestroyContext(module);
+	printf("Test12 %s\n", rc == 0 ? "Okay" : "Failed");
+	return rc;
+}
+
+
 int main(int argc, char **argv)
 {
 	int rc = 0;
@@ -463,12 +512,13 @@ int main(int argc, char **argv)
 	rc += test3(argc, argv);
 	rc += test4(argc, argv);
 	rc += test5(argc, argv);
-	//rc += test6(argc, argv);
+	rc += test6(argc, argv);
 	rc += test7(argc, argv);
 	rc += test8(argc, argv);
 	rc += test9(argc, argv);
 	rc += test10(argc, argv);
 	rc += test11(argc, argv);
+	rc += test12(argc, argv);
 	if (rc == 0)
 		printf("Test OK\n");
 	else

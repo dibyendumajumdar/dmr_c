@@ -101,6 +101,8 @@ static struct OMRType DoubleType = {
     .type = RT_DOUBLE, .return_type = NULL, .bit_size = sizeof(double) * 8};
 static struct OMRType PtrType = {
     .type = RT_PTR, .return_type = NULL, .bit_size = sizeof(void *) * 8};
+static struct OMRType PtrIntType = {
+	.type = RT_INT64,.return_type = NULL,.bit_size = sizeof(intptr_t) * 8 };
 static struct OMRType BadType = {
     .type = RT_UNSUPPORTED, .return_type = NULL, .bit_size = 0};
 
@@ -886,10 +888,12 @@ static JIT_NodeRef output_op_phi(struct dmr_C *C, struct function *fn,
 	if (!ptr)
 		return NULL;
 
+
 	// Unlike LLVM version which creates the Load instruction
 	// early on and inserts it into the IR stream here, we
 	// create the Load instruction here.
 	JIT_NodeRef load = NULL;
+#if 0
 	switch (insn->size) {
 	case 8:
 		// TODO do we need to do unsigned here?
@@ -929,6 +933,9 @@ static JIT_NodeRef output_op_phi(struct dmr_C *C, struct function *fn,
 					     JIT_ConstInt64(0), JIT_Int64);
 		break;
 	}
+#else
+	load = JIT_LoadTemporary(fn->injector, ptr);
+#endif
 	if (load == NULL)
 		return NULL;
 	//JIT_GenerateTreeTop(fn->injector, load);
@@ -1038,8 +1045,12 @@ static JIT_NodeRef output_op_phisrc(struct dmr_C *C, struct function *fn,
 		ptr = phi->target->priv2;
 		if (!ptr)
 			return NULL;
+#if 0
 		JIT_ArrayStore(fn->injector, JIT_LoadAddress(fn->injector, ptr),
 			       JIT_ConstInt64(0), v);
+#else
+		JIT_StoreToTemporary(fn->injector, ptr, v);
+#endif
 	}
 	END_FOR_EACH_PTR(phi);
 	return v;
@@ -1062,11 +1073,12 @@ static JIT_NodeRef get_operand(struct dmr_C *C, struct function *fn,
 	target = pseudo_to_value(C, fn, ctype, pseudo);
 	if (!target)
 		return NULL;
-	// if (ptrtoint && dmrC_is_ptr_type(ctype))
-	//	target = build_cast(C, fn, target, instruction_type, 0);
-	// else
-	//	target =
-	//	build_cast(C, fn, target, instruction_type, unsigned_cast);
+	//if (ptrtoint && dmrC_is_ptr_type(ctype) && instruction_type->type != RT_PTR) {
+	//	target = build_cast(C, fn, target, &PtrIntType, 0);
+	//}
+	//else {
+	//	target = build_cast(C, fn, target, instruction_type, unsigned_cast);
+	//}
 	return target;
 }
 
@@ -1093,7 +1105,7 @@ static JIT_NodeRef output_op_cbr(struct dmr_C *C, struct function *fn,
 	JIT_NodeRef value = pseudo_to_value(C, fn, br->type, br->cond);
 	if (!value)
 		return NULL;
-	// JIT_GenerateTreeTop(fn->injector, value);
+	//JIT_GenerateTreeTop(fn->injector, value);
 	JIT_BlockRef true_block = JIT_GetBlock(fn->injector, br->bb_true->nr);
 	JIT_BlockRef false_block = JIT_GetBlock(fn->injector, br->bb_false->nr);
 	JIT_NodeRef if_node =
@@ -1115,6 +1127,94 @@ static JIT_NodeRef output_op_cbr(struct dmr_C *C, struct function *fn,
 	// In the fallthrough block we only need a goto
 	JIT_NodeRef goto_node = JIT_Goto(fn->injector, false_block);
 	return if_node;
+}
+
+static JIT_NodeRef is_eq_zero(struct dmr_C *C, struct function *fn,
+	JIT_NodeRef value)
+{
+	JIT_NodeRef cond = NULL;
+	JIT_Type value_type = JIT_GetNodeType(value);
+	switch (value_type) {
+	case JIT_Int32:
+		cond = JIT_CreateNode2C(OP_icmpeq, value,
+			JIT_ZeroValue(fn->injector, JIT_Int32));
+		break;
+
+	case JIT_Int64:
+		cond = JIT_CreateNode2C(OP_lcmpeq, value,
+			JIT_ZeroValue(fn->injector, JIT_Int64));
+		break;
+
+	case JIT_Int16:
+		cond = JIT_CreateNode2C(OP_scmpeq, value,
+			JIT_ZeroValue(fn->injector, JIT_Int16));
+		break;
+
+	case JIT_Int8:
+		cond = JIT_CreateNode2C(OP_bcmpeq, value,
+			JIT_ZeroValue(fn->injector, JIT_Int8));
+		break;
+
+	case JIT_Address:
+		cond = JIT_CreateNode2C(
+			OP_acmpeq, value, JIT_ZeroValue(fn->injector, JIT_Address));
+		break;
+
+	case JIT_Double:
+		cond = JIT_CreateNode2C(
+			OP_dcmpeq, value, JIT_ZeroValue(fn->injector, JIT_Double));
+		break;
+
+	case JIT_Float:
+		cond = JIT_CreateNode2C(OP_fcmpeq, value,
+			JIT_ZeroValue(fn->injector, JIT_Float));
+		break;
+	}
+	return cond;
+}
+
+static JIT_NodeRef is_neq_zero(struct dmr_C *C, struct function *fn,
+	JIT_NodeRef value)
+{
+	JIT_NodeRef cond = NULL;
+	JIT_Type value_type = JIT_GetNodeType(value);
+	switch (value_type) {
+	case JIT_Int32:
+		cond = JIT_CreateNode2C(OP_icmpne, value,
+			JIT_ZeroValue(fn->injector, JIT_Int32));
+		break;
+
+	case JIT_Int64:
+		cond = JIT_CreateNode2C(OP_lcmpne, value,
+			JIT_ZeroValue(fn->injector, JIT_Int64));
+		break;
+
+	case JIT_Int16:
+		cond = JIT_CreateNode2C(OP_scmpne, value,
+			JIT_ZeroValue(fn->injector, JIT_Int16));
+		break;
+
+	case JIT_Int8:
+		cond = JIT_CreateNode2C(OP_bcmpne, value,
+			JIT_ZeroValue(fn->injector, JIT_Int8));
+		break;
+
+	case JIT_Address:
+		cond = JIT_CreateNode2C(
+			OP_acmpne, value, JIT_ZeroValue(fn->injector, JIT_Address));
+		break;
+
+	case JIT_Double:
+		cond = JIT_CreateNode2C(
+			OP_dcmpne, value, JIT_ZeroValue(fn->injector, JIT_Double));
+		break;
+
+	case JIT_Float:
+		cond = JIT_CreateNode2C(OP_fcmpne, value,
+			JIT_ZeroValue(fn->injector, JIT_Float));
+		break;
+	}
+	return cond;
 }
 
 static JIT_NodeRef output_op_compare(struct dmr_C *C, struct function *fn,
@@ -1140,6 +1240,9 @@ static JIT_NodeRef output_op_compare(struct dmr_C *C, struct function *fn,
 	struct OMRType *dst_type = insn_symbol_type(C, fn, insn);
 	if (!dst_type)
 		return NULL;
+
+	//JIT_GenerateTreeTop(fn->injector, lhs);
+	//JIT_GenerateTreeTop(fn->injector, rhs);
 
 	JIT_Type op_type = JIT_GetNodeType(lhs);
 
@@ -1273,6 +1376,7 @@ static JIT_NodeRef output_op_compare(struct dmr_C *C, struct function *fn,
 			target = JIT_CreateNode2C(OP_acmpge, lhs, rhs);
 		break;
 	case OP_SET_EQ:
+#if 0
 		if (op_type == JIT_Double)
 			target = JIT_CreateNode2C(OP_dcmpeq, lhs, rhs);
 		else if (op_type == JIT_Float)
@@ -1287,6 +1391,7 @@ static JIT_NodeRef output_op_compare(struct dmr_C *C, struct function *fn,
 			target = JIT_CreateNode2C(OP_bcmpeq, lhs, rhs);
 		else if (op_type == JIT_Address)
 			target = JIT_CreateNode2C(OP_acmpeq, lhs, rhs);
+#endif
 	case OP_SET_NE:
 		if (op_type == JIT_Double)
 			target = JIT_CreateNode2C(OP_dcmpne, lhs, rhs);
@@ -1302,102 +1407,22 @@ static JIT_NodeRef output_op_compare(struct dmr_C *C, struct function *fn,
 			target = JIT_CreateNode2C(OP_bcmpne, lhs, rhs);
 		else if (op_type == JIT_Address)
 			target = JIT_CreateNode2C(OP_acmpne, lhs, rhs);
+		if (target && insn->opcode == OP_SET_EQ) {
+			target = JIT_CreateNode3C(OP_iternary, target, JIT_ConstInt32(0), JIT_ConstInt32(1));
+		}
 		break;
 	default:
 		break;
 	}
 
+	//if (target)
+	//	JIT_GenerateTreeTop(fn->injector, target);
+
 	insn->target->priv = target;
 	return target;
 }
 
-static JIT_NodeRef is_eq_zero(struct dmr_C *C, struct function *fn,
-			      JIT_NodeRef value)
-{
-	JIT_NodeRef cond = NULL;
-	JIT_Type value_type = JIT_GetNodeType(value);
-	switch (value_type) {
-	case JIT_Int32:
-		cond = JIT_CreateNode2C(OP_icmpeq, value,
-					JIT_ZeroValue(fn->injector, JIT_Int32));
-		break;
 
-	case JIT_Int64:
-		cond = JIT_CreateNode2C(OP_lcmpeq, value,
-					JIT_ZeroValue(fn->injector, JIT_Int64));
-		break;
-
-	case JIT_Int16:
-		cond = JIT_CreateNode2C(OP_scmpeq, value,
-					JIT_ZeroValue(fn->injector, JIT_Int16));
-		break;
-
-	case JIT_Int8:
-		cond = JIT_CreateNode2C(OP_bcmpeq, value,
-					JIT_ZeroValue(fn->injector, JIT_Int8));
-		break;
-
-	case JIT_Address:
-		cond = JIT_CreateNode2C(
-		    OP_acmpeq, value, JIT_ZeroValue(fn->injector, JIT_Address));
-		break;
-
-	case JIT_Double:
-		cond = JIT_CreateNode2C(
-		    OP_dcmpeq, value, JIT_ZeroValue(fn->injector, JIT_Double));
-		break;
-
-	case JIT_Float:
-		cond = JIT_CreateNode2C(OP_fcmpeq, value,
-					JIT_ZeroValue(fn->injector, JIT_Float));
-		break;
-	}
-	return cond;
-}
-
-static JIT_NodeRef is_neq_zero(struct dmr_C *C, struct function *fn,
-			       JIT_NodeRef value)
-{
-	JIT_NodeRef cond = NULL;
-	JIT_Type value_type = JIT_GetNodeType(value);
-	switch (value_type) {
-	case JIT_Int32:
-		cond = JIT_CreateNode2C(OP_icmpne, value,
-					JIT_ZeroValue(fn->injector, JIT_Int32));
-		break;
-
-	case JIT_Int64:
-		cond = JIT_CreateNode2C(OP_lcmpne, value,
-					JIT_ZeroValue(fn->injector, JIT_Int64));
-		break;
-
-	case JIT_Int16:
-		cond = JIT_CreateNode2C(OP_scmpne, value,
-					JIT_ZeroValue(fn->injector, JIT_Int16));
-		break;
-
-	case JIT_Int8:
-		cond = JIT_CreateNode2C(OP_bcmpne, value,
-					JIT_ZeroValue(fn->injector, JIT_Int8));
-		break;
-
-	case JIT_Address:
-		cond = JIT_CreateNode2C(
-		    OP_acmpne, value, JIT_ZeroValue(fn->injector, JIT_Address));
-		break;
-
-	case JIT_Double:
-		cond = JIT_CreateNode2C(
-		    OP_dcmpne, value, JIT_ZeroValue(fn->injector, JIT_Double));
-		break;
-
-	case JIT_Float:
-		cond = JIT_CreateNode2C(OP_fcmpne, value,
-					JIT_ZeroValue(fn->injector, JIT_Float));
-		break;
-	}
-	return cond;
-}
 
 static JIT_NodeRef output_op_binary(struct dmr_C *C, struct function *fn,
 				    struct instruction *insn)
@@ -1444,6 +1469,7 @@ static JIT_NodeRef output_op_binary(struct dmr_C *C, struct function *fn,
 		}
 		break;
 	case OP_SUB:
+		assert(JIT_GetNodeType(lhs) != JIT_Address && JIT_GetNodeType(rhs) != JIT_Address);
 		switch (insn->size) {
 		case 64:
 			if (dmrC_is_float_type(C->S, insn->type))
@@ -1461,6 +1487,7 @@ static JIT_NodeRef output_op_binary(struct dmr_C *C, struct function *fn,
 		}
 		break;
 	case OP_MULU:
+		assert(JIT_GetNodeType(lhs) != JIT_Address && JIT_GetNodeType(rhs) != JIT_Address);
 		switch (insn->size) {
 		case 64:
 			if (dmrC_is_float_type(C->S, insn->type))
@@ -1477,6 +1504,7 @@ static JIT_NodeRef output_op_binary(struct dmr_C *C, struct function *fn,
 		}
 		break;
 	case OP_MULS:
+		assert(JIT_GetNodeType(lhs) != JIT_Address && JIT_GetNodeType(rhs) != JIT_Address);
 		switch (insn->size) {
 		case 64:
 			target = JIT_CreateNode2C(OP_lmul, lhs, rhs);
@@ -1487,6 +1515,7 @@ static JIT_NodeRef output_op_binary(struct dmr_C *C, struct function *fn,
 		}
 		break;
 	case OP_DIVU:
+		assert(JIT_GetNodeType(lhs) != JIT_Address && JIT_GetNodeType(rhs) != JIT_Address);
 		switch (insn->size) {
 		case 64:
 			if (dmrC_is_float_type(C->S, insn->type))
@@ -1503,6 +1532,7 @@ static JIT_NodeRef output_op_binary(struct dmr_C *C, struct function *fn,
 		}
 		break;
 	case OP_DIVS:
+		assert(JIT_GetNodeType(lhs) != JIT_Address && JIT_GetNodeType(rhs) != JIT_Address);
 		switch (insn->size) {
 		case 64:
 			target = JIT_CreateNode2C(OP_ldiv, lhs, rhs);
@@ -1593,12 +1623,15 @@ static JIT_NodeRef output_op_binary(struct dmr_C *C, struct function *fn,
 			break;
 		}
 		break;
+#if 1
 	case OP_AND_BOOL: {
 		JIT_NodeRef lhs_nz, rhs_nz;
 		struct OMRType *dst_type;
 
 		lhs_nz = is_neq_zero(C, fn, lhs);
+		//JIT_GenerateTreeTop(fn->injector, lhs);
 		rhs_nz = is_neq_zero(C, fn, rhs);
+		//JIT_GenerateTreeTop(fn->injector, rhs);
 		switch (insn->size) {
 		case 64:
 			target = JIT_CreateNode2C(OP_land, lhs_nz, rhs_nz);
@@ -1610,6 +1643,7 @@ static JIT_NodeRef output_op_binary(struct dmr_C *C, struct function *fn,
 		}
 		if (!target)
 			return NULL;
+		//JIT_GenerateTreeTop(fn->injector, target);
 		dst_type = insn_symbol_type(C, fn, insn);
 		if (!dst_type)
 			return NULL;
@@ -1621,7 +1655,9 @@ static JIT_NodeRef output_op_binary(struct dmr_C *C, struct function *fn,
 		struct OMRType *dst_type;
 
 		lhs_nz = is_neq_zero(C, fn, lhs);
+		//JIT_GenerateTreeTop(fn->injector, lhs);
 		rhs_nz = is_neq_zero(C, fn, rhs);
+		//JIT_GenerateTreeTop(fn->injector, rhs);
 		switch (insn->size) {
 		case 64:
 			target = JIT_CreateNode2C(OP_lor, lhs_nz, rhs_nz);
@@ -1633,12 +1669,14 @@ static JIT_NodeRef output_op_binary(struct dmr_C *C, struct function *fn,
 		}
 		if (!target)
 			return NULL;
+		//JIT_GenerateTreeTop(fn->injector, target);
 		dst_type = insn_symbol_type(C, fn, insn);
 		if (!dst_type)
 			return NULL;
 		target = build_cast(C, fn, target, dst_type, 1);
 		break;
 	}
+#endif
 	}
 	insn->target->priv = target;
 
@@ -1862,6 +1900,9 @@ static JIT_NodeRef output_op_sel(struct dmr_C *C, struct function *fn,
 	if (!src3)
 		return NULL;
 
+	//JIT_GenerateTreeTop(fn->injector, src2);
+	//JIT_GenerateTreeTop(fn->injector, src3);
+
 	struct OMRType *insntype = insn_symbol_type(C, fn, insn);
 	JIT_Type target_type = map_OMRtype(insntype);
 	JIT_NodeOpCode op_code;
@@ -1875,6 +1916,7 @@ static JIT_NodeRef output_op_sel(struct dmr_C *C, struct function *fn,
 		return NULL;
 	}
 	target = JIT_CreateNode3C(op_code, src1, src2, src3);
+	//JIT_GenerateTreeTop(fn->injector, target);
 
 	insn->target->priv = target;
 	return target;

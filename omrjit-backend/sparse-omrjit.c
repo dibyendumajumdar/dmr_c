@@ -50,24 +50,27 @@ Some Implementation Notes
 1. Local variables are modelled as byte strings - the load/store ops
    take care of extracting / storing the right type of value
 
-2. The rest are all scalar values
+2. Phi values are modelled as temporaries - phisrc is implemented as store 
+   to temporary while phi is a load from temporary.
 
-3. We use stack variables to simulate phi (load) and phisrc (store) op codes.
-   These are also created as byte arrays but typically these are always 
-   scalars - I tried using the OMR Temporary var type but this created confusion
-   when trying to load/store values correctly
-
-4. We create the blocks at the beginning based upon the blocks in
+3. We create all the blocks at the beginning based upon the blocks in
    Sparse IR - but we have to add an extra block for every CBR instruction
    as conditional branches in OMR fall through to the next block
 
+4. Local SymRefs are stored in Sparse Symbol->priv field. 
+
+5. Pseudo SymRefs are stored in pseudo->priv2, whereas corresponding load 
+   is stored in pseudo->priv.
+
 */
 
-
+/*
+OMR has additional vector types which we do not support
+*/
 enum OMRTypeKind {
 	RT_UNSUPPORTED = 0,
 	RT_VOID = 1,
-	RT_INT = 2,
+	RT_INT = 2, /* Sometimes Sparse IR contains int values with odd bit sizes; this type is used in that case */
 	RT_INT8 = 3,
 	RT_INT16 = 4,
 	RT_INT32 = 5,
@@ -144,6 +147,7 @@ static struct OMRType *int_type_by_size(struct function *fn, int size)
 	case 64:
 		return &Int64Type;
 	default:
+		/* Sometimes Sparse IR has non-standard bit sizes espcially in bitwise ops */
 		return alloc_OMRtype(fn, RT_INT, size);
 	}
 }
@@ -252,7 +256,7 @@ static struct OMRType *sym_array_type(struct dmr_C *C, struct function *fn,
 	}
 	if (base_type->bit_size == 0 || base_type->bit_size == -1 ||
 	    array_bit_size == 0 || array_bit_size == -1) {
-		fprintf(stderr, "array size can not be determined\n");
+		fprintf(stderr, "array size cannot be determined\n");
 		return &BadType;
 	}
 	return alloc_OMRtype(fn, RT_AGGREGATE, array_bit_size);
@@ -305,6 +309,10 @@ static struct OMRType *type_to_OMRtype(struct dmr_C *C, struct function *fn,
 	}
 }
 
+/*
+If the instruction has a type uses that to determine the OMR type
+else returns an OMR int type that matches the instruction size.
+*/
 static struct OMRType *insn_symbol_type(struct dmr_C *C, struct function *fn,
 					 struct instruction *insn)
 {
@@ -409,6 +417,7 @@ static JIT_SymbolRef OMR_alloca(struct function *fn, struct OMRType *type,
 	if (!reg || omr_type == JIT_Aggregate)
 		return JIT_CreateLocalByteArray(fn->injector, (uint32_t)size);
 	else
+		// phi nodes get created as temporaries
 		return JIT_CreateTemporary(fn->injector, omr_type);
 }
 
@@ -423,6 +432,7 @@ static JIT_NodeRef constant_value(struct dmr_C *C, struct function *fn,
 	} else if (dtype->type == RT_INT16) {
 		result = JIT_ConstInt16((int16_t)val);
 	} else if (dtype->type == RT_INT || dtype->type == RT_INT32) {
+		assert(dtype->bit_size <= Int32Type.bit_size);
 		result = JIT_ConstInt32((int32_t)val);
 	} else if (dtype->type == RT_INT64) {
 		result = JIT_ConstInt64(val);
@@ -635,6 +645,7 @@ static JIT_NodeRef val_to_value(struct dmr_C *C, struct function *fn,
 	case 64:
 		return JIT_ConstInt64((int64_t)value);
 	}
+	fprintf(stderr, "Cannot create a constant of size %d\n", ctype->bit_size);
 	return NULL;
 }
 
@@ -894,6 +905,7 @@ static JIT_NodeRef output_op_phi(struct dmr_C *C, struct function *fn,
 	// create the Load instruction here.
 	JIT_NodeRef load = NULL;
 #if 0
+	// Model phi values as byte arrays
 	switch (insn->size) {
 	case 8:
 		// TODO do we need to do unsigned here?
@@ -934,6 +946,7 @@ static JIT_NodeRef output_op_phi(struct dmr_C *C, struct function *fn,
 		break;
 	}
 #else
+	// Model phi values as temporaries
 	load = JIT_LoadTemporary(fn->injector, ptr);
 #endif
 	if (load == NULL)
@@ -950,8 +963,6 @@ static JIT_NodeRef output_op_load(struct dmr_C *C, struct function *fn,
 
 	if (!ptr)
 		return NULL;
-	// if (JIT_GetNodeType(ptr) == JIT_Int64)
-	//	ptr = JIT_ConvertTo(fn->injector, ptr, JIT_Address, false);
 
 	JIT_NodeRef index = JIT_ConstInt64((int64_t)insn->offset);
 	JIT_NodeRef load = NULL;
@@ -1038,18 +1049,18 @@ static JIT_NodeRef output_op_phisrc(struct dmr_C *C, struct function *fn,
 
 	FOR_EACH_PTR(insn->phi_users, phi)
 	{
-		JIT_SymbolRef ptr;
+		JIT_SymbolRef symref;
 
 		assert(phi->opcode == OP_PHI);
 		/* phi must be load from alloca */
-		ptr = phi->target->priv2;
-		if (!ptr)
+		symref = phi->target->priv2;
+		if (!symref)
 			return NULL;
 #if 0
 		JIT_ArrayStore(fn->injector, JIT_LoadAddress(fn->injector, ptr),
 			       JIT_ConstInt64(0), v);
 #else
-		JIT_StoreToTemporary(fn->injector, ptr, v);
+		JIT_StoreToTemporary(fn->injector, symref, v);
 #endif
 	}
 	END_FOR_EACH_PTR(phi);
@@ -1057,7 +1068,7 @@ static JIT_NodeRef output_op_phisrc(struct dmr_C *C, struct function *fn,
 }
 
 /**
- * Convert the pseudo to a case_value, and cast it to the expected type of the
+ * Convert the pseudo to a value, and cast it to the expected type of the
  * instruction. If ptrtoint is true then convert pointer values to integers.
  */
 static JIT_NodeRef get_operand(struct dmr_C *C, struct function *fn,
@@ -1129,50 +1140,6 @@ static JIT_NodeRef output_op_cbr(struct dmr_C *C, struct function *fn,
 	return if_node;
 }
 
-static JIT_NodeRef is_eq_zero(struct dmr_C *C, struct function *fn,
-	JIT_NodeRef value)
-{
-	JIT_NodeRef cond = NULL;
-	JIT_Type value_type = JIT_GetNodeType(value);
-	switch (value_type) {
-	case JIT_Int32:
-		cond = JIT_CreateNode2C(OP_icmpeq, value,
-			JIT_ZeroValue(fn->injector, JIT_Int32));
-		break;
-
-	case JIT_Int64:
-		cond = JIT_CreateNode2C(OP_lcmpeq, value,
-			JIT_ZeroValue(fn->injector, JIT_Int64));
-		break;
-
-	case JIT_Int16:
-		cond = JIT_CreateNode2C(OP_scmpeq, value,
-			JIT_ZeroValue(fn->injector, JIT_Int16));
-		break;
-
-	case JIT_Int8:
-		cond = JIT_CreateNode2C(OP_bcmpeq, value,
-			JIT_ZeroValue(fn->injector, JIT_Int8));
-		break;
-
-	case JIT_Address:
-		cond = JIT_CreateNode2C(
-			OP_acmpeq, value, JIT_ZeroValue(fn->injector, JIT_Address));
-		break;
-
-	case JIT_Double:
-		cond = JIT_CreateNode2C(
-			OP_dcmpeq, value, JIT_ZeroValue(fn->injector, JIT_Double));
-		break;
-
-	case JIT_Float:
-		cond = JIT_CreateNode2C(OP_fcmpeq, value,
-			JIT_ZeroValue(fn->injector, JIT_Float));
-		break;
-	}
-	return cond;
-}
-
 static JIT_NodeRef is_neq_zero(struct dmr_C *C, struct function *fn,
 	JIT_NodeRef value)
 {
@@ -1212,6 +1179,9 @@ static JIT_NodeRef is_neq_zero(struct dmr_C *C, struct function *fn,
 	case JIT_Float:
 		cond = JIT_CreateNode2C(OP_fcmpne, value,
 			JIT_ZeroValue(fn->injector, JIT_Float));
+		break;
+	default:
+		fprintf(stderr, "Cannot construct a zero object of JIT type %d\n", value_type);
 		break;
 	}
 	return cond;
@@ -1393,6 +1363,9 @@ static JIT_NodeRef output_op_compare(struct dmr_C *C, struct function *fn,
 			target = JIT_CreateNode2C(OP_acmpeq, lhs, rhs);
 #endif
 	case OP_SET_NE:
+		/* For some reason the OMR compilation of OP_SET_EQ above fails
+		 So for now we use a negative comparison followed by inversion 
+		 to emulate OP_SET_EQ */
 		if (op_type == JIT_Double)
 			target = JIT_CreateNode2C(OP_dcmpne, lhs, rhs);
 		else if (op_type == JIT_Float)
@@ -1408,6 +1381,7 @@ static JIT_NodeRef output_op_compare(struct dmr_C *C, struct function *fn,
 		else if (op_type == JIT_Address)
 			target = JIT_CreateNode2C(OP_acmpne, lhs, rhs);
 		if (target && insn->opcode == OP_SET_EQ) {
+			// invert
 			target = JIT_CreateNode3C(OP_iternary, target, JIT_ConstInt32(0), JIT_ConstInt32(1));
 		}
 		break;
@@ -1449,12 +1423,32 @@ static JIT_NodeRef output_op_binary(struct dmr_C *C, struct function *fn,
 			if (dmrC_is_float_type(C->S, insn->type))
 				target = JIT_CreateNode2C(OP_dadd, lhs, rhs);
 			else {
-				if (JIT_GetNodeType(lhs) == JIT_Address)
-					target = JIT_CreateNode2C(OP_aladd, lhs,
-								  rhs);
-				else if (JIT_GetNodeType(rhs) == JIT_Address)
-					target = JIT_CreateNode2C(OP_aladd, rhs,
-								  lhs);
+				if (JIT_GetNodeType(lhs) == JIT_Address) {
+					if (JIT_GetNodeType(rhs) == JIT_Int64) {
+						target = JIT_CreateNode2C(OP_aladd, lhs,
+							rhs);
+					}
+					else if (JIT_GetNodeType(rhs) == JIT_Int32) {
+						target = JIT_CreateNode2C(OP_aiadd, lhs,
+							rhs);
+					}
+					else {
+						dmrC_sparse_error(C, insn->pos, "The add operand for a pointer value must be int64 or int32\n");
+					}
+				}
+				else if (JIT_GetNodeType(rhs) == JIT_Address) {
+					if (JIT_GetNodeType(lhs) == JIT_Int64) {
+						target = JIT_CreateNode2C(OP_aladd, rhs,
+							lhs);
+					}
+					else if (JIT_GetNodeType(lhs) == JIT_Int32) {
+						target = JIT_CreateNode2C(OP_aiadd, rhs,
+							lhs);
+					}
+					else {
+						dmrC_sparse_error(C, insn->pos, "The add operand for a pointer value must be int64 or int32\n");
+					}
+				}
 				else
 					target =
 					    JIT_CreateNode2C(OP_ladd, lhs, rhs);
@@ -1623,7 +1617,6 @@ static JIT_NodeRef output_op_binary(struct dmr_C *C, struct function *fn,
 			break;
 		}
 		break;
-#if 1
 	case OP_AND_BOOL: {
 		JIT_NodeRef lhs_nz, rhs_nz;
 		struct OMRType *dst_type;
@@ -1676,7 +1669,6 @@ static JIT_NodeRef output_op_binary(struct dmr_C *C, struct function *fn,
 		target = build_cast(C, fn, target, dst_type, 1);
 		break;
 	}
-#endif
 	}
 	insn->target->priv = target;
 
@@ -2123,8 +2115,7 @@ static int output_insn(struct dmr_C *C, struct function *fn,
 
 	case OP_CALL:
 		v = output_op_call(C, fn, insn);
-		return 1;
-		//break;
+		break;
 	case OP_CAST:
 		v = output_op_cast(C, fn, insn, true);
 		break;
@@ -2284,20 +2275,17 @@ static bool JIT_ILBuilderImpl(JIT_ILInjectorRef injector, void *userdata)
 				continue;
 		
 			/* insert alloca into entry block */
-			JIT_SymbolRef omr_symbol =
+			JIT_SymbolRef symref =
 			    OMR_alloca(fn, insn_symbol_type(fn->C, fn, insn),
 				       instruction_size_in_bytes(fn->C, insn), true);
-			if (!omr_symbol)
+			if (!symref)
 				goto Efailed;
 
 			// Unlike the Sparse LLVM version we
-			// save the pointer here and perform the load
-			// when we encounter the PHI instruction
-			// The LLVM version generates the Load instruction
-			// but doesn't insert it into the IR at this point.
-			// But in OMRjit it seems we cannot do that - i.e.
-			// the instruction gets inserted into the IR stream
-			insn->target->priv2 = omr_symbol;
+			// save the symbol reference here and perform the load
+			// when we encounter the PHI instructions
+			// NOTE therefore priv2 is always a JIT_SymbolRef
+			insn->target->priv2 = symref;
 			insn->target->priv = NULL;
 		}
 		END_FOR_EACH_PTR(insn);

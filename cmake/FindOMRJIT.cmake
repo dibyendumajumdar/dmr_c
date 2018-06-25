@@ -2,7 +2,7 @@ find_path(NJ_INCLUDE_DIR nj_api.h
   PATHS
   c:/Software/omr/include/nj
   ~/omr/include/nj
-  ~/software/omr/include/nj
+  ~/Software/omr/include/nj
   NO_DEFAULT_PATH
 )
 
@@ -11,7 +11,7 @@ find_library(JITBUILDER_LIBRARY
   PATHS
   c:/Software/omr/lib
   ~/omr/lib
-  ~/software/omr/lib
+  ~/Software/omr/lib
 )
 
 

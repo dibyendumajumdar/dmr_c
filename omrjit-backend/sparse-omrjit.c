@@ -1487,7 +1487,7 @@ static JIT_NodeRef output_op_binary(struct dmr_C *C, struct function *fn,
 			if (dmrC_is_float_type(C->S, insn->type))
 				target = JIT_CreateNode2C(OP_dmul, lhs, rhs);
 			else
-				target = JIT_CreateNode2C(OP_lumulh, lhs, rhs);
+				target = JIT_CreateNode2C(OP_lmul, lhs, rhs);
 			break;
 		case 32:
 			if (dmrC_is_float_type(C->S, insn->type))

@@ -104,14 +104,17 @@ if (NOT PARSER_ONLY)
         set(DIST_LIB_H
             llvm-backend/dmr_c.h
             )
+		add_definitions(-DLLVM_JIT=1)
     elseif (NANO_JIT)
         set(DIST_LIB_H
             nanojit-backend/dmr_c.h
             )
+		add_definitions(-DNANO_JIT=1)
     elseif (OMR_JIT)
         set(DIST_LIB_H
             omrjit-backend/dmr_c.h
             )
+		add_definitions(-DOMR_JIT=1)
     else()
         set(DIST_LIB_H
             null-backend/dmr_c.h

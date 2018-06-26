@@ -247,9 +247,12 @@ AVLTree_New(AVLTree *tree, AVL_vtbl * vtbl, int objsize, int growby)
 void 
 AVLTree_Destroy(AVLTree * tree)
 {
+#if !defined(__OMR_BACKEND__) && !defined(__NANOJIT_BACKEND__)
+/* As recursive calls not yet supported */
 	if (tree->vptr->destroyobject != NULL) {
 		AVLTree_ForwardApply(tree->root, tree->vptr->destroyobject);
 	}
+#endif
 	destroy_allocator(tree->a);
 }
 

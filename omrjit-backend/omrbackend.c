@@ -63,7 +63,9 @@ int main(int argc, char **argv)
 			JIT_Int64, JIT_Int64,
 			JIT_Int64, JIT_Int64,
 			JIT_Int32, JIT_Int32) ||
-	    !register_builtin_arg1(module, "fabs", fabs, JIT_Double,
+		!register_builtin_arg1(module, "exit", exit, JIT_NoType,
+			JIT_Int32) ||
+		!register_builtin_arg1(module, "fabs", fabs, JIT_Double,
 				   JIT_Double) ||
 	    !register_builtin_arg1(module, "malloc", malloc, JIT_Address,
 				   JIT_Int64) ||

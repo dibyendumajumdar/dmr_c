@@ -1,13 +1,37 @@
 #ifndef _MSC_VER
 
+#if defined(__OMR_BACKEND__) || defined(__NANOJIT_BACKEND__)
+
+#define NULL ((void *)0)
+extern void printd(double d);
+extern void printi(int i);
+extern void printll(long long i);
+extern void exit(int);
+
+typedef __SIZE_TYPE__ size_t;
+
+extern void* malloc(size_t);
+
+#else
+
 extern void exit(int);
 extern int printf(const char *, ...);
 #define NULL ((void *)0)
+
+static void printd(double d) { printf("%.12f\n", d); }
+static void printi(int i) { printf("%d\n", i); }
+static void printll(long long i) { printf("%lld\n", i); }
+
+#endif
 
 #else
 
 #include <stdio.h>
 #include <stdlib.h>
+
+static void printd(double d) { printf("%.12f\n", d); }
+static void printi(int i) { printf("%d\n", i); }
+static void printll(long long i) { printf("%lld\n", i); }
 
 #endif
 
@@ -69,11 +93,17 @@ static void assignobject(void *dstobj, void *srcobj)
 	rec1->key = rec2->key;
 }
 
-static char *randomletters = "agqwewbxklpfgytuorz";
+//static char *randomletters = "agqwewbxklpfgytuorz";
 
+#if defined(__OMR_BACKEND__) || defined(__NANOJIT_BACKEND__)
+int TestNano(void)
+#else
 int main(void)
+#endif
 {
+#if !defined(__OMR_BACKEND__) && defined(__NANOJIT_BACKEND__)
 	once = 0;
+#endif
 
 	int testdata[20];
 	testdata[0] = 'a';
@@ -118,7 +148,7 @@ int main(void)
 	struct record *rec;
 	rec = (struct record *)AVLTree_FindFirst(&tree);
 	while (rec != NULL) {
-		printf("%d\n", rec->key);
+		printi(rec->key);
 		rec = AVLTree_FindNext(&tree, rec);
 	}
 

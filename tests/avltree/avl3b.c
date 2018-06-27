@@ -314,6 +314,10 @@ AVL_RebalanceShorterRight(AVLNode * self, int *height_changed)
 	return p;
 }
 
+#if !defined(__OMR_BACKEND__) && !defined(__NANOJIT_BACKEND__)
+
+/* As recursive calls not yet supported */
+
 int 
 AVL_Height(AVLNode * self)
 {
@@ -335,6 +339,14 @@ AVL_Height(AVLNode * self)
 		height += rt_height + 1;
 	return height;
 }
+
+int 
+AVLTree_Height(AVLTree * tree)
+{
+	return AVL_Height((AVLNode *) tree->root);
+}
+
+#endif
 
 /* find the first object in the tree */
 void           *
@@ -428,11 +440,9 @@ AVLTree_FindPrevious(AVLTree * tree, void *currnode)
 		return NULL;
 }
 
-int 
-AVLTree_Height(AVLTree * tree)
-{
-	return AVL_Height((AVLNode *) tree->root);
-}
+#if !defined(__OMR_BACKEND__) && !defined(__NANOJIT_BACKEND__)
+
+/* As recursive calls not yet supported */
 
 void
 AVLTree_BackwardApply(AVLNode * root, void (*funcptr)(void *))
@@ -465,3 +475,5 @@ AVLTree_Foreach(AVLTree * tree, void (*funcptr)(void *))
 {
 	AVLTree_ForwardApply((AVLNode *)tree->root, funcptr);
 }
+
+#endif

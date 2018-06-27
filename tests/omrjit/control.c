@@ -174,12 +174,14 @@ static int test_switch(void) {
     }
     if (a != 5) return 1;
 
+#if !defined(__OMR_BACKEND__)
     switch (7) {
     case 1 ... 2: return 1;
     case 3: return 1;
     case 5 ... 10: break;
     default: return 1;
     }
+#endif
     a = 0;
     int count = 27;
     switch (count % 8) {

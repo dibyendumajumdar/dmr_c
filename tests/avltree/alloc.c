@@ -14,10 +14,17 @@
  * DUMMY allocator for testing
  */
 
+#define MAXMEM (64*1024)
+#if defined(__LLVM_BACKEND__)
+
 static allocator A;
-static char Memory[64*1024];
+static char Memory[MAXMEM];
 static buffer_type_t Node;
 static int once;
+
+#define malloc(n) (&A);
+
+#endif
 
 /***
 *	FUNCTION	: new_allocator
@@ -34,12 +41,7 @@ new_allocator(int size, int n)
 {
 	allocator      *a;
 
-	if (size * n > sizeof Memory) {
-		printf("out of memory\n");
-		exit(1);
-	}
-
-	a = &A;
+	a = malloc(n*size);
 	a->buffer_list = NULL;
 	a->free_list = NULL;
 	a->next_avail = NULL;
@@ -62,6 +64,7 @@ new_allocator(int size, int n)
 void 
 grow_allocator(allocator * a)
 {
+#if !defined(__OMR_BACKEND__) && !defined(__NANOJIT_BACKEND__)
 	buffer_type_t    *tmp;
 	if (once) {
 		printf("out of memory\n");
@@ -76,6 +79,7 @@ grow_allocator(allocator * a)
 	a->buffer_list = tmp;
 	a->next_avail = a->buffer_list->buffer;
 	a->last = a->next_avail + (a->size * a->n);
+#endif
 }
 
 /***

@@ -9,9 +9,7 @@
 sparse-omrjit <testfile>
 ```
 
-
 ## Failing tests
 
 * bitfields.c fails
-* matmul.c crashes on Windows
 

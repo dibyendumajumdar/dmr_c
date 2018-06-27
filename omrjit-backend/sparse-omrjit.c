@@ -34,6 +34,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
+#include <limits.h>
 
 #include <allocate.h>
 #include <dmr_c.h>
@@ -373,8 +374,7 @@ static struct OMRType *check_supported_returntype(struct dmr_C *C,
 						   struct OMRType *type)
 {
 	if (type->type == RT_AGGREGATE || type->type == RT_FUNCTION ||
-	    type->type == RT_INT || type->type == RT_UNSUPPORTED ||
-	    type->type == RT_VOID)
+	    type->type == RT_INT || type->type == RT_UNSUPPORTED)
 		return &BadType;
 	return type;
 }
@@ -706,6 +706,14 @@ static JIT_NodeRef truncate_intvalue(struct dmr_C *C, struct function *fn,
 	}
 }
 
+static JIT_NodeRef convert_to(struct function *fn,
+	JIT_NodeRef val, JIT_Type target_type,
+	int unsigned_cast) {
+	if (target_type == JIT_NoType) 
+		return NULL;
+	return JIT_ConvertTo(fn->injector, val, target_type, unsigned_cast);
+}
+
 static JIT_NodeRef build_cast(struct dmr_C *C, struct function *fn,
 			      JIT_NodeRef val, struct OMRType *dtype,
 			      int unsigned_cast)
@@ -715,13 +723,7 @@ static JIT_NodeRef build_cast(struct dmr_C *C, struct function *fn,
 		return truncate_intvalue(C, fn, val, dtype, unsigned_cast);
 
 	JIT_Type target_type = map_OMRtype(dtype);
-	if (target_type == JIT_NoType) {
-		return NULL;
-	}
-	if (JIT_GetNodeType(val) == target_type)
-		return val;
-
-	return JIT_ConvertTo(fn->injector, val, target_type, unsigned_cast);
+	return convert_to(fn, val, target_type, unsigned_cast);
 #else
 	// Do it the way we do in nanojit backend
 	JIT_Type value_type = JIT_GetNodeType(val);
@@ -1061,7 +1063,11 @@ static JIT_NodeRef output_op_phisrc(struct dmr_C *C, struct function *fn,
 		JIT_ArrayStore(fn->injector, JIT_LoadAddress(fn->injector, ptr),
 			       JIT_ConstInt64(0), v);
 #else
-		JIT_StoreToTemporary(fn->injector, symref, v);
+		/* We do the convert below because Sparse treats pointers and
+		integers as interchangeable - but OMR doesn't - so saving to a
+		pointer can fail due to type mismatch */
+		JIT_StoreToTemporary(fn->injector, symref, 
+			convert_to(fn, v, JIT_GetSymbolType(symref), true));
 #endif
 	}
 	END_FOR_EACH_PTR(phi);
@@ -1232,7 +1238,7 @@ static JIT_NodeRef output_op_compare(struct dmr_C *C, struct function *fn,
 		else if (op_type == JIT_Int8)
 			target = JIT_CreateNode2C(OP_bcmplt, lhs, rhs);
 		else if (op_type == JIT_Address)
-			target = JIT_CreateNode2C(OP_acmplt, lhs, rhs);
+			target = JIT_CreateNode2C(OP_acmplt, convert_to(fn, lhs, JIT_Address, true), convert_to(fn, rhs, JIT_Address, true));
 		break;
 	case OP_SET_B:
 		if (op_type == JIT_Double)
@@ -1248,7 +1254,7 @@ static JIT_NodeRef output_op_compare(struct dmr_C *C, struct function *fn,
 		else if (op_type == JIT_Int8)
 			target = JIT_CreateNode2C(OP_bucmplt, lhs, rhs);
 		else if (op_type == JIT_Address)
-			target = JIT_CreateNode2C(OP_acmplt, lhs, rhs);
+			target = JIT_CreateNode2C(OP_acmplt, convert_to(fn, lhs, JIT_Address, true), convert_to(fn, rhs, JIT_Address, true));
 		break;
 	case OP_SET_LE:
 		if (op_type == JIT_Double)
@@ -1264,7 +1270,7 @@ static JIT_NodeRef output_op_compare(struct dmr_C *C, struct function *fn,
 		else if (op_type == JIT_Int8)
 			target = JIT_CreateNode2C(OP_bcmple, lhs, rhs);
 		else if (op_type == JIT_Address)
-			target = JIT_CreateNode2C(OP_acmple, lhs, rhs);
+			target = JIT_CreateNode2C(OP_acmple, convert_to(fn, lhs, JIT_Address, true), convert_to(fn, rhs, JIT_Address, true));
 		break;
 	case OP_SET_BE:
 		if (op_type == JIT_Double)
@@ -1280,7 +1286,7 @@ static JIT_NodeRef output_op_compare(struct dmr_C *C, struct function *fn,
 		else if (op_type == JIT_Int8)
 			target = JIT_CreateNode2C(OP_bucmple, lhs, rhs);
 		else if (op_type == JIT_Address)
-			target = JIT_CreateNode2C(OP_acmple, lhs, rhs);
+			target = JIT_CreateNode2C(OP_acmple, convert_to(fn, lhs, JIT_Address, true), convert_to(fn, rhs, JIT_Address, true));
 		break;
 	case OP_SET_GT:
 		if (op_type == JIT_Double)
@@ -1296,7 +1302,7 @@ static JIT_NodeRef output_op_compare(struct dmr_C *C, struct function *fn,
 		else if (op_type == JIT_Int8)
 			target = JIT_CreateNode2C(OP_bcmpgt, lhs, rhs);
 		else if (op_type == JIT_Address)
-			target = JIT_CreateNode2C(OP_acmpgt, lhs, rhs);
+			target = JIT_CreateNode2C(OP_acmpgt, convert_to(fn, lhs, JIT_Address, true), convert_to(fn, rhs, JIT_Address, true));
 		break;
 	case OP_SET_A:
 		if (op_type == JIT_Double)
@@ -1312,7 +1318,7 @@ static JIT_NodeRef output_op_compare(struct dmr_C *C, struct function *fn,
 		else if (op_type == JIT_Int8)
 			target = JIT_CreateNode2C(OP_bucmpgt, lhs, rhs);
 		else if (op_type == JIT_Address)
-			target = JIT_CreateNode2C(OP_acmpgt, lhs, rhs);
+			target = JIT_CreateNode2C(OP_acmpgt, convert_to(fn, lhs, JIT_Address, true), convert_to(fn, rhs, JIT_Address, true));
 		break;
 	case OP_SET_GE:
 		if (op_type == JIT_Double)
@@ -1328,7 +1334,7 @@ static JIT_NodeRef output_op_compare(struct dmr_C *C, struct function *fn,
 		else if (op_type == JIT_Int8)
 			target = JIT_CreateNode2C(OP_bcmpge, lhs, rhs);
 		else if (op_type == JIT_Address)
-			target = JIT_CreateNode2C(OP_acmpge, lhs, rhs);
+			target = JIT_CreateNode2C(OP_acmpge, convert_to(fn, lhs, JIT_Address, true), convert_to(fn, rhs, JIT_Address, true));
 		break;
 	case OP_SET_AE:
 		if (op_type == JIT_Double)
@@ -1344,7 +1350,7 @@ static JIT_NodeRef output_op_compare(struct dmr_C *C, struct function *fn,
 		else if (op_type == JIT_Int8)
 			target = JIT_CreateNode2C(OP_bucmpge, lhs, rhs);
 		else if (op_type == JIT_Address)
-			target = JIT_CreateNode2C(OP_acmpge, lhs, rhs);
+			target = JIT_CreateNode2C(OP_acmpge, convert_to(fn, lhs, JIT_Address, true), convert_to(fn, rhs, JIT_Address, true));
 		break;
 	case OP_SET_EQ:
 #if 0
@@ -1380,7 +1386,7 @@ static JIT_NodeRef output_op_compare(struct dmr_C *C, struct function *fn,
 		else if (op_type == JIT_Int8)
 			target = JIT_CreateNode2C(OP_bcmpne, lhs, rhs);
 		else if (op_type == JIT_Address)
-			target = JIT_CreateNode2C(OP_acmpne, lhs, rhs);
+			target = JIT_CreateNode2C(OP_acmpne, convert_to(fn, lhs, JIT_Address, true), convert_to(fn, rhs, JIT_Address, true));
 		if (target && insn->opcode == OP_SET_EQ) {
 			// invert
 			target = JIT_CreateNode3C(OP_iternary, target, JIT_ConstInt32(0), JIT_ConstInt32(1));
@@ -1464,14 +1470,44 @@ static JIT_NodeRef output_op_binary(struct dmr_C *C, struct function *fn,
 		}
 		break;
 	case OP_SUB:
-		assert(JIT_GetNodeType(lhs) != JIT_Address && JIT_GetNodeType(rhs) != JIT_Address);
 		switch (insn->size) {
 		case 64:
 			if (dmrC_is_float_type(C->S, insn->type))
 				target = JIT_CreateNode2C(OP_dsub, lhs, rhs);
-			// FIXME handle pointer substractions
-			else
-				target = JIT_CreateNode2C(OP_lsub, lhs, rhs);
+			else {
+				/* Since OMR only supports adding integer to a pointer,
+				but C allows integer subtraction as well - we convert the
+				op to an pointer add with negative offset. C allows the 
+				address to lhs or rhs  - meaning is the same */
+				if (JIT_GetNodeType(lhs) == JIT_Address) {
+					if (JIT_GetNodeType(rhs) == JIT_Int64) {
+						target = JIT_CreateNode2C(OP_aladd, lhs,
+							JIT_CreateNode1C(OP_lneg, rhs));
+					}
+					else if (JIT_GetNodeType(rhs) == JIT_Int32) {
+						target = JIT_CreateNode2C(OP_aiadd, lhs,
+							JIT_CreateNode1C(OP_ineg, rhs));
+					}
+					else {
+						dmrC_sparse_error(C, insn->pos, "The add operand for a pointer value must be int64 or int32\n");
+					}
+				}
+				else if (JIT_GetNodeType(rhs) == JIT_Address) {
+					if (JIT_GetNodeType(lhs) == JIT_Int64) {
+						target = JIT_CreateNode2C(OP_aladd, rhs,
+							JIT_CreateNode1C(OP_lneg, lhs));
+					}
+					else if (JIT_GetNodeType(lhs) == JIT_Int32) {
+						target = JIT_CreateNode2C(OP_aiadd, rhs,
+							JIT_CreateNode1C(OP_ineg, lhs));
+					}
+					else {
+						dmrC_sparse_error(C, insn->pos, "The add operand for a pointer value must be int64 or int32\n");
+					}
+				}
+				else
+					target = JIT_CreateNode2C(OP_lsub, lhs, rhs);
+			}
 			break;
 		case 32:
 			if (dmrC_is_float_type(C->S, insn->type))
@@ -1488,7 +1524,7 @@ static JIT_NodeRef output_op_binary(struct dmr_C *C, struct function *fn,
 			if (dmrC_is_float_type(C->S, insn->type))
 				target = JIT_CreateNode2C(OP_dmul, lhs, rhs);
 			else
-				target = JIT_CreateNode2C(OP_lumulh, lhs, rhs);
+				target = JIT_CreateNode2C(OP_lmul, lhs, rhs);
 			break;
 		case 32:
 			if (dmrC_is_float_type(C->S, insn->type))

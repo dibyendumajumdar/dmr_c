@@ -7,7 +7,7 @@ find_path(NJ_INCLUDE_DIR nj_api.h
 )
 
 find_library(JITBUILDER_LIBRARY
-  NAMES jitbuilder libjitbuilder
+  NAMES nj libnj jitbuilder libjitbuilder
   PATHS
   c:/Software/omr/lib
   ~/omr/lib

@@ -33,6 +33,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
+#include <limits.h>
 
 #include <allocate.h>
 #include <dmr_c.h>
@@ -1351,7 +1352,6 @@ static JIT_NodeRef output_op_compare(struct dmr_C *C, struct function *fn,
 			target = JIT_CreateNode2C(OP_acmpge, convert_to(fn, lhs, JIT_Address, true), convert_to(fn, rhs, JIT_Address, true));
 		break;
 	case OP_SET_EQ:
-#if 0
 		if (op_type == JIT_Double)
 			target = JIT_CreateNode2C(OP_dcmpeq, lhs, rhs);
 		else if (op_type == JIT_Float)
@@ -1365,12 +1365,9 @@ static JIT_NodeRef output_op_compare(struct dmr_C *C, struct function *fn,
 		else if (op_type == JIT_Int8)
 			target = JIT_CreateNode2C(OP_bcmpeq, lhs, rhs);
 		else if (op_type == JIT_Address)
-			target = JIT_CreateNode2C(OP_acmpeq, lhs, rhs);
-#endif
+			target = JIT_CreateNode2C(OP_acmpeq, convert_to(fn, lhs, JIT_Address, true), convert_to(fn, rhs, JIT_Address, true));
+		break;
 	case OP_SET_NE:
-		/* For some reason the OMR compilation of OP_SET_EQ above fails
-		 So for now we use a negative comparison followed by inversion 
-		 to emulate OP_SET_EQ */
 		if (op_type == JIT_Double)
 			target = JIT_CreateNode2C(OP_dcmpne, lhs, rhs);
 		else if (op_type == JIT_Float)
@@ -1385,10 +1382,6 @@ static JIT_NodeRef output_op_compare(struct dmr_C *C, struct function *fn,
 			target = JIT_CreateNode2C(OP_bcmpne, lhs, rhs);
 		else if (op_type == JIT_Address)
 			target = JIT_CreateNode2C(OP_acmpne, convert_to(fn, lhs, JIT_Address, true), convert_to(fn, rhs, JIT_Address, true));
-		if (target && insn->opcode == OP_SET_EQ) {
-			// invert
-			target = JIT_CreateNode3C(OP_iternary, target, JIT_ConstInt32(0), JIT_ConstInt32(1));
-		}
 		break;
 	default:
 		break;

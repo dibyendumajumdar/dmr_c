@@ -14,16 +14,17 @@ dmr_C is a fork of Sparse. The main changes are:
 * WIP Ensure that code can be compiled using a C++ compiler
 * The LLVM backend has been converted to a JIT compiler - i.e. it is exposed as a library API
 * WIP Work is ongoing on additional backend based on [NanoJIT](https://github.com/dibyendumajumdar/dmr_c/tree/master/nanojit-backend).
+* WIP Work is ongoing on creating a backend based on [Eclipse OMR](https://github.com/dibyendumajumdar/nj) derived [JIT backend](https://github.com/dibyendumajumdar/dmr_c/tree/master/omrjit-backend).
 
 ## Current status
 
 * The code builds on Windows, Linux and Mac OSX. However there are platform specific limitations - see below for details.
 * The Sparse code generator for LLVM has had many fixes and is able to compile real programs. See details below for what works and what doesn't.
 * The NanoJIT code generator is now able to handle a reasonable subset of C, although it is not yet as well tested as the code generator targetting LLVM.
-* A new backend using [Eclipse OMR](https://github.com/dibyendumajumdar/nj) is being [worked on](https://github.com/dibyendumajumdar/dmr_c/tree/master/omrjit-backend).
+* A [new backend](https://github.com/dibyendumajumdar/dmr_c/tree/master/omrjit-backend) using [Eclipse OMR](https://github.com/dibyendumajumdar/nj) is now on par with the NanoJIT backend.
 
 ## News
-* Jun-2018 - Started new backend JIT using [Eclipse OMR](https://github.com/dibyendumajumdar/nj)
+* Jun-2018 - New backend JIT using [Eclipse OMR](https://github.com/dibyendumajumdar/nj)
 * Sep-2017 - a lot more functional NanoJIT backend
 * Aug-2017 - synced with Sparse 0.5.1 release
 
@@ -66,6 +67,34 @@ In my setup LLVM is installed at `$HOME/Software/llvm501`.
 Once the build files are generated you can use the normal build tools i.e. Visual Studio on Windows and make on UNIX or Mac OSX platforms.
 
 Assuming you specified the `CMAKE_INSTALL_PREFIX` you can install the header files and the library using your build script. For example, on Linux, just do:
+
+```
+make install
+```
+
+### OMRJIT Backend 
+
+* First follow instructions to build a [OMRJIT](https://github.com/dibyendumajumdar/nj) library.
+* You may need to amend the script [FindOMRJIT.cmake](https://github.com/dibyendumajumdar/dmr_c/blob/master/cmake/FindOMRJIT.cmake) to
+  match your installation details. By default it expects the find OMRJIT at `~/Software/omr` on Linux/Mac OSX 
+  and `/Software/omr` on Windows.
+* Next you can generate the CMake build scripts. I use following on Windows 10.
+
+```
+mkdir build
+cd build
+cmake -DOMR_JIT=ON -G "Visual Studio 15 2017 Win64" ..
+```
+
+* On Linux, I use:
+
+```
+mkdir build
+cd build
+cmake -DOMR_JIT=ON ..
+```
+
+Assuming you specified the `CMAKE_INSTALL_PREFIX` you can install the header files and the library using your build script. On Linux just do:
 
 ```
 make install
@@ -147,6 +176,69 @@ The code generator targetting LLVM has some limitations and is unable to correct
 * The `va_arg` mechanism is not supported - this is not supported in the Sparse IR generation.
 * There is no support for computed gotos in the code generator.
 * The front-end C parser and pre-processor knows about many Linux constructs hence it can process C header files on Linux. However, it doesn't know about Windows or Mac OSX features. As typically the vendor supplied header files have many platform specific extensions, unfortunately this means that you cannot process vendor supplied header files on these platforms.
+
+### Using the OMRJIT backend
+This is very similar to how the LLVM backend is used. There is again a single API call to compile C code; this is declared in header file `dmr_c.h`. Additional steps are needed to execute the compiled code.
+
+```C
+bool dmrC_omrcompile(int argc, char **argv, JIT_ContextRef module,
+		      const char *inputbuffer);
+```
+
+Below is what the sparse-omrjit tool does:
+
+```C
+#include <dmr_c.h>
+
+#include <stdbool.h>
+#include <stdio.h>
+
+int main(int argc, char **argv)
+{
+	JIT_ContextRef module = JIT_CreateContext();
+
+	int rc = 0;
+	if (!dmrC_omrcompile(argc, argv, module, NULL))
+		rc = 1;
+
+	int (*fp)(void) = NULL;
+	if (rc == 0) {
+		/* To help with testing check if the source defined a function
+		 * named TestNano() and if so, execute it
+		 */
+		fp = JIT_GetFunction(module, "TestNano");
+		if (fp) {
+			int fprc = fp();
+			if (fprc != 0) {
+				printf("TestNano Failed (%d)\n", fprc);
+				rc = 1;
+			} else {
+				printf("TestNano OK\n");
+			}
+		}
+	}
+	JIT_DestroyContext(module);
+
+	return rc;
+}
+```
+
+In the example above, we check if there is a compiled function named `'TestNano'`. If it is then we invoke it.
+
+#### Limitations of OMRJIT backend
+
+* String literals are not supported as they require static storage
+* Computed gotos are not supported
+* Bitfield access is implemented but not well tested
+* Calling functions through function pointers is not yet supported
+* Aggregate initializers are not supported
+* The `va_arg` mechanism is not supported
+* Recursive function calls are not possible at present due to the way functions are resolved
+* You cannot have static or global data in JIT code
+* String initializers are not supported
+* There has been limited amount of testing of this backend, so expect it to fail! See the tests in 
+  [tests/omrjit](https://github.com/dibyendumajumdar/dmr_c/tree/master/tests/omrjit) for examples of what works.
+
 
 ### Using the NanoJIT backend
 
@@ -281,6 +373,7 @@ The dmr_C is also a library and can be linked and used by application programs. 
 ### The JIT backends
 
 * LLVM backend - this takes the Sparse IR output and converts this to LLVM IR
+* OMRJIT backend - uses Eclipse OMR JIT engine to generate machine code
 * NanoJIT backend - alternative backend that generates machine code using NanoJIT
 * The JIT backends take the [Sparse IR](https://github.com/dibyendumajumdar/dmr_c/blob/master/docs/instructions.md) generated by the linearizer in sparse and convert these to JIT IR instructions.
 * You can view the Sparse IR output by running the ``linearize`` command.

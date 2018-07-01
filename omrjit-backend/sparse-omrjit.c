@@ -681,6 +681,10 @@ static JIT_NodeRef pseudo_to_value(struct dmr_C *C, struct function *fn,
 		fprintf(stderr, "error: no result for pseudo\n");
 		return NULL;
 	}
+	else if (JIT_GetNodeType(result) == JIT_NoType) {
+		fprintf(stderr, "error: no result for pseudo\n");
+		return NULL;
+	}
 	return result;
 }
 
@@ -710,7 +714,10 @@ static JIT_NodeRef convert_to(struct function *fn,
 	int unsigned_cast) {
 	if (target_type == JIT_NoType) 
 		return NULL;
-	return JIT_ConvertTo(fn->injector, val, target_type, unsigned_cast);
+	JIT_NodeRef node = JIT_ConvertTo(fn->injector, val, target_type, unsigned_cast);
+	if (JIT_GetNodeType(node) == JIT_NoType)
+		return NULL;
+	return node;
 }
 
 static JIT_NodeRef build_cast(struct dmr_C *C, struct function *fn,
@@ -954,6 +961,7 @@ static JIT_NodeRef output_op_phi(struct dmr_C *C, struct function *fn,
 	if (load == NULL)
 		return NULL;
 	//JIT_GenerateTreeTop(fn->injector, load);
+	assert(JIT_GetNodeType(load) != JIT_NoType);
 	insn->target->priv = load;
 	return load;
 }
@@ -1000,6 +1008,7 @@ static JIT_NodeRef output_op_load(struct dmr_C *C, struct function *fn,
 	if (load == NULL)
 		return NULL;
 	// JIT_GenerateTreeTop(fn->injector, load);
+	assert(JIT_GetNodeType(load) != JIT_NoType);
 	insn->target->priv = load;
 	return load;
 }
@@ -1389,7 +1398,7 @@ static JIT_NodeRef output_op_compare(struct dmr_C *C, struct function *fn,
 
 	//if (target)
 	//	JIT_GenerateTreeTop(fn->injector, target);
-
+	assert(JIT_GetNodeType(target) != JIT_NoType);
 	insn->target->priv = target;
 	return target;
 }
@@ -1466,18 +1475,26 @@ static JIT_NodeRef output_op_binary(struct dmr_C *C, struct function *fn,
 			if (dmrC_is_float_type(C->S, insn->type))
 				target = JIT_CreateNode2C(OP_dsub, lhs, rhs);
 			else {
+				if (JIT_GetNodeType(lhs) == JIT_Address && JIT_GetNodeType(rhs) == JIT_Address) {
+					//target = JIT_CreateNode2C(OP_asub, lhs, rhs);
+					// For some reason above is returning NoType?
+					target = JIT_CreateNode2C(OP_lsub, JIT_ConvertTo(fn->injector, lhs, JIT_Int64, true), JIT_ConvertTo(fn->injector, rhs, JIT_Int64, true));
+					assert(JIT_GetNodeType(target) != JIT_NoType);
+				}
 				/* Since OMR only supports adding integer to a pointer,
 				but C allows integer subtraction as well - we convert the
-				op to an pointer add with negative offset. C allows the 
+				op to an pointer add with negative offset. C allows the
 				address to lhs or rhs  - meaning is the same */
-				if (JIT_GetNodeType(lhs) == JIT_Address) {
+				else if (JIT_GetNodeType(lhs) == JIT_Address) {
 					if (JIT_GetNodeType(rhs) == JIT_Int64) {
 						target = JIT_CreateNode2C(OP_aladd, lhs,
 							JIT_CreateNode1C(OP_lneg, rhs));
+						assert(JIT_GetNodeType(target) != JIT_NoType);
 					}
 					else if (JIT_GetNodeType(rhs) == JIT_Int32) {
 						target = JIT_CreateNode2C(OP_aiadd, lhs,
 							JIT_CreateNode1C(OP_ineg, rhs));
+						assert(JIT_GetNodeType(target) != JIT_NoType);
 					}
 					else {
 						dmrC_sparse_error(C, insn->pos, "The add operand for a pointer value must be int64 or int32\n");
@@ -1487,17 +1504,21 @@ static JIT_NodeRef output_op_binary(struct dmr_C *C, struct function *fn,
 					if (JIT_GetNodeType(lhs) == JIT_Int64) {
 						target = JIT_CreateNode2C(OP_aladd, rhs,
 							JIT_CreateNode1C(OP_lneg, lhs));
+						assert(JIT_GetNodeType(target) != JIT_NoType);
 					}
 					else if (JIT_GetNodeType(lhs) == JIT_Int32) {
 						target = JIT_CreateNode2C(OP_aiadd, rhs,
 							JIT_CreateNode1C(OP_ineg, lhs));
+						assert(JIT_GetNodeType(target) != JIT_NoType);
 					}
 					else {
 						dmrC_sparse_error(C, insn->pos, "The add operand for a pointer value must be int64 or int32\n");
 					}
 				}
-				else
+				else {
 					target = JIT_CreateNode2C(OP_lsub, lhs, rhs);
+					assert(JIT_GetNodeType(target) != JIT_NoType);
+				}
 			}
 			break;
 		case 32:
@@ -1557,7 +1578,12 @@ static JIT_NodeRef output_op_binary(struct dmr_C *C, struct function *fn,
 		assert(JIT_GetNodeType(lhs) != JIT_Address && JIT_GetNodeType(rhs) != JIT_Address);
 		switch (insn->size) {
 		case 64:
-			target = JIT_CreateNode2C(OP_ldiv, lhs, rhs);
+			if (JIT_GetNodeType(lhs) != JIT_Int64 || JIT_GetNodeType(rhs) != JIT_Int64) {
+				printf("%d DIV %d\n", JIT_GetNodeType(lhs), JIT_GetNodeType(rhs));
+				target = NULL;
+			}
+			else
+				target = JIT_CreateNode2C(OP_ldiv, lhs, rhs);
 			break;
 		case 32:
 			target = JIT_CreateNode2C(OP_idiv, lhs, rhs);
@@ -1698,6 +1724,7 @@ static JIT_NodeRef output_op_binary(struct dmr_C *C, struct function *fn,
 		break;
 	}
 	}
+	assert(JIT_GetNodeType(target) != JIT_NoType);
 	insn->target->priv = target;
 
 	return target;
@@ -1728,7 +1755,7 @@ static JIT_NodeRef output_op_setval(struct dmr_C *C, struct function *fn,
 		dmrC_show_expression(C, expr);
 		return NULL;
 	}
-
+	assert(JIT_GetNodeType(target) != JIT_NoType);
 	insn->target->priv = target;
 
 	return target;
@@ -1749,6 +1776,7 @@ static JIT_NodeRef output_op_symaddr(struct dmr_C *C, struct function *fn,
 		return NULL;
 
 	res = build_cast(C, fn, src, dtype, 0);
+	assert(JIT_GetNodeType(res) != JIT_NoType);
 	insn->target->priv = res;
 
 	return res;
@@ -1827,8 +1855,8 @@ static JIT_NodeRef output_op_call(struct dmr_C *C, struct function *fn,
 		return NULL;
 	}
 	target = JIT_Call(fn->injector, name, i, args);
-	insn->target->priv = target;
-
+	if (JIT_GetNodeType(target) != JIT_NoType)
+		insn->target->priv = target;
 	return target;
 }
 
@@ -1855,6 +1883,7 @@ static JIT_NodeRef output_op_not(struct dmr_C *C, struct function *fn,
 		target = JIT_CreateNode2C(OP_bxor, src, JIT_ConstInt8(0xFF));
 		break;
 	}
+	assert(JIT_GetNodeType(target) != JIT_NoType);
 	insn->target->priv = target;
 
 	return target;
@@ -1895,6 +1924,7 @@ static JIT_NodeRef output_op_neg(struct dmr_C *C, struct function *fn,
 			break;
 		}
 	}
+	assert(JIT_GetNodeType(target) != JIT_NoType);
 	insn->target->priv = target;
 
 	return target;
@@ -1937,7 +1967,7 @@ static JIT_NodeRef output_op_sel(struct dmr_C *C, struct function *fn,
 	}
 	target = JIT_CreateNode3C(op_code, src1, src2, src3);
 	//JIT_GenerateTreeTop(fn->injector, target);
-
+	assert(JIT_GetNodeType(target) != JIT_NoType);
 	insn->target->priv = target;
 	return target;
 }
@@ -1960,6 +1990,7 @@ static JIT_NodeRef output_op_fpcast(struct dmr_C *C, struct function *fn,
 		return NULL;
 
 	target = build_cast(C, fn, src, dtype, !dmrC_is_signed_type(otype));
+	assert(JIT_GetNodeType(target) != JIT_NoType);
 	insn->target->priv = target;
 
 	return target;
@@ -2033,6 +2064,7 @@ static JIT_NodeRef output_op_ptrcast(struct dmr_C *C, struct function *fn,
 		return NULL;
 
 	target = build_cast(C, fn, src, dtype, false);
+	assert(JIT_GetNodeType(target) != JIT_NoType);
 	insn->target->priv = target;
 
 	return target;
@@ -2065,6 +2097,7 @@ static JIT_NodeRef output_op_cast(struct dmr_C *C, struct function *fn,
 	if (!dtype)
 		return NULL;
 	target = build_cast(C, fn, src, dtype, unsignedcast);
+	assert(JIT_GetNodeType(target) != JIT_NoType);
 	insn->target->priv = target;
 
 	return target;

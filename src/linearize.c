@@ -812,7 +812,7 @@ pseudo_t dmrC_value_pseudo(struct dmr_C *C, struct symbol *type, long long val)
 	int size = type ? type->bit_size : dmrC_value_size(val);
 	pseudo_t pseudo;
 
-	assert(size <= (sizeof(long long) * 8));
+	assert(size == -1 || size <= (sizeof(long long) * 8));
 
 	FOR_EACH_PTR(*list, pseudo) {
 		if (pseudo->value == val && pseudo->size == size)

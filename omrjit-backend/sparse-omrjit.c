@@ -416,7 +416,7 @@ static JIT_SymbolRef OMR_alloca(struct function *fn, struct OMRType *type,
 	// Instead we create a local symbol of appropriate size
 	// We treat all locals as byte arrays - the load/store 
 	// is done at specific offsets as required
-	if (!reg || omr_type == JIT_Aggregate)
+	if (omr_type == JIT_Aggregate)
 		return JIT_CreateLocalByteArray(fn->injector, (uint32_t)size);
 	else
 		// phi nodes get created as temporaries

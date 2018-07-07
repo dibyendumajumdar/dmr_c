@@ -1,3 +1,8 @@
+/*
+To get debug output set env var:
+TR_Options=traceIlGen,traceFull,log=trtrace.log
+*/
+
 #include <dmr_c.h>
 
 #include <stdbool.h>

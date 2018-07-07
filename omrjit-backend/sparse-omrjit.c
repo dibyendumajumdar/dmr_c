@@ -976,11 +976,7 @@ static JIT_NodeRef output_op_phi(struct dmr_C *C, struct function *fn,
 static JIT_NodeRef output_op_load(struct dmr_C *C, struct function *fn,
 				  struct instruction *insn)
 {
-	JIT_NodeRef ptr = pseudo_to_value(C, fn, insn->type, insn->src);
 	JIT_NodeRef load = NULL;
-
-	if (!ptr)
-		return NULL;
 
 	if (insn->orig_type && dmrC_is_simple_type(C->S, insn->orig_type) && !dmrC_is_ptr_type(insn->orig_type)) {
 		JIT_SymbolRef symref = insn->orig_type->priv;
@@ -989,6 +985,10 @@ static JIT_NodeRef output_op_load(struct dmr_C *C, struct function *fn,
 	}
 
 	if (!load) {
+		JIT_NodeRef ptr = pseudo_to_value(C, fn, insn->type, insn->src);
+		if (!ptr)
+			return NULL;
+
 		//JIT_NodeRef index = JIT_ConstInt64((int64_t)insn->offset);
 		int64_t index = (int64_t)insn->offset;
 		switch (insn->size) {

@@ -12,4 +12,5 @@ sparse-omrjit <testfile>
 ## Failing tests
 
 * bitfields.c fails
+* locals.c fails - this is because of incorrect optimization when address of auto var is passed to a function. 
 

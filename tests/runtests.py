@@ -168,7 +168,7 @@ totals = 0
 successes = 0
 
 # FIXME these directories should be moved elsewhere
-ignored_list = ['unsupported', 'bugs', 'nano', 'parsetree', 'sqlite']
+ignored_list = ['unsupported', 'bugs', 'nano', 'parsetree', 'sqlite', 'omrjit']
 
 with os.scandir(current_directory) as it:
     for entry in it:

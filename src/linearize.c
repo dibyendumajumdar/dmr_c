@@ -16,7 +16,9 @@
 #include <parse.h>
 #include <expression.h>
 #include <linearize.h>
+#if 0
 #include <flow.h>
+#endif
 #include <target.h>
 
 static pseudo_t linearize_statement(struct dmr_C *C, struct entrypoint *ep, struct statement *stmt);
@@ -77,6 +79,7 @@ static struct multijmp *alloc_multijmp(struct dmr_C *C, struct basic_block *targ
 	return multijmp;
 }
 
+#if 0
 static inline int regno(pseudo_t n)
 {
 	int retval = -1;
@@ -84,6 +87,7 @@ static inline int regno(pseudo_t n)
 		retval = n->nr;
 	return retval;
 }
+#endif
 
 const char *dmrC_show_pseudo(struct dmr_C *C, pseudo_t pseudo)
 {
@@ -274,7 +278,7 @@ const char *dmrC_show_instruction(struct dmr_C *C, struct instruction *insn)
 	if (!insn->bb)
 		buf += sprintf(buf, "# ");
 
-	if (opcode < ARRAY_SIZE(opcodes)) {
+	if (opcode < (int)ARRAY_SIZE(opcodes)) {
 		const char *op = opcodes[opcode];
 		if (!op)
 			buf += sprintf(buf, "opcode:%d", opcode);
@@ -767,6 +771,7 @@ static struct basic_block * add_label(struct dmr_C *C, struct entrypoint *ep, st
 
 static void add_branch(struct dmr_C *C, struct entrypoint *ep, struct expression *expr, pseudo_t cond, struct basic_block *bb_true, struct basic_block *bb_false)
 {
+        (void)expr;
 	struct basic_block *bb = ep->active;
 	struct instruction *br;
 
@@ -793,15 +798,6 @@ pseudo_t dmrC_alloc_pseudo(struct dmr_C *C, struct instruction *def)
 	return pseudo;
 }
 
-static void clear_symbol_pseudos(struct entrypoint *ep)
-{
-	pseudo_t pseudo;
-
-	FOR_EACH_PTR(ep->accesses, pseudo) {
-		pseudo->sym->pseudo = NULL;
-	} END_FOR_EACH_PTR(pseudo);
-}
-
 static pseudo_t symbol_pseudo(struct dmr_C *C, struct entrypoint *ep, struct symbol *sym)
 {
 	pseudo_t pseudo;
@@ -823,6 +819,20 @@ static pseudo_t symbol_pseudo(struct dmr_C *C, struct entrypoint *ep, struct sym
 	return pseudo;
 }
 
+unsigned int dmrC_value_size(long long value)
+{
+	value >>= 8;
+	if (!value)
+		return 8;
+	value >>= 8;
+	if (!value)
+		return 16;
+	value >>= 16;
+	if (!value)
+		return 32;
+	return 64;
+}
+
 pseudo_t dmrC_value_pseudo(struct dmr_C *C, struct symbol *type, long long val)
 {
 	int hash = val & (MAX_VAL_HASH-1);
@@ -830,7 +840,7 @@ pseudo_t dmrC_value_pseudo(struct dmr_C *C, struct symbol *type, long long val)
 	int size = type ? type->bit_size : dmrC_value_size(val);
 	pseudo_t pseudo;
 
-	assert(size == -1 || size <= (sizeof(long long) * 8));
+	assert(size == -1 || size <= (int)(sizeof(long long) * 8));
 
 	FOR_EACH_PTR(*list, pseudo) {
 		if (pseudo->value == val && pseudo->size == size)
@@ -929,6 +939,8 @@ struct access_data {
 
 static void finish_address_gen(struct entrypoint *ep, struct access_data *ad)
 {
+        (void)ep;
+        (void)ad;
 }
 
 static int linearize_simple_address(struct dmr_C *C, struct entrypoint *ep,
@@ -943,7 +955,7 @@ static int linearize_simple_address(struct dmr_C *C, struct entrypoint *ep,
 	if (addr->type == EXPR_BINOP) {
 		if (addr->right->type == EXPR_VALUE) {
 			if (addr->op == '+') {
-				ad->offset += dmrC_get_expression_value(C, addr->right);
+				ad->offset += (unsigned int) dmrC_get_expression_value(C, addr->right);
 				return linearize_simple_address(C, ep, addr->left, ad);
 			}
 		}
@@ -954,6 +966,7 @@ static int linearize_simple_address(struct dmr_C *C, struct entrypoint *ep,
 
 static struct symbol *base_type(struct dmr_C *C, struct symbol *sym)
 {
+        (void)C;
 	struct symbol *base = sym;
 
 	if (sym) {
@@ -985,6 +998,7 @@ static int linearize_address_gen(struct dmr_C *C, struct entrypoint *ep,
 
 /* Try to get the actual struct type associated with a load or store */
 static struct symbol *get_base_symbol_type(struct dmr_C *C, struct access_data *ad) {
+        (void) C;
 	struct symbol *orig_type = NULL;
 	if (ad->address->type == PSEUDO_SYM) {
 		orig_type = ad->address->sym;
@@ -1110,9 +1124,10 @@ static pseudo_t linearize_load_gen(struct dmr_C *C, struct entrypoint *ep, struc
 
 static pseudo_t linearize_access(struct dmr_C *C, struct entrypoint *ep, struct expression *expr)
 {
-	struct access_data ad = { NULL, };
+	struct access_data ad;
 	pseudo_t value;
-
+        
+        memset(&ad, 0, sizeof ad);
 	if (!linearize_address_gen(C, ep, expr, &ad))
 		return VOID_PSEUDO(C);
 	value = linearize_load_gen(C, ep, &ad);
@@ -1123,8 +1138,10 @@ static pseudo_t linearize_access(struct dmr_C *C, struct entrypoint *ep, struct 
 /* FIXME: FP */
 static pseudo_t linearize_inc_dec(struct dmr_C *C, struct entrypoint *ep, struct expression *expr, int postop)
 {
-	struct access_data ad = { NULL, };
-		pseudo_t old, new, one;
+	struct access_data ad;
+	pseudo_t old, new, one;
+        
+        memset(&ad, 0, sizeof ad);
 	int op = expr->op == SPECIAL_INCREMENT ? OP_ADD : OP_SUB;
 
 	if (!linearize_address_gen(C, ep, expr->unop, &ad))
@@ -1247,6 +1264,7 @@ static pseudo_t cast_pseudo(struct dmr_C *C, struct entrypoint *ep, pseudo_t src
 
 static int opcode_sign(struct dmr_C *C, int opcode, struct symbol *ctype)
 {
+        (void)C;
 	if (ctype && (ctype->ctype.modifiers & MOD_SIGNED)) {
 		switch(opcode) {
 		case OP_MULU: case OP_DIVU: case OP_MODU: case OP_LSR:
@@ -1277,12 +1295,13 @@ static pseudo_t linearize_expression_to_bool(struct dmr_C *C, struct entrypoint 
 }
 static pseudo_t linearize_assignment(struct dmr_C *C, struct entrypoint *ep, struct expression *expr)
 {
-	struct access_data ad = { NULL, };
+	struct access_data ad;
 	struct expression *target = expr->left;
 	struct expression *src = expr->right;
 	struct symbol *ctype;
 	pseudo_t value;
 
+        memset(&ad, 0, sizeof ad);
 	value = linearize_expression(C, ep, src);
 	if (!target || !linearize_address_gen(C, ep, target, &ad))
 		return value;
@@ -1666,8 +1685,9 @@ static pseudo_t linearize_initializer(struct dmr_C *C, struct entrypoint *ep, st
 
 static void linearize_argument(struct dmr_C *C, struct entrypoint *ep, struct symbol *arg, int nr)
 {
-	struct access_data ad = { NULL, };
+	struct access_data ad;
 
+        memset(&ad, 0, sizeof ad);
 	ad.source_type = arg;
 	ad.result_type = arg;
 	ad.address = symbol_pseudo(C, ep, arg);
@@ -1753,9 +1773,10 @@ static pseudo_t linearize_expression(struct dmr_C *C, struct entrypoint *ep, str
 
 static pseudo_t linearize_one_symbol(struct dmr_C *C, struct entrypoint *ep, struct symbol *sym)
 {
-	struct access_data ad = { NULL, };
+	struct access_data ad;
 	pseudo_t value;
-
+        
+        memset(&ad, 0, sizeof ad);
 	if (!sym || !sym->initializer || sym->initialized)
 		return VOID_PSEUDO(C);
 
@@ -1834,7 +1855,7 @@ static pseudo_t linearize_context(struct dmr_C *C, struct entrypoint *ep, struct
 	int value = 0;
 
 	if (expr->type == EXPR_VALUE)
-		value = expr->value;
+		value = (int) expr->value;
 
 	insn->increment = value;
 	insn->context_expr = stmt->context;
@@ -1868,10 +1889,11 @@ static void add_asm_input(struct dmr_C *C, struct entrypoint *ep, struct instruc
 static void add_asm_output(struct dmr_C *C, struct entrypoint *ep, struct instruction *insn, struct expression *expr,
 	const char *constraint, const struct ident *ident)
 {
-	struct access_data ad = { NULL, };
+	struct access_data ad;
 	pseudo_t pseudo = dmrC_alloc_pseudo(C, insn);
 	struct asm_constraint *rule;
 
+        memset(&ad, 0, sizeof ad);
 	if (!expr || !linearize_address_gen(C, ep, expr, &ad))
 		return;
 	linearize_store_gen(C, ep, pseudo, &ad);
@@ -1954,6 +1976,7 @@ static pseudo_t linearize_asm_statement(struct dmr_C *C, struct entrypoint *ep, 
 
 static int multijmp_cmp(void *ud, const void *_a, const void *_b)
 {
+        (void) ud;
 	const struct multijmp *a = (const struct multijmp *)_a;
 	const struct multijmp *b = (const struct multijmp *)_b;
 
@@ -2321,6 +2344,7 @@ static struct entrypoint *linearize_fn(struct dmr_C *C, struct symbol *sym, stru
 	 */
 	dmrC_kill_unreachable_bbs(C, ep);
 
+#if 0
 	if (C->optimize) {
 
 		if (show_details) {
@@ -2394,6 +2418,7 @@ static struct entrypoint *linearize_fn(struct dmr_C *C, struct symbol *sym, stru
 			goto repeat;
 		}
 	}
+#endif
 
 	/* Finally, add deathnotes to pseudos now that we have them */
 	if (C->dbg_dead)
@@ -2419,6 +2444,265 @@ struct entrypoint *dmrC_linearize_symbol(struct dmr_C *C, struct symbol *sym)
 	return NULL;
 }
 
+static void mark_bb_reachable(struct basic_block *bb, unsigned long generation)
+{
+	struct basic_block *child;
+
+	if (bb->generation == generation)
+		return;
+	bb->generation = generation;
+	FOR_EACH_PTR(bb->children, child) {
+		mark_bb_reachable(child, generation);
+	} END_FOR_EACH_PTR(child);
+}
+
+void dmrC_kill_unreachable_bbs(struct dmr_C *C, struct entrypoint *ep)
+{
+	struct basic_block *bb;
+	unsigned long generation = ++C->L->bb_generation;
+
+	mark_bb_reachable(ep->entry->bb, generation);
+	FOR_EACH_PTR(ep->bbs, bb) {
+		if (bb->generation == generation)
+			continue;
+		/* Mark it as being dead */
+		dmrC_kill_bb(C, bb);
+		bb->ep = NULL;
+		DELETE_CURRENT_PTR(bb);
+	} END_FOR_EACH_PTR(bb);
+	ptrlist_pack((struct ptr_list **) &ep->bbs);
+}
+
+static int delete_pseudo_user_list_entry(struct dmr_C *C, struct pseudo_user_list **list, pseudo_t *entry, int count)
+{
+        (void)C;
+	struct pseudo_user *pu;
+
+	FOR_EACH_PTR(*list, pu) {
+		if (pu->userp == entry) {
+			MARK_CURRENT_DELETED(struct pseudo_user *, pu);
+			if (!--count)
+				goto out;
+		}
+	} END_FOR_EACH_PTR(pu);
+	assert(count <= 0);
+out:
+	if (ptrlist_size((struct ptr_list *)*list) == 0)
+		*list = NULL;
+	return count;
+}
+
+static inline void remove_usage(struct dmr_C *C, pseudo_t p, pseudo_t *usep)
+{
+	if (dmrC_has_use_list(p)) {
+		delete_pseudo_user_list_entry(C, &p->users, usep, 1);
+		if (!p->users)
+			dmrC_kill_instruction(C, p->def);
+	}
+}
+
+static inline void concat_user_list(struct pseudo_user_list *src, struct pseudo_user_list **dst)
+{
+	ptrlist_concat((struct ptr_list *)src, (struct ptr_list **)dst);
+}
+
+void dmrC_convert_instruction_target(struct dmr_C *C, struct instruction *insn, pseudo_t src)
+{
+	pseudo_t target;
+	struct pseudo_user *pu;
+	/*
+	 * Go through the "insn->users" list and replace them all..
+	 */
+	target = insn->target;
+	if (target == src)
+		return;
+	FOR_EACH_PTR(target->users, pu) {
+		if (*pu->userp != VOID_PSEUDO(C)) {
+			assert(*pu->userp == target);
+			*pu->userp = src;
+		}
+	} END_FOR_EACH_PTR(pu);
+	if (dmrC_has_use_list(src))
+		concat_user_list(target->users, &src->users);
+	target->users = NULL;
+}
+
+static void kill_defs(struct dmr_C *C, struct instruction *insn)
+{
+	pseudo_t target = insn->target;
+
+	if (!dmrC_has_use_list(target))
+		return;
+	if (target->def != insn)
+		return;
+
+	dmrC_convert_instruction_target(C, insn, VOID_PSEUDO(C));
+}
+
+void dmrC_kill_bb(struct dmr_C *C, struct basic_block *bb)
+{
+	struct instruction *insn;
+	struct basic_block *child, *parent;
+
+	FOR_EACH_PTR(bb->insns, insn) {
+		dmrC_kill_instruction_force(C, insn);
+		kill_defs(C, insn);
+		/*
+		 * We kill unreachable instructions even if they
+		 * otherwise aren't "killable" (e.g. volatile loads)
+		 */
+	} END_FOR_EACH_PTR(insn);
+	bb->insns = NULL;
+
+	FOR_EACH_PTR(bb->children, child) {
+		dmrC_remove_bb_from_list(&child->parents, bb, 0);
+	} END_FOR_EACH_PTR(child);
+	bb->children = NULL;
+
+	FOR_EACH_PTR(bb->parents, parent) {
+		dmrC_remove_bb_from_list(&parent->children, bb, 0);
+	} END_FOR_EACH_PTR(parent);
+	bb->parents = NULL;
+}
+
+
+void dmrC_kill_use(struct dmr_C *C, pseudo_t *usep)
+{
+	if (usep) {
+		pseudo_t p = *usep;
+		*usep = VOID_PSEUDO(C);
+		remove_usage(C, p, usep);
+	}
+}
+
+static void kill_use_list(struct dmr_C *C, struct pseudo_list *list)
+{
+	pseudo_t p;
+	FOR_EACH_PTR(list, p) {
+		if (p == VOID_PSEUDO(C))
+			continue;
+		dmrC_kill_use(C, THIS_ADDRESS(pseudo_t, p));
+	} END_FOR_EACH_PTR(p);
+}
+
+/*
+ * kill an instruction:
+ * - remove it from its bb
+ * - remove the usage of all its operands
+ * If forse is zero, the normal case, the function only for
+ * instructions free of (possible) side-effects. Otherwise
+ * the function does that unconditionally (must only be used
+ * for unreachable instructions.
+ */
+void dmrC_kill_insn(struct dmr_C *C, struct instruction *insn, int force)
+{
+	if (!insn || !insn->bb)
+		return;
+
+	switch (insn->opcode) {
+	case OP_SEL:
+	case OP_RANGE:
+		dmrC_kill_use(C, &insn->src3);
+		/* fall through */
+
+	case OP_ADD:
+	case OP_SUB:
+	case OP_MULU: 
+	case OP_MULS:
+	case OP_DIVU: 
+	case OP_DIVS:
+	case OP_MODU: 
+	case OP_MODS:
+	case OP_SHL:
+	case OP_LSR: 
+	case OP_ASR:
+
+		/* Logical */
+	case OP_AND:
+	case OP_OR:
+	case OP_XOR:
+	case OP_AND_BOOL:
+	case OP_OR_BOOL:
+
+	case OP_SET_EQ:
+	case OP_SET_NE:
+	case OP_SET_LE:
+	case OP_SET_GE:
+	case OP_SET_LT:
+	case OP_SET_GT:
+	case OP_SET_B:
+	case OP_SET_A:
+	case OP_SET_BE:
+	case OP_SET_AE:
+		dmrC_kill_use(C, &insn->src2);
+		/* fall through */
+
+	case OP_CAST:
+	case OP_SCAST:
+	case OP_FPCAST:
+	case OP_PTRCAST:
+	case OP_SETVAL:
+	case OP_NOT: case OP_NEG:
+	case OP_SLICE:
+		dmrC_kill_use(C, &insn->src1);
+		break;
+
+	case OP_PHI:
+		kill_use_list(C, insn->phi_list);
+		break;
+	case OP_PHISOURCE:
+		dmrC_kill_use(C, &insn->phi_src);
+		break;
+
+	case OP_SYMADDR:
+		C->L->repeat_phase |= REPEAT_SYMBOL_CLEANUP;
+		break;
+
+	case OP_CBR:
+		/* fall through */
+	case OP_COMPUTEDGOTO:
+		dmrC_kill_use(C, &insn->cond);
+		break;
+
+	case OP_CALL:
+		if (!force) {
+			/* a "pure" function can be killed too */
+			if (!(insn->func->type == PSEUDO_SYM))
+				return;
+			if (!(insn->func->sym->ctype.modifiers & MOD_PURE))
+				return;
+		}
+		kill_use_list(C, insn->arguments);
+		if (insn->func->type == PSEUDO_REG)
+			dmrC_kill_use(C, &insn->func);
+		break;
+
+	case OP_LOAD:
+		if (!force && insn->type->ctype.modifiers & MOD_VOLATILE)
+			return;
+		dmrC_kill_use(C, &insn->src);
+		break;
+
+	case OP_STORE:
+		if (!force)
+			return;
+		dmrC_kill_use(C, &insn->src);
+		dmrC_kill_use(C, &insn->target);
+		break;
+
+	case OP_ENTRY:
+		/* ignore */
+		return;
+
+	case OP_BR:
+	default:
+		break;
+	}
+
+	insn->bb = NULL;
+	C->L->repeat_phase |= REPEAT_CSE;
+	return;
+}
 
 void dmrC_init_linearizer(struct dmr_C *C) {
 	struct linearizer_state_t *L = (struct linearizer_state_t *)calloc(1, sizeof(struct linearizer_state_t));

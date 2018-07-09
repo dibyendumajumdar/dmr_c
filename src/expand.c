@@ -74,6 +74,7 @@ static long long get_longlong(struct dmr_C *C, struct expression *expr)
 	long long mask = 1ULL << (expr->ctype->bit_size - 1);
 	long long value = expr->value;
 	long long ormask, andmask;
+	(void)C;
 
 	if (!(value & mask))
 		no_expand = 1;
@@ -187,10 +188,10 @@ static int simplify_int_binop(struct dmr_C *C, struct expression *expr, struct s
 		return 0;
 	r = right->value;
 	if (expr->op == SPECIAL_LEFTSHIFT || expr->op == SPECIAL_RIGHTSHIFT) {
-		if (r >= ctype->bit_size) {
+		if ((int)r >= ctype->bit_size) {
 			if (conservative)
 				return 0;
-			r = check_shift_count(C, expr, ctype, r);
+			r = check_shift_count(C, expr, ctype, (unsigned int)r);
 			right->value = r;
 		}
 	}
@@ -302,6 +303,7 @@ static int simplify_cmp_binop(struct dmr_C *C, struct expression *expr, struct s
 	unsigned long long l, r, mask;
 	signed long long sl, sr;
 
+	(void) C;
 	if (left->type != EXPR_VALUE || right->type != EXPR_VALUE)
 		return 0;
 	l = left->value; r = right->value;
@@ -379,6 +381,8 @@ Div:
 
 static int simplify_float_cmp(struct dmr_C *C, struct expression *expr, struct symbol *ctype)
 {
+        (void) C;
+        (void)ctype;
 	struct expression *left = expr->left, *right = expr->right;
 	long double l, r;
 
@@ -586,6 +590,7 @@ static int expand_addressof(struct dmr_C *C, struct expression *expr)
 static struct expression *constant_symbol_value(struct dmr_C *C, struct symbol *sym, int offset)
 {
 	struct expression *value;
+        (void)C;
 
 	if (sym->ctype.modifiers & (MOD_ASSIGNED | MOD_ADDRESSABLE))
 		return NULL;
@@ -600,9 +605,9 @@ static struct expression *constant_symbol_value(struct dmr_C *C, struct symbol *
 					continue;
 				return entry;
 			}
-			if (entry->init_offset < offset)
+			if ((int) entry->init_offset < offset)
 				continue;
-			if (entry->init_offset > offset)
+			if ((int) entry->init_offset > offset)
 				return NULL;
 			return entry->init_expr;
 		} END_FOR_EACH_PTR(entry);
@@ -636,7 +641,7 @@ static int expand_dereference(struct dmr_C *C, struct expression *expr)
 	if (unop->type == EXPR_BINOP && unop->op == '+') {
 		struct expression *right = unop->right;
 		if (right->type == EXPR_VALUE) {
-			offset = right->value;
+			offset = (unsigned int) right->value;
 			unop = unop->left;
 		}
 	}
@@ -715,6 +720,7 @@ Overflow:
 
 static int simplify_float_preop(struct dmr_C *C, struct expression *expr)
 {
+        (void) C;
 	struct expression *op = expr->unop;
 	long double v;
 
@@ -1242,6 +1248,7 @@ static int expand_statement(struct dmr_C *C, struct statement *stmt)
 
 static inline int bad_integer_constant_expression(struct dmr_C *C, struct expression *expr)
 {
+        (void) C;
 	if (!(expr->flags & Int_const_expr))
 		return 1;
 	if (expr->taint & Taint_comma)

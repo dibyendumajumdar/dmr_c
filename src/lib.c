@@ -225,6 +225,7 @@ void dmrC_die(struct dmr_C *C, const char *fmt, ...)
 	va_list args;
 	static char buffer[512];
 
+	(void)C;
 	va_start(args, fmt);
 	vsnprintf(buffer, sizeof(buffer), fmt, args);
 	va_end(args);
@@ -494,6 +495,7 @@ static char **handle_switch_M(struct dmr_C *C, char *arg, char **next)
 
 static char **handle_multiarch_dir(struct dmr_C *C, char *arg, char **next)
 {
+        (void)arg;
 	C->multiarch_dir = *++next;
 	if (!C->multiarch_dir)
 		dmrC_die(C, "missing argument for -multiarch-dir option");
@@ -602,9 +604,9 @@ static char **handle_onoff_switch(struct dmr_C *C, char *arg, char **next, const
 {
 	int flag = WARNING_ON;
 	char *p = arg + 1;
-	unsigned i;
+	int i;
 
-	if (!strcmp(p, "sparse-all")) {
+	if (strcmp(p, "sparse-all") == 0) {
 		for (i = 0; i < n; i++) {
 			if (*warnings[i].flag != WARNING_FORCE_OFF && warnings[i].flag != &C->Wsparse_error)
 				*warnings[i].flag = WARNING_ON;
@@ -665,7 +667,7 @@ static char **handle_switch_d(struct dmr_C *C, char *arg, char **next)
 
 static void handle_onoff_switch_finalize(const struct warning warnings[], int n)
 {
-	unsigned i;
+	int i;
 
 	for (i = 0; i < n; i++) {
 		if (*warnings[i].flag == WARNING_FORCE_OFF)
@@ -789,6 +791,7 @@ static char **handle_switch_f(struct dmr_C *C, char *arg, char **next)
 
 static char **handle_switch_G(struct dmr_C *C, char *arg, char **next)
 {
+  (void) C;
 	if (!strcmp(arg, "G") && *next)
 		return next + 1; // "-G 0"
 	else
@@ -845,6 +848,7 @@ static char **handle_switch_s(struct dmr_C *C, char *arg, char **next)
 
 static char **handle_nostdinc(struct dmr_C *C, char *arg, char **next)
 {
+        (void)arg;
 	dmrC_add_pre_buffer(C, "#nostdinc\n");
 	return next;
 }
@@ -858,6 +862,7 @@ static char **handle_switch_n(struct dmr_C *C, char *arg, char **next)
 }
 static char **handle_base_dir(struct dmr_C *C, char *arg, char **next)
 {
+        (void)arg;
 	C->gcc_base_dir = *++next;
 	if (!C->gcc_base_dir)
 		dmrC_die(C, "missing argument for -gcc-base-dir option");
@@ -873,6 +878,9 @@ static char **handle_switch_g(struct dmr_C *C, char *arg, char **next)
 }
 static char **handle_version(struct dmr_C *C, char *arg, char **next)
 {
+        (void)C;
+        (void)arg;
+        (void)next;
 	printf("%s\n", SPARSE_VERSION);
 	exit(0);
 }
@@ -903,13 +911,13 @@ static char **handle_long_options(struct dmr_C *C, char *arg, char **next)
 {
 	static struct switches cmd[] = {
 		{ "param", handle_param, 1 },
-		{ "version", handle_version },
-		{ NULL, NULL }
+		{ "version", handle_version , 0},
+		{ NULL, NULL, 0 }
 	};
 	struct switches *s = cmd;
 
 	while (s->name) {
-		int optlen = strlen(s->name);
+		int optlen = (int) strlen(s->name);
 		if (!strncmp(s->name, arg, optlen + !s->prefix))
 			return s->fn(C, arg + optlen, next);
 		s++;

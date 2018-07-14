@@ -570,7 +570,7 @@ void dmrC_init_parser(struct dmr_C *C, int stream)
 	C->P = (struct parse_state_t *) calloc(1, sizeof(struct parse_state_t));
 
 	int i;
-	for (i = 0; i < ARRAY_SIZE(keyword_table); i++) {
+	for (i = 0; i < (int)ARRAY_SIZE(keyword_table); i++) {
 		struct init_keyword *ptr = keyword_table + i;
 		struct symbol *sym = dmrC_create_symbol(C->S, stream, ptr->name, SYM_KEYWORD, ptr->ns);
 		sym->ident->keyword = 1;
@@ -581,7 +581,7 @@ void dmrC_init_parser(struct dmr_C *C, int stream)
 		sym->op = ptr->op;
 	}
 
-	for (i = 0; i < ARRAY_SIZE(ignored_attributes); i++) {
+	for (i = 0; i < (int)ARRAY_SIZE(ignored_attributes); i++) {
 		const char * name = ignored_attributes[i];
 		struct symbol *sym = dmrC_create_symbol(C->S, stream, name, SYM_KEYWORD,
 						   NS_KEYWORD);
@@ -637,6 +637,8 @@ static int SENTINEL_ATTR match_idents(struct dmr_C *C, struct token *token, ...)
 {
 	va_list args;
 	struct ident * next;
+        
+        (void) C;
 
 	if (dmrC_token_type(token) != TOKEN_IDENT)
 		return 0;
@@ -824,7 +826,8 @@ static void lower_boundary(Num *n, Num *v)
 
 static int type_is_ok(struct dmr_C *C, struct symbol *type, Num *upper, Num *lower)
 {
-	int shift = type->bit_size;
+        (void) C;
+        int shift = type->bit_size;
 	int is_unsigned = type->ctype.modifiers & MOD_UNSIGNED;
 
 	if (!is_unsigned)
@@ -959,9 +962,9 @@ static struct token *parse_enum_declaration(struct dmr_C *C, struct token *token
 		base_type = &C->S->bad_ctype;
 	}
 	else if (!dmrC_is_int_type(C->S, base_type))
-		base_type = base_type;
+                ; //base_type = base_type;
 	else if (type_is_ok(C, base_type, &upper, &lower))
-		base_type = base_type;
+                ; //base_type = base_type;
 	else if (type_is_ok(C, &C->S->int_ctype, &upper, &lower))
 		base_type = &C->S->int_ctype;
 	else if (type_is_ok(C, &C->S->uint_ctype, &upper, &lower))
@@ -1027,6 +1030,8 @@ static struct token *typeof_specifier(struct dmr_C *C, struct token *token, stru
 
 static struct token *ignore_attribute(struct dmr_C *C, struct token *token, struct symbol *attr, struct decl_state *ctx)
 {
+        (void) ctx;
+        (void) attr;
 	struct expression *expr = NULL;
 	if (dmrC_match_op(token, '('))
 		token = dmrC_parens_expression(C, token, &expr, "in attribute");
@@ -1035,6 +1040,8 @@ static struct token *ignore_attribute(struct dmr_C *C, struct token *token, stru
 
 static struct token *attribute_packed(struct dmr_C *C, struct token *token, struct symbol *attr, struct decl_state *ctx)
 {
+	(void) C;
+	(void) attr;
 	if (!ctx->ctype.alignment)
 		ctx->ctype.alignment = 1;
 	return token;
@@ -1042,18 +1049,19 @@ static struct token *attribute_packed(struct dmr_C *C, struct token *token, stru
 
 static struct token *attribute_aligned(struct dmr_C *C, struct token *token, struct symbol *attr, struct decl_state *ctx)
 {
+	(void) attr;
 	int alignment = C->target->max_alignment;
 	struct expression *expr = NULL;
 
 	if (dmrC_match_op(token, '(')) {
 		token = dmrC_parens_expression(C, token, &expr, "in attribute");
 		if (expr)
-			alignment = dmrC_const_expression_value(C, expr);
+			alignment = (int) dmrC_const_expression_value(C, expr);
 	}
 	if (alignment & (alignment-1)) {
 		dmrC_warning(C, token->pos, "I don't like non-power-of-2 alignments");
 		return token;
-	} else if (alignment > ctx->ctype.alignment)
+	} else if (alignment > (int)ctx->ctype.alignment)
 		ctx->ctype.alignment = alignment;
 	return token;
 }
@@ -1080,12 +1088,13 @@ static struct token *attribute_bitwise(struct dmr_C *C, struct token *token, str
 
 static struct token *attribute_address_space(struct dmr_C *C, struct token *token, struct symbol *attr, struct decl_state *ctx)
 {
+        (void) attr;
 	struct expression *expr = NULL;
 	int as;
 	token = dmrC_expect_token(C, token, '(', "after address_space attribute");
 	token = dmrC_conditional_expression(C, token, &expr);
 	if (expr) {
-		as = dmrC_const_expression_value(C, expr);
+		as = (int) dmrC_const_expression_value(C, expr);
 		if (C->Waddress_space && as)
 			ctx->ctype.as = as;
 	}
@@ -1145,6 +1154,7 @@ static struct symbol *to_word_mode(struct dmr_C *C, struct symbol *ctype)
 
 static struct token *attribute_mode(struct dmr_C *C, struct token *token, struct symbol *attr, struct decl_state *ctx)
 {
+        (void) attr;
 	token = dmrC_expect_token(C, token, '(', "after mode attribute");
 	if (dmrC_token_type(token) == TOKEN_IDENT) {
 		struct symbol *mode = dmrC_lookup_keyword(token->ident, NS_KEYWORD);
@@ -1161,6 +1171,7 @@ static struct token *attribute_mode(struct dmr_C *C, struct token *token, struct
 
 static struct token *attribute_context(struct dmr_C *C, struct token *token, struct symbol *attr, struct decl_state *ctx)
 {
+        (void) attr;
 	struct context *context = (struct context *)dmrC_allocator_allocate(&C->S->context_allocator, 0);
 	struct expression *args[3];
 	int argc = 0;
@@ -1183,16 +1194,16 @@ static struct token *attribute_context(struct dmr_C *C, struct token *token, str
 		dmrC_sparse_error(C, token->pos, "expected context input/output values");
 		break;
 	case 1:
-		context->in = dmrC_get_expression_value(C, args[0]);
+		context->in = (unsigned int)dmrC_get_expression_value(C, args[0]);
 		break;
 	case 2:
-		context->in = dmrC_get_expression_value(C, args[0]);
-		context->out = dmrC_get_expression_value(C, args[1]);
+		context->in = (unsigned int)dmrC_get_expression_value(C, args[0]);
+		context->out = (unsigned int)dmrC_get_expression_value(C, args[1]);
 		break;
 	case 3:
 		context->context_expr = args[0];
-		context->in = dmrC_get_expression_value(C, args[1]);
-		context->out = dmrC_get_expression_value(C, args[2]);
+		context->in = (unsigned int)dmrC_get_expression_value(C, args[1]);
+		context->out = (unsigned int)dmrC_get_expression_value(C, args[2]);
 		break;
 	}
 
@@ -1205,6 +1216,7 @@ static struct token *attribute_context(struct dmr_C *C, struct token *token, str
 
 static struct token *attribute_designated_init(struct dmr_C *C, struct token *token, struct symbol *attr, struct decl_state *ctx)
 {
+        (void) attr;
 	if (ctx->ctype.base_type && ctx->ctype.base_type->type == SYM_STRUCT)
 		ctx->ctype.base_type->designated_init = 1;
 	else
@@ -1214,6 +1226,7 @@ static struct token *attribute_designated_init(struct dmr_C *C, struct token *to
 
 static struct token *attribute_transparent_union(struct dmr_C *C, struct token *token, struct symbol *attr, struct decl_state *ctx)
 {
+        (void) attr;
 	if (C->Wtransparent_union)
 		dmrC_warning(C, token->pos, "attribute __transparent_union__");
 	if (ctx->ctype.base_type && ctx->ctype.base_type->type == SYM_UNION)
@@ -1279,6 +1292,7 @@ static const char *storage_class[] =
 
 static unsigned long storage_modifiers(struct dmr_C *C, struct decl_state *ctx)
 {
+        (void) C;
 	static unsigned long mod[SMax] =
 	{
 		[SAuto] = MOD_AUTO,
@@ -1355,12 +1369,14 @@ static struct token *thread_specifier(struct dmr_C *C, struct token *next, struc
 
 static struct token *attribute_force(struct dmr_C *C, struct token *token, struct symbol *attr, struct decl_state *ctx)
 {
+        (void) attr;
 	set_storage_class(C, &token->pos, ctx, SForced);
 	return token;
 }
 
 static struct token *inline_specifier(struct dmr_C *C, struct token *next, struct decl_state *ctx)
 {
+        (void) C;
 	ctx->is_inline = 1;
 	return next;
 }
@@ -1390,7 +1406,7 @@ static struct token *alignas_specifier(struct dmr_C *C, struct token *token, str
 		token = dmrC_parens_expression(C, token, &expr, "after _Alignas");
 		if (!expr)
 			return token;
-		alignment = dmrC_const_expression_value(C, expr);
+		alignment = (int) dmrC_const_expression_value(C, expr);
 	}
 
 	if (alignment < 0) {
@@ -1401,7 +1417,7 @@ static struct token *alignas_specifier(struct dmr_C *C, struct token *token, str
 		dmrC_warning(C, token->pos, "non-power-of-2 alignment");
 		return token;
 	}
-	if (alignment > ctx->ctype.alignment)
+	if (alignment > (int)ctx->ctype.alignment)
 		ctx->ctype.alignment = alignment;
 	return token;
 }
@@ -1592,6 +1608,7 @@ static struct token *abstract_array_declarator(struct dmr_C *C, struct token *to
 
 static struct token *skip_attribute(struct dmr_C *C, struct token *token)
 {
+        (void) C;
 	token = token->next;
 	if (dmrC_match_op(token, '(')) {
 		int depth = 1;
@@ -1815,7 +1832,7 @@ static struct token *handle_bitfield(struct dmr_C *C, struct token *token, struc
 	bitfield = alloc_indirect_symbol(C, token->pos, ctype, SYM_BITFIELD);
 	token = dmrC_conditional_expression(C, token->next, &expr);
 	width = dmrC_const_expression_value(C, expr);
-	bitfield->bit_size = width;
+	bitfield->bit_size = (int) width;
 
 	if (width < 0 || width > INT_MAX) {
 		dmrC_sparse_error(C, token->pos, "invalid bitfield width, %lld.", width);
@@ -1841,7 +1858,7 @@ static struct token *handle_bitfield(struct dmr_C *C, struct token *token, struc
 			dmrC_warning(C, token->pos, "dubious bitfield without explicit `signed' or `unsigned'");
 		}
 	}
-	bitfield->bit_size = width;
+	bitfield->bit_size = (int) width;
 	bitfield->endpos = token->pos;
 	return token;
 }
@@ -1946,6 +1963,7 @@ static struct token *expression_statement(struct dmr_C *C, struct token *token, 
 static struct token *parse_asm_operands(struct dmr_C *C, struct token *token, struct statement *stmt,
 	struct expression_list **inout)
 {
+        (void) stmt;
 	struct expression *expr;
 
 	/* Allow empty operands */
@@ -1971,6 +1989,7 @@ static struct token *parse_asm_operands(struct dmr_C *C, struct token *token, st
 static struct token *parse_asm_clobbers(struct dmr_C *C, struct token *token, struct statement *stmt,
 	struct expression_list **clobbers)
 {
+        (void) stmt;
 	struct expression *expr;
 
 	do {
@@ -1985,7 +2004,7 @@ static struct token *parse_asm_labels(struct dmr_C *C, struct token *token, stru
 		        struct symbol_list **labels)
 {
 	struct symbol *label;
-
+        (void) stmt;
 	do {
 		token = token->next; /* skip ':' and ',' */
 		if (dmrC_token_type(token) != TOKEN_IDENT)
@@ -2026,6 +2045,7 @@ static struct token *parse_asm_statement(struct dmr_C *C, struct token *token, s
 
 static struct token *parse_asm_declarator(struct dmr_C *C, struct token *token, struct decl_state *ctx)
 {
+        (void) ctx;
 	struct expression *expr;
 	token = dmrC_expect_token(C, token, '(', "after asm");
 	token = dmrC_parse_expression(C, token->next, &expr);
@@ -2035,6 +2055,7 @@ static struct token *parse_asm_declarator(struct dmr_C *C, struct token *token, 
 
 static struct token *parse_static_assert(struct dmr_C *C, struct token *token, struct symbol_list **unused)
 {
+        (void) unused;
 	struct expression *cond = NULL, *message = NULL;
 
 	token = dmrC_expect_token(C, token->next, '(', "after _Static_assert");
@@ -2100,6 +2121,7 @@ static void start_iterator(struct dmr_C *C, struct statement *stmt)
 
 static void end_iterator(struct dmr_C *C, struct statement *stmt)
 {
+        (void) stmt;
 	dmrC_end_symbol_scope(C);
 }
 
@@ -2125,6 +2147,7 @@ static struct statement *start_function(struct dmr_C *C, struct symbol *sym)
 
 static void end_function(struct dmr_C *C, struct symbol *sym)
 {
+        (void) sym;
 	C->current_fn = NULL;
 	dmrC_end_function_scope(C);
 }
@@ -2526,10 +2549,10 @@ static struct expression *index_expression(struct dmr_C *C, struct expression *f
 	int idx_from, idx_to;
 	struct expression *expr = dmrC_alloc_expression(C, from->pos, EXPR_INDEX);
 
-	idx_from = dmrC_const_expression_value(C, from);
+	idx_from = (int) dmrC_const_expression_value(C, from);
 	idx_to = idx_from;
 	if (to) {
-		idx_to = dmrC_const_expression_value(C, to);
+		idx_to = (int) dmrC_const_expression_value(C, to);
 		if (idx_to < idx_from || idx_from < 0)
 			dmrC_warning(C, from->pos, "nonsense array initializer index range");
 	}
@@ -2627,6 +2650,7 @@ struct token *dmrC_initializer(struct dmr_C *C, struct expression **tree, struct
 
 static void declare_argument(struct dmr_C *C, struct symbol *sym, struct symbol *fn)
 {
+        (void) fn;
 	if (!sym->ident) {
 		dmrC_sparse_error(C, sym->pos, "no identifier for function argument");
 		return;

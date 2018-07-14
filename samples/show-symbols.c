@@ -189,7 +189,7 @@ static void examine_symbol(struct dmr_C *C, struct symbol *sym)
 	}
 	if (sym->array_size) {
 		/* TODO: modify dmrC_get_expression_value to give error return */
-		array_size = dmrC_get_expression_value(C, sym->array_size);
+		array_size = (int) dmrC_get_expression_value(C, sym->array_size);
 		newNumProp("array-size", array_size);
 	}
 

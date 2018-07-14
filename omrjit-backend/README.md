@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is a new backend that is using the [Eclipse OMR JIT](https://github.com/dibyendumajumdar/nj). It is currently work in progress.
+This is a new backend that is using the [OMR JIT](https://github.com/dibyendumajumdar/nj). It is currently work in progress.
 
 ## What works
 
@@ -31,7 +31,7 @@ bool dmrC_omrcompile(int argc, char **argv, JIT_ContextRef module,
 		      const char *inputbuffer);
 ```
 
-Below is what the sparse-nanojit tool does:
+Below is what the sparse-omrjit tool does:
 
 ```C
 #include <dmr_c.h>

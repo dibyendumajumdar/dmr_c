@@ -2119,6 +2119,8 @@ static bool output_fn(struct dmr_C *C, JIT_ContextRef module, struct entrypoint 
 	END_FOR_EACH_PTR(arg);
 
 	name = dmrC_show_ident(C, sym->ident);
+	char function_name[128];
+	snprintf(function_name, sizeof function_name, "%s", name);
 
 	struct OMRType *function_type = type_to_OMRtype(C, &function, ret_type, NULL);
 	function.return_type = check_supported_returntype(C, function_type);
@@ -2130,7 +2132,7 @@ static bool output_fn(struct dmr_C *C, JIT_ContextRef module, struct entrypoint 
 	JIT_Type freturn = map_OMRtype(function.return_type);
 
 	function.builder =
-	    JIT_CreateFunctionBuilder(module, name, freturn, nr_args, argtypes, JIT_ILBuilderImpl, &function);
+	    JIT_CreateFunctionBuilder(module, function_name, freturn, nr_args, argtypes, JIT_ILBuilderImpl, &function);
 
 	void *p = JIT_Compile(function.builder);
 	if (p)

@@ -64,8 +64,8 @@ new_allocator(int size, int n)
 void 
 grow_allocator(allocator * a)
 {
-#if !defined(__OMR_BACKEND__) && !defined(__NANOJIT_BACKEND__)
 	buffer_type_t    *tmp;
+#if defined(__LLVM_BACKEND__)
 	if (once) {
 		printf("out of memory\n");
 		exit(1);
@@ -75,11 +75,14 @@ grow_allocator(allocator * a)
 
 	tmp = &Node;
 	tmp->buffer = Memory;
+#else
+	tmp = (buffer_type_t *) malloc(sizeof(buffer_type_t));
+	tmp->buffer = (char *) malloc(a->n*a->size);
+#endif
 	tmp->next_buffer = a->buffer_list;
 	a->buffer_list = tmp;
 	a->next_avail = a->buffer_list->buffer;
 	a->last = a->next_avail + (a->size * a->n);
-#endif
 }
 
 /***

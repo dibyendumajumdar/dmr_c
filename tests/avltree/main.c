@@ -136,7 +136,7 @@ int main(void)
 	vtable.assignobject = assignobject;
 
 	AVLTree_New(&tree, &vtable, sizeof(struct record), 1000);
-
+	
 	int i;
 	for (i = 0; i < 20; i++) {
 		int key;

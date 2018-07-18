@@ -780,6 +780,15 @@ static JIT_NodeRef output_op_store(struct dmr_C *C, struct function *fn, struct 
 		}
 	}
 
+	/* Following causes test failures -- To be investgated */
+	//if (insn->src->type == PSEUDO_SYM) {
+	//	JIT_SymbolRef symref = get_sym_value(C, fn, insn->src, true);
+	//	if (symref && JIT_IsTemporary(fn->injector, symref)) {
+	//		JIT_StoreToTemporary(fn->injector, symref, target_in);
+	//		return target_in;
+	//	}
+	//}
+
 	ptr = pseudo_to_value(C, fn, insn->type, insn->src);
 	if (!ptr)
 		return NULL;

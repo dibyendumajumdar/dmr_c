@@ -25,7 +25,7 @@
 
 /*
 Define environment variable
-TR_Options=traceIlGen,traceFull,log=trtrace.log
+TR_Options=traceIlGen,traceFull,traceAliases,log=trtrace.log
 To obtain a nice trace of codegen
 */
 
@@ -1480,10 +1480,19 @@ static JIT_NodeRef output_op_symaddr(struct dmr_C *C, struct function *fn, struc
 {
 	JIT_NodeRef res, src;
 	struct OMRType *dtype;
+	JIT_SymbolRef sym;
 
 	src = pseudo_to_value(C, fn, insn->type, insn->symbol);
 	if (!src)
 		return NULL;
+
+	/* We need to tell the backend if a local var has had its
+	   address taken */
+	if (insn->symbol->type == PSEUDO_SYM) {
+		sym = get_sym_value(C, fn, insn->symbol, true);
+		if (sym)
+			JIT_SetAutoAddressTaken(fn->injector, sym);
+	}
 
 	dtype = get_symnode_or_basetype(C, fn, insn->type);
 	if (!dtype)
@@ -2143,7 +2152,7 @@ static bool output_fn(struct dmr_C *C, JIT_ContextRef module, struct entrypoint 
 	function.builder =
 	    JIT_CreateFunctionBuilder(module, function_name, freturn, nr_args, argtypes, JIT_ILBuilderImpl, &function);
 
-	void *p = JIT_Compile(function.builder);
+	void *p = JIT_Compile(function.builder, C->optimize);
 	if (p)
 		success = true;
 
@@ -2197,7 +2206,7 @@ bool dmrC_omrcompile(int argc, char **argv, JIT_ContextRef module, const char *i
 	char *file;
 
 	struct dmr_C *C = new_dmr_C();
-	C->optimize = 0; /* Sparse simplifications result in incorrect IR */
+	C->optimize = 1; /* Default */
 	C->codegen = 1;  /* Disables macros related to vararg processing */
 	C->Wdecl = 0;
 

@@ -576,8 +576,13 @@ static JIT_SymbolRef get_sym_value(struct dmr_C *C, struct function *fn, pseudo_
 				return NULL;
 			}
 			result = build_local(C, fn, sym);
-			if (!result)
+			if (!result) {
+				dmrC_sparse_error(C, sym->initializer->pos,
+					"unsupported initializer for "
+					"local variable because zero initialization is not yet done\n");
+				dmrC_show_expression(C, sym->initializer);
 				return result;
+			}
 			sym->priv = result;
 		}
 	}

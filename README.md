@@ -14,14 +14,14 @@ dmr_C is a fork of Sparse. The main changes are:
 * WIP Ensure that code can be compiled using a C++ compiler
 * The LLVM backend has been converted to a JIT compiler - i.e. it is exposed as a library API
 * WIP Work is ongoing on additional backend based on [NanoJIT](https://github.com/dibyendumajumdar/dmr_c/tree/master/nanojit-backend).
-* WIP Work is ongoing on creating a backend based on [Eclipse OMR](https://github.com/dibyendumajumdar/nj) derived [JIT backend](https://github.com/dibyendumajumdar/dmr_c/tree/master/omrjit-backend).
+* A [new backend](https://github.com/dibyendumajumdar/dmr_c/tree/master/omrjit-backend) based on [Eclipse OMR](https://github.com/dibyendumajumdar/nj) derived [JIT].
 
 ## Current status
 
 * The code builds on Windows, Linux and Mac OSX. However there are platform specific limitations - see below for details.
 * The Sparse code generator for LLVM has had many fixes and is able to compile real programs. See details below for what works and what doesn't.
 * The NanoJIT code generator is now able to handle a reasonable subset of C, although it is not yet as well tested as the code generator targetting LLVM.
-* A [new backend](https://github.com/dibyendumajumdar/dmr_c/tree/master/omrjit-backend) using [Eclipse OMR](https://github.com/dibyendumajumdar/nj) is now on par with the NanoJIT backend.
+* A [new backend](https://github.com/dibyendumajumdar/dmr_c/tree/master/omrjit-backend) using [Eclipse OMR](https://github.com/dibyendumajumdar/nj) is now available.
 
 ## News
 * Jun-2018 - New backend JIT using [Eclipse OMR](https://github.com/dibyendumajumdar/nj)
@@ -30,7 +30,7 @@ dmr_C is a fork of Sparse. The main changes are:
 
 ## Build instructions
 
-The build is pretty standard CMake build. There are no external dependencies except LLVM or NanoJIT. To build without a backend just try:
+The build is pretty standard CMake build. There are no external dependencies except the JIT backend. To build without a JIT backend just try:
 
 ```
 mkdir build
@@ -74,11 +74,11 @@ make install
 
 ### OMRJIT Backend 
 
-* First follow instructions to build a [OMR  JIT](https://github.com/dibyendumajumdar/nj) library.
+* First follow instructions to build a [OMRJIT](https://github.com/dibyendumajumdar/nj) library.
 * You may need to amend the script [FindOMRJIT.cmake](https://github.com/dibyendumajumdar/dmr_c/blob/master/cmake/FindOMRJIT.cmake) to
   match your installation details. By default it expects the find OMRJIT at `~/Software/omr` on Linux/Mac OSX 
   and `/Software/omr` on Windows.
-* Next you can generate the CMake build scripts. I use following on Windows 10.
+* Next you need to generate the CMake build scripts. I use following on Windows 10.
 
 ```
 mkdir build
@@ -129,7 +129,7 @@ make install
 
 ## Using dmr_C as a JIT
 
-dmr_C has two alternative backend JIT engines, LLVM and NanoJIT. The LLVM backend is better tested and has evolved from sparse-llvm tool that comes with Sparse. The NanoJIT backend is entirely new, has had little testing, and is also more limited in the features supported.
+dmr_C has three alternative backend JIT engines, LLVM, OMRJIT and NanoJIT. The LLVM backend is better tested and has evolved from sparse-llvm tool that comes with Sparse. The NanoJIT and OMRJIT backends are entirely new, have had less testing, and are also more limited in the features supported.
 
 ### Using the LLVM backend
 
@@ -141,6 +141,8 @@ extern bool dmrC_llvmcompile(int argc, char **argv, LLVMModuleRef module,
 ```
 
 The call accepts the arguments passed to a main() function, an `LLVMModuleRef`, and an optional buffer to be compiled. It will preprocess files if needed, and compile each of the source files given in the argument list. It will finally compile the supplied input buffer. The results of the compilation will be in the supplied `LLVMModuleRef` for the calling program to use as it wishes. 
+
+Note that the LLVM backend only generates LLVM IR - compiling the IR to machine code is the client's responsibility.
 
 A very simple use is below:
 
@@ -225,22 +227,29 @@ int main(int argc, char **argv)
 
 In the example above, we check if there is a compiled function named `'TestNano'`. If it is then we invoke it.
 
+Note that you can supply optimzation option `-O<n>` to the compiler. The setting of `0` disables optimization, `1` enables
+some optimizations, and `2` is the highest level with additional optimizations enabled. Some programs may fail to compile with 
+level `2` at present.
+
 #### Limitations of OMR JIT backend
 
+* You cannot have static or global data in JIT code
 * String literals are not supported as they require static storage
 * Computed gotos are not supported
-* Bitfield access is implemented but not well tested (one of the test fails)
+* Bitfield access is implemented but not well tested - the sign of bitfield values is a problem.
 * Passing local (automatic) storage scalar values by reference (i.e. through a pointer) may cause subsequent
-  code to not realize that the value may have changed
-* Calling functions through function pointers is not yet supported
-* Aggregate initializers are not supported
+  code to not realize that the value may have changed; this is being worked on and a tentative fix is in place, but
+  testing shows that this still fails under `-O2`.
+* Aggregate initializers are not supported as yet - mainly because we need to zero initialize any values not explicitly
+  assigned, and this is not done yet.
 * The `va_arg` mechanism is not supported
-* Recursive function calls are not possible at present due to the way functions are resolved
-* You cannot have static or global data in JIT code
+* Recursive function calls are not possible at present due to the way functions are resolved; OMRJIT supports recursive calls
+  so I expect to add these at some point in the future.
 * String initializers are not supported
 * There has been limited amount of testing of this backend, so expect it to fail! See the tests in 
   [tests/omrjit](https://github.com/dibyendumajumdar/dmr_c/tree/master/tests/omrjit) for examples of what works.
-
+* Note that a version of the OMRJIT backend is being used in the [Ravi](https://github.com/dibyendumajumdar/ravi) project. 
+  It is my plan to make this the main JIT backend for Ravi.
 
 ### Using the NanoJIT backend
 
@@ -294,6 +303,9 @@ In the example above, we check if there is a compiled function named 'TestNano'.
 #### Limitations of NanoJIT backend
 
 * Note that NanoJIT is a tiny library that aims to generate code quickly - but the generated code is not much optimized. 
+  In particular straight line code without branching is better, and the code generator has some ability to 
+  optimize loops; but as the register allocator does local register allocation only, there is too much stack spilling 
+  if there are branches in the code.
 * String literals are not supported as they require static storage
 * Computed gotos are not supported
 * Bitfield access is implemented but not well tested
@@ -370,7 +382,7 @@ The dmr_C is also a library and can be linked and used by application programs. 
 * Preprocesser - this carries out C pre-processing
 * Parser - this parses the token stream and creates parse tree and symbols
 * Linearizer - this takes the parsed tree and symbols and generates SSA IR
-* Optimizer - this performs various optimizations on the SSA IR
+* Optimizer - this performs various optimizations on the SSA IR. _Note that this is not very robust and is now disabled_.
 
 ### The JIT backends
 

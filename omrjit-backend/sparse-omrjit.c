@@ -1696,6 +1696,15 @@ static JIT_NodeRef output_op_sel(struct dmr_C *C, struct function *fn, struct in
 	case JIT_Int8:
 		op_code = OP_bternary;
 		break;
+	case JIT_Address:
+		op_code = OP_aternary;
+		break;
+	case JIT_Float:
+		op_code = OP_fternary;
+		break;
+	case JIT_Double:
+		op_code = OP_dternary;
+		break;
 	default:
 		// TODO error message
 		return NULL;

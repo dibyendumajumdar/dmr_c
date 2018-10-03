@@ -1,0 +1,477 @@
+<?xml version="1.0" standalone="no"?>
+<jitlog>
+started initialization of use/def info
+<trees
+	title="Pre Use Def Trees"
+	method="file:line:foo"
+	hotness="hot">
+
+Pre Use Def Trees: for file:line:foo
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+n2n       BBStart <block_2> (freq 10000)                                                      [0x0000019B96033C50] bci=[-1,0,-] rc=0 vc=4 vn=- li=- udi=- nc=0
+n9n       astore  <temp slot 4>[#585  Auto] [flags 0x10007 0x0 ]                              [0x0000019B96033E10] bci=[-1,0,-] rc=0 vc=7 vn=- li=- udi=- nc=1
+n5n         aload  Parm  0<parm 0 L>[#582  Parm] [flags 0x40010107 0x0 ]                      [0x0000019B96033D10] bci=[-1,0,-] rc=3 vc=7 vn=- li=- udi=- nc=0
+n14n      astore  <temp slot 5>[#586  Auto] [flags 0x10007 0x0 ]                              [0x0000019B96033F50] bci=[-1,0,-] rc=0 vc=7 vn=- li=- udi=- nc=1
+n10n        aload  Parm  1<parm 1 L>[#583  Parm] [flags 0x40010107 0x0 ]                      [0x0000019B96033E50] bci=[-1,0,-] rc=3 vc=7 vn=- li=- udi=- nc=0
+n37n      treetop                                                                             [0x0000019B96034510] bci=[-1,0,-] rc=0 vc=7 vn=- li=- udi=- nc=1
+n10n        ==>aload
+n38n      treetop                                                                             [0x0000019B96034550] bci=[-1,0,-] rc=0 vc=7 vn=- li=- udi=- nc=1
+n5n         ==>aload
+n29n      istorei  <array-shadow>[#472  Shadow] [flags 0x80000603 0x0 ]                       [0x0000019B96034310] bci=[-1,0,-] rc=0 vc=7 vn=- li=- udi=- nc=2
+n5n         ==>aload
+n22n        l2i                                                                               [0x0000019B96034150] bci=[-1,0,-] rc=1 vc=7 vn=- li=- udi=- nc=1
+n21n          lloadi  <array-shadow>[#473  Shadow] [flags 0x80000604 0x0 ]                    [0x0000019B96034110] bci=[-1,0,-] rc=1 vc=7 vn=- li=- udi=- nc=1
+n10n            ==>aload
+n31n      istore  <temp slot 3>[#584  Auto] [flags 0x10003 0x0 ]                              [0x0000019B96034390] bci=[-1,0,-] rc=0 vc=7 vn=- li=- udi=- nc=1
+n30n        iconst 0                                                                          [0x0000019B96034350] bci=[-1,0,-] rc=2 vc=7 vn=- li=- udi=- nc=0
+n34n      ireturn                                                                             [0x0000019B96034450] bci=[-1,0,-] rc=0 vc=7 vn=- li=- udi=- nc=1
+n30n        ==>iconst 0
+n3n       BBEnd </block_2>                                                                    [0x0000019B96033C90] bci=[-1,0,-] rc=0 vc=7 vn=- li=- udi=- nc=0
+
+index:       node global index
+bci=[x,y,z]: byte-code-info [callee-index, bytecode-index, line-number]
+rc:          reference count
+vc:          visit count
+vn:          value number
+li:          local index
+udi:         use/def index
+nc:          number of children
+addr:        address size in bytes
+flg:         node flags
+
+Symbol References (incremental):
+--------------------------------
+#472:  <array-shadow>[ Shadow] [flags 0x80000603 0x0 ] [0x0000019B9603C4B0] (Int32)
+#473:  <array-shadow>[ Shadow] [flags 0x80000604 0x0 ] [0x0000019B9603C440] (Int64)
+#476:  <array-shadow>[ Shadow] [flags 0x80000607 0x0 ] [0x0000019B9603C350] (Address)
+#582:  Parm  0<parm 0 L>[ Parm] [flags 0x40010107 0x0 ] [0x0000019B96034E00] (Address)
+#583:  Parm  1<parm 1 L>[ Parm] [flags 0x40010107 0x0 ] [0x0000019B96034FB0] (Address)
+#584:  <temp slot 3>[ Auto] [flags 0x10003 0x0 ] [0x0000019B9603C0E0] (Int32)
+#585:  <temp slot 4>[ Auto] [flags 0x10007 0x0 ] [0x0000019B9603C1B0] (Address)
+#586:  <temp slot 5>[ Auto] [flags 0x10007 0x0 ] [0x0000019B9603C280] (Address)
+
+Number of nodes = 14, symRefCount = 587
+</trees>
+
+<cfg>
+         0 [0x0000019B9603BD00] entry
+                 in        = []
+                 out       = [2(10000) ]
+                 exception in  = []
+                 exception out = []
+         1 [0x0000019B9603BC00] exit
+                 in        = [2(10000) ]
+                 out       = []
+                 exception in  = []
+                 exception out = []
+         2 [0x0000019B9603BE10] BBStart at 0x0000019B96033C50, frequency = 10000
+                 in        = [0(10000) ]
+                 out       = [1(10000) ]
+                 exception in  = []
+                 exception out = []
+<structure>
+      0 [0x0000019B9603ACB0] Acyclic region
+         Subgraph: (* = exit edge)
+               (0x0000019B9603ADA0:0x0000019B9603AC50)0 --> 2(0x0000019B9603AE30)
+               (0x0000019B9603AE30:0x0000019B9603AB90)2 --> 1(0x0000019B9603AF10)
+               (0x0000019B9603AF10:0x0000019B9603ABF0)1 -->
+         0 [0x0000019B9603AC50] Block
+         2 [0x0000019B9603AB90] Block
+         1 [0x0000019B9603ABF0] Block
+</structure>
+</cfg>
+Resetting read bit 582 at node 0000019B96033D10
+Resetting write bit 585 at node 0000019B96033E10
+Resetting read bit 583 at node 0000019B96033E50
+Resetting write bit 586 at node 0000019B96033F50
+Resetting write bit 584 at node 0000019B96034390
+Trying to index nodes with _indexFields = 0, _indexStatics = 0
+_neverReferencedSymbols[count = 580]: {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31
+, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62
+, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93
+, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124
+, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155
+, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186
+, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 216, 217
+, 218, 219, 220, 221, 222, 223, 224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248
+, 249, 250, 251, 252, 253, 254, 255, 256, 257, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267, 268, 269, 270, 271, 272, 273, 274, 275, 276, 277, 278, 279
+, 280, 281, 282, 283, 284, 285, 286, 287, 288, 289, 290, 291, 292, 293, 294, 295, 296, 297, 298, 299, 300, 301, 302, 303, 304, 305, 306, 307, 308, 309, 310
+, 311, 312, 313, 314, 315, 316, 317, 318, 319, 320, 321, 322, 323, 324, 325, 326, 327, 328, 329, 330, 331, 332, 333, 334, 335, 336, 337, 338, 339, 340, 341
+, 342, 343, 344, 345, 346, 347, 348, 349, 350, 351, 352, 353, 354, 355, 356, 357, 358, 359, 360, 361, 362, 363, 364, 365, 366, 367, 368, 369, 370, 371, 372
+, 373, 374, 375, 376, 377, 378, 379, 380, 381, 382, 383, 384, 385, 386, 387, 388, 389, 390, 391, 392, 393, 394, 395, 396, 397, 398, 399, 400, 401, 402, 403
+, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417, 418, 419, 420, 421, 422, 423, 424, 425, 426, 427, 428, 429, 430, 431, 432, 433, 434
+, 435, 436, 437, 438, 439, 440, 441, 442, 443, 444, 445, 446, 447, 448, 449, 450, 451, 452, 453, 454, 455, 456, 457, 458, 459, 460, 461, 462, 463, 464, 465
+, 466, 467, 468, 469, 470, 471, 474, 475, 476, 477, 478, 479, 480, 481, 482, 483, 484, 485, 486, 487, 488, 489, 490, 491, 492, 493, 494, 495, 496, 497, 498
+, 499, 500, 501, 502, 503, 504, 505, 506, 507, 508, 509, 510, 511, 512, 513, 514, 515, 516, 517, 518, 519, 520, 521, 522, 523, 524, 525, 526, 527, 528, 529
+, 530, 531, 532, 533, 534, 535, 536, 537, 538, 539, 540, 541, 542, 543, 544, 545, 546, 547, 548, 549, 550, 551, 552, 553, 554, 555, 556, 557, 558, 559, 560
+, 561, 562, 563, 564, 565, 566, 567, 568, 569, 570, 571, 572, 573, 574, 575, 576, 577, 578, 579, 580, 581}
+Non Trivial symbol Ref [0000019B9603C4E0:472] isTrivial=0 isParm=0 _neverWritten=1 _onceRead= 0 _onceWritten= 0
+   sym=0000019B9603C4B0 localIndex=65535 
+Non Trivial symbol Ref [0000019B9603C470:473] isTrivial=0 isParm=0 _neverWritten=1 _onceRead= 0 _onceWritten= 0
+   sym=0000019B9603C440 localIndex=65535 
+Non Trivial symbol Ref [0000019B96034E70:582] isTrivial=1 isParm=1 _neverWritten=1 _onceRead= 0 _onceWritten= 0
+Non Trivial symbol Ref [0000019B96035020:583] isTrivial=1 isParm=1 _neverWritten=1 _onceRead= 0 _onceWritten= 0
+Non Trivial symbol Ref [0000019B9603C150:584] isTrivial=1 isParm=0 _neverWritten=0 _onceRead= 0 _onceWritten= 0
+Non Trivial symbol Ref [0000019B9603C220:585] isTrivial=1 isParm=0 _neverWritten=0 _onceRead= 0 _onceWritten= 0
+Non Trivial symbol Ref [0000019B9603C2F0:586] isTrivial=1 isParm=0 _neverWritten=0 _onceRead= 0 _onceWritten= 0
+Trivial symbol [0000019B96034E00] has index 0
+Trivial symbol [0000019B96034FB0] has index 1
+Trivial symbol [0000019B9603C0E0] has index 2
+Trivial symbol [0000019B9603C1B0] has index 3
+Trivial symbol [0000019B9603C280] has index 4
+      expanded nodes          = 1
+      def/use combinations    = 8
+      irrelevant stores       = 0
+      expanded use nodes      = 0
+      expanded def nodes      = 1
+      local index level  = 0
+      use/def index level     = 4
+Has loads as defs              = 0
+Number of symbols              = 5
+Number of memory symbols       = 0
+Number of statics and fields   = 0
+Total nodes for use/def info   = 6
+   Number of defOnly nodes     = 4
+   Number of defUse nodes      = 0
+   Number of useOnly nodes     = 2
+Total nodes for reaching defs  = 1
+   Number of defOnly nodes     = 1
+   Number of defUse nodes      = 0
+   Number of useOnly nodes     = 0
+   Number of defs on entry     = 0
+Node : 0000019B96033D10   opCode = aload useDefIndex = 4 localIndex = 0 definesMultipleSymbols=0 isTrivialUseDefNode=1 adjustArray=0 
+Node : 0000019B96033E10   opCode = astore useDefIndex = 1 localIndex = 0 definesMultipleSymbols=0 isTrivialUseDefNode=1 adjustArray=1 
+Node : 0000019B96033E50   opCode = aload useDefIndex = 5 localIndex = 0 definesMultipleSymbols=0 isTrivialUseDefNode=1 adjustArray=0 
+Node : 0000019B96033F50   opCode = astore useDefIndex = 2 localIndex = 0 definesMultipleSymbols=0 isTrivialUseDefNode=1 adjustArray=1 
+Node : 0000019B96034390   opCode = istore useDefIndex = 3 localIndex = 0 definesMultipleSymbols=0 isTrivialUseDefNode=1 adjustArray=1 
+completed initialization of use/def info
+
+started reaching definition analysis for use/def
+
+
+Building use/def info for block 2
+looking at node 0000019B96033C50
+looking at node 0000019B96033E10
+looking at node 0000019B96033D10
+For node 0000019B96033D10 index = 4 and first use index = 4
+Reached here (entry) for use node 0000019B96033D10
+looking at node 0000019B96033F50
+looking at node 0000019B96033E50
+For node 0000019B96033E50 index = 5 and first use index = 4
+Reached here (entry) for use node 0000019B96033E50
+looking at node 0000019B96034510
+looking at node 0000019B96034550
+looking at node 0000019B96034310
+looking at node 0000019B96034150
+looking at node 0000019B96034110
+looking at node 0000019B96034390
+looking at node 0000019B96034350
+looking at node 0000019B96034450
+looking at node 0000019B96033C90
+
+Use/Def info: firstDefIndex=0 lastDefIndex=3 firstUseIndex=4 lastUseIndex=5 getNumDefsOnEntry()=1
+   Use #4[0000019B96033D10] is defined by:
+      Def #0[0000000000000000] (from method entry) 
+   Use #5[0000019B96033E50] is defined by:
+      Def #0[0000000000000000] (from method entry) 
+completed reaching definition analysis for use/def
+
+started initialization of use/def info
+<trees
+	title="Pre Use Def Trees"
+	method="file:line:foo"
+	hotness="hot">
+
+Pre Use Def Trees: for file:line:foo
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+n2n       BBStart <block_2> (freq 10000)                                                      [0x0000019B96033C50] bci=[-1,0,-] rc=0 vc=43 vn=- li=- udi=- nc=0
+n9n       astore  <temp slot 4>[#585  Auto] [flags 0x10007 0x0 ]                              [0x0000019B96033E10] bci=[-1,0,-] rc=0 vc=46 vn=- li=- udi=1 nc=1
+n5n         aload  Parm  0<parm 0 L>[#582  Parm] [flags 0x40010107 0x0 ] (X>=0 )              [0x0000019B96033D10] bci=[-1,0,-] rc=2 vc=46 vn=- li=- udi=4 nc=0 flg=0x100
+n14n      astore  <temp slot 5>[#586  Auto] [flags 0x10007 0x0 ]                              [0x0000019B96033F50] bci=[-1,0,-] rc=0 vc=46 vn=- li=- udi=2 nc=1
+n10n        aload  Parm  1<parm 1 L>[#583  Parm] [flags 0x40010107 0x0 ] (X>=0 )              [0x0000019B96033E50] bci=[-1,0,-] rc=2 vc=46 vn=- li=- udi=5 nc=0 flg=0x100
+n29n      istorei  <array-shadow>[#472  Shadow] [flags 0x80000603 0x0 ]                       [0x0000019B96034310] bci=[-1,0,-] rc=0 vc=46 vn=- li=- udi=- nc=2
+n5n         ==>aload
+n22n        l2i                                                                               [0x0000019B96034150] bci=[-1,0,-] rc=1 vc=46 vn=- li=- udi=- nc=1
+n21n          lloadi  <array-shadow>[#473  Shadow] [flags 0x80000604 0x0 ] (cannotOverflow )  [0x0000019B96034110] bci=[-1,0,-] rc=1 vc=46 vn=- li=- udi=- nc=1 flg=0x1000
+n10n            ==>aload
+n31n      istore  <temp slot 3>[#584  Auto] [flags 0x10003 0x0 ]                              [0x0000019B96034390] bci=[-1,0,-] rc=0 vc=46 vn=- li=- udi=3 nc=1
+n30n        iconst 0 (X==0 X>=0 X<=0 )                                                        [0x0000019B96034350] bci=[-1,0,-] rc=2 vc=46 vn=- li=- udi=- nc=0 flg=0x302
+n34n      ireturn                                                                             [0x0000019B96034450] bci=[-1,0,-] rc=0 vc=46 vn=- li=- udi=- nc=1
+n30n        ==>iconst 0
+n3n       BBEnd </block_2>                                                                    [0x0000019B96033C90] bci=[-1,0,-] rc=0 vc=46 vn=- li=- udi=- nc=0
+
+index:       node global index
+bci=[x,y,z]: byte-code-info [callee-index, bytecode-index, line-number]
+rc:          reference count
+vc:          visit count
+vn:          value number
+li:          local index
+udi:         use/def index
+nc:          number of children
+addr:        address size in bytes
+flg:         node flags
+
+Number of nodes = 12, symRefCount = 587
+</trees>
+
+<cfg>
+         0 [0x0000019B9603BD00] entry
+                 in        = []
+                 out       = [2(10000) ]
+                 exception in  = []
+                 exception out = []
+         1 [0x0000019B9603BC00] exit
+                 in        = [2(10000) ]
+                 out       = []
+                 exception in  = []
+                 exception out = []
+         2 [0x0000019B9603BE10] BBStart at 0x0000019B96033C50, frequency = 10000
+                 in        = [0(10000) ]
+                 out       = [1(10000) ]
+                 exception in  = []
+                 exception out = []
+<structure>
+      0 [0x0000019B9603ACB0] Acyclic region
+         Subgraph: (* = exit edge)
+               (0x0000019B9603ADA0:0x0000019B9603AC50)0 --> 2(0x0000019B9603AE30)
+               (0x0000019B9603AE30:0x0000019B9603AB90)2 --> 1(0x0000019B9603AF10)
+               (0x0000019B9603AF10:0x0000019B9603ABF0)1 -->
+         0 [0x0000019B9603AC50] Block
+         2 [0x0000019B9603AB90] Block
+         1 [0x0000019B9603ABF0] Block
+</structure>
+</cfg>
+Resetting read bit 582 at node 0000019B96033D10
+Resetting write bit 585 at node 0000019B96033E10
+Resetting read bit 583 at node 0000019B96033E50
+Resetting write bit 586 at node 0000019B96033F50
+Resetting write bit 584 at node 0000019B96034390
+Trying to index nodes with _indexFields = 0, _indexStatics = 0
+_neverReferencedSymbols[count = 580]: {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31
+, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62
+, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93
+, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124
+, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155
+, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186
+, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 216, 217
+, 218, 219, 220, 221, 222, 223, 224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248
+, 249, 250, 251, 252, 253, 254, 255, 256, 257, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267, 268, 269, 270, 271, 272, 273, 274, 275, 276, 277, 278, 279
+, 280, 281, 282, 283, 284, 285, 286, 287, 288, 289, 290, 291, 292, 293, 294, 295, 296, 297, 298, 299, 300, 301, 302, 303, 304, 305, 306, 307, 308, 309, 310
+, 311, 312, 313, 314, 315, 316, 317, 318, 319, 320, 321, 322, 323, 324, 325, 326, 327, 328, 329, 330, 331, 332, 333, 334, 335, 336, 337, 338, 339, 340, 341
+, 342, 343, 344, 345, 346, 347, 348, 349, 350, 351, 352, 353, 354, 355, 356, 357, 358, 359, 360, 361, 362, 363, 364, 365, 366, 367, 368, 369, 370, 371, 372
+, 373, 374, 375, 376, 377, 378, 379, 380, 381, 382, 383, 384, 385, 386, 387, 388, 389, 390, 391, 392, 393, 394, 395, 396, 397, 398, 399, 400, 401, 402, 403
+, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417, 418, 419, 420, 421, 422, 423, 424, 425, 426, 427, 428, 429, 430, 431, 432, 433, 434
+, 435, 436, 437, 438, 439, 440, 441, 442, 443, 444, 445, 446, 447, 448, 449, 450, 451, 452, 453, 454, 455, 456, 457, 458, 459, 460, 461, 462, 463, 464, 465
+, 466, 467, 468, 469, 470, 471, 474, 475, 476, 477, 478, 479, 480, 481, 482, 483, 484, 485, 486, 487, 488, 489, 490, 491, 492, 493, 494, 495, 496, 497, 498
+, 499, 500, 501, 502, 503, 504, 505, 506, 507, 508, 509, 510, 511, 512, 513, 514, 515, 516, 517, 518, 519, 520, 521, 522, 523, 524, 525, 526, 527, 528, 529
+, 530, 531, 532, 533, 534, 535, 536, 537, 538, 539, 540, 541, 542, 543, 544, 545, 546, 547, 548, 549, 550, 551, 552, 553, 554, 555, 556, 557, 558, 559, 560
+, 561, 562, 563, 564, 565, 566, 567, 568, 569, 570, 571, 572, 573, 574, 575, 576, 577, 578, 579, 580, 581}
+Non Trivial symbol Ref [0000019B9603C4E0:472] isTrivial=0 isParm=0 _neverWritten=1 _onceRead= 0 _onceWritten= 0
+   sym=0000019B9603C4B0 localIndex=65535 
+Non Trivial symbol Ref [0000019B9603C470:473] isTrivial=0 isParm=0 _neverWritten=1 _onceRead= 0 _onceWritten= 0
+   sym=0000019B9603C440 localIndex=65535 
+Non Trivial symbol Ref [0000019B96034E70:582] isTrivial=1 isParm=1 _neverWritten=1 _onceRead= 0 _onceWritten= 0
+Non Trivial symbol Ref [0000019B96035020:583] isTrivial=1 isParm=1 _neverWritten=1 _onceRead= 0 _onceWritten= 0
+Non Trivial symbol Ref [0000019B9603C150:584] isTrivial=1 isParm=0 _neverWritten=0 _onceRead= 0 _onceWritten= 0
+Non Trivial symbol Ref [0000019B9603C220:585] isTrivial=1 isParm=0 _neverWritten=0 _onceRead= 0 _onceWritten= 0
+Non Trivial symbol Ref [0000019B9603C2F0:586] isTrivial=1 isParm=0 _neverWritten=0 _onceRead= 0 _onceWritten= 0
+Trivial symbol [0000019B96034E00] has index 0
+Trivial symbol [0000019B96034FB0] has index 1
+Trivial symbol [0000019B9603C0E0] has index 2
+Trivial symbol [0000019B9603C1B0] has index 3
+Trivial symbol [0000019B9603C280] has index 4
+      expanded nodes          = 1
+      def/use combinations    = 8
+      irrelevant stores       = 0
+      expanded use nodes      = 0
+      expanded def nodes      = 1
+      local index level  = 0
+      use/def index level     = 4
+Has loads as defs              = 0
+Number of symbols              = 5
+Number of memory symbols       = 0
+Number of statics and fields   = 0
+Total nodes for use/def info   = 6
+   Number of defOnly nodes     = 4
+   Number of defUse nodes      = 0
+   Number of useOnly nodes     = 2
+Total nodes for reaching defs  = 1
+   Number of defOnly nodes     = 1
+   Number of defUse nodes      = 0
+   Number of useOnly nodes     = 0
+   Number of defs on entry     = 0
+Node : 0000019B96033D10   opCode = aload useDefIndex = 4 localIndex = 0 definesMultipleSymbols=0 isTrivialUseDefNode=1 adjustArray=0 
+Node : 0000019B96033E10   opCode = astore useDefIndex = 1 localIndex = 0 definesMultipleSymbols=0 isTrivialUseDefNode=1 adjustArray=1 
+Node : 0000019B96033E50   opCode = aload useDefIndex = 5 localIndex = 0 definesMultipleSymbols=0 isTrivialUseDefNode=1 adjustArray=0 
+Node : 0000019B96033F50   opCode = astore useDefIndex = 2 localIndex = 0 definesMultipleSymbols=0 isTrivialUseDefNode=1 adjustArray=1 
+Node : 0000019B96034390   opCode = istore useDefIndex = 3 localIndex = 0 definesMultipleSymbols=0 isTrivialUseDefNode=1 adjustArray=1 
+completed initialization of use/def info
+
+started reaching definition analysis for use/def
+
+
+Building use/def info for block 2
+looking at node 0000019B96033C50
+looking at node 0000019B96033E10
+looking at node 0000019B96033D10
+For node 0000019B96033D10 index = 4 and first use index = 4
+Reached here (entry) for use node 0000019B96033D10
+looking at node 0000019B96033F50
+looking at node 0000019B96033E50
+For node 0000019B96033E50 index = 5 and first use index = 4
+Reached here (entry) for use node 0000019B96033E50
+looking at node 0000019B96034310
+looking at node 0000019B96034150
+looking at node 0000019B96034110
+looking at node 0000019B96034390
+looking at node 0000019B96034350
+looking at node 0000019B96034450
+looking at node 0000019B96033C90
+
+Use/Def info: firstDefIndex=0 lastDefIndex=3 firstUseIndex=4 lastUseIndex=5 getNumDefsOnEntry()=1
+   Use #4[0000019B96033D10] is defined by:
+      Def #0[0000000000000000] (from method entry) 
+   Use #5[0000019B96033E50] is defined by:
+      Def #0[0000000000000000] (from method entry) 
+completed reaching definition analysis for use/def
+
+started initialization of use/def info
+<trees
+	title="Pre Use Def Trees"
+	method="file:line:simplelocals"
+	hotness="hot">
+
+Pre Use Def Trees: for file:line:simplelocals
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+n2n       BBStart <block_2> (freq 10000)                                                      [0x0000019B961237F0] bci=[-1,0,-] rc=0 vc=4 vn=- li=- udi=- nc=0
+n9n       istore  <temp slot 2>[#583  Auto] [flags 0x10003 0x0 ]                              [0x0000019B961239B0] bci=[-1,0,-] rc=0 vc=7 vn=- li=- udi=- nc=1
+n5n         iconst 5                                                                          [0x0000019B961238B0] bci=[-1,0,-] rc=1 vc=7 vn=- li=- udi=- nc=0
+n14n      lstore  <temp slot 3>[#584  Auto] [flags 0x10004 0x0 ]                              [0x0000019B96123AF0] bci=[-1,0,-] rc=0 vc=7 vn=- li=- udi=- nc=1
+n10n        lconst 42 (highWordZero )                                                         [0x0000019B961239F0] bci=[-1,0,-] rc=1 vc=7 vn=- li=- udi=- nc=0 flg=0x4000
+n18n      treetop                                                                             [0x0000019B96123BF0] bci=[-1,0,-] rc=0 vc=7 vn=- li=- udi=- nc=1
+n17n        icall  file:line:foo[#587  computed-static Method] [flags 0x500 0x0 ]             [0x0000019B96123BB0] bci=[-1,0,-] rc=1 vc=7 vn=- li=- udi=- nc=2
+n15n          loadaddr  <temp slot 2>[#583  Auto] [flags 0x10003 0x0 ]                        [0x0000019B96123B30] bci=[-1,0,-] rc=1 vc=7 vn=- li=- udi=- nc=0
+n16n          loadaddr  <temp slot 3>[#584  Auto] [flags 0x10004 0x0 ]                        [0x0000019B96123B70] bci=[-1,0,-] rc=1 vc=7 vn=- li=- udi=- nc=0
+n29n      istore  <temp slot 1>[#582  Auto] [flags 0x10003 0x0 ]                              [0x0000019B96123EB0] bci=[-1,0,-] rc=0 vc=7 vn=- li=- udi=- nc=1
+n28n        iadd                                                                              [0x0000019B96123E70] bci=[-1,0,-] rc=2 vc=7 vn=- li=- udi=- nc=2
+n27n          l2i                                                                             [0x0000019B96123E30] bci=[-1,0,-] rc=1 vc=7 vn=- li=- udi=- nc=1
+n26n            lload  <temp slot 3>[#584  Auto] [flags 0x10004 0x0 ]                         [0x0000019B96123DF0] bci=[-1,0,-] rc=1 vc=7 vn=- li=- udi=- nc=0
+n22n          iload  <temp slot 2>[#583  Auto] [flags 0x10003 0x0 ]                           [0x0000019B96123CF0] bci=[-1,0,-] rc=1 vc=7 vn=- li=- udi=- nc=0
+n32n      ireturn                                                                             [0x0000019B96123F70] bci=[-1,0,-] rc=0 vc=7 vn=- li=- udi=- nc=1
+n28n        ==>iadd
+n3n       BBEnd </block_2>                                                                    [0x0000019B96123830] bci=[-1,0,-] rc=0 vc=7 vn=- li=- udi=- nc=0
+
+index:       node global index
+bci=[x,y,z]: byte-code-info [callee-index, bytecode-index, line-number]
+rc:          reference count
+vc:          visit count
+vn:          value number
+li:          local index
+udi:         use/def index
+nc:          number of children
+addr:        address size in bytes
+flg:         node flags
+
+Symbol References (incremental):
+--------------------------------
+#472:  <array-shadow>[ Shadow] [flags 0x80000603 0x0 ] [0x0000019B9612C2E0] (Int32)
+#473:  <array-shadow>[ Shadow] [flags 0x80000604 0x0 ] [0x0000019B9612C3B0] (Int64)
+#582:  <temp slot 1>[ Auto] [flags 0x10003 0x0 ] [0x0000019B9612C070] (Int32)
+#583:  <temp slot 2>[ Auto] [flags 0x10003 0x0 ] [0x0000019B9612C140] (Int32)
+#584:  <temp slot 3>[ Auto] [flags 0x10004 0x0 ] [0x0000019B9612C210] (Int64)
+#585:  Parm  0<'this' parm L>[ Parm] [flags 0x107 0x0 ] [0x0000019B9612C660] (Address)
+#586:  Parm  1<parm 1 L>[ Parm] [flags 0x107 0x0 ] [0x0000019B9612C810] (Address)
+#587:  file:line:foo[ computed-static Method] [flags 0x500 0x0 ] [0x0000019B9612C490] (NoType)
+
+Number of nodes = 16, symRefCount = 588
+</trees>
+
+<cfg>
+         0 [0x0000019B9612B620] entry
+                 in        = []
+                 out       = [2(10000) ]
+                 exception in  = []
+                 exception out = []
+         1 [0x0000019B9612B520] exit
+                 in        = [2(10000) ]
+                 out       = []
+                 exception in  = []
+                 exception out = []
+         2 [0x0000019B9612B730] BBStart at 0x0000019B961237F0, frequency = 10000
+                 in        = [0(10000) ]
+                 out       = [1(10000) ]
+                 exception in  = []
+                 exception out = []
+<structure>
+      0 [0x0000019B9612A5D0] Acyclic region
+         Subgraph: (* = exit edge)
+               (0x0000019B9612A6C0:0x0000019B9612A570)0 --> 2(0x0000019B9612A750)
+               (0x0000019B9612A750:0x0000019B9612A4B0)2 --> 1(0x0000019B9612A830)
+               (0x0000019B9612A830:0x0000019B9612A510)1 -->
+         0 [0x0000019B9612A570] Block
+         2 [0x0000019B9612A4B0] Block
+         1 [0x0000019B9612A510] Block
+</structure>
+</cfg>
+Resetting write bit 583 at node 0000019B961239B0
+Resetting write bit 584 at node 0000019B96123AF0
+Resetting read bit 583 at node 0000019B96123B30
+Resetting read bit 584 at node 0000019B96123B70
+Resetting write bit 582 at node 0000019B96123EB0
+Trying to index nodes with _indexFields = 0, _indexStatics = 0
+_neverReferencedSymbols[count = 584]: {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31
+, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62
+, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93
+, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124
+, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155
+, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186
+, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 216, 217
+, 218, 219, 220, 221, 222, 223, 224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248
+, 249, 250, 251, 252, 253, 254, 255, 256, 257, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267, 268, 269, 270, 271, 272, 273, 274, 275, 276, 277, 278, 279
+, 280, 281, 282, 283, 284, 285, 286, 287, 288, 289, 290, 291, 292, 293, 294, 295, 296, 297, 298, 299, 300, 301, 302, 303, 304, 305, 306, 307, 308, 309, 310
+, 311, 312, 313, 314, 315, 316, 317, 318, 319, 320, 321, 322, 323, 324, 325, 326, 327, 328, 329, 330, 331, 332, 333, 334, 335, 336, 337, 338, 339, 340, 341
+, 342, 343, 344, 345, 346, 347, 348, 349, 350, 351, 352, 353, 354, 355, 356, 357, 358, 359, 360, 361, 362, 363, 364, 365, 366, 367, 368, 369, 370, 371, 372
+, 373, 374, 375, 376, 377, 378, 379, 380, 381, 382, 383, 384, 385, 386, 387, 388, 389, 390, 391, 392, 393, 394, 395, 396, 397, 398, 399, 400, 401, 402, 403
+, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417, 418, 419, 420, 421, 422, 423, 424, 425, 426, 427, 428, 429, 430, 431, 432, 433, 434
+, 435, 436, 437, 438, 439, 440, 441, 442, 443, 444, 445, 446, 447, 448, 449, 450, 451, 452, 453, 454, 455, 456, 457, 458, 459, 460, 461, 462, 463, 464, 465
+, 466, 467, 468, 469, 470, 471, 472, 473, 474, 475, 476, 477, 478, 479, 480, 481, 482, 483, 484, 485, 486, 487, 488, 489, 490, 491, 492, 493, 494, 495, 496
+, 497, 498, 499, 500, 501, 502, 503, 504, 505, 506, 507, 508, 509, 510, 511, 512, 513, 514, 515, 516, 517, 518, 519, 520, 521, 522, 523, 524, 525, 526, 527
+, 528, 529, 530, 531, 532, 533, 534, 535, 536, 537, 538, 539, 540, 541, 542, 543, 544, 545, 546, 547, 548, 549, 550, 551, 552, 553, 554, 555, 556, 557, 558
+, 559, 560, 561, 562, 563, 564, 565, 566, 567, 568, 569, 570, 571, 572, 573, 574, 575, 576, 577, 578, 579, 580, 581, 585, 586}
+Non Trivial symbol Ref [0000019B9612C0E0:582] isTrivial=1 isParm=0 _neverWritten=0 _onceRead= 0 _onceWritten= 0
+Non Trivial symbol Ref [0000019B9612C1B0:583] isTrivial=0 isParm=0 _neverWritten=0 _onceRead= 0 _onceWritten= 0
+   sym=0000019B9612C140 localIndex=65535 
+Non Trivial symbol [0000019B9612C140] has index 0
+Non Trivial symbol Ref [0000019B9612C280:584] isTrivial=0 isParm=0 _neverWritten=0 _onceRead= 0 _onceWritten= 0
+   sym=0000019B9612C210 localIndex=65535 
+Non Trivial symbol [0000019B9612C210] has index 1
+Non Trivial symbol Ref [0000019B9612C8E0:587] isTrivial=0 isParm=0 _neverWritten=1 _onceRead= 0 _onceWritten= 0
+   sym=0000019B9612C490 localIndex=65535 
+Trivial symbol [0000019B9612C070] has index 2
+      expanded nodes          = 4
+      def/use combinations    = 20
+      irrelevant stores       = 0
+      expanded use nodes      = 0
+      expanded def nodes      = 4
+      local index level  = 0
+      use/def index level     = 5
+Has loads as defs              = 0
+Number of symbols              = 3
+Number of memory symbols       = 0
+Number of statics and fields   = 0
+Total nodes for use/def info   = 9
+   Number of defOnly nodes     = 5
+   Number of defUse nodes      = 0
+   Number of useOnly nodes     = 4
+Total nodes for reaching defs  = 4
+   Number of defOnly nodes     = 4
+   Number of defUse nodes      = 0
+   Number of useOnly nodes     = 0
+   Number of defs on entry     = 2
+Node : 0000019B961239B0   opCode = istore useDefIndex = 1 localIndex = 2 definesMultipleSymbols=0 isTrivialUseDefNode=0 adjustArray=1 
+Node : 0000019B96123AF0   opCode = lstore useDefIndex = 2 localIndex = 3 definesMultipleSymbols=0 isTrivialUseDefNode=0 adjustArray=1 
+Node : 0000019B96123B30   opCode = loadaddr useDefIndex = 5 localIndex = 0 definesMultipleSymbols=0 isTrivialUseDefNode=1 adjustArray=0 
+Node : 0000019B96123B70   opCode = loadaddr useDefIndex = 6 localIndex = 0 definesMultipleSymbols=0 isTrivialUseDefNode=1 adjustArray=0 

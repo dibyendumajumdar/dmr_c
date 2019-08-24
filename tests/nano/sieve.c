@@ -1,4 +1,4 @@
-// Copyright vnmakarov see https://github.com/vnmakarov/mir/issues/2
+/* // Copyright vnmakarov see https://github.com/vnmakarov/mir/issues/2 */
 #define SieveSize 8190
 int sieve (void) {
 	int i, k, prime, count, iter;

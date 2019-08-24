@@ -22,34 +22,60 @@ def compile_a_test(filename, bc_file):
 def get_expected_output(filename):
     """
     Returns the expected output from a test as a string.
-    The expected output for program.c is looked in program.expect.
+    The expected output for program.c is looked in program.c.expect
+    or program.expect.
     If no expected output is available returns None
     :param filename: The C source file name
     :return: Expected output after running the test
     """
     (basename, ext) = os.path.splitext(filename)
-    expected_output_file = basename + '.expect'
+    expected_output_file = basename + '.expect' # legacy format
     expected_output = None
+    if os.path.isfile(expected_output_file):
+        with open(expected_output_file) as f:
+            expected_output = f.read()
+        return expected_output
+    expected_output_file = filename + '.expect' # We should migrate to this format
     if os.path.isfile(expected_output_file):
         with open(expected_output_file) as f:
             expected_output = f.read()
     return expected_output
 
-def execute_test(bc_file):
+def get_expected_returncode(filename):
     """
-    Executes the given LLVM bitcode file using lli
+    Reads expectrc file to determine what the expected
+    return code is
+    """
+    expected_rc = 0
+    expected_rc_file = filename + '.expectrc'
+    if os.path.isfile(expected_rc_file):
+        with open(expected_rc_file) as f:
+            expected_rc = int(f.read())
+    return expected_rc
+
+def execute_test(bc_file, c_file):
+    """
+    Compiles and executes the given C source file 
     and returns a tuple indicating whether the program
     terminated normally and any output from the program
-    :param bc_file: The LLVM bitcode file to execute
+    :param bc_file: The LLVM bitcode file
+    :param c_file: The C file
     :return: Tuple pair - status and output
     """
-    result = subprocess.run([LLVM_lli, bc_file], universal_newlines=True,
+    try:
+        expected_rc = get_expected_returncode(c_file)
+        result = subprocess.run([LLVM_lli, bc_file], universal_newlines=True,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.DEVNULL)
-    if result.returncode != 0:
-        return False, None
-    return True, result.stdout
-
+        if result.returncode != 0 and result.returncode != expected_rc:
+            print('Expected return code: {0}, got: {1}'.format(expected_rc, result.returncode))
+            return False, None
+        return True, result.stdout
+    except Exception as err:
+        print('Failed to run test: {0}: {1}'.format(c_file, err))
+    except:
+        print('Failed to run test: {0}: unexpected error: {1}'.format(c_file, sys.exc_info()[0]))
+    return False, None 
 
 def run_a_test(filename, results_directory):
     """
@@ -65,7 +91,7 @@ def run_a_test(filename, results_directory):
     if not compile_a_test(filename, bc_file):
         print('Test ' + filename + ' FAILED (compile error)')
         return False
-    (status, actual_output) = execute_test(bc_file)
+    (status, actual_output) = execute_test(bc_file, filename)
     if not status:
         print('Test ' + filename + ' FAILED (non-zero code)')
         return False

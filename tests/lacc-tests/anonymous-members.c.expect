@@ -1,0 +1,3 @@
+struct A: 8 (0, 4, 4)
+union B: 8 (0, 0, 4)
+struct C: 24 (i:0, j:4, w.k:0, w.l:8, m:16)

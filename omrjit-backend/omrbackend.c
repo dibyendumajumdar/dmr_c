@@ -96,13 +96,16 @@ int main(int argc, char **argv)
 		 * named TestNano() and if so, execute it
 		 */
 		fp = JIT_GetFunction(module, "TestNano");
+		if (fp == NULL) {
+			fp = JIT_GetFunction(module, "main");
+		}
 		if (fp) {
 			int fprc = fp();
 			if (fprc != 0) {
-				printf("TestNano Failed (%d)\n", fprc);
+				printf("Test Failed (%d)\n", fprc);
 				rc = 1;
 			} else {
-				printf("TestNano OK\n");
+				printf("Test OK\n");
 			}
 		}
 	}

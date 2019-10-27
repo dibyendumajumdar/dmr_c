@@ -38,6 +38,12 @@ static long long printlllii(long long a, long long b, long long c, int d, int e)
 	printf("received %lld %lld %lld %d %d\n", a, b, c, d, e);
 	return a + b + c + d + e;
 }
+static bool register_builtin_arg0(JIT_ContextRef module, const char *name, void *fp, JIT_Type return_type)
+{
+	JIT_Type args[1] = {0};
+	JIT_RegisterFunction(module, name, return_type, 0, args, fp);
+	return true;
+}
 static bool register_builtin_arg1(JIT_ContextRef module, const char *name, void *fp, JIT_Type return_type,
 				  JIT_Type arg1)
 {
@@ -78,6 +84,7 @@ int main(int argc, char **argv)
 	    !register_builtin_arg5(module, "printlllii", printlllii, JIT_Int64, JIT_Int64, JIT_Int64, JIT_Int64,
 				   JIT_Int32, JIT_Int32) ||
 	    !register_builtin_arg1(module, "exit", exit, JIT_NoType, JIT_Int32) ||
+	    !register_builtin_arg0(module, "abort", abort, JIT_NoType) ||
 	    !register_builtin_arg1(module, "fabs", fabs, JIT_Double, JIT_Double) ||
 	    !register_builtin_arg1(module, "malloc", malloc, JIT_Address, JIT_Int64) ||
 	    !register_builtin_arg1(module, "free", free, JIT_NoType, JIT_Address) ||
@@ -88,7 +95,7 @@ int main(int argc, char **argv)
 
 	int rc = 0;
 	if (!dmrC_omrcompile(argc, argv, module, NULL))
-		rc = 1;
+		rc = 127;
 
 	int (*fp)(void) = NULL;
 	if (rc == 0) {
@@ -100,13 +107,10 @@ int main(int argc, char **argv)
 			fp = JIT_GetFunction(module, "main");
 		}
 		if (fp) {
-			int fprc = fp();
-			if (fprc != 0) {
-				printf("Test Failed (%d)\n", fprc);
-				rc = 1;
-			} else {
-				printf("Test OK\n");
-			}
+			rc = fp();
+		}
+		else {
+			rc = 126;
 		}
 	}
 Lexit:
